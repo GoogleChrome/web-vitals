@@ -1,0 +1,11 @@
+.DS_Store
+node_modules
+
+# Log files
+*.log
+
+# Generated TypeScript files and build data
+tsconfig.tsbuildinfo
+
+# Dist files
+dist

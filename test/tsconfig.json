@@ -1,0 +1,23 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "composite": true,
+    "declaration": true,
+    "lib": ["es2017", "DOM"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "preserveConstEnums": true,
+    "rootDir": "./",
+    "strict": true,
+    "target": "esnext",
+    "types": ["node", "webdriverio"]
+  },
+  "include": [
+    "**/*.js"
+  ],
+  "exclude": []
+}

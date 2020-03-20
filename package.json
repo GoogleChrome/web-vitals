@@ -1,0 +1,83 @@
+{
+  "name": "web-vitals",
+  "version": "0.1.0",
+  "description": "Easily measure performance metrics in JavaScript",
+  "type": "module",
+  "main": "dist/web-vitals.min.js",
+  "exports": {
+    ".": "./dist/web-vitals.min.js",
+    "getCLS.js": "./dist/getCLS.js",
+    "getFCP.js": "./dist/getFCP.js",
+    "getFID.js": "./dist/getFID.js",
+    "getLCP.js": "./dist/getLCP.js"
+  },
+  "scripts": {
+    "build": "run-s clean build:ts build:js",
+    "build:ts": "tsc -b",
+    "build:js": "rollup -c",
+    "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "lint": "eslint \"*.js\" \"src/**/*.ts\" \"test/**/*.js\"",
+    "lint:fix": "eslint --fix \"*.js\" \"src/**/*.ts\" \"test/**/*.js\"",
+    "dev": "run-p watch serve",
+    "test": "npm-run-all build -p -r test:*",
+    "test:e2e": "wdio wdio.conf.js",
+    "test:server": "node test/server.js",
+    "watch": "run-p watch:*",
+    "watch:ts": "tsc -b -w",
+    "watch:js": "rollup -c -w"
+  },
+  "keywords": [
+    "crux",
+    "performance",
+    "metrics",
+    "cls",
+    "fcp",
+    "fid",
+    "lcp",
+    "ttfb"
+  ],
+  "author": {
+    "name": "Philip Walton",
+    "email": "philip@philipwalton.com",
+    "url": "http://philipwalton.com"
+  },
+  "license": "Apache-2.0",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GoogleChrome/web-vitals.git"
+  },
+  "bugs": {
+    "url": "https://github.com/GoogleChrome/web-vitals/issues"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "npm run lint"
+    }
+  },
+  "devDependencies": {
+    "@babel/core": "^7.9.0",
+    "@babel/preset-env": "^7.9.0",
+    "@typescript-eslint/eslint-plugin": "^2.24.0",
+    "@typescript-eslint/parser": "^2.24.0",
+    "@wdio/cli": "^5.22.3",
+    "@wdio/local-runner": "^5.22.3",
+    "@wdio/mocha-framework": "^5.18.7",
+    "@wdio/selenium-standalone-service": "^5.16.10",
+    "@wdio/spec-reporter": "^5.18.7",
+    "babel-eslint": "^10.1.0",
+    "body-parser": "^1.19.0",
+    "chromedriver": "^80.0.1",
+    "eslint": "^6.8.0",
+    "eslint-config-google": "^0.14.0",
+    "express": "^4.17.1",
+    "fs-extra": "^9.0.0",
+    "husky": "^4.2.3",
+    "npm-run-all": "^4.1.5",
+    "nunjucks": "^3.2.1",
+    "rollup": "^2.1.0",
+    "rollup-plugin-babel": "^4.4.0",
+    "rollup-plugin-terser": "^5.3.0",
+    "typescript": "^3.8.3",
+    "wdio-chromedriver-service": "^5.0.2"
+  }
+}
