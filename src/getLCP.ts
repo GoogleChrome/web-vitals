@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
-import {promisifyObserver} from './lib/promisifyObserver.js';
 import {bindResolver} from './lib/bindResolver.js';
+import {getFirstHiddenTime} from './lib/getFirstHiddenTime.js';
 import {observe} from './lib/observe.js';
+import {promisifyObserver} from './lib/promisifyObserver.js';
 import {whenHidden} from './lib/whenHidden.js';
 import {whenInput} from './lib/whenInput.js';
 
 
 export const getLCP = promisifyObserver((metric, resolve) => {
+  let firstEntry = true;
+
   const entryHandler = (entry: PerformanceEntry) => {
-    metric.value = entry.startTime;
-    metric.entries.push(entry);
+    // If the page was hidden prior to the first entry being dispatched,
+    // resolve without updating the metric value.
+    if (firstEntry && getFirstHiddenTime() < entry.startTime) {
+      resolver();
+    } else {
+      metric.value = entry.startTime;
+      metric.entries.push(entry);
+      firstEntry = false;
+    }
   };
   const po = observe('largest-contentful-paint', entryHandler);
   const resolver = bindResolver(resolve, metric, po, entryHandler);

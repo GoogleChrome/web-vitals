@@ -80,11 +80,10 @@ describe('getLCP()', async function() {
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
-    await browser.pause(200);
 
-    // Click on the body.
-    const body = await $('body');
-    await body.click();
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
 
     await beaconCountIs(1);
 
@@ -92,5 +91,60 @@ describe('getLCP()', async function() {
     assert.strictEqual(typeof lcp.value, 'number');
     assert(lcp.value > 200); // Greater than the image load delay.
     assert(lcp.entries.length > 1);
+  });
+
+  it('does not report if the document was hidden at page load time', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp-hidden');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('does not report if the document changes to hidden before the first entry', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp-visibilitychange-before');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('stops reporting after the document changes to hidden', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp-visibilitychange-after');
+
+    // Since we're dispatching a visibilitychange event,
+    // we don't need to do anything else to trigger the metric reporting.
+    await beaconCountIs(1);
+
+    const [{lcp}] = await getBeacons();
+    assert.strictEqual(typeof lcp.value, 'number');
+    assert.strictEqual(lcp.entries.length, 1);
+
+    // Ensure the LCP element is the <h1> and not the <img>.
+    assert.strictEqual(lcp.entries[0].element, 'h1');
   });
 });

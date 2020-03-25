@@ -30,7 +30,7 @@ describe('getFCP()', async function() {
     await clearBeacons();
   });
 
-  it('reports the correct value on hidden', async function() {
+  it('reports the correct value after the first paint', async function() {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp');
@@ -43,5 +43,43 @@ describe('getFCP()', async function() {
     const [{fcp}] = await getBeacons();
     assert.strictEqual(typeof fcp.value, 'number');
     assert.strictEqual(fcp.entries.length, 1);
+  });
+
+  it('does not report if the document was hidden at page load time', async function() {
+    if (!browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp-hidden');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('does not report if the document changes to hidden before the first entry', async function() {
+    if (!browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp-visibilitychange-before');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
   });
 });

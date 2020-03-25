@@ -14,14 +14,16 @@
  * limitations under the License.
  */
 
-const onHidden = (
-    type: string,
-    callback: () => void,
-) => {
-  const f = () => {
+
+interface EventCallback {
+  (event: Event): void;
+}
+
+const onHidden = (type: string, callback: EventCallback) => {
+  const f = (event: Event) => {
     if (document.visibilityState === 'hidden') {
       removeEventListener(type, f, true);
-      callback();
+      callback(event);
     }
   };
   addEventListener(type, f, true);
@@ -29,6 +31,6 @@ const onHidden = (
 
 // Unload is needed to fix this bug:
 // https://bugs.chromium.org/p/chromium/issues/detail?id=987409
-export const whenHidden = new Promise((r) => {
+export const whenHidden: Promise<Event> = new Promise((r) => {
   return ['visibilitychange', 'unload'].map((type) => onHidden(type, r));
 });

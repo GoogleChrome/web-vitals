@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-import {getFirstHiddenTime} from './lib/getFirstHiddenTime.js';
-import {observe} from './lib/observe.js';
-import {promisifyObserver} from './lib/promisifyObserver.js';
+import {whenHidden} from './whenHidden.js';
 
 
-export const getFCP = promisifyObserver((metric, resolve) => {
-  observe('paint', (entry: PerformanceEntry) => {
-    if (entry.name === 'first-contentful-paint') {
-      // Only resolve if the page wasn't hidden prior to first paint.
-      if (entry.startTime < getFirstHiddenTime()) {
-        metric.value = entry.startTime;
-        metric.entries.push(entry);
-        resolve(metric);
-      }
-    }
-  });
-});
+// If the document is hidden when this code runs, assume it was hidden since
+// navigation start. This isn't a perfect heuristic, but it's the best we can
+// do until an API is available to support querying past visibilityState.
+let firstHiddenTime: number =
+    document.visibilityState === 'hidden' ? 0 : Infinity;
+
+// Update the time if/when the document becomes hidden.
+whenHidden.then((event: Event) => firstHiddenTime = event.timeStamp);
+
+export const getFirstHiddenTime = (): number => firstHiddenTime;
