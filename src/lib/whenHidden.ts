@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 interface EventCallback {
   (event: Event): void;
 }

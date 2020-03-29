@@ -26,9 +26,28 @@
   <script type="module">
     import {getLCP} from '/dist/web-vitals.js';
 
+    function reportMetric(lcp) {
+      // Log for easier manual testing.
+      console.log(lcp);
+
+      // Elements can't be serialized, so we convert first.
+      lcp = {
+        value: lcp.value,
+        entries: lcp.entries.map((e) => ({
+          element: e.element.nodeName.toLowerCase(),
+          size: e.size,
+          startTime: e.startTime,
+        })),
+        isFinal: lcp.isFinal,
+      };
+
+      // Test sending the metric to an analytics endpoint.
+      navigator.sendBeacon(`/collect`, JSON.stringify({lcp}));
+    }
+
     // Call `getLCP()` when the document is visible,
     // but change to hidden before the first paint.
-    const getLCPPromise = getLCP();
+    const getLCPPromise = getLCP(reportMetric);
 
     Promise.resolve().then(() => {
       Object.defineProperty(document, 'visibilityState', {value: 'hidden'});
@@ -37,22 +56,6 @@
       document.querySelector('section').style.display = 'block';
     });
 
-    getLCPPromise.then((result) => {
-      // Log for easier manual testing.
-      console.log(result);
-
-      // Elements can't be serialized, so we convert first.
-      const lcp = {
-        value: result.value,
-        entries: result.entries.map((e) => ({
-          element: e.element.nodeName.toLowerCase(),
-          size: e.size,
-          startTime: e.startTime,
-        })),
-      };
-
-      // Test sending the results to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({lcp}));
-    });
+    getLCPPromise.then(reportMetric);
   </script>
 {% endblock %}

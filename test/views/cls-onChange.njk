@@ -18,13 +18,13 @@
 {% block content %}
   <h1>CLS Test</h1>
   <p><img src="/test/img/square.png?delay=500" alt="Gray square" /></p>
-  <p><img src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
+  <p><img src="/test/img/square.png?delay=400" alt="Gray square" /></p>
   <p>Text below the images that will get pushed down.</p>
 
   <script type="module">
     import {getCLS} from '/dist/web-vitals.js';
 
-    getCLS().then((cls) => {
+    getCLS((cls) => {
       // Log for easier manual testing.
       console.log(cls);
 

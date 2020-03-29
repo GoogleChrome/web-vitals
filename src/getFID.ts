@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-import {PerformanceEntryHandler} from './types.js';
 import {bindResolver} from './lib/bindResolver.js';
+import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {promisifyObserver} from './lib/promisifyObserver.js';
-import {observe} from './lib/observe.js';
 import {whenHidden} from './lib/whenHidden.js';
 
 
@@ -40,7 +39,7 @@ interface PerformanceEventTiming extends PerformanceEntry {
   processingStart: number;
 }
 
-export const getFID = promisifyObserver((metric, resolve) => {
+export const getFID = promisifyObserver((metric, resolve, onChange) => {
   const entryHandler = (entry: PerformanceEventTiming) => {
     metric.value = entry.processingStart - entry.startTime;
     metric.entries.push(entry);
@@ -48,7 +47,7 @@ export const getFID = promisifyObserver((metric, resolve) => {
   };
   const po = observe('first-input', entryHandler as PerformanceEntryHandler);
   const resolver = bindResolver(
-      resolve, metric, po, entryHandler as PerformanceEntryHandler);
+      resolve, metric, po, entryHandler as PerformanceEntryHandler, onChange);
 
   whenHidden.then(resolver);
 

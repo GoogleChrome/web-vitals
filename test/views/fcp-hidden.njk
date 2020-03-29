@@ -27,19 +27,23 @@
 {% block content %}
   <h1>FCP Test</h1>
   <p>
-    <img src="/test/img/square.png?delay=200">
+    <img src="/test/img/square.png?delay=500">
   </p>
   <p>Text below the image</p>
 
   <script type="module">
     import {getFCP} from '/dist/web-vitals.js';
 
-    getFCP().then((result) => {
+    function reportMetric(fcp) {
       // Log for easier manual testing.
-      console.log(result);
+      console.log(fcp);
 
-      // Test sending the results to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({fcp: result}));
-    });
+      // Test sending the metric to an analytics endpoint.
+      navigator.sendBeacon(`/collect`, JSON.stringify({fcp}));
+    }
+
+    // Report results both on change and when the promise resolves to assert
+    // that no results are reported in the hidden state.
+    getFCP(reportMetric).then(reportMetric);
   </script>
 {% endblock %}

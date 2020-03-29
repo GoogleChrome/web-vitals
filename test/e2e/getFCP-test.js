@@ -30,19 +30,32 @@ describe('getFCP()', async function() {
     await clearBeacons();
   });
 
-  it('reports the correct value after the first paint', async function() {
+  it('resolves with the correct value after the first paint', async function() {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp');
 
-    // Wait until all images are loaded and fully rendered.
-    await imagesPainted();
+    await beaconCountIs(1);
+
+    const [{fcp}] = await getBeacons();
+    assert(fcp.value >= 0);
+    assert.strictEqual(typeof fcp.value, 'number');
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.strictEqual(fcp.isFinal, true);
+  });
+
+  it('invokes the onChange function correctly after the first paint', async function() {
+    if (!browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp-onChange');
 
     await beaconCountIs(1);
 
     const [{fcp}] = await getBeacons();
+    assert(fcp.value >= 0);
     assert.strictEqual(typeof fcp.value, 'number');
     assert.strictEqual(fcp.entries.length, 1);
+    assert.strictEqual(fcp.isFinal, true);
   });
 
   it('does not report if the document was hidden at page load time', async function() {
@@ -51,11 +64,9 @@ describe('getFCP()', async function() {
     await browser.url('/test/fcp-hidden');
 
     // Wait until all images are loaded and fully rendered.
+    // NOTE(philipwalton): since the visibilityState is stubbed in the test,
+    // the images will actually paint on the screen, so it's OK to await them.
     await imagesPainted();
-
-    // Click on the h1.
-    const h1 = await $('h1');
-    await h1.click();
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);

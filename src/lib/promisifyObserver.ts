@@ -14,22 +14,18 @@
  * limitations under the License.
  */
 
-export interface Metric {
-  value: number | null;
-  entries: PerformanceEntry[];
-  event?: Event;
-}
+import {Metric, ChangeHandler} from '../types.js';
+
 
 export interface Resolver {
   (value: Metric | PromiseLike<Metric> | undefined): void;
 }
 
-
 export const promisifyObserver = (
-    cb: (metric: Metric, resolve: Resolver) => void,
+    cb: (metric: Metric, resolve: Resolver, onChange?: ChangeHandler) => void,
 ): () => Promise<Metric> => {
-  return () => {
-    const metric: Metric = {value: null, entries: []};
-    return new Promise((resolve) => cb(metric, resolve));
+  return (onChange?: ChangeHandler) => {
+    const metric: Metric = {value: null, entries: [], isFinal: false};
+    return new Promise((resolve) => cb(metric, resolve, onChange));
   };
 };

@@ -14,6 +14,13 @@
  * limitations under the License.
  */
 
-export interface PerformanceEntryHandler {
-  (entry: PerformanceEntry): void;
+export interface Metric {
+  value: number | null;
+  entries: PerformanceEntry[];
+  isFinal?: boolean;
+  event?: Event;
+}
+
+export interface ChangeHandler {
+  (metric: Metric): void;
 }

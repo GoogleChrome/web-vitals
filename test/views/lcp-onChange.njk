@@ -12,24 +12,29 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-
 {% extends 'layout.njk' %}
 
 {% block content %}
-  <h1>CLS Test</h1>
-  <p><img src="/test/img/square.png?delay=500" alt="Gray square" /></p>
-  <p><img src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
-  <p>Text below the images that will get pushed down.</p>
+  <h1>LCP Test</h1>
+  <p>
+    <img src="/test/img/square.png?delay=500">
+  </p>
+  <p>Text below the image</p>
+
+  <!-- Include a tall element to ensure scrolling is possible. -->
+  <div style="height: 100vh"></div>
+
+  <footer>Text below the full-height element.</footer>
 
   <script type="module">
-    import {getCLS} from '/dist/web-vitals.js';
+    import {getLCP} from '/dist/web-vitals.js';
 
-    getCLS().then((cls) => {
+    getLCP((lcp) => {
       // Log for easier manual testing.
-      console.log(cls);
+      console.log(lcp);
 
       // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({cls}));
+      navigator.sendBeacon(`/collect`, JSON.stringify({lcp}));
     });
   </script>
 {% endblock %}
