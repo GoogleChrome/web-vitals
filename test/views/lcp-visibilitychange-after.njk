@@ -29,6 +29,25 @@
   <script type="module">
     import {getLCP} from '/dist/web-vitals.js';
 
+    function reportMetric(lcp) {
+      // Log for easier manual testing.
+      console.log(lcp);
+
+      // Elements can't be serialized, so we convert first.
+      lcp = {
+        value: lcp.value,
+        entries: lcp.entries.map((e) => ({
+          element: e.element.nodeName.toLowerCase(),
+          size: e.size,
+          startTime: e.startTime,
+        })),
+        isFinal: lcp.isFinal,
+      };
+
+      // Test sending the metric to an analytics endpoint.
+      navigator.sendBeacon(`/collect`, JSON.stringify({lcp}));
+    }
+
     // Wait until after the first render and then stub a change to hidden.
     // After that, reveal the image and assert it's not counted toward LCP.
     setTimeout(() => {
@@ -37,23 +56,9 @@
 
       document.querySelector('img').style.display = 'inline-block';
       requestAnimationFrame(() => {
-        getLCP().then((result) => {
-          // Log for easier manual testing.
-          console.log(result);
-
-          // Elements can't be serialized, so we convert first.
-          const lcp = {
-            value: result.value,
-            entries: result.entries.map((e) => ({
-              element: e.element.nodeName.toLowerCase(),
-              size: e.size,
-              startTime: e.startTime,
-            })),
-          };
-
-          // Test sending the results to an analytics endpoint.
-          navigator.sendBeacon(`/collect`, JSON.stringify({lcp}));
-        });
+        // Report results both on change and when the promise resolves
+        // to assert that no results are reported in the hidden state.
+        getLCP(reportMetric).then(reportMetric);
       });
     }, 100);
   </script>

@@ -29,7 +29,7 @@ describe('getFID()', async function() {
     await clearBeacons();
   });
 
-  it('reports the correct value and entries after input', async function() {
+  it('resolves with the correct value after input', async function() {
     if (!browserSupportsFID) this.skip();
 
     await browser.url('/test/fid');
@@ -43,6 +43,24 @@ describe('getFID()', async function() {
     const [{fid}] = await getBeacons();
     assert.strictEqual(typeof fid.value, 'number');
     assert.strictEqual(fid.entries[0].name, 'mousedown');
+    assert.strictEqual(fid.isFinal, true);
+  });
+
+  it('invokes the onChange function correctly after input', async function() {
+    if (!browserSupportsFID) this.skip();
+
+    await browser.url('/test/fid');
+
+    // Click on the <h1>.
+    const h1 = await $('h1');
+    await h1.click();
+
+    await beaconCountIs(1);
+
+    const [{fid}] = await getBeacons();
+    assert.strictEqual(typeof fid.value, 'number');
+    assert.strictEqual(fid.entries[0].name, 'mousedown');
+    assert.strictEqual(fid.isFinal, true);
   });
 
   it('falls back to the polyfill in non-supporting browsers', async function() {
@@ -52,14 +70,17 @@ describe('getFID()', async function() {
     const h1 = await $('h1');
     await h1.click();
 
-    await beaconCountIs(1);
+    await beaconCountIs(2);
 
-    const [{fid}] = await getBeacons();
+    const [{fid: fid1}, {fid: fid2}] = await getBeacons();
+
+    assert.strictEqual(typeof fid1.value, 'number');
     if (browserSupportsFID) {
-      assert.strictEqual(fid.entries[0].name, 'mousedown');
+      assert.strictEqual(fid1.entries[0].name, 'mousedown');
     } else {
-      assert.strictEqual(fid.event.type, 'mousedown');
+      assert.strictEqual(fid1.event.type, 'mousedown');
     }
+    assert.deepStrictEqual(fid2, fid1);
   });
 });
 

@@ -34,7 +34,7 @@ describe('getLCP()', async function() {
     await browser.url('about:blank');
   });
 
-  it('reports the correct value on hidden', async function() {
+  it('resolves with the correct value on hidden', async function() {
     if (!browserSupportsLCP) this.skip();
 
     await browser.url('/test/lcp');
@@ -49,11 +49,12 @@ describe('getLCP()', async function() {
 
     const [{lcp}] = await getBeacons();
     assert.strictEqual(typeof lcp.value, 'number');
-    assert(lcp.value > 200); // Greater than the image load delay.
+    assert(lcp.value > 500); // Greater than the image load delay.
     assert(lcp.entries.length > 1);
+    assert.strictEqual(lcp.isFinal, true);
   });
 
-  it('reports the correct value on scroll', async function() {
+  it('resolves with the correct value on scroll', async function() {
     if (!browserSupportsLCP) this.skip();
 
     await browser.url('/test/lcp');
@@ -69,11 +70,12 @@ describe('getLCP()', async function() {
 
     const [{lcp}] = await getBeacons();
     assert.strictEqual(typeof lcp.value, 'number');
-    assert(lcp.value > 200); // Greater than the image load delay.
+    assert(lcp.value > 500); // Greater than the image load delay.
     assert(lcp.entries.length > 1);
+    assert.strictEqual(lcp.isFinal, true);
   });
 
-  it('reports the correct value on input', async function() {
+  it('resolves with the correct value on input', async function() {
     if (!browserSupportsLCP) this.skip();
 
     await browser.url('/test/lcp');
@@ -89,8 +91,108 @@ describe('getLCP()', async function() {
 
     const [{lcp}] = await getBeacons();
     assert.strictEqual(typeof lcp.value, 'number');
-    assert(lcp.value > 200); // Greater than the image load delay.
+    assert(lcp.value > 500); // Greater than the image load delay.
     assert(lcp.entries.length > 1);
+    assert.strictEqual(lcp.isFinal, true);
+  });
+
+  it('invokes the onChange function as new entries are dispatched', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp-onChange');
+
+    await beaconCountIs(2);
+
+    const [{lcp: lcp1}, {lcp: lcp2}] = await getBeacons();
+
+    assert(lcp1.value < 500); // Less than the image load delay.
+    assert.strictEqual(typeof lcp1.value, 'number');
+    assert.strictEqual(lcp1.entries.length, 1);
+    assert.strictEqual(lcp1.isFinal, false);
+
+    assert(lcp2.value > 500); // Greater than the image load delay.
+    assert.strictEqual(typeof lcp2.value, 'number');
+    assert.strictEqual(lcp2.entries.length, 2);
+    assert.strictEqual(lcp2.isFinal, false);
+
+    // Load a new page to trigger the hidden state.
+    await browser.url('about:blank');
+
+    await beaconCountIs(3);
+
+    const [, , {lcp: lcp3}] = await getBeacons();
+
+    assert(lcp3.value > 500); // Greater than the image load delay.
+    assert(lcp3.value, lcp2.value);
+    assert.strictEqual(typeof lcp3.value, 'number');
+    assert.strictEqual(lcp3.entries.length, 2);
+    assert.strictEqual(lcp3.isFinal, true);
+  });
+
+  it('invokes the final onChange value on scroll', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp-onChange');
+
+    // Await the two expected (non-final) entries.
+    await beaconCountIs(2);
+
+    // Scroll down
+    const footer = await $('footer');
+    await footer.scrollIntoView();
+
+    await beaconCountIs(3);
+
+    const [{lcp: lcp1}, {lcp: lcp2}, {lcp: lcp3}] = await getBeacons();
+
+    assert(lcp1.value < 500); // Less than the image load delay.
+    assert.strictEqual(typeof lcp1.value, 'number');
+    assert.strictEqual(lcp1.entries.length, 1);
+    assert.strictEqual(lcp1.isFinal, false);
+
+    assert(lcp2.value > 500); // Greater than the image load delay.
+    assert.strictEqual(typeof lcp2.value, 'number');
+    assert.strictEqual(lcp2.entries.length, 2);
+    assert.strictEqual(lcp2.isFinal, false);
+
+    assert(lcp3.value > 500); // Greater than the image load delay.
+    assert(lcp3.value, lcp2.value);
+    assert.strictEqual(typeof lcp3.value, 'number');
+    assert.strictEqual(lcp3.entries.length, 2);
+    assert.strictEqual(lcp3.isFinal, true);
+  });
+
+  it('invokes the final onChange value on input', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp-onChange');
+
+    // Await the two expected (non-final) entries.
+    await beaconCountIs(2);
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    await beaconCountIs(3);
+
+    const [{lcp: lcp1}, {lcp: lcp2}, {lcp: lcp3}] = await getBeacons();
+
+    assert(lcp1.value < 500); // Less than the image load delay.
+    assert.strictEqual(typeof lcp1.value, 'number');
+    assert.strictEqual(lcp1.entries.length, 1);
+    assert.strictEqual(lcp1.isFinal, false);
+
+    assert(lcp2.value > 500); // Greater than the image load delay.
+    assert.strictEqual(typeof lcp2.value, 'number');
+    assert.strictEqual(lcp2.entries.length, 2);
+    assert.strictEqual(lcp2.isFinal, false);
+
+    assert(lcp3.value > 500); // Greater than the image load delay.
+    assert(lcp3.value, lcp2.value);
+    assert.strictEqual(typeof lcp3.value, 'number');
+    assert.strictEqual(lcp3.entries.length, 2);
+    assert.strictEqual(lcp3.isFinal, true);
   });
 
   it('does not report if the document was hidden at page load time', async function() {
@@ -138,13 +240,21 @@ describe('getLCP()', async function() {
 
     // Since we're dispatching a visibilitychange event,
     // we don't need to do anything else to trigger the metric reporting.
-    await beaconCountIs(1);
+    await beaconCountIs(3);
 
-    const [{lcp}] = await getBeacons();
-    assert.strictEqual(typeof lcp.value, 'number');
-    assert.strictEqual(lcp.entries.length, 1);
+    const [{lcp: lcp1}, {lcp: lcp2}, {lcp: lcp3}] = await getBeacons();
 
-    // Ensure the LCP element is the <h1> and not the <img>.
-    assert.strictEqual(lcp.entries[0].element, 'h1');
+    assert.strictEqual(typeof lcp1.value, 'number');
+    assert.strictEqual(lcp1.entries.length, 1);
+    assert.strictEqual(lcp1.entries[0].element, 'h1');
+    assert.strictEqual(lcp1.isFinal, false);
+
+    assert.strictEqual(typeof lcp2.value, 'number');
+    assert.strictEqual(lcp2.entries.length, 1);
+    assert.strictEqual(lcp2.entries[0].element, 'h1');
+    assert.strictEqual(lcp2.isFinal, true);
+
+    // lcp1 and lcp2 should have the same data.
+    assert.deepStrictEqual(lcp3, lcp2);
   });
 });

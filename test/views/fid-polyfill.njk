@@ -30,17 +30,21 @@
   <script type="module">
     import {getFID} from '/dist/web-vitals.js';
 
-    getFID().then((result) => {
+    function reportMetric(fid) {
       // Log for easier manual testing.
-      console.log(result);
+      console.log(fid);
 
       // Event objects can't be serialized, so we objectify them first.
-      if (result.event) {
-        result.event = {type: result.event.type};
+      if (fid.event) {
+        fid.event = {type: fid.event.type};
       }
 
-      // Test sending the results to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({fid: result}));
-    });
+      // Test sending the fids to an analytics endpoint.
+      navigator.sendBeacon(`/collect`, JSON.stringify({fid}));
+    }
+
+    // Report results both on change and when the promise resolves
+    // to assert that both features work with the polyfill.
+    getFID(reportMetric).then(reportMetric);
   </script>
 {% endblock %}

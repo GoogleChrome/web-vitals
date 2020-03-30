@@ -14,8 +14,9 @@
  * limitations under the License.
  */
 
-import {Metric, Resolver} from './promisifyObserver.js';
-import {PerformanceEntryHandler} from '../types.js';
+import {PerformanceEntryHandler} from './observe.js';
+import {Resolver} from './promisifyObserver.js';
+import {Metric, ChangeHandler} from '../types.js';
 
 
 export const bindResolver = (
@@ -23,6 +24,7 @@ export const bindResolver = (
     metric: Metric,
     po: PerformanceObserver | undefined,
     entryHandler: PerformanceEntryHandler,
+    onChange?: ChangeHandler,
 ) => {
   return () => {
     if (po) {
@@ -30,6 +32,12 @@ export const bindResolver = (
       po.disconnect();
     }
     if (typeof metric.value === 'number') {
+      if (!metric.isFinal) {
+        metric.isFinal = true;
+        if (onChange) {
+          onChange(metric);
+        }
+      }
       resolve(metric);
     }
   };

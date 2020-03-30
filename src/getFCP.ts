@@ -14,20 +14,24 @@
  * limitations under the License.
  */
 
+import {bindResolver} from './lib/bindResolver.js';
 import {getFirstHiddenTime} from './lib/getFirstHiddenTime.js';
-import {observe} from './lib/observe.js';
+import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {promisifyObserver} from './lib/promisifyObserver.js';
 
 
-export const getFCP = promisifyObserver((metric, resolve) => {
-  observe('paint', (entry: PerformanceEntry) => {
+export const getFCP = promisifyObserver((metric, resolve, onChange) => {
+  const entryHandler = (entry: PerformanceEntry) => {
     if (entry.name === 'first-contentful-paint') {
       // Only resolve if the page wasn't hidden prior to first paint.
       if (entry.startTime < getFirstHiddenTime()) {
         metric.value = entry.startTime;
         metric.entries.push(entry);
-        resolve(metric);
+        resolver();
       }
     }
-  });
+  };
+  const po = observe('paint', entryHandler as PerformanceEntryHandler);
+  const resolver = bindResolver(
+      resolve, metric, po, entryHandler as PerformanceEntryHandler, onChange);
 });

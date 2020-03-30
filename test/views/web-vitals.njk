@@ -16,16 +16,16 @@
 
 {% block content %}
   <h1>Web Vitals Test</h1>
-  <p><img src="/test/img/square.png?delay=200" alt="Gray square" /></p>
-  <p><img src="/test/img/square.png?delay=400" alt="Gray square" /></p>
+  <p><img src="/test/img/square.png?delay=500" alt="Gray square" /></p>
+  <p><img src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
   <p>Text below the images that will get pushed down.</p>
 
   <script type="module">
     import {getCLS, getFID, getFCP, getLCP} from '/dist/web-vitals.js';
 
-    Promise.all([getCLS(), getFID(), getFCP(), getLCP()]).then((result) => {
+    Promise.all([getCLS(), getFID(), getFCP(), getLCP()]).then((results) => {
       // Log for easier manual testing.
-      const [cls, fid, fcp, lcp] = result;
+      const [cls, fid, fcp, lcp] = results;
       console.log({cls, fid, fcp, lcp});
 
       // Test sending the results to an analytics endpoint.

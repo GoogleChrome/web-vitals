@@ -30,7 +30,7 @@ describe('getCLS()', async function() {
     await clearBeacons();
   });
 
-  it('reports the correct value and entries on hidden', async function() {
+  it('resolves with the correct value on visibility hidden', async function() {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls');
@@ -44,8 +44,42 @@ describe('getCLS()', async function() {
     await beaconCountIs(1);
 
     const [{cls}] = await getBeacons();
-    assert.strictEqual(typeof cls.value, 'number');
     assert(cls.value >= 0);
+    assert.strictEqual(typeof cls.value, 'number');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.strictEqual(cls.isFinal, true);
+  });
+
+  it('invokes the onChange function correctly until visibility hidden', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls-onChange');
+
+    // Wait until all images are loaded and rendered.
+    await beaconCountIs(2);
+
+    const [{cls: cls1}, {cls: cls2}] = await getBeacons();
+
+    assert(cls1.value >= 0);
+    assert.strictEqual(typeof cls1.value, 'number');
+    assert.strictEqual(cls1.isFinal, false);
+    assert.strictEqual(cls1.entries.length, 1);
+
+    assert(cls2.value >= 0);
+    assert.strictEqual(typeof cls2.value, 'number');
+    assert.strictEqual(cls2.isFinal, false);
+    assert.strictEqual(cls2.entries.length, 2);
+
+    // Load a new page to trigger the hidden state.
+    await clearBeacons();
+    await browser.url('about:blank');
+
+    await beaconCountIs(1);
+
+    const [{cls}] = await getBeacons();
+    assert(cls.value >= 0);
+    assert.strictEqual(typeof cls.value, 'number');
+    assert.strictEqual(cls.isFinal, true);
     assert.strictEqual(cls.entries.length, 2);
   });
 });

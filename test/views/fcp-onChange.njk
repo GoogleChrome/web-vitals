@@ -16,20 +16,21 @@
 {% extends 'layout.njk' %}
 
 {% block content %}
-  <h1>CLS Test</h1>
-  <p><img src="/test/img/square.png?delay=500" alt="Gray square" /></p>
-  <p><img src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
-  <p>Text below the images that will get pushed down.</p>
+  <h1>FCP Test</h1>
+  <p>
+    <img src="/test/img/square.png?delay=500">
+  </p>
+  <p>Text below the image</p>
 
   <script type="module">
-    import {getCLS} from '/dist/web-vitals.js';
+    import {getFCP} from '/dist/web-vitals.js';
 
-    getCLS().then((cls) => {
+    getFCP((fcp) => {
       // Log for easier manual testing.
-      console.log(cls);
+      console.log(fcp);
 
       // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({cls}));
+      navigator.sendBeacon(`/collect`, JSON.stringify({fcp}));
     });
   </script>
 {% endblock %}

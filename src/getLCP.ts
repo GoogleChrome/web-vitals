@@ -22,7 +22,7 @@ import {whenHidden} from './lib/whenHidden.js';
 import {whenInput} from './lib/whenInput.js';
 
 
-export const getLCP = promisifyObserver((metric, resolve) => {
+export const getLCP = promisifyObserver((metric, resolve, onChange) => {
   let firstEntry = true;
 
   const entryHandler = (entry: PerformanceEntry) => {
@@ -33,11 +33,14 @@ export const getLCP = promisifyObserver((metric, resolve) => {
     } else {
       metric.value = entry.startTime;
       metric.entries.push(entry);
+      if (onChange) {
+        onChange(metric);
+      }
       firstEntry = false;
     }
   };
   const po = observe('largest-contentful-paint', entryHandler);
-  const resolver = bindResolver(resolve, metric, po, entryHandler);
+  const resolver = bindResolver(resolve, metric, po, entryHandler, onChange);
   whenHidden.then(resolver);
   whenInput.then(resolver);
 });

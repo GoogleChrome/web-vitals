@@ -14,7 +14,9 @@
  * limitations under the License.
  */
 
-import {PerformanceEntryHandler} from '../types.js';
+export interface PerformanceEntryHandler {
+  (entry: PerformanceEntry): void;
+}
 
 /**
  * Takes a performance entry type and a callback function, and creates a

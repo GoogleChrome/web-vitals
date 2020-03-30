@@ -66,7 +66,7 @@ describe('web-vitals', async function() {
     assert(fid.entries.length === 1);
 
     assert.strictEqual(typeof lcp.value, 'number');
-    assert(lcp.value > 200); // Greater than the image load delay.
+    assert(lcp.value > 500); // Greater than the image load delay.
     assert(lcp.entries.length > 1);
   });
 });

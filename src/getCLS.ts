@@ -14,11 +14,14 @@
  * limitations under the License.
  */
 
-import {PerformanceEntryHandler} from './types.js';
 import {bindResolver} from './lib/bindResolver.js';
-import {observe} from './lib/observe.js';
+import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {promisifyObserver} from './lib/promisifyObserver.js';
 import {whenHidden} from './lib/whenHidden.js';
+
+import {Metric} from './types.js';
+
+
 
 // https://wicg.github.io/layout-instability/#sec-layout-shift
 interface LayoutShift extends PerformanceEntry {
@@ -26,18 +29,24 @@ interface LayoutShift extends PerformanceEntry {
   hadRecentInput: boolean;
 }
 
-export const getCLS = promisifyObserver((metric, resolve) => {
+type getCLS = (onChange?: Metric) => Promise<Metric>;
+
+
+export const getCLS = promisifyObserver((metric, resolve, onChange) => {
   metric.value = 0;
   const entryHandler = (entry: LayoutShift) => {
     // Only count layout shifts without recent user input.
     if (!entry.hadRecentInput) {
       (metric.value as number) += entry.value;
       metric.entries.push(entry);
+      if (onChange) {
+        onChange(metric);
+      }
     }
   };
   const po = observe('layout-shift', entryHandler as PerformanceEntryHandler);
   const resolver = bindResolver(
-      resolve, metric, po, entryHandler as PerformanceEntryHandler);
+      resolve, metric, po, entryHandler as PerformanceEntryHandler, onChange);
 
   whenHidden.then(resolver);
 });

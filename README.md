@@ -5,6 +5,8 @@ A simple, light-weight (~0.7K) library for measuring all the [Web Vitals](https:
 - [Installation](#installation)
 - [Usage](#usage)
 - [API](#api)
+  - [Types](#types)
+  - [Functions](#functions)
 - [Development](#development)
 - [Browser Support](#browser-support)
 
@@ -63,57 +65,100 @@ getLCP().then(({value}) => {
 });
 ```
 
+### Passing an `onChange` function for incremental updates
+
+In most cases, only the final value of each metric is important to measure. However, if you want to report how the metric is changing over time, you can pass an `onChange ` function. This could be useful if, for example, you want to report the current LCP candidate as the page is loading, or you want to report layout shifts (and the current CLS value) as users are interacting with the page.
+
+```js
+import {getCLS, getFID, getLCP} from 'web-vitals';
+
+function logCurrentValue(metric, value, isFinal) {
+  console.log(metric, value, isFinal ? '(final)' : '(not final)');
+}
+
+getCLS((result) => logCurrentValue('cls', result.value, result.isFinal));
+getFID((result) => logCurrentValue('fid', result.value, result.isFinal));
+getLCP((result) => logCurrentValue('lcp', result.value, result.isFinal));
+```
+
+Note: the `result` object for each metric contains an `isFinal` flag, which will indicate whether or not the value might change in the future. See the [API](#api) reference below for more details.
+
 ## API
 
-### Functions
+### Types:
 
-<table>
-  <tr valign="top">
-    <th align="left">Name</th>
-    <th align="left">Description</th>
-  </tr>
-  <tr valign="top" id="api-getCLS">
-    <td><code>getCLS()</code></td>
-    <td>
-      <p>
-        <strong>Returns:</strong>
-        <code>Promise<{value: number, entries: PerformanceEntry[]}></code>
-      </p>
-      <p>Calculates the <a href="https://web.dev/cls/">CLS</a> value for the current page and resolves once the value is known, along with all <code>layout-shift</code> performance entries that were used in the metric value calculation.</p>
-    </td>
-  </tr>
-    <tr valign="top" id="api-getFCP">
-    <td><code>getFCP()</code></td>
-    <td>
-      <p>
-        <strong>Returns:</strong>
-        <code>Promise<{value: number, entries: PerformanceEntry[]}></code>
-      </p>
-      <p>Calculates the <a href="https://web.dev/fcp/">FCP</a> value for the current page and resolves once the value is known, along with the relevant <code>paint</code> performance entry used to determine the value.</p>
-    </td>
-  </tr>
-  </tr>
-    <tr valign="top" id="api-getFID">
-    <td><code>getFID()</code></td>
-    <td>
-      <p>
-        <strong>Returns:</strong>
-        <code>Promise<{value: number, entries: PerformanceEntry[], event?: Event}></code>
-      </p>
-      <p>Calculates the <a href="https://web.dev/fid/">FID</a> value for the current page and resolves once the value is known, along with the relevant <code>first-input</code> performance entry used to determine the value (and optionally the input event if using the <a href="#fid-polyfill">FID polyfill</a>).</p>
-  </tr>
-  </tr>
-    <tr valign="top" id="api-getLCP">
-    <td><code>getLCP()</code></td>
-    <td>
-      <p>
-        <strong>Returns:</strong>
-        <code>Promise<{value: number, entries: PerformanceEntry[]}></code>
-      </p>
-      <p>Calculates the <a href="https://web.dev/lcp/">LCP</a> value for the current page and resolves once the value is known (along with the relevant <code>largest-contentful-paint</code> performance entries used to determine the value).</p>
-    </td>
-  </tr>
-</table>
+#### `Metric`
+
+```ts
+interface Metric {
+  // The value of the metric.
+  value: number;
+
+  // `false` if the value of the metric may change in the future.
+  isFinal: boolean;
+
+  // Any performance entries used in the metric value calculation.
+  // Note, entries will be added to the array as the value changes.
+  entries: PerformanceEntry[];
+
+  // Only present using the FID polyfill.
+  event?: Event
+}
+```
+
+#### `ChangeHandler`
+
+```ts
+interface ChangeHandler {
+  (metric: Metric): void;
+}
+```
+
+### Functions:
+
+#### `getCLS()`
+
+```ts
+type getCLS = (onChange?: ChangeHandler) => Promise<Metric>;
+```
+
+Calculates the [CLS](https://web.dev/cls/) value for the current page and resolves once the value is known, along with all `layout-shift` performance entries that were used in the metric value calculation.
+
+If passed an `onChange` function, that function will be invoked any time a new `layout-shift` performance entry is dispatched, or once the final of the metric is determined.
+
+#### `getFCP()`
+
+```ts
+type getFCP = (onChange?: ChangeHandler) => Promise<Metric>
+```
+
+Calculates the [FCP](https://web.dev/fcp/) value for the current page and resolves once the value is known, along with the relevant `paint` performance entry used to determine the value.
+
+If passed an `onChange` function, that function will be invoked any time a new `layout-shift` performance entry is dispatched, or once the final of the metric is determined.
+
+_**Note:** for FCP, only one entry will ever be dispatched._
+
+#### `getFID()`
+
+```ts
+type getLCP = (onChange?: ChangeHandler) => Promise<Metric>
+```
+
+Calculates the [FID](https://web.dev/fid/) value for the current page and resolves once the value is known, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)).
+
+If passed an `onChange` function, that function will be invoked any time a new `first-input` performance entry is dispatched, or once the final of the metric is determined.
+
+_**Note:** for FID, only one entry will ever be dispatched._
+
+#### `getLCP()`
+
+```ts
+type getLCP = (onChange?: ChangeHandler) => Promise<Metric>
+```
+
+Calculates the [LCP](https://web.dev/lcp/) value for the current page and resolves once the value is known (along with the relevant `largest-contentful-paint` performance entries used to determine the value).
+
+If passed an `onChange` function, that function will be invoked any time a new `largest-contentful-paint` performance entry is dispatched, or once the final of the metric is determined.
 
 ## Development
 
