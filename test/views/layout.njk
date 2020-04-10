@@ -18,6 +18,10 @@
   <meta charset="utf-8">
   <title>Web Vitals Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <script>
+    self.__reportAllChanges =
+        new URL(location.href).searchParams.has('reportAllChanges');
+  </script>
   {% block head %}{% endblock %}
   <style>
     html {

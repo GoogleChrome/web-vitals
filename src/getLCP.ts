@@ -14,33 +14,45 @@
  * limitations under the License.
  */
 
-import {bindResolver} from './lib/bindResolver.js';
+import {bindReporter} from './lib/bindReporter.js';
 import {getFirstHiddenTime} from './lib/getFirstHiddenTime.js';
-import {observe} from './lib/observe.js';
-import {promisifyObserver} from './lib/promisifyObserver.js';
-import {whenHidden} from './lib/whenHidden.js';
+import {initMetric} from './lib/initMetric.js';
+import {observe, PerformanceEntryHandler} from './lib/observe.js';
+import {onHidden} from './lib/onHidden.js';
 import {whenInput} from './lib/whenInput.js';
+import {ReportHandler} from './types.js';
 
 
-export const getLCP = promisifyObserver((metric, resolve, onChange) => {
-  let firstEntry = true;
+export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
+  const metric = initMetric();
 
   const entryHandler = (entry: PerformanceEntry) => {
-    // If the page was hidden prior to the first entry being dispatched,
-    // resolve without updating the metric value.
-    if (firstEntry && getFirstHiddenTime() < entry.startTime) {
-      resolver();
+    const value = entry.startTime;
+
+    // If the page was hidden prior to paint time of the entry,
+    // ignore it and mark the metric as final, otherwise add the entry.
+    if (getFirstHiddenTime() < value) {
+      metric.isFinal = true;
     } else {
-      metric.value = entry.startTime;
+      metric.value = value;
       metric.entries.push(entry);
-      if (onChange) {
-        onChange(metric);
-      }
-      firstEntry = false;
     }
+
+    report();
   };
   const po = observe('largest-contentful-paint', entryHandler);
-  const resolver = bindResolver(resolve, metric, po, entryHandler, onChange);
-  whenHidden.then(resolver);
-  whenInput.then(resolver);
-});
+  const report = bindReporter(onReport, metric, po, reportAllChanges);
+
+  const onFinal = () => {
+    if (!metric.isFinal) {
+      if (po) {
+        po.takeRecords().map(entryHandler as PerformanceEntryHandler);
+      }
+      metric.isFinal = true;
+      report();
+    }
+  }
+
+  whenInput.then(onFinal);
+  onHidden(onFinal, true);
+};

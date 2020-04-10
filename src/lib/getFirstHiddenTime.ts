@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {whenHidden} from './whenHidden.js';
+import {onHidden} from './onHidden.js';
 
 
 // If the document is hidden when this code runs, assume it was hidden since
@@ -24,6 +24,6 @@ let firstHiddenTime: number =
     document.visibilityState === 'hidden' ? 0 : Infinity;
 
 // Update the time if/when the document becomes hidden.
-whenHidden.then((event: Event) => firstHiddenTime = event.timeStamp);
+onHidden(({timeStamp}) => firstHiddenTime = timeStamp, true);
 
 export const getFirstHiddenTime = (): number => firstHiddenTime;

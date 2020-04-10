@@ -34,16 +34,12 @@
   <script type="module">
     import {getFCP} from '/dist/web-vitals.js';
 
-    function reportMetric(fcp) {
+    getFCP((fcp) => {
       // Log for easier manual testing.
       console.log(fcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify({fcp}));
-    }
-
-    // Report results both on change and when the promise resolves to assert
-    // that no results are reported in the hidden state.
-    getFCP(reportMetric).then(reportMetric);
+    });
   </script>
 {% endblock %}

@@ -14,13 +14,11 @@
  * limitations under the License.
  */
 
-import {bindResolver} from './lib/bindResolver.js';
+import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
-import {promisifyObserver} from './lib/promisifyObserver.js';
-import {whenHidden} from './lib/whenHidden.js';
-
-import {Metric} from './types.js';
-
+import {onHidden} from './lib/onHidden.js';
+import {bindReporter} from './lib/bindReporter.js';
+import {ReportHandler} from './types.js';
 
 
 // https://wicg.github.io/layout-instability/#sec-layout-shift
@@ -29,24 +27,28 @@ interface LayoutShift extends PerformanceEntry {
   hadRecentInput: boolean;
 }
 
-type getCLS = (onChange?: Metric) => Promise<Metric>;
+export const getCLS = (onReport: ReportHandler, reportAllChanges = false) => {
+  const metric = initMetric(0);
 
-
-export const getCLS = promisifyObserver((metric, resolve, onChange) => {
-  metric.value = 0;
   const entryHandler = (entry: LayoutShift) => {
     // Only count layout shifts without recent user input.
     if (!entry.hadRecentInput) {
       (metric.value as number) += entry.value;
       metric.entries.push(entry);
-      if (onChange) {
-        onChange(metric);
-      }
+      report();
     }
   };
-  const po = observe('layout-shift', entryHandler as PerformanceEntryHandler);
-  const resolver = bindResolver(
-      resolve, metric, po, entryHandler as PerformanceEntryHandler, onChange);
 
-  whenHidden.then(resolver);
-});
+  const po = observe('layout-shift', entryHandler as PerformanceEntryHandler);
+  const report = bindReporter(onReport, metric, po, reportAllChanges);
+
+  onHidden(({isUnloading}) => {
+    if (po) {
+      po.takeRecords().map(entryHandler as PerformanceEntryHandler);
+    }
+    if (isUnloading) {
+      metric.isFinal = true;
+    }
+    report();
+  });
+};

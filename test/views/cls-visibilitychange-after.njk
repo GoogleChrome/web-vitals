@@ -18,7 +18,7 @@
 {% block content %}
   <h1>CLS Test</h1>
   <p><img src="/test/img/square.png?delay=500" alt="Gray square" /></p>
-  <p><img src="/test/img/square.png?delay=400" alt="Gray square" /></p>
+  <p><img src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
   <p>Text below the images that will get pushed down.</p>
 
   <script type="module">
@@ -30,6 +30,25 @@
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify({cls}));
+    }, self.__reportAllChanges);
+
+    // Wait until after the first render and then stub a change to hidden.
+    // After that, stub a change back to visible.
+    addEventListener('load', () => {
+      setTimeout(() => {
+        Object.defineProperty(
+            document, 'visibilityState', {value: 'hidden', configurable: true});
+        document.dispatchEvent(new Event('visibilitychange'));
+
+        setTimeout(() => {
+          delete document.visibilityState;
+          document.dispatchEvent(new Event('visibilitychange'));
+
+          requestAnimationFrame(() => {
+            document.querySelector('img').style.marginTop = '50px';
+          });
+        }, 100);
+      }, 100)
     });
   </script>
 {% endblock %}

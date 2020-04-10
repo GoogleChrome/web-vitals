@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-import {bindResolver} from './lib/bindResolver.js';
+import {bindReporter} from './lib/bindReporter.js';
+import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
-import {promisifyObserver} from './lib/promisifyObserver.js';
-import {whenHidden} from './lib/whenHidden.js';
+import {onHidden} from './lib/onHidden.js';
+import {ReportHandler} from './types.js';
 
 
 interface FIDPolyfillCallback {
@@ -25,7 +26,7 @@ interface FIDPolyfillCallback {
 }
 
 interface FIDPolyfill {
-  onFirstInputDelay: (callback: FIDPolyfillCallback) => void;
+  onFirstInputDelay: (onReport: FIDPolyfillCallback) => void;
 }
 
 declare global {
@@ -39,25 +40,34 @@ interface PerformanceEventTiming extends PerformanceEntry {
   processingStart: number;
 }
 
-export const getFID = promisifyObserver((metric, resolve, onChange) => {
+export const getFID = (onReport: ReportHandler) => {
+  const metric = initMetric();
+
   const entryHandler = (entry: PerformanceEventTiming) => {
     metric.value = entry.processingStart - entry.startTime;
     metric.entries.push(entry);
-    resolver();
+    metric.isFinal = true;
+    report();
   };
-  const po = observe('first-input', entryHandler as PerformanceEntryHandler);
-  const resolver = bindResolver(
-      resolve, metric, po, entryHandler as PerformanceEntryHandler, onChange);
 
-  whenHidden.then(resolver);
+  const po = observe('first-input', entryHandler as PerformanceEntryHandler);
+  const report = bindReporter(onReport, metric, po);
+
+  onHidden(() => {
+    if (po) {
+      po.takeRecords().map(entryHandler as PerformanceEntryHandler);
+      po.disconnect();
+    }
+  }, true);
 
   if (!po) {
     if (window.perfMetrics && window.perfMetrics.onFirstInputDelay) {
       window.perfMetrics.onFirstInputDelay((value: number, event: Event) => {
         metric.value = value;
         metric.event = event;
-        resolver();
+        metric.isFinal = true;
+        report();
       });
     }
   }
-});
+};

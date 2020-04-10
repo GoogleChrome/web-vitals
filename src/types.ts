@@ -15,12 +15,13 @@
  */
 
 export interface Metric {
-  value: number | null;
+  value: number;
+  delta: number;
+  isFinal: boolean;
   entries: PerformanceEntry[];
-  isFinal?: boolean;
   event?: Event;
 }
 
-export interface ChangeHandler {
+export interface ReportHandler {
   (metric: Metric): void;
 }

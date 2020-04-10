@@ -32,7 +32,9 @@ export const observe = (
 ): PerformanceObserver | undefined => {
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
-      const po = new PerformanceObserver((l) => l.getEntries().map(callback));
+      const po: PerformanceObserver =
+          new PerformanceObserver((l) => l.getEntries().map(callback));
+
       po.observe({type, buffered: true});
       return po;
     }

@@ -26,25 +26,23 @@
   <script type="module">
     import {getFCP} from '/dist/web-vitals.js';
 
-    function reportMetric(fcp) {
+    // Call `getFCP()` when the document is visible,
+    // but change to hidden before the first paint.
+    getFCP((fcp) => {
       // Log for easier manual testing.
       console.log(fcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify({fcp}));
-    }
+    });
 
-    // Call `getFCP()` when the document is visible,
-    // but change to hidden before the first paint.
-    const getFCPPromise = getFCP(reportMetric);
-
-    Promise.resolve().then(() => {
+    requestAnimationFrame(() => {
       Object.defineProperty(document, 'visibilityState', {value: 'hidden'});
       document.dispatchEvent(new Event('visibilitychange'));
 
-      document.querySelector('section').style.display = 'block';
+      requestAnimationFrame(() => {
+        document.querySelector('section').style.display = 'block';
+      });
     });
-
-    getFCPPromise.then(reportMetric);
   </script>
 {% endblock %}

@@ -1,6 +1,6 @@
 # WebVitals.js
 
-A simple, light-weight (~0.7K) library for measuring all the [Web Vitals](https://web.dev/metrics/) metrics on real users, in a way that accurately matches how they're reported by other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Lighthouse](https://developers.google.com/web/tools/lighthouse)).
+A simple, light-weight (~0.8K) library for measuring all the [Web Vitals](https://web.dev/metrics/) metrics on real users, in a way that accurately matches how they're reported by other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Lighthouse](https://developers.google.com/web/tools/lighthouse)).
 
 - [Installation](#installation)
 - [Usage](#usage)
@@ -21,25 +21,28 @@ npm install web-vitals
 ## Usage
 
 
-Each of the Web Vitals metrics are exposed as a single function that returns a `Promise` that will resolve with the metric value, once known, as well as any performance entries involved in the metric value calculation.
+Each of the Web Vitals metrics are exposed through a single function that takes an `onReport` callback. This callback will fire as soon as:
+
+- The final value of the metric has been determined.
+- The current metric value needs to be [reported right away](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden) (due to the page being unloaded or backgrounded).
 
 ### Logging the metrics to the console
 
-The following code example logs the result of each metric promise to the console once it's resolved.
+The following example logs the result of each metric to the console once its value is ready to report.
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-getCLS().then(console.log);
-getFID().then(console.log);
-getLCP().then(console.log);
+getCLS(console.log);
+getFID(console.log);
+getLCP(console.log);
 ```
 
-_**Note:** some of these metrics will not resolve until the user has interacted with the page, the user switches tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try switching tabs and then switching back._
+_**Note:** some of these metrics will not report until the user has interacted with the page, switches tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try switching tabs and then switching back._
 
 ### Sending the metric to an analytics endpoint
 
-The following code example measures each of the core Web Vitals metrics and reports them to a local `/analytics` endpoint once known.
+The following example measures each of the core Web Vitals metrics and reports them to a local `/analytics` endpoint once known.
 
 This code uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
 
@@ -52,36 +55,64 @@ function reportMetric(body) {
       fetch('/analytics', {body, method: 'POST', keepalive: true});
 }
 
-getCLS().then(({value}) => {
-  reportMetric(JSON.stringify({cls: value}));
+getCLS((metric) => {
+  reportMetric(JSON.stringify({cls: metric.value}));
 });
 
-getFID().then(({value}) => {
-  reportMetric(JSON.stringify({fid: value}));
+getFID((metric) => {
+  reportMetric(JSON.stringify({fid: metric.value}));
 });
 
-getLCP().then(({value}) => {
-  reportMetric(JSON.stringify({lcp: value}));
+getLCP(({metric}) => {
+  reportMetric(JSON.stringify({lcp: metric.value}));
 });
 ```
 
-### Passing an `onChange` function for incremental updates
+### Reporting the metric on every change
 
-In most cases, only the final value of each metric is important to measure. However, if you want to report how the metric is changing over time, you can pass an `onChange ` function. This could be useful if, for example, you want to report the current LCP candidate as the page is loading, or you want to report layout shifts (and the current CLS value) as users are interacting with the page.
+In most cases, you only want to call `onReport` when the metric is ready. However, for metrics like LCP and CLS (where the value may change over time) you can pass an optional, second argument (`reportAllChanges`). If `true` then `onReport` will be called any time the value of the metric changes, or once the final value has been determined.
+
+This could be useful if, for example, you want to report the current LCP candidate as the page is loading, or you want to report layout shifts (and the current CLS value) as users are interacting with the page.
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function logCurrentValue(metric, value, isFinal) {
-  console.log(metric, value, isFinal ? '(final)' : '(not final)');
-}
-
-getCLS((result) => logCurrentValue('cls', result.value, result.isFinal));
-getFID((result) => logCurrentValue('fid', result.value, result.isFinal));
-getLCP((result) => logCurrentValue('lcp', result.value, result.isFinal));
+getCLS(console.log, true);
+getFID(console.log); // Does not take a `reportAllChanges` param.
+getLCP(console.log, true);
 ```
 
-Note: the `result` object for each metric contains an `isFinal` flag, which will indicate whether or not the value might change in the future. See the [API](#api) reference below for more details.
+_**Note:** when using the `reportAllChanges` option, pay attention to the `isFinal` property of the reported metric, which will indicate whether or not the value might change in the future. See the [API](#api) reference below for more details._
+
+### Reporting only the delta of changes
+
+Some analytics providers allow you to update the value of a metric, even after you've already sent it to their servers. Other analytics providers, however, do not allow this, so instead of reporting the updated value, you need to report only the delta (the difference between the current value and the last-reported value).
+
+The following example modifies the [analytics code above](#sending-the-metric-to-an-analytics-endpoint) to only report the delta of the changes:
+
+```js
+import {getCLS, getFID, getLCP} from 'web-vitals';
+
+function reportMetric(body) {
+  // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
+  (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
+      fetch('/analytics', {body, method: 'POST', keepalive: true});
+}
+
+getCLS((metric) => {
+  reportMetric(JSON.stringify({cls: metric.delta}));
+});
+
+getFID((metric) => {
+  reportMetric(JSON.stringify({fid: metric.delta}));
+});
+
+getLCP(({metric}) => {
+  reportMetric(JSON.stringify({lcp: metric.delta}));
+});
+```
+
+_**Note:** the first time the `onReport` function is called, its `value` and `delta` property will be the same._
 
 ## API
 
@@ -93,6 +124,10 @@ Note: the `result` object for each metric contains an `isFinal` flag, which will
 interface Metric {
   // The value of the metric.
   value: number;
+
+  // The delta between the current value and the last-reported value.
+  // On the first report, `delta` and `value` will always be the same.
+  delta: number;
 
   // `false` if the value of the metric may change in the future.
   isFinal: boolean;
@@ -106,10 +141,10 @@ interface Metric {
 }
 ```
 
-#### `ChangeHandler`
+#### `ReportHandler`
 
 ```ts
-interface ChangeHandler {
+interface ReportHandler {
   (metric: Metric): void;
 }
 ```
@@ -119,46 +154,42 @@ interface ChangeHandler {
 #### `getCLS()`
 
 ```ts
-type getCLS = (onChange?: ChangeHandler) => Promise<Metric>;
+type getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [CLS](https://web.dev/cls/) value for the current page and resolves once the value is known, along with all `layout-shift` performance entries that were used in the metric value calculation.
+Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `onReport` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation.
 
-If passed an `onChange` function, that function will be invoked any time a new `layout-shift` performance entry is dispatched, or once the final of the metric is determined.
+If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `layout-shift` performance entry is dispatched, or once the final value of the metric has been determined.
+
+_**Important:** unlike other metrics, CLS continues to monitor changes for the entire lifespan of the page&mdash;including if the user returns to the page after it's been hidden/backgrounded or put in the [Page Navigation Cache](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#page-navigation-cache). However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#reporting-only-the-delta-of-changes) for how to manage this)._
 
 #### `getFCP()`
 
 ```ts
-type getFCP = (onChange?: ChangeHandler) => Promise<Metric>
+type getFCP = (onReport: ReportHandler) => void
 ```
 
-Calculates the [FCP](https://web.dev/fcp/) value for the current page and resolves once the value is known, along with the relevant `paint` performance entry used to determine the value.
-
-If passed an `onChange` function, that function will be invoked any time a new `layout-shift` performance entry is dispatched, or once the final of the metric is determined.
-
-_**Note:** for FCP, only one entry will ever be dispatched._
+Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `paint` performance entry used to determine the value.
 
 #### `getFID()`
 
 ```ts
-type getLCP = (onChange?: ChangeHandler) => Promise<Metric>
+type getLCP = (onReport: ReportHandler) => void
 ```
 
-Calculates the [FID](https://web.dev/fid/) value for the current page and resolves once the value is known, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)).
+Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)).
 
-If passed an `onChange` function, that function will be invoked any time a new `first-input` performance entry is dispatched, or once the final of the metric is determined.
-
-_**Note:** for FID, only one entry will ever be dispatched._
+_**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
 
 #### `getLCP()`
 
 ```ts
-type getLCP = (onChange?: ChangeHandler) => Promise<Metric>
+type getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [LCP](https://web.dev/lcp/) value for the current page and resolves once the value is known (along with the relevant `largest-contentful-paint` performance entries used to determine the value).
+Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entries used to determine the value).
 
-If passed an `onChange` function, that function will be invoked any time a new `largest-contentful-paint` performance entry is dispatched, or once the final of the metric is determined.
+If passed an `onReport` function, that function will be invoked any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
 
 ## Development
 
@@ -213,7 +244,7 @@ For example:
 ```js
 import {getFID} from 'web-vitals';
 
-getFID().then((metric) => {
+getFID((metric) => {
   // When using the polyfill, the `event` property will be present.
   // The  `entries` property will also be present, but it will be empty.
   console.log(metric.event); // Event

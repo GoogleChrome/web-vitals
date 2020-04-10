@@ -30,7 +30,7 @@ describe('getFCP()', async function() {
     await clearBeacons();
   });
 
-  it('resolves with the correct value after the first paint', async function() {
+  it('reports the correct value after the first paint', async function() {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp');
@@ -39,21 +39,7 @@ describe('getFCP()', async function() {
 
     const [{fcp}] = await getBeacons();
     assert(fcp.value >= 0);
-    assert.strictEqual(typeof fcp.value, 'number');
-    assert.strictEqual(fcp.entries.length, 1);
-    assert.strictEqual(fcp.isFinal, true);
-  });
-
-  it('invokes the onChange function correctly after the first paint', async function() {
-    if (!browserSupportsFCP) this.skip();
-
-    await browser.url('/test/fcp-onChange');
-
-    await beaconCountIs(1);
-
-    const [{fcp}] = await getBeacons();
-    assert(fcp.value >= 0);
-    assert.strictEqual(typeof fcp.value, 'number');
+    assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.entries.length, 1);
     assert.strictEqual(fcp.isFinal, true);
   });

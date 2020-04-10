@@ -26,13 +26,16 @@
   <script type="module">
     import {getLCP} from '/dist/web-vitals.js';
 
-    function reportMetric(lcp) {
+    // Call `getLCP()` when the document is visible,
+    // but change to hidden before the first paint.
+    getLCP((lcp) => {
       // Log for easier manual testing.
       console.log(lcp);
 
       // Elements can't be serialized, so we convert first.
       lcp = {
         value: lcp.value,
+        delta: lcp.delta,
         entries: lcp.entries.map((e) => ({
           element: e.element.nodeName.toLowerCase(),
           size: e.size,
@@ -43,19 +46,13 @@
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify({lcp}));
-    }
+    }, self.__reportAllChanges);
 
-    // Call `getLCP()` when the document is visible,
-    // but change to hidden before the first paint.
-    const getLCPPromise = getLCP(reportMetric);
-
-    Promise.resolve().then(() => {
+    requestAnimationFrame(() => {
       Object.defineProperty(document, 'visibilityState', {value: 'hidden'});
       document.dispatchEvent(new Event('visibilitychange'));
 
       document.querySelector('section').style.display = 'block';
     });
-
-    getLCPPromise.then(reportMetric);
   </script>
 {% endblock %}
