@@ -14,22 +14,31 @@
  * limitations under the License.
  */
 
-interface EventCallback {
-  (event: Event): void;
-}
+import {Metric} from '../types.js';
 
-const onHidden = (type: string, callback: EventCallback) => {
-  const f = (event: Event) => {
-    if (document.visibilityState === 'hidden') {
-      removeEventListener(type, f, true);
-      callback(event);
+
+export const bindReporter = (
+  callback: Function,
+  metric: Metric,
+  po: PerformanceObserver | undefined,
+  observeAllUpdates?: boolean,
+) => {
+  let prevValue: number;
+  return () => {
+    if (po && metric.isFinal) {
+      po.disconnect();
     }
-  };
-  addEventListener(type, f, true);
-};
+    if (metric.value >= 0) {
+      if (observeAllUpdates ||
+          metric.isFinal ||
+          document.visibilityState === 'hidden') {
+        metric.delta = metric.value - (prevValue || 0);
 
-// Unload is needed to fix this bug:
-// https://bugs.chromium.org/p/chromium/issues/detail?id=987409
-export const whenHidden: Promise<Event> = new Promise((r) => {
-  return ['visibilitychange', 'unload'].map((type) => onHidden(type, r));
-});
+        if (metric.delta || metric.isFinal) {
+          callback(metric);
+          prevValue = metric.value;
+        }
+      }
+    }
+  }
+}
