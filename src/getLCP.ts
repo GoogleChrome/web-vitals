@@ -27,6 +27,8 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
   const metric = initMetric();
 
   const entryHandler = (entry: PerformanceEntry) => {
+    // The startTime attribute returns the value of the renderTime if it is not 0,
+    // and the value of the loadTime otherwise.
     const value = entry.startTime;
 
     // If the page was hidden prior to paint time of the entry,
