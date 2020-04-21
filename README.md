@@ -174,7 +174,7 @@ Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls 
 #### `getFID()`
 
 ```ts
-type getLCP = (onReport: ReportHandler) => void
+type getFID = (onReport: ReportHandler) => void
 ```
 
 Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)).
