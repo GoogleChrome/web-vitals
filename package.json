@@ -1,6 +1,6 @@
 {
   "name": "web-vitals",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Easily measure performance metrics in JavaScript",
   "type": "module",
   "main": "dist/web-vitals.min.js",
@@ -16,15 +16,20 @@
     "build:ts": "tsc -b",
     "build:js": "rollup -c",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "dev": "run-p watch serve",
     "lint": "eslint \"*.js\" \"src/**/*.ts\" \"test/**/*.js\"",
     "lint:fix": "eslint --fix \"*.js\" \"src/**/*.ts\" \"test/**/*.js\"",
-    "dev": "run-p watch serve",
+    "postversion": "git push --follow-tags",
+    "release:major": "npm version major -m 'Release v%s' && npm publish",
+    "release:minor": "npm version minor -m 'Release v%s' && npm publish",
+    "release:patch": "npm version patch -m 'Release v%s' && npm publish",
     "test": "npm-run-all build -p -r test:*",
     "test:e2e": "wdio wdio.conf.js",
     "test:server": "node test/server.js",
     "watch": "run-p watch:*",
     "watch:ts": "tsc -b -w",
-    "watch:js": "rollup -c -w"
+    "watch:js": "rollup -c -w",
+    "version": "run-s build"
   },
   "keywords": [
     "crux",
