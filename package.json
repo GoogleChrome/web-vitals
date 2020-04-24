@@ -1,6 +1,6 @@
 {
   "name": "web-vitals",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Easily measure performance metrics in JavaScript",
   "type": "module",
   "main": "dist/web-vitals.min.js",
