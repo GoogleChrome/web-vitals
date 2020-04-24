@@ -44,7 +44,7 @@ _**Note:** some of these metrics will not report until the user has interacted w
 
 The following example measures each of the core Web Vitals metrics and reports them to a local `/analytics` endpoint once known.
 
-This code uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
+This code uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
