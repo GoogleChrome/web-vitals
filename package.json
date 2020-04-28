@@ -11,6 +11,10 @@
     "getFID.js": "./dist/getFID.js",
     "getLCP.js": "./dist/getLCP.js"
   },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "run-s clean build:ts build:js",
     "build:ts": "tsc -b",
