@@ -1,7 +1,8 @@
-# WebVitals.js
+# `web-vitals`
 
-A simple, light-weight (~0.8K) library for measuring all the [Web Vitals](https://web.dev/metrics/) metrics on real users, in a way that accurately matches how they're reported by other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Lighthouse](https://developers.google.com/web/tools/lighthouse)).
 
+
+- [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
 - [API](#api)
@@ -9,6 +10,23 @@ A simple, light-weight (~0.8K) library for measuring all the [Web Vitals](https:
   - [Functions](#functions)
 - [Development](#development)
 - [Browser Support](#browser-support)
+
+## Overview
+
+The `web-vitals` library is a small (<1K), modular library for measuring all the [Web Vitals](https://web.dev/metrics/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console](https://search.google.com/search-console/about)).
+
+The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) and [Other Web Vitals](https://web.dev/vitals/#other-web-vitals) that can be measured [in the field](https://web.dev/user-centric-performance-metrics/#how-metrics-are-measured):
+
+### Core Web Vitals
+
+- [Cumulative Layout Shift (CLS)](https://web.dev/cls/)
+- [First Input Delay (FID)](https://web.dev/fid/)
+- [Largest Contentful Paint (LCP)](https://web.dev/lcp/)
+
+### Other Web Vitals
+
+- [First Contentful Paint (FCP)](https://web.dev/fcp/)
+- [Time to First Byte (TTFB)](https://web.dev/time-to-first-byte/)
 
 ## Installation
 
@@ -20,8 +38,7 @@ npm install web-vitals
 
 ## Usage
 
-
-Each of the Web Vitals metrics are exposed through a single function that takes an `onReport` callback. This callback will fire as soon as:
+Each of the Web Vitals metrics are exposed as a single function that takes an `onReport` callback. This callback will fire any time either:
 
 - The final value of the metric has been determined.
 - The current metric value needs to be [reported right away](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden) (due to the page being unloaded or backgrounded).
@@ -42,7 +59,7 @@ _**Note:** some of these metrics will not report until the user has interacted w
 
 ### Sending the metric to an analytics endpoint
 
-The following example measures each of the core Web Vitals metrics and reports them to a local `/analytics` endpoint once known.
+The following example measures each of the Core Web Vitals metrics and reports them to a local `/analytics` endpoint once known.
 
 This code uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
 
@@ -129,7 +146,8 @@ interface Metric {
   // On the first report, `delta` and `value` will always be the same.
   delta: number;
 
-  // `false` if the value of the metric may change in the future.
+  // `false` if the value of the metric may change in the future,
+  // for the current page.
   isFinal: boolean;
 
   // Any performance entries used in the metric value calculation.
@@ -191,6 +209,52 @@ Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls 
 
 If passed an `onReport` function, that function will be invoked any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
 
+#### `getTTFB()`
+
+```ts
+type getTTFB = (onReport: ReportHandler) => void
+```
+
+Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value.
+
+This function waits until after the page is loaded to call `onReport` in order to ensure all properties of the `navigation` entry are populated.
+
+_**Note:** browsers that do not support `navigation` entries will fall back to
+using `performance.timing` (with the timestamps converted from epoch time to `DOMHighResTimeStamp`)._
+
+## Browser Support
+
+This code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9 (when transpiled to ES5). However, some of the APIs required to capture these metrics are only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
+
+Browser support for each function is as follows:
+
+- `getCLS()`: Chromium
+- `getFCP()`: Chromium
+- `getFID()`: Chromium, Firefox, Safari, Internet Explorer (with polyfill, [see below](#fid-polyfill))
+- `getLCP()`: Chromium
+- `getTTFB()`: Chromium, Firefox, Safari, Internet Explorer
+
+### FID Polyfill
+
+The `getFID()` function will work in all browsers if the page has included the [FID polyfill](https://github.com/GoogleChromeLabs/first-input-delay).
+
+Browsers that support the native [Event Timing API](https://wicg.github.io/event-timing/) will use that and report the metric value from the `first-input` performance entry.
+
+Browsers that **do not** support the native Event Timing API will report the value reported by the polyfill, including the `Event` object of the first input.
+
+For example:
+
+```js
+import {getFID} from 'web-vitals';
+
+getFID((metric) => {
+  // When using the polyfill, the `event` property will be present.
+  // The  `entries` property will also be present, but it will be empty.
+  console.log(metric.event); // Event
+  console.log(metric.entries);  // []
+});
+```
+
 ## Development
 
 ### Building the code
@@ -224,33 +288,6 @@ npm run test:server
 Then navigate to `http://localhost:9090/test/<view>`, where `<view>` is the basename of one the templates under [/test/views/](/test/views/).
 
 You'll likely want to combine this with `npm run watch` to ensure any changes you make are transpiled and rebuilt.
-
-## Browser Support
-
-This code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9.
-
-However, the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
-
-### FID Polyfill
-
-One exception to the above is that `getFID()` will work in all browsers if the page has included the [FID polyfill](https://github.com/GoogleChromeLabs/first-input-delay).
-
-Browsers that support the native [Event Timing API](https://wicg.github.io/event-timing/) will use that and report the metric value from the `first-input` performance entry.
-
-Browsers that **do not** support the native Event Timing API will report the value reported by the polyfill, including the `Event` object of the first input.
-
-For example:
-
-```js
-import {getFID} from 'web-vitals';
-
-getFID((metric) => {
-  // When using the polyfill, the `event` property will be present.
-  // The  `entries` property will also be present, but it will be empty.
-  console.log(metric.event); // Event
-  console.log(metric.entries);  // []
-});
-```
 
 ## License
 
