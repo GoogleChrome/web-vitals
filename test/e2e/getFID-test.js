@@ -48,6 +48,10 @@ describe('getFID()', async function() {
   });
 
   it('falls back to the polyfill in non-supporting browsers', async function() {
+    // Ignore Safari until this bug is fixed:
+    // https://bugs.webkit.org/show_bug.cgi?id=211101
+    if (browser.capabilities.browserName === 'Safari') this.skip();
+
     await browser.url('/test/fid-polyfill');
 
     // Click on the <h1>.
