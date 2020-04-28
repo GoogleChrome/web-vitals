@@ -1,0 +1,41 @@
+<!--
+ Copyright 2020 Google Inc. All Rights Reserved.
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+{% extends 'layout.njk' %}
+
+{% block content %}
+  <h1>TTFB Test</h1>
+  <p>
+    <img src="/test/img/square.png">
+  </p>
+
+  <p>Text below the image</p>
+
+  <script type="module">
+    import {getTTFB} from '/dist/web-vitals.js';
+
+    // Invoke `getTTFB()` after the load event fires.
+    addEventListener('load', () => {
+      setTimeout(() => {
+        getTTFB((ttfb) => {
+          // Log for easier manual testing.
+          console.log(ttfb);
+
+          // Test sending the metric to an analytics endpoint.
+          navigator.sendBeacon(`/collect`, JSON.stringify({ttfb}));
+        }, self.__reportAllChanges);
+      }, 200);
+    });
+  </script>
+{% endblock %}
