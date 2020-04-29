@@ -102,8 +102,10 @@ export const getTTFB = (onReport: ReportHandler) => {
       const navigationEntry = performance.getEntriesByType('navigation')[0] ||
           getNavigationEntryFromPerformanceTiming();
 
+      // TTFB as the time from when the browser issues the network request,
+      // untill when the first byte of the response arrives.
       metric.value = metric.delta =
-          (navigationEntry as PerformanceNavigationTiming).responseStart;
+          (navigationEntry as PerformanceNavigationTiming).responseStart - (navigationEntry as PerformanceNavigationTiming).requestStart;
 
       metric.entries = [navigationEntry];
       metric.isFinal = true;
