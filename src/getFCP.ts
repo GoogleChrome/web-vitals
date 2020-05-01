@@ -26,7 +26,7 @@ export const getFCP = (onReport: ReportHandler) => {
 
   const po = observe('paint', (entry: PerformanceEntry) => {
     if (entry.name === 'first-contentful-paint') {
-      // Only resolve if the page wasn't hidden prior to first paint.
+      // Only report if the page wasn't hidden prior to the first paint.
       if (entry.startTime < getFirstHiddenTime()) {
         metric.value = entry.startTime;
         metric.isFinal = true;

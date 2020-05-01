@@ -71,6 +71,42 @@ describe('getFID()', async function() {
       assert.strictEqual(fid.event.type, 'mousedown');
     }
   });
+
+  it('does not report if the document was hidden at page load time', async function() {
+    // Ignore Safari until this bug is fixed:
+    // https://bugs.webkit.org/show_bug.cgi?id=211101
+    if (browser.capabilities.browserName === 'Safari') this.skip();
+
+    await browser.url('/test/fid-hidden');
+
+    // Click on the <h1>.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('does not report if the document changes to hidden before the first input', async function() {
+    // Ignore Safari until this bug is fixed:
+    // https://bugs.webkit.org/show_bug.cgi?id=211101
+    if (browser.capabilities.browserName === 'Safari') this.skip();
+
+    await browser.url('/test/fid-visibilitychange-before');
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
 });
 
 

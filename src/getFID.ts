@@ -15,6 +15,7 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
+import {getFirstHiddenTime} from './lib/getFirstHiddenTime.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -44,10 +45,13 @@ export const getFID = (onReport: ReportHandler) => {
   const metric = initMetric();
 
   const entryHandler = (entry: PerformanceEventTiming) => {
-    metric.value = entry.processingStart - entry.startTime;
-    metric.entries.push(entry);
-    metric.isFinal = true;
-    report();
+    // Only report if the page wasn't hidden prior to the first input.
+    if (entry.startTime < getFirstHiddenTime()) {
+      metric.value = entry.processingStart - entry.startTime;
+      metric.entries.push(entry);
+      metric.isFinal = true;
+      report();
+    }
   };
 
   const po = observe('first-input', entryHandler as PerformanceEntryHandler);
@@ -63,10 +67,13 @@ export const getFID = (onReport: ReportHandler) => {
   if (!po) {
     if (window.perfMetrics && window.perfMetrics.onFirstInputDelay) {
       window.perfMetrics.onFirstInputDelay((value: number, event: Event) => {
-        metric.value = value;
-        metric.event = event;
-        metric.isFinal = true;
-        report();
+        // Only report if the page wasn't hidden prior to the first input.
+        if (event.timeStamp < getFirstHiddenTime()) {
+          metric.value = value;
+          metric.event = event;
+          metric.isFinal = true;
+          report();
+        }
       });
     }
   }
