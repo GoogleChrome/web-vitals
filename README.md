@@ -1,7 +1,5 @@
 # `web-vitals`
 
-
-
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
@@ -66,23 +64,16 @@ This code uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-U
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function reportMetric(body) {
+function reportToAnalytics(data) {
+  const body = JSON.stringify(data);
   // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
   (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
       fetch('/analytics', {body, method: 'POST', keepalive: true});
 }
 
-getCLS((metric) => {
-  reportMetric(JSON.stringify({cls: metric.value}));
-});
-
-getFID((metric) => {
-  reportMetric(JSON.stringify({fid: metric.value}));
-});
-
-getLCP(({metric}) => {
-  reportMetric(JSON.stringify({lcp: metric.value}));
-});
+getCLS((metric) => reportToAnalytics({cls: metric.value}));
+getFID((metric) => reportToAnalytics({fid: metric.value}));
+getLCP((metric) => reportToAnalytics({lcp: metric.value}));
 ```
 
 ### Reporting the metric on every change
@@ -110,23 +101,16 @@ The following example modifies the [analytics code above](#sending-the-metric-to
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function reportMetric(body) {
+function reportToAnalytics(data) {
+  const body = JSON.stringify(data);
   // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
   (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
       fetch('/analytics', {body, method: 'POST', keepalive: true});
 }
 
-getCLS((metric) => {
-  reportMetric(JSON.stringify({cls: metric.delta}));
-});
-
-getFID((metric) => {
-  reportMetric(JSON.stringify({fid: metric.delta}));
-});
-
-getLCP(({metric}) => {
-  reportMetric(JSON.stringify({lcp: metric.delta}));
-});
+getCLS((metric) => reportToAnalytics({cls: metric.delta}));
+getFID((metric) => reportToAnalytics({fid: metric.delta}));
+getLCP((metric) => reportToAnalytics({lcp: metric.delta}));
 ```
 
 _**Note:** the first time the `onReport` function is called, its `value` and `delta` property will be the same._
