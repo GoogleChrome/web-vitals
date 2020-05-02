@@ -16,7 +16,7 @@
 
 ## Overview
 
-The `web-vitals` library is a tiny, modular library for measuring all the [Web Vitals](https://web.dev/metrics/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
+The `web-vitals` library is a tiny, modular library for measuring all the [Web Vitals](https://web.dev/vitals/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
 
 The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) as well as all of the [other Web Vitals](https://web.dev/vitals/#other-web-vitals) that can be measured [in the field](https://web.dev/user-centric-performance-metrics/#how-metrics-are-measured):
 
@@ -58,7 +58,7 @@ getFID(console.log);
 getLCP(console.log);
 ```
 
-_**Note:** some of these metrics will not report until the user has interacted with the page, switches tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try switching tabs and then switching back._
+_**Note:** some of these metrics will not report until the user has interacted with the page, switched tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try switching tabs and then switching back._
 
 ### Report the value on every change
 
