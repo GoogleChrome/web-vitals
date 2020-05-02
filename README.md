@@ -129,7 +129,7 @@ Using the [Google Analytics Reporting API](https://developers.google.com/analyti
 
 The following code examples show how to send your metrics to Google Analytics in order to enable reporting quantile data:
 
-#### Using `anaytics.js`
+#### Using `analytics.js`
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
