@@ -238,7 +238,7 @@ interface ReportHandler {
 type getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `onReport` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation.
+Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `onReport` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift value](https://wicg.github.io/layout-instability/#layout-shift-value)).
 
 If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `layout-shift` performance entry is dispatched, or once the final value of the metric has been determined.
 
@@ -250,7 +250,7 @@ _**Important:** unlike other metrics, CLS continues to monitor changes for the e
 type getFCP = (onReport: ReportHandler) => void
 ```
 
-Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `paint` performance entry used to determine the value.
+Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a `DOMHighResTimeStamp`.
 
 #### `getFID()`
 
@@ -258,7 +258,7 @@ Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls 
 type getFID = (onReport: ReportHandler) => void
 ```
 
-Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)).
+Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)). The reported value is a `DOMHighResTimeStamp`.
 
 _**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
 
@@ -268,9 +268,9 @@ _**Important:** since FID is only reported after the user interacts with the pag
 type getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entries used to determine the value).
+Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entries used to determine the value). The reported value is a `DOMHighResTimeStamp`.
 
-If passed an `onReport` function, that function will be invoked any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
+If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
 
 #### `getTTFB()`
 
@@ -278,9 +278,9 @@ If passed an `onReport` function, that function will be invoked any time a new `
 type getTTFB = (onReport: ReportHandler) => void
 ```
 
-Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value.
+Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a `DOMHighResTimeStamp`.
 
-This function waits until after the page is loaded to call `onReport` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
+Note, this function waits until after the page is loaded to call `onReport` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
 
 For example, the TTFB metric starts from the page's [time origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it [includes](https://developers.google.com/web/fundamentals/performance/navigation-and-resource-timing#the_life_and_timings_of_a_network_request) time spent on DNS lookup, connection negotiation, network latency, and unloading the previous document. If, in addition to TTFB, you want a metric that excludes these timing and _just_ captures the time spent making the request and receiving the first byte of the response, you could compute that from data found on the performance entry:
 
