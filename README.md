@@ -280,10 +280,23 @@ type getTTFB = (onReport: ReportHandler) => void
 
 Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value.
 
-This function waits until after the page is loaded to call `onReport` in order to ensure all properties of the `navigation` entry are populated.
+This function waits until after the page is loaded to call `onReport` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
+
+For example, the TTFB metric starts from the page's [time origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it [includes](https://developers.google.com/web/fundamentals/performance/navigation-and-resource-timing#the_life_and_timings_of_a_network_request) time spent on DNS lookup, connection negotiation, network latency, and unloading the previous document. If, in addition to TTFB, you want a metric that excludes these timing and _just_ captures the time spent making the request and receiving the first byte of the response, you could compute that from data found on the performance entry:
+
+```js
+import {getTTFB} from 'web-vitals';
+
+getTTFB((metric) => {
+  // Calculate the request time by subtracting from TTFB
+  // everything that happened prior to the request starting.
+  const requestTime = metric.value - metric.entries[0].requestStart;
+  console.log('Request time:', requestTime);
+});
+```
 
 _**Note:** browsers that do not support `navigation` entries will fall back to
-using `performance.timing` (with the timestamps converted from epoch time to `DOMHighResTimeStamp`)._
+using `performance.timing` (with the timestamps converted from epoch time to `DOMHighResTimeStamp`). This ensures code referencing these values (like in the example above) will work the same in all browsers._
 
 ## Browser Support
 
