@@ -3,6 +3,11 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Log the results to the console](#log-the-results-to-the-console)
+  - [Report the value on every change](#report-the-value-on-every-change)
+  - [Report only the delta of changes](#report-only-the-delta-of-changes)
+  - [Send the results to an analytics endpoint](#send-the-results-to-an-analytics-endpoint)
+  - [Send the results to Google Analytics](#send-the-results-to-google-analytics)
 - [API](#api)
   - [Types](#types)
   - [Functions](#functions)
@@ -11,9 +16,9 @@
 
 ## Overview
 
-The `web-vitals` library is a small (<1K), modular library for measuring all the [Web Vitals](https://web.dev/metrics/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console](https://search.google.com/search-console/about)).
+The `web-vitals` library is a tiny, modular library for measuring all the [Web Vitals](https://web.dev/metrics/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
 
-The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) and [Other Web Vitals](https://web.dev/vitals/#other-web-vitals) that can be measured [in the field](https://web.dev/user-centric-performance-metrics/#how-metrics-are-measured):
+The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) as well as all of the [other Web Vitals](https://web.dev/vitals/#other-web-vitals) that can be measured [in the field](https://web.dev/user-centric-performance-metrics/#how-metrics-are-measured):
 
 ### Core Web Vitals
 
@@ -41,7 +46,7 @@ Each of the Web Vitals metrics are exposed as a single function that takes an `o
 - The final value of the metric has been determined.
 - The current metric value needs to be [reported right away](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden) (due to the page being unloaded or backgrounded).
 
-### Logging the metrics to the console
+### Log the results to the console
 
 The following example logs the result of each metric to the console once its value is ready to report.
 
@@ -55,28 +60,7 @@ getLCP(console.log);
 
 _**Note:** some of these metrics will not report until the user has interacted with the page, switches tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try switching tabs and then switching back._
 
-### Sending the metric to an analytics endpoint
-
-The following example measures each of the Core Web Vitals metrics and reports them to a local `/analytics` endpoint once known.
-
-This code uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
-
-```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
-
-function reportToAnalytics(data) {
-  const body = JSON.stringify(data);
-  // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-  (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-      fetch('/analytics', {body, method: 'POST', keepalive: true});
-}
-
-getCLS((metric) => reportToAnalytics({cls: metric.value}));
-getFID((metric) => reportToAnalytics({fid: metric.value}));
-getLCP((metric) => reportToAnalytics({lcp: metric.value}));
-```
-
-### Reporting the metric on every change
+### Report the value on every change
 
 In most cases, you only want to call `onReport` when the metric is ready. However, for metrics like LCP and CLS (where the value may change over time) you can pass an optional, second argument (`reportAllChanges`). If `true` then `onReport` will be called any time the value of the metric changes, or once the final value has been determined.
 
@@ -92,7 +76,7 @@ getLCP(console.log, true);
 
 _**Note:** when using the `reportAllChanges` option, pay attention to the `isFinal` property of the reported metric, which will indicate whether or not the value might change in the future. See the [API](#api) reference below for more details._
 
-### Reporting only the delta of changes
+### Report only the delta of changes
 
 Some analytics providers allow you to update the value of a metric, even after you've already sent it to their servers. Other analytics providers, however, do not allow this, so instead of reporting the updated value, you need to report only the delta (the difference between the current value and the last-reported value).
 
@@ -115,6 +99,95 @@ getLCP((metric) => reportToAnalytics({lcp: metric.delta}));
 
 _**Note:** the first time the `onReport` function is called, its `value` and `delta` property will be the same._
 
+
+### Send the results to an analytics endpoint
+
+The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint once known. Only the `value` and `id` properties are sent; you can modify the code to send additional data as needed.
+
+The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
+
+```js
+import {getCLS, getFID, getLCP} from 'web-vitals';
+
+function sendToAnalytics(name, value, id) {
+  const body = JSON.stringify({name, value, id});
+  // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
+  (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
+      fetch('/analytics', {body, method: 'POST', keepalive: true});
+}
+
+getCLS((metric) => sendToAnalytics('cls', metric.value, metric.id));
+getFID((metric) => sendToAnalytics('fid', metric.value, metric.id));
+getLCP((metric) => sendToAnalytics('lcp', metric.value, metric.id));
+```
+
+### Send the results to Google Analytics
+
+Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value on every metric instance that you send to Google Analytics, including that dimension in a custom report will allow you to construct a distribution manually.
+
+Using the [Google Analytics Reporting API](https://developers.google.com/analytics/devguides/reporting) and a tool like [Data Studio](https://datastudio.google.com/) (or your own visualization library), you can create dashboards with histograms reporting quantile data (the 75th percentile is recommended) for all of the Web Vitals metrics.
+
+The following code examples show how to send your metrics to Google Analytics in order to enable reporting quantile data:
+
+#### Using `anaytics.js`
+
+```js
+import {getCLS, getFID, getLCP} from 'web-vitals';
+
+function sendToGoogleAnalytics(name, delta, id) {
+  // Assumes the global `ga()` function exists, see:
+  // https://developers.google.com/analytics/devguides/collection/analyticsjs
+  ga('send', 'event', {
+    eventCategory: 'Web Vitals',
+    eventAction: name,
+    // Google Analytics metrics must be integers, so the value is rounded.
+    // For CLS the value is first multiplied by 100 for greater precision
+    // (note: increase the multiplier for greater precision if needed).
+    eventValue: Math.round(name === 'cls' ? delta * 100 : delta),
+    // The `id` value will be unique to the current page load. When sending
+    // multiple values from the same page (e.g. for CLS), Google Analytics can
+    // compute a total by grouping on this ID (note: requires `eventLabel` to
+    // be a dimension in your report).
+    eventLabel: id,
+    // Use a non-interaction event to avoid affecting bounce rate.
+    nonInteraction: true,
+  });
+}
+
+getCLS((metric) => sendToGoogleAnalytics('cls', metric.delta, metric.id));
+getFID((metric) => sendToGoogleAnalytics('fid', metric.delta, metric.id));
+getLCP((metric) => sendToGoogleAnalytics('lcp', metric.delta, metric.id));
+```
+
+#### Using `gtag.js`
+
+```js
+import {getCLS, getFID, getLCP} from 'web-vitals';
+
+function sendToGoogleAnalytics(name, delta, id) {
+  // Assumes the global `gtag()` function exists, see:
+  // https://developers.google.com/analytics/devguides/collection/gtagjs
+  gtag('event', name, {
+    event_category: 'Web Vitals',
+    // Google Analytics metrics must be integers, so the value is rounded.
+    // For CLS the value is first multiplied by 100 for greater precision
+    // (note: increase the multiplier for greater precision if needed).
+    value: Math.round(name === 'cls' ? delta * 100 : delta),
+    // The `id` value will be unique to the current page load. When sending
+    // multiple values from the same page (e.g. for CLS), Google Analytics can
+    // compute a total by grouping on this ID (note: requires `eventLabel` to
+    // be a dimension in your report).
+    event_label: id,
+    // Use a non-interaction event to avoid affecting bounce rate.
+    non_interaction: true,
+  });
+}
+
+getCLS((metric) => sendToGoogleAnalytics('cls', metric.delta, metric.id));
+getFID((metric) => sendToGoogleAnalytics('fid', metric.delta, metric.id));
+getLCP((metric) => sendToGoogleAnalytics('lcp', metric.delta, metric.id));
+```
+
 ## API
 
 ### Types:
@@ -123,12 +196,18 @@ _**Note:** the first time the `onReport` function is called, its `value` and `de
 
 ```ts
 interface Metric {
-  // The value of the metric.
+  // The current value of the metric.
   value: number;
 
   // The delta between the current value and the last-reported value.
   // On the first report, `delta` and `value` will always be the same.
   delta: number;
+
+  // A unique ID representing this particular metric that's specific to the
+  // current page. This ID can be used by an analytics tool to dedupe
+  // multiple values sent for the same metric, or to group multiple deltas
+  // together and calculate a total.
+  id: string;
 
   // `false` if the value of the metric may change in the future,
   // for the current page.
@@ -138,8 +217,8 @@ interface Metric {
   // Note, entries will be added to the array as the value changes.
   entries: PerformanceEntry[];
 
-  // Only present using the FID polyfill.
-  event?: Event
+  // Only present if the reported value came from the FID polyfill.
+  event?: Event;
 }
 ```
 

@@ -15,10 +15,28 @@
  */
 
 export interface Metric {
+  // The current value of the metric.
   value: number;
+
+  // The delta between the current value and the last-reported value.
+  // On the first report, `delta` and `value` will always be the same.
   delta: number;
+
+  // A unique ID representing this particular metric that's specific to the
+  // current page. This ID can be used by an analytics tool to dedupe
+  // multiple values sent for the same metric, or to group multiple deltas
+  // together and calculate a total.
+  id: string;
+
+  // `false` if the value of the metric may change in the future,
+  // for the current page.
   isFinal: boolean;
+
+  // Any performance entries used in the metric value calculation.
+  // Note, entries will be added to the array as the value changes.
   entries: PerformanceEntry[];
+
+  // Only present if the reported value came from the FID polyfill.
   event?: Event;
 }
 
