@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-import {Metric} from '../types.js';
-import {generateUniqueID} from './generateUniqueID.js';
-
-
-export const initMetric = (value = -1): Metric => {
-  return {
-    value,
-    delta: 0,
-    entries: [],
-    id: generateUniqueID(),
-    isFinal: false
-  };
+/**
+ * Performantly generate a unique, 27-char string by combining the current
+ * timestamp with a 13-digit random number.
+ * @return {string}
+ */
+export const generateUniqueID = () => {
+  return `${Date.now()}-${Math.floor(Math.random() * (9e12 - 1)) + 1e12}`;
 };

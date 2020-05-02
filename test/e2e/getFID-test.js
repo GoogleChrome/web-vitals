@@ -42,6 +42,7 @@ describe('getFID()', async function() {
 
     const [{fid}] = await getBeacons();
     assert(fid.value >= 0);
+    assert(fid.id.match(/\d+-\d+/));
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.entries[0].name, 'mousedown');
     assert.strictEqual(fid.isFinal, true);
@@ -63,6 +64,7 @@ describe('getFID()', async function() {
     const [{fid}] = await getBeacons();
 
     assert(fid.value >= 0);
+    assert(fid.id.match(/\d+-\d+/));
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.isFinal, true);
     if (browserSupportsFID) {
