@@ -216,9 +216,6 @@ interface Metric {
   // Any performance entries used in the metric value calculation.
   // Note, entries will be added to the array as the value changes.
   entries: PerformanceEntry[];
-
-  // Only present if the reported value came from the FID polyfill.
-  event?: Event;
 }
 ```
 
@@ -316,20 +313,9 @@ The `getFID()` function will work in all browsers if the page has included the [
 
 Browsers that support the native [Event Timing API](https://wicg.github.io/event-timing/) will use that and report the metric value from the `first-input` performance entry.
 
-Browsers that **do not** support the native Event Timing API will report the value reported by the polyfill, including the `Event` object of the first input.
+Browsers that **do not** support the native Event Timing API will use the value reported by the polyfill, and the `entries` array will contain a plain-object version of the native [`PerformanceEventTiming`](https://wicg.github.io/event-timing/#sec-performance-event-timing) object.
 
-For example:
-
-```js
-import {getFID} from 'web-vitals';
-
-getFID((metric) => {
-  // When using the polyfill, the `event` property will be present.
-  // The  `entries` property will also be present, but it will be empty.
-  console.log(metric.event); // Event
-  console.log(metric.entries);  // []
-});
-```
+_**Note:** the `duration` and `processingEnd` properties of the `PerformanceEventTiming` will not be present, as they're not exposed by the polyfill._
 
 ## Development
 
