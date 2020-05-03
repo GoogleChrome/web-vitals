@@ -17,7 +17,10 @@
 {% block content %}
   <h1>LCP Test</h1>
   <p>
-    <img src="/test/img/square.png?delay=500">
+    {% if not imgDelay %}
+      {% set imgDelay = 500 %}
+    {% endif %}
+    <img {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 
@@ -33,8 +36,21 @@
       // Log for easier manual testing.
       console.log(lcp);
 
+      // Elements can't be serialized, so we convert first.
+      lcp = {
+        value: lcp.value,
+        delta: lcp.delta,
+        id: lcp.id,
+        entries: lcp.entries.map((e) => ({
+          element: e.element.nodeName.toLowerCase(),
+          size: e.size,
+          startTime: e.startTime,
+        })),
+        isFinal: lcp.isFinal,
+      };
+
       // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({lcp}));
+      navigator.sendBeacon(`/collect`, JSON.stringify(lcp));
     }, self.__reportAllChanges);
   </script>
 {% endblock %}

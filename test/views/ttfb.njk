@@ -25,12 +25,18 @@
   <script type="module">
     import {getTTFB} from '/dist/web-vitals.js';
 
-    getTTFB((ttfb) => {
-      // Log for easier manual testing.
-      console.log(ttfb);
+    (async function() {
+      {% if awaitLoad %}
+        await new Promise((resolve) => addEventListener('load', resolve));
+      {% endif %}
 
-      // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({ttfb}));
-    }, self.__reportAllChanges);
+      getTTFB((ttfb) => {
+        // Log for easier manual testing.
+        console.log(ttfb);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(ttfb));
+      }, self.__reportAllChanges);
+    }());
   </script>
 {% endblock %}

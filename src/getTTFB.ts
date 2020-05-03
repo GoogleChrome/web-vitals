@@ -68,7 +68,8 @@ type PerformanceTimingKeys =
 
 const afterLoad = (callback: () => void) => {
   if (document.readyState === 'complete') {
-    callback();
+    // Queue a task so the callback runs after `loadEventEnd`.
+    setTimeout(callback, 0);
   } else {
     // Use `pageshow` so the callback runs after `loadEventEnd`.
     addEventListener('pageshow', callback);

@@ -30,7 +30,7 @@
       console.log(fcp);
 
       // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({fcp}));
+      navigator.sendBeacon(`/collect`, JSON.stringify(fcp));
     }, self.__reportAllChanges);
   </script>
 {% endblock %}

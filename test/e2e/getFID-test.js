@@ -17,6 +17,7 @@
 const assert = require('assert');
 const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
 const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
+const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
 describe('getFID()', async function() {
@@ -40,7 +41,7 @@ describe('getFID()', async function() {
 
     await beaconCountIs(1);
 
-    const [{fid}] = await getBeacons();
+    const [fid] = await getBeacons();
     assert(fid.value >= 0);
     assert(fid.id.match(/\d+-\d+/));
     assert.strictEqual(fid.value, fid.delta);
@@ -53,7 +54,7 @@ describe('getFID()', async function() {
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
 
-    await browser.url('/test/fid-polyfill');
+    await browser.url('/test/fid?polyfill=1');
 
     // Click on the <h1>.
     const h1 = await $('h1');
@@ -61,7 +62,7 @@ describe('getFID()', async function() {
 
     await beaconCountIs(1);
 
-    const [{fid}] = await getBeacons();
+    const [fid] = await getBeacons();
 
     assert(fid.value >= 0);
     assert(fid.id.match(/\d+-\d+/));
@@ -79,7 +80,9 @@ describe('getFID()', async function() {
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
 
-    await browser.url('/test/fid-hidden');
+    await browser.url('/test/fid?hidden=1');
+
+    await stubVisibilityChange('visible');
 
     // Click on the <h1>.
     const h1 = await $('h1');
@@ -97,7 +100,10 @@ describe('getFID()', async function() {
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
 
-    await browser.url('/test/fid-visibilitychange-before');
+    await stubVisibilityChange('hidden');
+
+    // Returning to visible will also render the <body>.
+    await stubVisibilityChange('visible');
 
     // Click on the h1.
     const h1 = await $('h1');

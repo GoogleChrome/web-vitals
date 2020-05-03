@@ -18,6 +18,7 @@ const assert = require('assert');
 const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
 const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
 const {imagesPainted} = require('../utils/imagesPainted.js');
+const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
 describe('getLCP()', async function() {
@@ -131,29 +132,9 @@ describe('getLCP()', async function() {
   it('does not report if the document was hidden at page load time', async function() {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp-hidden');
+    await browser.url('/test/lcp?hidden=1');
 
-    // Wait until all images are loaded and fully rendered.
-    await imagesPainted();
-
-    // Click on the h1.
-    const h1 = await $('h1');
-    await h1.click();
-
-    // Wait a bit to ensure no beacons were sent.
-    await browser.pause(1000);
-
-    const beacons = await getBeacons();
-    assert.strictEqual(beacons.length, 0);
-  });
-
-  it('does not report if the document changes to hidden before the first entry', async function() {
-    if (!browserSupportsLCP) this.skip();
-
-    await browser.url('/test/lcp-visibilitychange-before');
-
-    // Wait until all images are loaded and fully rendered.
-    await imagesPainted();
+    await stubVisibilityChange('visible');
 
     // Click on the h1.
     const h1 = await $('h1');
@@ -166,16 +147,77 @@ describe('getLCP()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('stops reporting after the document changes to hidden', async function() {
+  it('does not report if the document changes to hidden before the first render', async function() {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp-visibilitychange-after');
+    await browser.url('/test/lcp?invisible=1');
+
+    await stubVisibilityChange('hidden');
+    await stubVisibilityChange('visible');
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('stops reporting after the document changes to hidden (reportAllChanges === false)', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp?imgDelay=0&imgHidden=1');
+
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
+
+    await stubVisibilityChange('hidden');
+    await stubVisibilityChange('visible');
+
+    await browser.execute(() => {
+      document.querySelector('img').hidden = false;
+    });
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no additional beacons were sent.
+    await browser.pause(1000);
+
+    await beaconCountIs(1);
+
+    const [lcp1] = await getBeacons();
+
+    assert(lcp1.value > 0);
+    assert.strictEqual(lcp1.value, lcp1.delta);
+    assert.strictEqual(lcp1.entries.length, 1);
+    assert.strictEqual(lcp1.entries[0].element, 'h1');
+    assert.strictEqual(lcp1.isFinal, true);
+  });
+
+  it('stops reporting after the document changes to hidden (reportAllChanges === true)', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp?reportAllChanges=1&imgDelay=0&imgHidden=1');
+
+    await beaconCountIs(1);
+
+    await stubVisibilityChange('hidden');
+    await stubVisibilityChange('visible');
+
+    await browser.execute(() => {
+      document.querySelector('img').hidden = false;
+    });
 
     // Since we're dispatching a visibilitychange event,
     // we don't need to do anything else to trigger the metric reporting.
     await beaconCountIs(2);
 
-    const [{lcp: lcp1}, {lcp: lcp2}] = await getBeacons();
+    const [lcp1, lcp2] = await getBeacons();
 
     assert(lcp1.value > 0);
     assert.strictEqual(lcp1.value, lcp1.delta);
@@ -192,7 +234,7 @@ describe('getLCP()', async function() {
 });
 
 const assertStandardReportsAreCorrect = (beacons) => {
-  const [{lcp}] = beacons;
+  const [lcp] = beacons;
 
   assert(lcp.value > 500); // Greater than the image load delay.
   assert(lcp.id.match(/\d+-\d+/));
@@ -202,7 +244,7 @@ const assertStandardReportsAreCorrect = (beacons) => {
 };
 
 const assertFullReportsAreCorrect = (beacons) => {
-  const [{lcp: lcp1}, {lcp: lcp2}, {lcp: lcp3}] = beacons;
+  const [lcp1, lcp2, lcp3] = beacons;
 
   assert(lcp1.value < 500); // Less than the image load delay.
   assert(lcp1.id.match(/\d+-\d+/));

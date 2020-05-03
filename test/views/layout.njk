@@ -19,8 +19,25 @@
   <title>Web Vitals Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
-    self.__reportAllChanges =
-        new URL(location.href).searchParams.has('reportAllChanges');
+    (function() {
+      const params = new URL(location.href).searchParams;
+
+      self.__reportAllChanges = params.has('reportAllChanges');
+
+      if (params.has('hidden')) {
+        // Stub the page being loaded in the hidden state, but defer to the
+        // native state if the `visibilitychange` event fires.
+        Object.defineProperty(document, 'visibilityState', {
+          value: 'hidden',
+          configurable: true,
+        });
+        addEventListener('visibilitychange', (event) => {
+          if (event.isTrusted) {
+            delete document.visibilityState;
+          }
+        }, true);
+      }
+    }());
   </script>
   {% block head %}{% endblock %}
   <style>
@@ -35,9 +52,12 @@
     main {
       padding: 0 1em;
     }
+    *[hidden] {
+      visibility: hidden;
+    }
   </style>
 </head>
-<body>
+<body {% if invisible or hidden %}hidden{% endif %}>
   <main>
     {% block content %}{% endblock %}
   </main>
