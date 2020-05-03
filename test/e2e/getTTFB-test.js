@@ -67,7 +67,7 @@ describe('getTTFB()', async function() {
 
     await beaconCountIs(1);
 
-    const [{ttfb}] = await getBeacons();
+    const [ttfb] = await getBeacons();
 
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
@@ -81,11 +81,11 @@ describe('getTTFB()', async function() {
   });
 
   it('reports the correct value when run after page load', async function() {
-    await browser.url('/test/ttfb-after-load');
+    await browser.url('/test/ttfb?awaitLoad=1');
 
     await beaconCountIs(1);
 
-    const [{ttfb}] = await getBeacons();
+    const [ttfb] = await getBeacons();
 
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);

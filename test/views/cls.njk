@@ -17,9 +17,13 @@
 
 {% block content %}
   <h1>CLS Test</h1>
-  <p><img src="/test/img/square.png?delay=500" alt="Gray square" /></p>
-  <p><img src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
-  <p>Text below the images that will get pushed down.</p>
+  {% if noLayoutShifts %}
+    <p>This text does not shift.</p>
+  {% else %}
+    <p><img src="/test/img/square.png?delay=500" alt="Gray square" /></p>
+    <p><img src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
+    <p>Text below the images that will get pushed down.</p>
+  {% endif %}
 
   <script type="module">
     import {getCLS} from '/dist/web-vitals.js';
@@ -29,7 +33,7 @@
       console.log(cls);
 
       // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify({cls}));
+      navigator.sendBeacon(`/collect`, JSON.stringify(cls));
     }, self.__reportAllChanges);
   </script>
 {% endblock %}

@@ -17,7 +17,7 @@
 const assert = require('assert');
 const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
 const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
-const {imagesPainted} = require('../utils/imagesPainted.js');
+const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
 describe('getFCP()', async function() {
@@ -37,7 +37,7 @@ describe('getFCP()', async function() {
 
     await beaconCountIs(1);
 
-    const [{fcp}] = await getBeacons();
+    const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
     assert(fcp.id.match(/\d+-\d+/));
     assert.strictEqual(fcp.value, fcp.delta);
@@ -48,12 +48,9 @@ describe('getFCP()', async function() {
   it('does not report if the document was hidden at page load time', async function() {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp-hidden');
+    await browser.url('/test/fcp?hidden=1');
 
-    // Wait until all images are loaded and fully rendered.
-    // NOTE(philipwalton): since the visibilityState is stubbed in the test,
-    // the images will actually paint on the screen, so it's OK to await them.
-    await imagesPainted();
+    await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
@@ -65,14 +62,10 @@ describe('getFCP()', async function() {
   it('does not report if the document changes to hidden before the first entry', async function() {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp-visibilitychange-before');
+    await browser.url('/test/fcp?invisible=1');
 
-    // Wait until all images are loaded and fully rendered.
-    await imagesPainted();
-
-    // Click on the h1.
-    const h1 = await $('h1');
-    await h1.click();
+    await stubVisibilityChange('hidden');
+    await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);

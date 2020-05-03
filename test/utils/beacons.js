@@ -31,12 +31,19 @@ async function beaconCountIs(count) {
 }
 
 /**
- * Gets the array of beacons sent for the current page load.
+ * Gets the array of beacons sent for the current page load (i.e. the
+ * most recently sent beacons with the same metric ID).
  * @return {Promise<Array>}
  */
-async function getBeacons() {
-  const beacons = await fs.readFile(BEACON_FILE, 'utf-8');
-  return beacons.trim().split('\n').filter(Boolean).map(JSON.parse);
+async function getBeacons(id = undefined) {
+  const json = await fs.readFile(BEACON_FILE, 'utf-8');
+  const allBeacons = json.trim().split('\n').filter(Boolean).map(JSON.parse);
+
+  if (allBeacons.length) {
+    const lastBeaconID = allBeacons[allBeacons.length - 1].id;
+    return allBeacons.filter((beacon) => beacon.id === lastBeaconID);
+  }
+  return [];
 }
 
 /**

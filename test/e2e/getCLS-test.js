@@ -18,6 +18,7 @@ const assert = require('assert');
 const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
 const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
 const {imagesPainted} = require('../utils/imagesPainted.js');
+const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
 describe('getCLS()', async function() {
@@ -30,20 +31,39 @@ describe('getCLS()', async function() {
     await clearBeacons();
   });
 
-  it('reports the correct value on visibility hidden (reportAllChanges === false)', async function() {
+  it('reports the correct value on visibility hidden after shifts (reportAllChanges === false)', async function() {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls');
 
-    // Wait until all images are loaded and rendered.
+    // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();
+    await stubVisibilityChange('hidden');
 
-    // Load a new page to trigger the hidden state.
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+    assert(cls.value >= 0);
+    assert(cls.id.match(/\d+-\d+/));
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.entries.length, 2);
+    assert.strictEqual(cls.isFinal, false);
+
+    await browser.url('/test/cls');
+  });
+
+  it('reports the correct value on page unload after shifts (reportAllChanges === false)', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
     await browser.url('about:blank');
 
     await beaconCountIs(1);
 
-    const [{cls}] = await getBeacons();
+    const [cls] = await getBeacons();
     assert(cls.value >= 0);
     assert(cls.id.match(/\d+-\d+/));
     assert.strictEqual(cls.value, cls.delta);
@@ -51,15 +71,15 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.isFinal, true);
   });
 
-  it('reports the correct value on visibility hidden (reportAllChanges === true)', async function() {
+  it('reports no new values on visibility hidden after shifts (reportAllChanges === true)', async function() {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls?reportAllChanges=1');
 
-    // Wait until all images are loaded and rendered.
+    // Beacons should be sent as soon as layout shifts occur, wait for them.
     await beaconCountIs(2);
 
-    const [{cls: cls1}, {cls: cls2}] = await getBeacons();
+    const [cls1, cls2] = await getBeacons();
 
     assert(cls1.value >= 0);
     assert(cls1.id.match(/\d+-\d+/));
@@ -73,13 +93,44 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls2.isFinal, false);
     assert.strictEqual(cls2.entries.length, 2);
 
-    // Load a new page to trigger the hidden state.
+    await clearBeacons();
+    await stubVisibilityChange('hidden');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('reports the final value on page unload after shifts (reportAllChanges === true)', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls?reportAllChanges=1');
+
+    // Beacons should be sent as soon as layout shifts occur, wait for them.
+    await beaconCountIs(2);
+
+    const [cls1, cls2] = await getBeacons();
+
+    assert(cls1.value >= 0);
+    assert(cls1.id.match(/\d+-\d+/));
+    assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.isFinal, false);
+    assert.strictEqual(cls1.entries.length, 1);
+
+    assert(cls2.value >= cls1.value);
+    assert.strictEqual(cls2.id, cls1.id);
+    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.isFinal, false);
+    assert.strictEqual(cls2.entries.length, 2);
+
     await clearBeacons();
     await browser.url('about:blank');
 
     await beaconCountIs(1);
 
-    const [{cls: cls3}] = await getBeacons();
+    const [cls3] = await getBeacons();
     assert(cls3.value >= 0);
     assert.strictEqual(cls3.id, cls2.id);
     assert.strictEqual(cls3.delta, 0);
@@ -90,12 +141,15 @@ describe('getCLS()', async function() {
   it('continues reporting after visibilitychange (reportAllChanges === false)', async function() {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls-visibilitychange-after`);
+    await browser.url(`/test/cls`);
 
-    // Wait until all images are loaded and rendered.
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
     await beaconCountIs(1);
 
-    const [{cls: cls1}] = await getBeacons();
+    const [cls1] = await getBeacons();
 
     assert(cls1.value >= 0);
     assert(cls1.delta >= 0);
@@ -104,29 +158,47 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls1.isFinal, false);
     assert.strictEqual(cls1.entries.length, 2);
 
+    await clearBeacons();
+    await stubVisibilityChange('visible');
+
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
+
+    await triggerLayoutShift();
+
+    await clearBeacons();
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [cls2] = await getBeacons();
+    assert(cls2.value >= cls1.value);
+    assert.strictEqual(cls2.id, cls1.id);
+    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.isFinal, false);
+    assert.strictEqual(cls2.entries.length, 3);
+
     // Load a new page to trigger the unload state.
     await clearBeacons();
     await browser.url('about:blank');
 
     await beaconCountIs(1);
 
-    const [{cls: cls2}] = await getBeacons();
-    assert(cls2.value >= cls1.value);
-    assert.strictEqual(cls2.id, cls1.id);
-    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
-    assert.strictEqual(cls2.isFinal, true);
-    assert.strictEqual(cls2.entries.length, 3);
+    const [cls3] = await getBeacons();
+    assert.strictEqual(cls3.value, cls2.value);
+    assert.strictEqual(cls3.id, cls2.id);
+    assert(cls3.delta === 0);
+    assert.strictEqual(cls3.isFinal, true);
+    assert.strictEqual(cls3.entries.length, cls2.entries.length);
   });
 
   it('continues reporting after visibilitychange (reportAllChanges === true)', async function() {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls-visibilitychange-after?reportAllChanges=1`);
+    await browser.url(`/test/cls?reportAllChanges=1`);
+    await beaconCountIs(2);
 
-    // Wait until all images are loaded and rendered.
-    await beaconCountIs(3);
-
-    const [{cls: cls1}, {cls: cls2}, {cls: cls3}] = await getBeacons();
+    const [cls1, cls2] = await getBeacons();
 
     assert(cls1.value > 0);
     assert(cls1.id.match(/\d+-\d+/));
@@ -140,6 +212,18 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls2.isFinal, false);
     assert.strictEqual(cls2.entries.length, 2);
 
+    await clearBeacons();
+    await stubVisibilityChange('hidden');
+    await stubVisibilityChange('visible');
+
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
+
+    await triggerLayoutShift();
+
+    await beaconCountIs(1);
+    const [cls3] = await getBeacons();
+
     assert(cls3.value > cls2.value);
     assert.strictEqual(cls3.id, cls2.id);
     assert.strictEqual(cls3.value, cls2.value + cls3.delta);
@@ -152,7 +236,7 @@ describe('getCLS()', async function() {
 
     await beaconCountIs(1);
 
-    const [{cls: cls4}] = await getBeacons();
+    const [cls4] = await getBeacons();
     assert.strictEqual(cls4.value, cls3.value);
     assert.strictEqual(cls4.id, cls3.id);
     assert(cls4.delta === 0);
@@ -163,13 +247,13 @@ describe('getCLS()', async function() {
   it('reports zero if no layout shifts occurred (reportAllChanges === false)', async function() {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls-no-layout-shifts`);
+    await browser.url(`/test/cls?noLayoutShifts=1`);
 
     await browser.url('about:blank');
 
     await beaconCountIs(1);
 
-    const [{cls}] = await getBeacons();
+    const [cls] = await getBeacons();
     assert(cls.id.match(/\d+-\d+/));
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
@@ -180,13 +264,13 @@ describe('getCLS()', async function() {
   it('reports zero if no layout shifts occurred (reportAllChanges === true)', async function() {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls-no-layout-shifts?reportAllChanges=1`);
+    await browser.url(`/test/cls?noLayoutShifts=1&reportAllChanges=1`);
 
     await browser.url('about:blank');
 
     await beaconCountIs(1);
 
-    const [{cls}] = await getBeacons();
+    const [cls] = await getBeacons();
     assert(cls.id.match(/\d+-\d+/));
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
@@ -194,3 +278,17 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.entries.length, 0);
   });
 });
+
+
+let marginTop = 0;
+
+/**
+ * Returns a promise that resolves once the browser window has loaded and all
+ * the images in the document have decoded and rendered.
+ * @return {Promise<void>}
+ */
+function triggerLayoutShift() {
+  return browser.execute((marginTop) => {
+    document.querySelector('h1').style.marginTop = marginTop + 'em';
+  }, ++marginTop);
+}
