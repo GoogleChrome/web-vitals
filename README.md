@@ -141,9 +141,9 @@ function sendToGoogleAnalytics(name, delta, id) {
     eventCategory: 'Web Vitals',
     eventAction: name,
     // Google Analytics metrics must be integers, so the value is rounded.
-    // For CLS the value is first multiplied by 100 for greater precision
+    // For CLS the value is first multiplied by 1000 for greater precision
     // (note: increase the multiplier for greater precision if needed).
-    eventValue: Math.round(name === 'cls' ? delta * 100 : delta),
+    eventValue: Math.round(name === 'cls' ? delta * 1000 : delta),
     // The `id` value will be unique to the current page load. When sending
     // multiple values from the same page (e.g. for CLS), Google Analytics can
     // compute a total by grouping on this ID (note: requires `eventLabel` to
@@ -170,9 +170,9 @@ function sendToGoogleAnalytics(name, delta, id) {
   gtag('event', name, {
     event_category: 'Web Vitals',
     // Google Analytics metrics must be integers, so the value is rounded.
-    // For CLS the value is first multiplied by 100 for greater precision
+    // For CLS the value is first multiplied by 1000 for greater precision
     // (note: increase the multiplier for greater precision if needed).
-    value: Math.round(name === 'cls' ? delta * 100 : delta),
+    value: Math.round(name === 'cls' ? delta * 1000 : delta),
     // The `id` value will be unique to the current page load. When sending
     // multiple values from the same page (e.g. for CLS), Google Analytics can
     // compute a total by grouping on this ID (note: requires `eventLabel` to
