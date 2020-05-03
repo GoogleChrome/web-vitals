@@ -36,11 +36,6 @@
       // Log for easier manual testing.
       console.log(fid);
 
-      // Event objects can't be serialized, so we objectify them first.
-      if (fid.event) {
-        fid.event = {type: fid.event.type};
-      }
-
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(fid));
     }, self.__reportAllChanges);

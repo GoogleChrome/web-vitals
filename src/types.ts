@@ -35,9 +35,6 @@ export interface Metric {
   // Any performance entries used in the metric value calculation.
   // Note, entries will be added to the array as the value changes.
   entries: PerformanceEntry[];
-
-  // Only present if the reported value came from the FID polyfill.
-  event?: Event;
 }
 
 export interface ReportHandler {

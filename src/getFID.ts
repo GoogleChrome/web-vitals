@@ -38,7 +38,9 @@ declare global {
 
 // https://wicg.github.io/event-timing/#sec-performance-event-timing
 interface PerformanceEventTiming extends PerformanceEntry {
-  processingStart: number;
+  processingStart: DOMHighResTimeStamp;
+  cancelable?: boolean;
+  target?: Element;
 }
 
 export const getFID = (onReport: ReportHandler) => {
@@ -70,8 +72,15 @@ export const getFID = (onReport: ReportHandler) => {
         // Only report if the page wasn't hidden prior to the first input.
         if (event.timeStamp < getFirstHiddenTime()) {
           metric.value = value;
-          metric.event = event;
           metric.isFinal = true;
+          metric.entries = [{
+            entryType: 'first-input',
+            name: event.type,
+            target: event.target,
+            cancelable: event.cancelable,
+            startTime: event.timeStamp,
+            processingStart: event.timeStamp + value,
+          } as PerformanceEventTiming];
           report();
         }
       });

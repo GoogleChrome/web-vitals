@@ -68,10 +68,11 @@ describe('getFID()', async function() {
     assert(fid.id.match(/\d+-\d+/));
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.isFinal, true);
+    assert.strictEqual(fid.entries[0].name, 'mousedown');
     if (browserSupportsFID) {
-      assert.strictEqual(fid.entries[0].name, 'mousedown');
+      assert('duration' in fid.entries[0]);
     } else {
-      assert.strictEqual(fid.event.type, 'mousedown');
+      assert(!('duration' in fid.entries[0]));
     }
   });
 
