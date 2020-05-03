@@ -244,7 +244,41 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls4.entries.length, 3);
   });
 
-  it('reports zero if no layout shifts occurred (reportAllChanges === false)', async function() {
+  it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === false)', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url(`/test/cls?noLayoutShifts=1`);
+
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+    assert(cls.id.match(/\d+-\d+/));
+    assert.strictEqual(cls.value, 0);
+    assert.strictEqual(cls.delta, 0);
+    assert.strictEqual(cls.isFinal, false);
+    assert.strictEqual(cls.entries.length, 0);
+  });
+
+  it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === true)', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url(`/test/cls?reportAllChanges=1&noLayoutShifts=1`);
+
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+    assert(cls.id.match(/\d+-\d+/));
+    assert.strictEqual(cls.value, 0);
+    assert.strictEqual(cls.delta, 0);
+    assert.strictEqual(cls.isFinal, false);
+    assert.strictEqual(cls.entries.length, 0);
+  });
+
+  it('reports zero if no layout shifts occurred on page unload (reportAllChanges === false)', async function() {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?noLayoutShifts=1`);
@@ -261,7 +295,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.entries.length, 0);
   });
 
-  it('reports zero if no layout shifts occurred (reportAllChanges === true)', async function() {
+  it('reports zero if no layout shifts occurred on page unload (reportAllChanges === true)', async function() {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?noLayoutShifts=1&reportAllChanges=1`);
