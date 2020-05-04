@@ -95,7 +95,7 @@ const getNavigationEntryFromPerformanceTiming = () => {
 };
 
 export const getTTFB = (onReport: ReportHandler) => {
-  const metric = initMetric();
+  const metric = initMetric('TTFB');
 
   afterLoad(() => {
     try {

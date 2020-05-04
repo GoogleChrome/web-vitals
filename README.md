@@ -80,25 +80,21 @@ _**Note:** when using the `reportAllChanges` option, pay attention to the `isFin
 
 Some analytics providers allow you to update the value of a metric, even after you've already sent it to their servers. Other analytics providers, however, do not allow this, so instead of reporting the updated value, you need to report only the delta (the difference between the current value and the last-reported value).
 
-The following example modifies the [analytics code above](#sending-the-metric-to-an-analytics-endpoint) to only report the delta of the changes:
+The following example reports only the delta of the changes:
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function reportToAnalytics(data) {
-  const body = JSON.stringify(data);
-  // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-  (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-      fetch('/analytics', {body, method: 'POST', keepalive: true});
+function logDelta(metric) {
+  console.log(`${metric.name} changed by: ${metric.delta}`);
 }
 
-getCLS((metric) => reportToAnalytics({cls: metric.delta}));
-getFID((metric) => reportToAnalytics({fid: metric.delta}));
-getLCP((metric) => reportToAnalytics({lcp: metric.delta}));
+getCLS(logDelta);
+getFID(logDelta);
+getLCP(logDelta);
 ```
 
 _**Note:** the first time the `onReport` function is called, its `value` and `delta` property will be the same._
-
 
 ### Send the results to an analytics endpoint
 
@@ -109,16 +105,16 @@ The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://dev
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function sendToAnalytics(name, value, id) {
-  const body = JSON.stringify({name, value, id});
+function sendToAnalytics(metric) {
+  const body = JSON.stringify(metric);
   // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
   (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
       fetch('/analytics', {body, method: 'POST', keepalive: true});
 }
 
-getCLS((metric) => sendToAnalytics('cls', metric.value, metric.id));
-getFID((metric) => sendToAnalytics('fid', metric.value, metric.id));
-getLCP((metric) => sendToAnalytics('lcp', metric.value, metric.id));
+getCLS(sendToAnalytics);
+getFID(sendToAnalytics);
+getLCP(sendToAnalytics);
 ```
 
 ### Send the results to Google Analytics
@@ -134,7 +130,7 @@ The following code examples show how to send your metrics to Google Analytics in
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function sendToGoogleAnalytics(name, delta, id) {
+function sendToGoogleAnalytics({name, delta, id}) {
   // Assumes the global `ga()` function exists, see:
   // https://developers.google.com/analytics/devguides/collection/analyticsjs
   ga('send', 'event', {
@@ -143,7 +139,7 @@ function sendToGoogleAnalytics(name, delta, id) {
     // Google Analytics metrics must be integers, so the value is rounded.
     // For CLS the value is first multiplied by 1000 for greater precision
     // (note: increase the multiplier for greater precision if needed).
-    eventValue: Math.round(name === 'cls' ? delta * 1000 : delta),
+    eventValue: Math.round(name === 'CLS' ? delta * 1000 : delta),
     // The `id` value will be unique to the current page load. When sending
     // multiple values from the same page (e.g. for CLS), Google Analytics can
     // compute a total by grouping on this ID (note: requires `eventLabel` to
@@ -154,9 +150,9 @@ function sendToGoogleAnalytics(name, delta, id) {
   });
 }
 
-getCLS((metric) => sendToGoogleAnalytics('cls', metric.delta, metric.id));
-getFID((metric) => sendToGoogleAnalytics('fid', metric.delta, metric.id));
-getLCP((metric) => sendToGoogleAnalytics('lcp', metric.delta, metric.id));
+getCLS(sendToGoogleAnalytics);
+getFID(sendToGoogleAnalytics);
+getLCP(sendToGoogleAnalytics);
 ```
 
 #### Using `gtag.js`
@@ -164,7 +160,7 @@ getLCP((metric) => sendToGoogleAnalytics('lcp', metric.delta, metric.id));
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function sendToGoogleAnalytics(name, delta, id) {
+function sendToGoogleAnalytics({name, delta, id}) {
   // Assumes the global `gtag()` function exists, see:
   // https://developers.google.com/analytics/devguides/collection/gtagjs
   gtag('event', name, {
@@ -172,7 +168,7 @@ function sendToGoogleAnalytics(name, delta, id) {
     // Google Analytics metrics must be integers, so the value is rounded.
     // For CLS the value is first multiplied by 1000 for greater precision
     // (note: increase the multiplier for greater precision if needed).
-    value: Math.round(name === 'cls' ? delta * 1000 : delta),
+    value: Math.round(name === 'CLS' ? delta * 1000 : delta),
     // The `id` value will be unique to the current page load. When sending
     // multiple values from the same page (e.g. for CLS), Google Analytics can
     // compute a total by grouping on this ID (note: requires `eventLabel` to
@@ -183,9 +179,9 @@ function sendToGoogleAnalytics(name, delta, id) {
   });
 }
 
-getCLS((metric) => sendToGoogleAnalytics('cls', metric.delta, metric.id));
-getFID((metric) => sendToGoogleAnalytics('fid', metric.delta, metric.id));
-getLCP((metric) => sendToGoogleAnalytics('lcp', metric.delta, metric.id));
+getCLS(sendToGoogleAnalytics);
+getFID(sendToGoogleAnalytics);
+getLCP(sendToGoogleAnalytics);
 ```
 
 ## API
@@ -196,6 +192,9 @@ getLCP((metric) => sendToGoogleAnalytics('lcp', metric.delta, metric.id));
 
 ```ts
 interface Metric {
+  // The name of the metric (in acronym form).
+  name: 'CLS' | 'FCP' | 'FID' | 'LCP' | 'TTFB';
+
   // The current value of the metric.
   value: number;
 

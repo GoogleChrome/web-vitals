@@ -44,7 +44,7 @@ interface PerformanceEventTiming extends PerformanceEntry {
 }
 
 export const getFID = (onReport: ReportHandler) => {
-  const metric = initMetric();
+  const metric = initMetric('FID');
 
   const entryHandler = (entry: PerformanceEventTiming) => {
     // Only report if the page wasn't hidden prior to the first input.

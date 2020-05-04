@@ -40,6 +40,7 @@ describe('getFCP()', async function() {
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
     assert(fcp.id.match(/\d+-\d+/));
+    assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.entries.length, 1);
     assert.strictEqual(fcp.isFinal, true);

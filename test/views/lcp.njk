@@ -38,15 +38,12 @@
 
       // Elements can't be serialized, so we convert first.
       lcp = {
-        value: lcp.value,
-        delta: lcp.delta,
-        id: lcp.id,
+        ...lcp,
         entries: lcp.entries.map((e) => ({
           element: e.element.nodeName.toLowerCase(),
           size: e.size,
           startTime: e.startTime,
         })),
-        isFinal: lcp.isFinal,
       };
 
       // Test sending the metric to an analytics endpoint.
