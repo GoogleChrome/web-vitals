@@ -4,12 +4,14 @@
   "description": "Easily measure performance metrics in JavaScript",
   "type": "module",
   "main": "dist/web-vitals.min.js",
+  "module": "dist/web-vitals.min.js",
   "exports": {
-    ".": "./dist/web-vitals.min.js",
+    ".": "./dist/index.js",
     "getCLS.js": "./dist/getCLS.js",
     "getFCP.js": "./dist/getFCP.js",
     "getFID.js": "./dist/getFID.js",
-    "getLCP.js": "./dist/getLCP.js"
+    "getLCP.js": "./dist/getLCP.js",
+    "getTTFB.js": "./dist/getTTFB.js"
   },
   "files": [
     "dist",
@@ -39,11 +41,11 @@
     "crux",
     "performance",
     "metrics",
-    "cls",
-    "fcp",
-    "fid",
-    "lcp",
-    "ttfb"
+    "CLS",
+    "FCP",
+    "FID",
+    "LCP",
+    "TTFB"
   ],
   "author": {
     "name": "Philip Walton",

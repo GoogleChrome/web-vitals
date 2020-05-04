@@ -16,7 +16,7 @@
 
 ## Overview
 
-The `web-vitals` library is a tiny, modular library for measuring all the [Web Vitals](https://web.dev/vitals/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
+The `web-vitals` library is a tiny (~1K), modular library for measuring all the [Web Vitals](https://web.dev/vitals/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
 
 The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) as well as all of the [other Web Vitals](https://web.dev/vitals/#other-web-vitals) that can be measured [in the field](https://web.dev/user-centric-performance-metrics/#how-metrics-are-measured):
 
@@ -64,7 +64,7 @@ _**Note:** some of these metrics will not report until the user has interacted w
 
 In most cases, you only want to call `onReport` when the metric is ready. However, for metrics like LCP and CLS (where the value may change over time) you can pass an optional, second argument (`reportAllChanges`). If `true` then `onReport` will be called any time the value of the metric changes, or once the final value has been determined.
 
-This could be useful if, for example, you want to report the current LCP candidate as the page is loading, or you want to report layout shifts (and the current CLS value) as users are interacting with the page.
+This could be useful if, for example, you want to report the current LCP candidate as the page is loading, or you want to report layout shifts (and the current CLS value) as users are interacting with the page. In general, though, using `reportAllChanges` is not needed (or recommended).
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
@@ -78,15 +78,17 @@ _**Note:** when using the `reportAllChanges` option, pay attention to the `isFin
 
 ### Report only the delta of changes
 
-Some analytics providers allow you to update the value of a metric, even after you've already sent it to their servers. Other analytics providers, however, do not allow this, so instead of reporting the updated value, you need to report only the delta (the difference between the current value and the last-reported value).
+Some analytics providers allow you to update the value of a metric, even after you've already sent it to their servers (overwriting the previously-sent value with the same `id`).
 
-The following example reports only the delta of the changes:
+Other analytics providers, however, do not allow this, so instead of reporting the new value, you need to report only the delta (the difference between the current value and the last-reported value). You can then compute the total value by summing all metric deltas sent with the same ID.
+
+The following example shows how to use the `id` and `delta` properties:
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function logDelta(metric) {
-  console.log(`${metric.name} changed by: ${metric.delta}`);
+function logDelta({name, id, delta}) {
+  console.log(`${name} matching ID ${id} changed by ${delta}`);
 }
 
 getCLS(logDelta);
@@ -94,11 +96,11 @@ getFID(logDelta);
 getLCP(logDelta);
 ```
 
-_**Note:** the first time the `onReport` function is called, its `value` and `delta` property will be the same._
+_**Note:** the first time the `onReport` function is called, its `value` and `delta` properties will be the same._
 
 ### Send the results to an analytics endpoint
 
-The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint once known. Only the `value` and `id` properties are sent; you can modify the code to send additional data as needed.
+The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
 
 The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
 
@@ -119,7 +121,7 @@ getLCP(sendToAnalytics);
 
 ### Send the results to Google Analytics
 
-Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value on every metric instance that you send to Google Analytics, including that dimension in a custom report will allow you to construct a distribution manually.
+Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value (in this case, the metric `id`) on every metric instance that you send to Google Analytics, including that dimension in a custom report will allow you to construct a distribution manually.
 
 Using the [Google Analytics Reporting API](https://developers.google.com/analytics/devguides/reporting) and a tool like [Data Studio](https://datastudio.google.com/) (or your own visualization library), you can create dashboards with histograms reporting quantile data (the 75th percentile is recommended) for all of the Web Vitals metrics.
 
@@ -238,7 +240,7 @@ Calculates the [CLS](https://web.dev/cls/) value for the current page and calls 
 
 If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `layout-shift` performance entry is dispatched, or once the final value of the metric has been determined.
 
-_**Important:** unlike other metrics, CLS continues to monitor changes for the entire lifespan of the page&mdash;including if the user returns to the page after it's been hidden/backgrounded or put in the [Page Navigation Cache](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#page-navigation-cache). However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#reporting-only-the-delta-of-changes) for how to manage this)._
+_**Important:** unlike other metrics, CLS continues to monitor changes for the entire lifespan of the page&mdash;including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#reporting-only-the-delta-of-changes) for how to manage this)._
 
 #### `getFCP()`
 
@@ -278,7 +280,7 @@ Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current
 
 Note, this function waits until after the page is loaded to call `onReport` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
 
-For example, the TTFB metric starts from the page's [time origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it [includes](https://developers.google.com/web/fundamentals/performance/navigation-and-resource-timing#the_life_and_timings_of_a_network_request) time spent on DNS lookup, connection negotiation, network latency, and unloading the previous document. If, in addition to TTFB, you want a metric that excludes these timing and _just_ captures the time spent making the request and receiving the first byte of the response, you could compute that from data found on the performance entry:
+For example, the TTFB metric starts from the page's [time origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it [includes](https://developers.google.com/web/fundamentals/performance/navigation-and-resource-timing#the_life_and_timings_of_a_network_request) time spent on DNS lookup, connection negotiation, network latency, and unloading the previous document. If, in addition to TTFB, you want a metric that excludes these timings and _just_ captures the time spent making the request and receiving the first byte of the response, you could compute that from data found on the performance entry:
 
 ```js
 import {getTTFB} from 'web-vitals';
