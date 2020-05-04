@@ -22,7 +22,7 @@ import {ReportHandler} from './types.js';
 
 
 export const getFCP = (onReport: ReportHandler) => {
-  const metric = initMetric();
+  const metric = initMetric('FCP');
 
   const po = observe('paint', (entry: PerformanceEntry) => {
     if (entry.name === 'first-contentful-paint') {

@@ -15,6 +15,9 @@
  */
 
 export interface Metric {
+  // The name of the metric (in acronym form).
+  name: 'CLS' | 'FCP' | 'FID' | 'LCP' | 'TTFB';
+
   // The current value of the metric.
   value: number;
 

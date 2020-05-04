@@ -24,7 +24,7 @@ import {ReportHandler} from './types.js';
 
 
 export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
-  const metric = initMetric();
+  const metric = initMetric('LCP');
 
   const entryHandler = (entry: PerformanceEntry) => {
     // The startTime attribute returns the value of the renderTime if it is not 0,

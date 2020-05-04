@@ -28,7 +28,7 @@ interface LayoutShift extends PerformanceEntry {
 }
 
 export const getCLS = (onReport: ReportHandler, reportAllChanges = false) => {
-  const metric = initMetric(0);
+  const metric = initMetric('CLS', 0);
 
   const entryHandler = (entry: LayoutShift) => {
     // Only count layout shifts without recent user input.
