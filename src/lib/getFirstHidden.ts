@@ -17,13 +17,23 @@
 import {onHidden} from './onHidden.js';
 
 
-// If the document is hidden when this code runs, assume it was hidden since
-// navigation start. This isn't a perfect heuristic, but it's the best we can
-// do until an API is available to support querying past visibilityState.
-let firstHiddenTime: number =
-    document.visibilityState === 'hidden' ? 0 : Infinity;
+let firstHiddenTime: number
 
-// Update the time if/when the document becomes hidden.
-onHidden(({timeStamp}) => firstHiddenTime = timeStamp, true);
+export const getFirstHidden = () => {
+  if (firstHiddenTime === undefined) {
+    // If the document is hidden when this code runs, assume it was hidden
+    // since navigation start. This isn't a perfect heuristic, but it's the
+    // best we can do until an API is available to support querying past
+    // visibilityState.
+    firstHiddenTime = document.visibilityState === 'hidden' ? 0 : Infinity;
 
-export const getFirstHiddenTime = (): number => firstHiddenTime;
+    // Update the time if/when the document becomes hidden.
+    onHidden(({timeStamp}) => firstHiddenTime = timeStamp, true);
+  }
+
+  return {
+    get timeStamp() {
+      return firstHiddenTime;
+    }
+  }
+};

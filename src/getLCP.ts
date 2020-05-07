@@ -15,7 +15,7 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {getFirstHiddenTime} from './lib/getFirstHiddenTime.js';
+import {getFirstHidden} from './lib/getFirstHidden.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -25,6 +25,7 @@ import {ReportHandler} from './types.js';
 
 export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
   const metric = initMetric('LCP');
+  const firstHidden = getFirstHidden();
 
   const entryHandler = (entry: PerformanceEntry) => {
     // The startTime attribute returns the value of the renderTime if it is not 0,
@@ -33,11 +34,11 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
 
     // If the page was hidden prior to paint time of the entry,
     // ignore it and mark the metric as final, otherwise add the entry.
-    if (getFirstHiddenTime() < value) {
-      metric.isFinal = true;
-    } else {
+    if (value < firstHidden.timeStamp) {
       metric.value = value;
       metric.entries.push(entry);
+    } else {
+      metric.isFinal = true;
     }
 
     report();
@@ -55,6 +56,6 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
     }
   }
 
-  whenInput.then(onFinal);
+  whenInput().then(onFinal);
   onHidden(onFinal, true);
 };

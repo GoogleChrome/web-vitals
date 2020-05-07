@@ -15,7 +15,7 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {getFirstHiddenTime} from './lib/getFirstHiddenTime.js';
+import {getFirstHidden} from './lib/getFirstHidden.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -45,10 +45,11 @@ interface PerformanceEventTiming extends PerformanceEntry {
 
 export const getFID = (onReport: ReportHandler) => {
   const metric = initMetric('FID');
+  const firstHidden = getFirstHidden();
 
   const entryHandler = (entry: PerformanceEventTiming) => {
     // Only report if the page wasn't hidden prior to the first input.
-    if (entry.startTime < getFirstHiddenTime()) {
+    if (entry.startTime < firstHidden.timeStamp) {
       metric.value = entry.processingStart - entry.startTime;
       metric.entries.push(entry);
       metric.isFinal = true;
@@ -70,7 +71,7 @@ export const getFID = (onReport: ReportHandler) => {
     if (window.perfMetrics && window.perfMetrics.onFirstInputDelay) {
       window.perfMetrics.onFirstInputDelay((value: number, event: Event) => {
         // Only report if the page wasn't hidden prior to the first input.
-        if (event.timeStamp < getFirstHiddenTime()) {
+        if (event.timeStamp < firstHidden.timeStamp) {
           metric.value = value;
           metric.isFinal = true;
           metric.entries = [{
