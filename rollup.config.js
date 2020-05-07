@@ -13,55 +13,51 @@
  limitations under the License.
 */
 
+import fs from 'fs-extra';
 import {terser} from 'rollup-plugin-terser';
 import babel from 'rollup-plugin-babel';
 
+
 const baseOpts = {
-  input: 'dist/web-vitals.js',
+  input: 'dist/index.js',
   watch: {
     clearScreen: false,
   },
 };
 
+const configurePlugins = ({module}) => {
+  return [
+    babel({
+      presets: [['@babel/preset-env', {
+        targets: {
+          browsers: ['ie 11'],
+        },
+      }]],
+    }),
+    terser({
+      module,
+      mangle: true,
+      compress: true,
+    }),
+  ]
+}
+
 export default [
   {
     ...baseOpts,
     output: {
-      dir: './dist',
       format: 'esm',
-      entryFileNames: 'web-vitals.min.js',
+      file: './dist/web-vitals.es5.min.js',
     },
-    plugins: [
-      terser({
-        module: true,
-        mangle: true,
-        compress: true,
-      }),
-    ],
+    plugins: configurePlugins({module: true}),
   },
   {
     ...baseOpts,
     output: {
-      dir: './dist',
       format: 'umd',
-      entryFileNames: 'web-vitals.umd.min.js',
+      file: './dist/web-vitals.es5.umd.min.js',
       name: 'webVitals',
     },
-    plugins: [
-      babel({
-        presets: [['@babel/preset-env', {
-          targets: {
-            browsers: ['ie 11'],
-          },
-        }]],
-      }),
-      terser({
-        mangle: true,
-        compress: true,
-      }),
-    ],
-    watch: {
-      clearScreen: false,
-    },
+    plugins: configurePlugins({module: false}),
   },
 ];

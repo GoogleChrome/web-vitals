@@ -3,16 +3,9 @@
   "version": "0.2.0",
   "description": "Easily measure performance metrics in JavaScript",
   "type": "module",
-  "main": "dist/web-vitals.min.js",
-  "module": "dist/web-vitals.min.js",
-  "exports": {
-    ".": "./dist/index.js",
-    "getCLS.js": "./dist/getCLS.js",
-    "getFCP.js": "./dist/getFCP.js",
-    "getFID.js": "./dist/getFID.js",
-    "getLCP.js": "./dist/getLCP.js",
-    "getTTFB.js": "./dist/getTTFB.js"
-  },
+  "main": "dist/web-vitals.es5.umd.min.js",
+  "module": "dist/web-vitals.es5.min.js",
+  "typings": "dist/index.d.ts",
   "files": [
     "dist",
     "src"
