@@ -21,18 +21,27 @@ export interface OnHiddenCallback {
 }
 
 let isUnloading = false;
-const onPageHide =
-    ({persisted}: PageTransitionEvent) => isUnloading = !persisted;
+let listenersAdded = false;
 
-addEventListener('pagehide', onPageHide);
+const onPageHide = (event: PageTransitionEvent) => {
+  isUnloading = !event.persisted;
+};
 
-// Unload is needed to fix this bug:
-// https://bugs.chromium.org/p/chromium/issues/detail?id=987409
-// eslint-disable-next-line @typescript-eslint/no-empty-function
-addEventListener('unload', () => {});
+const addListeners = () => {
+  addEventListener('pagehide', onPageHide);
+
+  // Unload is needed to fix this bug:
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=987409
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  addEventListener('unload', () => {});
+}
 
 export const onHidden = (cb: OnHiddenCallback, once = false) => {
-  // callbacks.push(cb);
+  if (!listenersAdded) {
+    addListeners();
+    listenersAdded = true;
+  }
+
   addEventListener('visibilitychange', ({timeStamp}) => {
     if (document.visibilityState === 'hidden') {
       cb({timeStamp, isUnloading});

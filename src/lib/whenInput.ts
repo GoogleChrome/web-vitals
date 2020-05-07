@@ -14,12 +14,19 @@
  * limitations under the License.
  */
 
-export const whenInput = new Promise((r) => {
-  return ['scroll', 'keydown', 'pointerdown'].map((type) => {
-    addEventListener(type, r, {
-      once: true,
-      passive: true,
-      capture: true,
+let inputPromise: Promise<Event>;
+
+export const whenInput = () => {
+  if (!inputPromise) {
+    inputPromise = new Promise((r) => {
+      return ['scroll', 'keydown', 'pointerdown'].map((type) => {
+        addEventListener(type, r, {
+          once: true,
+          passive: true,
+          capture: true,
+        });
+      });
     });
-  });
-});
+  }
+  return inputPromise;
+};
