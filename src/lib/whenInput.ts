@@ -20,7 +20,7 @@ export const whenInput = () => {
   if (!inputPromise) {
     inputPromise = new Promise((r) => {
       return ['scroll', 'keydown', 'pointerdown'].map((type) => {
-        addEventListener(type, r, {
+        window.addEventListener(type, r, {
           once: true,
           passive: true,
           capture: true,

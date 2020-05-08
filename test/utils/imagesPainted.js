@@ -26,7 +26,7 @@ function imagesPainted() {
       if (document.readyState === 'complete') {
         resolve();
       } else {
-        addEventListener('load', resolve);
+        window.addEventListener('load', resolve);
       }
     });
 

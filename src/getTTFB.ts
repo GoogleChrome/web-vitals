@@ -72,7 +72,7 @@ const afterLoad = (callback: () => void) => {
     setTimeout(callback, 0);
   } else {
     // Use `pageshow` so the callback runs after `loadEventEnd`.
-    addEventListener('pageshow', callback);
+    window.addEventListener('pageshow', callback);
   }
 }
 

@@ -28,12 +28,12 @@ const onPageHide = (event: PageTransitionEvent) => {
 };
 
 const addListeners = () => {
-  addEventListener('pagehide', onPageHide);
+  window.addEventListener('pagehide', onPageHide);
 
   // Unload is needed to fix this bug:
   // https://bugs.chromium.org/p/chromium/issues/detail?id=987409
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  addEventListener('unload', () => {});
+  window.addEventListener('unload', () => {});
 }
 
 export const onHidden = (cb: OnHiddenCallback, once = false) => {
@@ -42,7 +42,7 @@ export const onHidden = (cb: OnHiddenCallback, once = false) => {
     listenersAdded = true;
   }
 
-  addEventListener('visibilitychange', ({timeStamp}) => {
+  window.addEventListener('visibilitychange', ({timeStamp}) => {
     if (document.visibilityState === 'hidden') {
       cb({timeStamp, isUnloading});
     }
