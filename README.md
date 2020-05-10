@@ -192,7 +192,7 @@ getLCP(sendToGoogleAnalytics);
 
 ### Send the results to Google Tag Manager
 
-The following example measures each of the Core Web Vitals metrics and sends them as seperate dataLayer-events to be used by Google Tag Manager. With the `web-vitals` trigger you send the metrics to any tag inside your account.
+The following example measures each of the Core Web Vitals metrics and sends them as seperate `dataLayer-events` to be used by Google Tag Manager. With the `web-vitals` trigger you send the metrics to any tag inside your account.
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
