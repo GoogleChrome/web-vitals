@@ -27,6 +27,8 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 - [First Input Delay (FID)](https://web.dev/fid/)
 - [Largest Contentful Paint (LCP)](https://web.dev/lcp/)
 
+_**Note:** The implementation of CLS in `web-vitals` measures DCLS as this library does not track layout shifts in iframes._
+
 ### Other Web Vitals
 
 - [First Contentful Paint (FCP)](https://web.dev/fcp/)
