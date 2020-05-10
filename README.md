@@ -8,6 +8,7 @@
   - [Report only the delta of changes](#report-only-the-delta-of-changes)
   - [Send the results to an analytics endpoint](#send-the-results-to-an-analytics-endpoint)
   - [Send the results to Google Analytics](#send-the-results-to-google-analytics)
+  - [Load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn)
 - [API](#api)
   - [Types](#types)
   - [Functions](#functions)
@@ -38,6 +39,8 @@ You can install this library from npm by running:
 ```sh
 npm install web-vitals
 ```
+
+_**Note:** If you're not using npm, you can still load `web-vitals` via `<script>` tags from a CDN like [unpkg.com](https://unpkg.com). See the [load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn) usage example below for details._
 
 ## Usage
 
@@ -185,6 +188,37 @@ getCLS(sendToGoogleAnalytics);
 getFID(sendToGoogleAnalytics);
 getLCP(sendToGoogleAnalytics);
 ```
+
+### Load `web-vitals` from a CDN
+
+The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
+
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com) using either classic or module scripts:
+
+```html
+<!-- Load `web-vitals` using a classic script that sets the global `webVitals` object. -->
+<script defer src="https://unpkg.com/web-vitals@0.2.1/dist/web-vitals.es5.umd.min.js"></script>
+<script>
+addEventListener('DOMContentLoaded', function() {
+  webVitals.getCLS(console.log);
+  webVitals.getFID(console.log);
+  webVitals.getLCP(console.log);
+});
+</script>
+```
+
+```html
+<!-- Load `web-vitals` using a module script. -->
+<script type="module">
+  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals@0.2.1/dist/web-vitals.es5.min.js?module';
+
+  getCLS(console.log);
+  getFID(console.log);
+  getLCP(console.log);
+</script>
+```
+
+_**Note:** it's safe to use module scripts in legacy browsers because unknown script types are ignored._
 
 ## API
 
