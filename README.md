@@ -225,7 +225,7 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
 
 ```html
 <!-- Load `web-vitals` using a classic script that sets the global `webVitals` object. -->
-<script defer src="https://unpkg.com/web-vitals@0.2.1/dist/web-vitals.es5.umd.min.js"></script>
+<script defer src="https://unpkg.com/web-vitals@0.2.2/dist/web-vitals.es5.umd.min.js"></script>
 <script>
 addEventListener('DOMContentLoaded', function() {
   webVitals.getCLS(console.log);
@@ -238,7 +238,7 @@ addEventListener('DOMContentLoaded', function() {
 ```html
 <!-- Load `web-vitals` using a module script. -->
 <script type="module">
-  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals@0.2.1/dist/web-vitals.es5.min.js?module';
+  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals@0.2.2/dist/web-vitals.es5.min.js?module';
 
   getCLS(console.log);
   getFID(console.log);
