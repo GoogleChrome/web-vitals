@@ -253,7 +253,7 @@ addEventListener('DOMContentLoaded', function() {
 
 _**Note:** it's safe to use module scripts in legacy browsers because unknown script types are ignored._
 
-#### Integrations
+### Integrations
 
 - [Automated Lighthouse Check](https://www.automated-lighthouse-check.com/web-vitals) provides a REST API endpoint for collecting Web Vitals data and a web dashboard for historic visualization. You can filter metrics by browser, device and OS.
 
