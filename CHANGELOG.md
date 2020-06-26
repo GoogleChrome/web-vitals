@@ -1,5 +1,9 @@
 # Changelog
 
+### v0.2.3 (2020-06-26)
+
+- Ensure reports only occur if a PO was created ([#58](https://github.com/GoogleChrome/web-vitals/pull/58))
+
 ### v0.2.2 (2020-05-12)
 
 - Remove package `type` field ([#35](https://github.com/GoogleChrome/web-vitals/pull/35))
