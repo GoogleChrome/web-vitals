@@ -30,6 +30,8 @@ interface LayoutShift extends PerformanceEntry {
 export const getCLS = (onReport: ReportHandler, reportAllChanges = false) => {
   const metric = initMetric('CLS', 0);
 
+  let report: ReturnType<typeof bindReporter>;
+
   const entryHandler = (entry: LayoutShift) => {
     // Only count layout shifts without recent user input.
     if (!entry.hadRecentInput) {
@@ -40,15 +42,16 @@ export const getCLS = (onReport: ReportHandler, reportAllChanges = false) => {
   };
 
   const po = observe('layout-shift', entryHandler as PerformanceEntryHandler);
-  const report = bindReporter(onReport, metric, po, reportAllChanges);
+  if (po) {
+    report = bindReporter(onReport, metric, po, reportAllChanges);
 
-  onHidden(({isUnloading}) => {
-    if (po) {
+    onHidden(({isUnloading}) => {
       po.takeRecords().map(entryHandler as PerformanceEntryHandler);
-    }
-    if (isUnloading) {
-      metric.isFinal = true;
-    }
-    report();
-  });
+
+      if (isUnloading) {
+        metric.isFinal = true;
+      }
+      report();
+    });
+  }
 };

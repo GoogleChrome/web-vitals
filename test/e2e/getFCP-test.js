@@ -46,6 +46,18 @@ describe('getFCP()', async function() {
     assert.strictEqual(fcp.isFinal, true);
   });
 
+  it('does not report if the browser does not support FCP', async function() {
+    if (browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
   it('does not report if the document was hidden at page load time', async function() {
     if (!browserSupportsFCP) this.skip();
 
