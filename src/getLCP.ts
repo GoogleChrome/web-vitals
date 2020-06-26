@@ -27,6 +27,8 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
   const metric = initMetric('LCP');
   const firstHidden = getFirstHidden();
 
+  let report: ReturnType<typeof bindReporter>;
+
   const entryHandler = (entry: PerformanceEntry) => {
     // The startTime attribute returns the value of the renderTime if it is not 0,
     // and the value of the loadTime otherwise.
@@ -43,19 +45,21 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
 
     report();
   };
+
   const po = observe('largest-contentful-paint', entryHandler);
-  const report = bindReporter(onReport, metric, po, reportAllChanges);
 
-  const onFinal = () => {
-    if (!metric.isFinal) {
-      if (po) {
+  if (po) {
+    report = bindReporter(onReport, metric, po, reportAllChanges);
+
+    const onFinal = () => {
+      if (!metric.isFinal) {
         po.takeRecords().map(entryHandler as PerformanceEntryHandler);
+        metric.isFinal = true;
+        report();
       }
-      metric.isFinal = true;
-      report();
     }
-  }
 
-  whenInput().then(onFinal);
-  onHidden(onFinal, true);
+    whenInput().then(onFinal);
+    onHidden(onFinal, true);
+  }
 };

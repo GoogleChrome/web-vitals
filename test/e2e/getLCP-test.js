@@ -129,6 +129,32 @@ describe('getLCP()', async function() {
     assertFullReportsAreCorrect(await getBeacons());
   });
 
+  it('does not report if the browser does not support LCP', async function() {
+    if (browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Scroll down
+    const footer = await $('footer');
+    await footer.scrollIntoView();
+
+    // Load a new page to trigger the hidden state.
+    await browser.url('about:blank');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
   it('does not report if the document was hidden at page load time', async function() {
     if (!browserSupportsLCP) this.skip();
 

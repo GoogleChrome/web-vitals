@@ -25,7 +25,9 @@ export const getFCP = (onReport: ReportHandler) => {
   const metric = initMetric('FCP');
   const firstHidden = getFirstHidden();
 
-  const po = observe('paint', (entry: PerformanceEntry) => {
+  let report: ReturnType<typeof bindReporter>;
+
+  const entryHandler = (entry: PerformanceEntry) => {
     if (entry.name === 'first-contentful-paint') {
       // Only report if the page wasn't hidden prior to the first paint.
       if (entry.startTime < firstHidden.timeStamp) {
@@ -35,7 +37,10 @@ export const getFCP = (onReport: ReportHandler) => {
         report();
       }
     }
-  });
+  };
 
-  const report = bindReporter(onReport, metric, po);
+  const po = observe('paint', entryHandler);
+  if (po) {
+    report = bindReporter(onReport, metric, po);
+  }
 };

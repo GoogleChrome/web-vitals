@@ -60,14 +60,12 @@ export const getFID = (onReport: ReportHandler) => {
   const po = observe('first-input', entryHandler as PerformanceEntryHandler);
   const report = bindReporter(onReport, metric, po);
 
-  onHidden(() => {
-    if (po) {
+  if (po) {
+    onHidden(() => {
       po.takeRecords().map(entryHandler as PerformanceEntryHandler);
       po.disconnect();
-    }
-  }, true);
-
-  if (!po) {
+    }, true);
+  } else {
     if (window.perfMetrics && window.perfMetrics.onFirstInputDelay) {
       window.perfMetrics.onFirstInputDelay((value: number, event: Event) => {
         // Only report if the page wasn't hidden prior to the first input.

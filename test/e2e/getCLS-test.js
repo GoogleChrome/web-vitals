@@ -73,6 +73,27 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.isFinal, true);
   });
 
+  it('does not report if the browser does not support CLS', async function() {
+    if (browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    await browser.url('about:blank');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
   it('reports no new values on visibility hidden after shifts (reportAllChanges === true)', async function() {
     if (!browserSupportsCLS) this.skip();
 

@@ -50,6 +50,22 @@ describe('getFID()', async function() {
     assert.strictEqual(fid.isFinal, true);
   });
 
+  it('does not report if the browser does not support FID and the polyfill is not used', async function() {
+    if (browserSupportsFID) this.skip();
+
+    await browser.url('/test/fid');
+
+    // Click on the <h1>.
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
   it('falls back to the polyfill in non-supporting browsers', async function() {
     // Ignore Safari until this bug is fixed:
     // https://bugs.webkit.org/show_bug.cgi?id=211101
