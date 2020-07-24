@@ -1,5 +1,9 @@
 # Changelog
 
+### v0.2.4 (2020-07-23)
+
+- Remove the unload listener ([#68](https://github.com/GoogleChrome/web-vitals/pull/68))
+
 ### v0.2.3 (2020-06-26)
 
 - Ensure reports only occur if a PO was created ([#58](https://github.com/GoogleChrome/web-vitals/pull/58))
