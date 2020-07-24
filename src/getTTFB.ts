@@ -43,7 +43,7 @@ interface NavigationEntryShim {
   secureConnectionStart?: number;
   unloadEventEnd?: number;
   unloadEventStart?: number;
-};
+}
 
 type PerformanceTimingKeys =
     'connectEnd' |

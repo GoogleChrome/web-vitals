@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-import {Metric} from '../types.js';
+import {Metric, ReportHandler} from '../types.js';
 
 
 export const bindReporter = (
-  callback: Function,
+  callback: ReportHandler,
   metric: Metric,
   po: PerformanceObserver | undefined,
   observeAllUpdates?: boolean,
