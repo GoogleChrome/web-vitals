@@ -20,22 +20,34 @@
  * attribute (to prevent painting) and dispatches a `visibilitychange` event.
  * @return {Promise<void>}
  */
-function stubVisibilityChange(visibilityState) {
-  return browser.execute((visibilityState) => {
-    if (visibilityState === 'hidden') {
-      Object.defineProperty(document, 'visibilityState', {
-        value: visibilityState,
-        configurable: true,
-      });
-      document.body.hidden = true;
-    } else {
-      delete document.visibilityState;
-      document.body.hidden = false;
-    }
+function stubForwardBack(visibilityStateAfterRestore) {
+  return browser.executeAsync((visibilityStateAfterRestore, done) => {
+    window.dispatchEvent(new PageTransitionEvent('pagehide', {
+      persisted: true,
+    }));
+    Object.defineProperty(document, 'visibilityState', {
+      value: 'hidden',
+      configurable: true,
+    });
+    document.body.hidden = true;
     document.dispatchEvent(new Event('visibilitychange'));
-  }, visibilityState);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        if (visibilityStateAfterRestore !== 'hidden') {
+          delete document.visibilityState;
+          document.body.hidden = false;
+        }
+        document.dispatchEvent(new Event('visibilitychange'));
+        window.dispatchEvent(new PageTransitionEvent('pageshow', {
+          persisted: true,
+        }));
+        done();
+      });
+    });
+  }, visibilityStateAfterRestore);
 }
 
 module.exports = {
-  stubVisibilityChange,
+  stubForwardBack,
 };

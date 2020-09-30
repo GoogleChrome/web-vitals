@@ -13,18 +13,11 @@
  limitations under the License.
 */
 
+import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
 import babel from 'rollup-plugin-babel';
 
-
-const baseOpts = {
-  input: 'dist/index.js',
-  watch: {
-    clearScreen: false,
-  },
-};
-
-const configurePlugins = ({module}) => {
+const configurePlugins = ({module, externalPolyfill = false}) => {
   return [
     babel({
       presets: [['@babel/preset-env', {
@@ -38,25 +31,57 @@ const configurePlugins = ({module}) => {
       mangle: true,
       compress: true,
     }),
+    replace({
+      'self.__WEB_VITALS_EXTERNAL_POLYFILL__': externalPolyfill,
+    })
   ]
 }
 
-export default [
+const configs = [
   {
-    ...baseOpts,
+    input: 'dist/modules/index.js',
     output: {
       format: 'esm',
-      file: './dist/web-vitals.es5.min.js',
+      file: './dist/web-vitals.full.js',
     },
-    plugins: configurePlugins({module: true}),
+    plugins: configurePlugins({module: true, externalPolyfill: false}),
   },
   {
-    ...baseOpts,
+    input: 'dist/modules/index.js',
     output: {
       format: 'umd',
-      file: './dist/web-vitals.es5.umd.min.js',
+      file: `./dist/web-vitals.full.umd.js`,
       name: 'webVitals',
+    },
+    plugins: configurePlugins({module: false, externalPolyfill: false}),
+  },
+  {
+    input: 'dist/modules/index.js',
+    output: {
+      format: 'esm',
+      file: './dist/web-vitals.external-polyfill.js',
+    },
+    plugins: configurePlugins({module: true, externalPolyfill: true}),
+  },
+  {
+    input: 'dist/modules/index.js',
+    output: {
+      format: 'umd',
+      file: `./dist/web-vitals.external-polyfill.umd.js`,
+      name: 'webVitals',
+    },
+    plugins: configurePlugins({module: false, externalPolyfill: true}),
+  },
+  {
+    input: 'dist/modules/polyfill.js',
+    output: {
+      format: 'iife',
+      file: './dist/polyfill.js',
+      name: 'webVitals',
+      strict: false,
     },
     plugins: configurePlugins({module: false}),
   },
 ];
+
+export default configs;

@@ -39,3 +39,26 @@ export interface Metric {
 export interface ReportHandler {
   (metric: Metric): void;
 }
+
+// https://wicg.github.io/event-timing/#sec-performance-event-timing
+export interface PerformanceEventTiming extends PerformanceEntry {
+  processingStart: DOMHighResTimeStamp;
+  cancelable?: boolean;
+  target?: Element;
+}
+
+export interface WebVitalsGlobal {
+  firstInputPolyfill: (onFirstInput: (entry: PerformanceEventTiming) => void) => void;
+  resetFirstInputPolyfill: () => void;
+  // getFirstHiddenTime: () => number;
+  firstHiddenTime: number;
+}
+
+declare global {
+  interface Window {
+    webVitals: WebVitalsGlobal;
+
+    // Build flags:
+    __WEB_VITALS_EXTERNAL_POLYFILL__: boolean;
+  }
+}

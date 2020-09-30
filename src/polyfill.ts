@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-/**
- * Performantly generate a unique, 30-char string by combining a version
- * number, the current timestamp with a 13-digit number integer.
- * @return {string}
- */
-export const generateUniqueID = () => {
-  return `v1-${Date.now()}-${Math.floor(Math.random() * (9e12 - 1)) + 1e12}`;
-};
+import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
+import {firstHiddenTime} from './lib/polyfills/firstHiddenTimePolyfill.js';
+
+resetFirstInputPolyfill();
+self['webVitals'] = self['webVitals'] || {};
+self['webVitals']['firstInputPolyfill'] = firstInputPolyfill;
+self['webVitals']['resetFirstInputPolyfill'] = resetFirstInputPolyfill;
+self['webVitals']['firstHiddenTime'] = firstHiddenTime;

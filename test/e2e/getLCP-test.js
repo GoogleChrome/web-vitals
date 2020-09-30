@@ -227,7 +227,7 @@ const assertStandardReportsAreCorrect = (beacons) => {
   const [lcp] = beacons;
 
   assert(lcp.value > 500); // Greater than the image load delay.
-  assert(lcp.id.match(/\d+-\d+/));
+  assert(lcp.id.match(/^v1-\d+-\d+$/));
   assert.strictEqual(lcp.name, 'LCP');
   assert.strictEqual(lcp.value, lcp.delta);
   assert.strictEqual(lcp.entries.length, 2);
@@ -237,7 +237,7 @@ const assertFullReportsAreCorrect = (beacons) => {
   const [lcp1, lcp2] = beacons;
 
   assert(lcp1.value < 500); // Less than the image load delay.
-  assert(lcp1.id.match(/\d+-\d+/));
+  assert(lcp1.id.match(/^v1-\d+-\d+$/));
   assert.strictEqual(lcp1.name, 'LCP');
   assert.strictEqual(lcp1.value, lcp1.delta);
   assert.strictEqual(lcp1.entries.length, 1);
