@@ -19,7 +19,6 @@ import {getFirstHidden} from './lib/getFirstHidden.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {whenInput} from './lib/whenInput.js';
 import {ReportHandler} from './types.js';
 
 
@@ -51,7 +50,7 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
   if (po) {
     report = bindReporter(onReport, metric, po, reportAllChanges);
 
-    const onFinal = () => {
+    const stopListening = () => {
       if (!metric.isFinal) {
         po.takeRecords().map(entryHandler as PerformanceEntryHandler);
         metric.isFinal = true;
@@ -59,7 +58,13 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
       }
     }
 
-    whenInput().then(onFinal);
-    onHidden(onFinal, true);
+    // Stop listening after input. Note: while scrolling is an input that
+    // stop LCP observation, it's unreliable since it can be programmatically
+    // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
+    ['keydown', 'click'].map((type) => {
+      addEventListener(type, stopListening, {once: true, capture: true});
+    });
+
+    onHidden(stopListening, true);
   }
 };

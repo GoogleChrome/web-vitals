@@ -65,38 +65,6 @@ describe('getLCP()', async function() {
     assertFullReportsAreCorrect(await getBeacons());
   });
 
-  it('reports the correct value on scroll (reportAllChanges === false)', async function() {
-    if (!browserSupportsLCP) this.skip();
-
-    await browser.url('/test/lcp');
-
-    // Wait until all images are loaded and fully rendered.
-    await imagesPainted();
-
-    // Scroll down
-    const footer = await $('footer');
-    await footer.scrollIntoView();
-
-    await beaconCountIs(1);
-    assertStandardReportsAreCorrect(await getBeacons());
-  });
-
-  it('reports the correct value on scroll (reportAllChanges === true)', async function() {
-    if (!browserSupportsLCP) this.skip();
-
-    await browser.url('/test/lcp?reportAllChanges=1');
-
-    // Wait until all images are loaded and fully rendered.
-    await imagesPainted();
-
-    // Scroll down
-    const footer = await $('footer');
-    await footer.scrollIntoView();
-
-    await beaconCountIs(3);
-    assertFullReportsAreCorrect(await getBeacons());
-  });
-
   it('reports the correct value on input (reportAllChanges === false)', async function() {
     if (!browserSupportsLCP) this.skip();
 
