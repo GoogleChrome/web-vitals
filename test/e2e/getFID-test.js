@@ -47,7 +47,6 @@ describe('getFID()', async function() {
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.entries[0].name, 'mousedown');
-    assert.strictEqual(fid.isFinal, true);
   });
 
   it('does not report if the browser does not support FID and the polyfill is not used', async function() {
@@ -85,7 +84,6 @@ describe('getFID()', async function() {
     assert(fid.id.match(/\d+-\d+/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
-    assert.strictEqual(fid.isFinal, true);
     assert.strictEqual(fid.entries[0].name, 'mousedown');
     if (browserSupportsFID) {
       assert('duration' in fid.entries[0]);

@@ -76,7 +76,6 @@ describe('getTTFB()', async function() {
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.entries.length, 1);
-    assert.strictEqual(ttfb.isFinal, true);
 
     assertValidEntry(ttfb.entries[0]);
   });
@@ -95,7 +94,6 @@ describe('getTTFB()', async function() {
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.entries.length, 1);
-    assert.strictEqual(ttfb.isFinal, true);
 
     assertValidEntry(ttfb.entries[0]);
   });

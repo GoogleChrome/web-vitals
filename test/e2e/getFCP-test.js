@@ -43,7 +43,6 @@ describe('getFCP()', async function() {
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.entries.length, 1);
-    assert.strictEqual(fcp.isFinal, true);
   });
 
   it('does not report if the browser does not support FCP', async function() {

@@ -15,6 +15,7 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
+import {finalMetrics} from './lib/finalMetrics.js';
 import {getFirstHidden} from './lib/getFirstHidden.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
@@ -38,8 +39,6 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
     if (value < firstHidden.timeStamp) {
       metric.value = value;
       metric.entries.push(entry);
-    } else {
-      metric.isFinal = true;
     }
 
     report();
@@ -48,12 +47,13 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
   const po = observe('largest-contentful-paint', entryHandler);
 
   if (po) {
-    report = bindReporter(onReport, metric, po, reportAllChanges);
+    report = bindReporter(onReport, metric, reportAllChanges);
 
     const stopListening = () => {
-      if (!metric.isFinal) {
+      if (!finalMetrics.has(metric)) {
         po.takeRecords().map(entryHandler as PerformanceEntryHandler);
-        metric.isFinal = true;
+        po.disconnect();
+        finalMetrics.add(metric);
         report();
       }
     }
