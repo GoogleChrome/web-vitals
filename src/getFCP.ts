@@ -15,6 +15,7 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
+import {finalMetrics} from './lib/finalMetrics.js';
 import {getFirstHidden} from './lib/getFirstHidden.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -29,11 +30,15 @@ export const getFCP = (onReport: ReportHandler) => {
 
   const entryHandler = (entry: PerformanceEntry) => {
     if (entry.name === 'first-contentful-paint') {
+      if (po) {
+        po.disconnect();
+      }
+
       // Only report if the page wasn't hidden prior to the first paint.
       if (entry.startTime < firstHidden.timeStamp) {
         metric.value = entry.startTime;
-        metric.isFinal = true;
         metric.entries.push(entry);
+        finalMetrics.add(metric);
         report();
       }
     }
@@ -41,6 +46,6 @@ export const getFCP = (onReport: ReportHandler) => {
 
   const po = observe('paint', entryHandler);
   if (po) {
-    report = bindReporter(onReport, metric, po);
+    report = bindReporter(onReport, metric);
   }
 };

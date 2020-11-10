@@ -31,10 +31,6 @@ export interface Metric {
   // together and calculate a total.
   id: string;
 
-  // `false` if the value of the metric may change in the future,
-  // for the current page.
-  isFinal: boolean;
-
   // Any performance entries used in the metric value calculation.
   // Note, entries will be added to the array as the value changes.
   entries: PerformanceEntry[];

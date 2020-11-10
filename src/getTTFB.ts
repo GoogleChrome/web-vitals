@@ -107,7 +107,6 @@ export const getTTFB = (onReport: ReportHandler) => {
           (navigationEntry as PerformanceNavigationTiming).responseStart;
 
       metric.entries = [navigationEntry];
-      metric.isFinal = true;
 
       onReport(metric);
     } catch (error) {

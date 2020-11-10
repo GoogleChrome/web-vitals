@@ -43,14 +43,10 @@ export const getCLS = (onReport: ReportHandler, reportAllChanges = false) => {
 
   const po = observe('layout-shift', entryHandler as PerformanceEntryHandler);
   if (po) {
-    report = bindReporter(onReport, metric, po, reportAllChanges);
+    report = bindReporter(onReport, metric, reportAllChanges);
 
-    onHidden(({isUnloading}) => {
+    onHidden(() => {
       po.takeRecords().map(entryHandler as PerformanceEntryHandler);
-
-      if (isUnloading) {
-        metric.isFinal = true;
-      }
       report();
     });
   }
