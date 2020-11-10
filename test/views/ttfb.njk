@@ -22,8 +22,10 @@
 
   <p>Text below the image</p>
 
+  <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+
   <script type="module">
-    import {getTTFB} from '/dist/web-vitals.es5.min.js';
+    import {getTTFB} from '{{ modulePath }}';
 
     (async function() {
       {% if awaitLoad %}

@@ -25,12 +25,29 @@
     <p>Text below the images that will get pushed down.</p>
   {% endif %}
 
+  <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+
   <script type="module">
-    import {getCLS} from '/dist/web-vitals.es5.min.js';
+    import {getCLS} from '{{ modulePath }}';
 
     getCLS((cls) => {
       // Log for easier manual testing.
       console.log(cls);
+
+      // Sources is verbose to serialize, so remove first.
+      cls = {
+        ...cls,
+        entries: cls.entries.map((e) => {
+          const {entryType, hadRecentInput, startTime, value} = e;
+          const sources = e.sources.map((s) => {
+            let node = s.node.nodeName.toLowerCase() +
+                (s.node.id ? `#${s.node.id}` : ``);
+
+            return {node};
+          });
+          return {entryType, hadRecentInput, sources, startTime, value};
+        }),
+      };
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(cls));

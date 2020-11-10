@@ -19,14 +19,14 @@ import {finalMetrics} from './lib/finalMetrics.js';
 import {getFirstHidden} from './lib/getFirstHidden.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
+import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {onHidden} from './lib/onHidden.js';
 import {ReportHandler} from './types.js';
 
 
 export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
-  const metric = initMetric('LCP');
   const firstHidden = getFirstHidden();
-
+  let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;
 
   const entryHandler = (entry: PerformanceEntry) => {
@@ -66,5 +66,17 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
     });
 
     onHidden(stopListening, true);
+
+    onBFCacheRestore((event) => {
+      metric = initMetric('LCP');
+      report = bindReporter(onReport, metric, reportAllChanges);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          metric.value = performance.now() - event.timeStamp;
+          finalMetrics.add(metric);
+          report();
+        });
+      });
+    });
   }
 };

@@ -24,13 +24,15 @@
   </p>
   <p>Text below the image</p>
 
+  <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+
   <!-- Include a tall element to ensure scrolling is possible. -->
   <div style="height: 100vh"></div>
 
   <footer>Text below the full-height element.</footer>
 
   <script type="module">
-    import {getLCP} from '/dist/web-vitals.es5.min.js';
+    import {getLCP} from '{{ modulePath }}';
 
     getLCP((lcp) => {
       // Log for easier manual testing.

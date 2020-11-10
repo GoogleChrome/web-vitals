@@ -22,8 +22,10 @@
   </p>
   <p>Text below the image</p>
 
+  <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+
   <script type="module">
-    import {getFCP} from '/dist/web-vitals.es5.min.js';
+    import {getFCP} from '{{ modulePath }}';
 
     getFCP((fcp) => {
       // Log for easier manual testing.

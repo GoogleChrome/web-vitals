@@ -33,7 +33,7 @@
         "max-len": [2, {
           "ignorePattern": "^\\s*import|= require\\(|^\\s*it\\(|^\\s*describe\\(",
           "ignoreUrls": true
-        }]
+        }],
       }
     },
     {
@@ -47,6 +47,7 @@
         "@typescript-eslint/no-use-before-define": "off",
         "@typescript-eslint/explicit-function-return-type": "off",
         "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/camelcase": "off",
         "node/no-missing-import": "off",
         "node/no-unsupported-features/es-syntax": "off",

@@ -24,7 +24,11 @@ let beforeUnloadFixAdded = false;
 export const onHidden = (cb: OnHiddenCallback, once = false) => {
   // Adding a `beforeunload` listener is needed to fix this bug:
   // https://bugs.chromium.org/p/chromium/issues/detail?id=987409
-  if (!beforeUnloadFixAdded) {
+  if (!beforeUnloadFixAdded &&
+      // Avoid adding this in Firefox as it'll break bfcache:
+      // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+      // @ts-ignore
+      typeof InstallTrigger === 'undefined') {
     // eslint-disable-next-line @typescript-eslint/no-empty-function
     addEventListener('beforeunload', () => {});
     beforeUnloadFixAdded = true;

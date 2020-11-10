@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-/**
- * Performantly generate a unique, 30-char string by combining a version
- * number, the current timestamp with a 13-digit number integer.
- * @return {string}
- */
-export const generateUniqueID = () => {
-  return `v1-${Date.now()}-${Math.floor(Math.random() * (9e12 - 1)) + 1e12}`;
-};
+export let firstHiddenTime =
+    document.visibilityState === 'hidden' ? 0 : Infinity;
+
+const onVisibilityChange = (event: Event) => {
+  if (document.visibilityState === 'hidden') {
+    firstHiddenTime = event.timeStamp;
+    removeEventListener('visibilitychange', onVisibilityChange, true);
+  }
+}
+
+// Note: do not add event listeners unconditionally (outside of polyfills).
+addEventListener('visibilitychange', onVisibilityChange, true);
