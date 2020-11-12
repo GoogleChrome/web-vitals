@@ -18,10 +18,10 @@ import {Metric} from '../types.js';
 import {generateUniqueID} from './generateUniqueID.js';
 
 
-export const initMetric = (name: Metric['name'], value = -1): Metric => {
+export const initMetric = (name: Metric['name'], value?: number): Metric => {
   return {
     name,
-    value,
+    value: typeof value === 'undefined' ? -1 : 0,
     delta: 0,
     entries: [],
     id: generateUniqueID()

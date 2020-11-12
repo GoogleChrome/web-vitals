@@ -35,7 +35,6 @@ const startTimeStamp: Date = new Date();
 /**
  * Accepts a callback to be invoked once the first input delay and event
  * are known.
- * @param {!Function} callback
  */
 export const firstInputPolyfill = (onFirstInput: FirstInputCallback) => {
   callbacks.push(onFirstInput);
@@ -85,7 +84,7 @@ const reportFirstInputDelayIfRecordedAndValid = () => {
       startTime: firstInputEvent!.timeStamp,
       processingStart: firstInputEvent!.timeStamp + firstInputDelay,
     } as PerformanceEventTiming;
-    callbacks.forEach(function(callback) {
+    callbacks.map(function(callback) {
       callback(entry);
     });
     callbacks = [];
@@ -136,7 +135,6 @@ const onPointerDown = (delay: number, event: Event) => {
  * Handles all input events and records the time between when the event
  * was received by the operating system and when it's JavaScript listeners
  * were able to run.
- * @param {Event} event
  */
 const onInput = (event: Event) => {
   // Only count cancelable events, which should trigger behavior
@@ -166,15 +164,13 @@ const onInput = (event: Event) => {
 /**
  * Invokes the passed callback const for =  each event type with t =>he
  * `onInput` const and =  `listenerOpts =>`.
- * @param {Function} callback
  */
 const eachEventType = (callback: addOrRemoveEventListener) => {
   const eventTypes = [
-    'click',
     'mousedown',
     'keydown',
     'touchstart',
     'pointerdown',
   ];
-  eventTypes.forEach((type) => callback(type, onInput, listenerOpts));
+  eventTypes.map((type) => callback(type, onInput, listenerOpts));
 }

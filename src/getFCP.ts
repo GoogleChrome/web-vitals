@@ -23,7 +23,7 @@ import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {ReportHandler} from './types.js';
 
 
-export const getFCP = (onReport: ReportHandler) => {
+export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const firstHidden = getFirstHidden();
   let metric = initMetric('FCP');
   let report: ReturnType<typeof bindReporter>;
@@ -46,11 +46,11 @@ export const getFCP = (onReport: ReportHandler) => {
 
   const po = observe('paint', entryHandler);
   if (po) {
-    report = bindReporter(onReport, metric);
+    report = bindReporter(onReport, metric, reportAllChanges);
 
     onBFCacheRestore((event) => {
       metric = initMetric('FCP');
-      report = bindReporter(onReport, metric);
+      report = bindReporter(onReport, metric, reportAllChanges);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           metric.value = performance.now() - event.timeStamp;

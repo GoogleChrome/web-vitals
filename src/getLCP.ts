@@ -24,7 +24,7 @@ import {onHidden} from './lib/onHidden.js';
 import {ReportHandler} from './types.js';
 
 
-export const getLCP = (onReport: ReportHandler, reportAllChanges = false) => {
+export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const firstHidden = getFirstHidden();
   let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;

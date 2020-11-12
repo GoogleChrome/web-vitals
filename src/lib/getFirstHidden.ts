@@ -36,7 +36,7 @@ export const getFirstHidden = () => {
     // since navigation start. This isn't a perfect heuristic, but it's the
     // best we can do until an API is available to support querying past
     // visibilityState.
-    if (self.__WEB_VITALS_EXTERNAL_POLYFILL__) {
+    if (self.__WEB_VITALS_POLYFILL__) {
       firstHiddenTime = self.webVitals.firstHiddenTime;
       if (firstHiddenTime === Infinity) {
         trackChanges();

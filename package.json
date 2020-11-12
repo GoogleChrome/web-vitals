@@ -2,8 +2,8 @@
   "name": "web-vitals",
   "version": "0.2.4",
   "description": "Easily measure performance metrics in JavaScript",
-  "main": "dist/web-vitals.es5.umd.min.js",
-  "module": "dist/web-vitals.es5.min.js",
+  "main": "dist/web-vitals.full.umd.js",
+  "module": "dist/web-vitals.full.js",
   "typings": "dist/index.d.ts",
   "files": [
     "dist",

@@ -21,7 +21,7 @@ export interface OnHiddenCallback {
 
 let beforeUnloadFixAdded = false;
 
-export const onHidden = (cb: OnHiddenCallback, once = false) => {
+export const onHidden = (cb: OnHiddenCallback, once?: boolean) => {
   // Adding a `beforeunload` listener is needed to fix this bug:
   // https://bugs.chromium.org/p/chromium/issues/detail?id=987409
   if (!beforeUnloadFixAdded &&

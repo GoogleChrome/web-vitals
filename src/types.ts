@@ -25,10 +25,13 @@ export interface Metric {
   // On the first report, `delta` and `value` will always be the same.
   delta: number;
 
-  // A unique ID representing this particular metric that's specific to the
-  // current page. This ID can be used by an analytics tool to dedupe
-  // multiple values sent for the same metric, or to group multiple deltas
-  // together and calculate a total.
+  // A unique ID representing this particular metric instance. This ID can
+  // be used by an analytics tool to dedupe multiple values sent for the same
+  // metric instance, or to group multiple deltas together and calculate a
+  // total. It can also be used to differentiate multiple different metric
+  // instances sent from the same page, which can happen if the page is
+  // restored from the back/forward cache (in that case new metrics object
+  // get created).
   id: string;
 
   // Any performance entries used in the metric value calculation.
@@ -59,6 +62,6 @@ declare global {
     webVitals: WebVitalsGlobal;
 
     // Build flags:
-    __WEB_VITALS_EXTERNAL_POLYFILL__: boolean;
+    __WEB_VITALS_POLYFILL__: boolean;
   }
 }

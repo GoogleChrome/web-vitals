@@ -21,12 +21,12 @@ import {Metric, ReportHandler} from '../types.js';
 export const bindReporter = (
   callback: ReportHandler,
   metric: Metric,
-  observeAllUpdates?: boolean,
+  reportAllChanges?: boolean,
 ) => {
   let prevValue: number;
   return () => {
     if (metric.value >= 0) {
-      if (observeAllUpdates ||
+      if (reportAllChanges ||
           finalMetrics.has(metric) ||
           document.visibilityState === 'hidden') {
         metric.delta = metric.value - (prevValue || 0);

@@ -17,7 +17,7 @@ import replace from '@rollup/plugin-replace';
 import {terser} from 'rollup-plugin-terser';
 import babel from 'rollup-plugin-babel';
 
-const configurePlugins = ({module, externalPolyfill = false}) => {
+const configurePlugins = ({module, polyfill = false}) => {
   return [
     babel({
       presets: [['@babel/preset-env', {
@@ -32,7 +32,7 @@ const configurePlugins = ({module, externalPolyfill = false}) => {
       compress: true,
     }),
     replace({
-      'self.__WEB_VITALS_EXTERNAL_POLYFILL__': externalPolyfill,
+      'self.__WEB_VITALS_POLYFILL__': polyfill,
     })
   ]
 }
@@ -44,7 +44,7 @@ const configs = [
       format: 'esm',
       file: './dist/web-vitals.full.js',
     },
-    plugins: configurePlugins({module: true, externalPolyfill: false}),
+    plugins: configurePlugins({module: true, polyfill: false}),
   },
   {
     input: 'dist/modules/index.js',
@@ -53,24 +53,24 @@ const configs = [
       file: `./dist/web-vitals.full.umd.js`,
       name: 'webVitals',
     },
-    plugins: configurePlugins({module: false, externalPolyfill: false}),
+    plugins: configurePlugins({module: false, polyfill: false}),
   },
   {
     input: 'dist/modules/index.js',
     output: {
       format: 'esm',
-      file: './dist/web-vitals.external-polyfill.js',
+      file: './dist/web-vitals.base.js',
     },
-    plugins: configurePlugins({module: true, externalPolyfill: true}),
+    plugins: configurePlugins({module: true, polyfill: true}),
   },
   {
     input: 'dist/modules/index.js',
     output: {
       format: 'umd',
-      file: `./dist/web-vitals.external-polyfill.umd.js`,
+      file: `./dist/web-vitals.base.umd.js`,
       name: 'webVitals',
     },
-    plugins: configurePlugins({module: false, externalPolyfill: true}),
+    plugins: configurePlugins({module: false, polyfill: true}),
   },
   {
     input: 'dist/modules/polyfill.js',

@@ -25,7 +25,7 @@ import {PerformanceEventTiming, ReportHandler} from './types.js';
 import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
 
 
-export const getFID = (onReport: ReportHandler) => {
+export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const firstHidden = getFirstHidden();
   let metric = initMetric('FID');
   let report: ReturnType<typeof bindReporter>;
@@ -41,7 +41,7 @@ export const getFID = (onReport: ReportHandler) => {
   };
 
   const po = observe('first-input', entryHandler as PerformanceEntryHandler);
-  report = bindReporter(onReport, metric);
+  report = bindReporter(onReport, metric, reportAllChanges);
 
   if (po) {
     onHidden(() => {
@@ -50,14 +50,14 @@ export const getFID = (onReport: ReportHandler) => {
     }, true);
   }
 
-  if (self.__WEB_VITALS_EXTERNAL_POLYFILL__) {
+  if (self.__WEB_VITALS_POLYFILL__) {
     // Prefer the native implementation if available,
     if (!po) {
       window.webVitals.firstInputPolyfill(entryHandler)
     }
     onBFCacheRestore(() => {
       metric = initMetric('FID');
-      report = bindReporter(onReport, metric);
+      report = bindReporter(onReport, metric, reportAllChanges);
       window.webVitals.resetFirstInputPolyfill();
       window.webVitals.firstInputPolyfill(entryHandler);
     });
@@ -66,7 +66,7 @@ export const getFID = (onReport: ReportHandler) => {
     if (po) {
       onBFCacheRestore(() => {
         metric = initMetric('FID');
-        report = bindReporter(onReport, metric);
+        report = bindReporter(onReport, metric, reportAllChanges);
         resetFirstInputPolyfill();
         firstInputPolyfill((entry) => {
           entryHandler(entry)

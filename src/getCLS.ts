@@ -28,7 +28,7 @@ interface LayoutShift extends PerformanceEntry {
   hadRecentInput: boolean;
 }
 
-export const getCLS = (onReport: ReportHandler, reportAllChanges = false) => {
+export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   let metric = initMetric('CLS', 0);
   let report: ReturnType<typeof bindReporter>;
 

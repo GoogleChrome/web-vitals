@@ -52,7 +52,7 @@ app.get('/test/:view', function(req, res) {
   const data = {
     ...req.query,
     modulePath: `/dist/web-vitals.${
-        req.query.polyfill ? `external-polyfill` : `full`}.js`,
+        req.query.polyfill ? `base` : `full`}.js`,
     webVitalsPolyfill: fs.readFileSync('./dist/polyfill.js', 'utf-8'),
   }
   res.send(nunjucks.render(`${req.params.view}.njk`, data));
