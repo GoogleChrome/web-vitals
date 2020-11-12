@@ -3,13 +3,16 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Log the results to the console](#log-the-results-to-the-console)
+  - [Basic usage](#basic-usage)
   - [Report the value on every change](#report-the-value-on-every-change)
   - [Report only the delta of changes](#report-only-the-delta-of-changes)
   - [Send the results to an analytics endpoint](#send-the-results-to-an-analytics-endpoint)
   - [Send the results to Google Analytics](#send-the-results-to-google-analytics)
   - [Send the results to Google Tag Manager](#send-the-results-to-google-tag-manager)
   - [Load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn)
+- [Bundle options](#bundle-options)
+  - [Which bundle is right for you?](#which-bundle-is-right-for-you)
+  - [How to use the polyfill](#how-to-use-the-polyfill)
 - [API](#api)
   - [Types](#types)
   - [Functions](#functions)
@@ -45,14 +48,11 @@ _**Note:** If you're not using npm, you can still load `web-vitals` via `<script
 
 ## Usage
 
-Each of the Web Vitals metrics are exposed as a single function that takes an `onReport` callback. This callback will fire any time either:
+Each of the Web Vitals metrics is exposed as a single function that takes an `onReport` callback. This callback will be called any time the metric value is available and ready to be reported.
 
-- The final value of the metric has been determined.
-- The current metric value needs to be [reported right away](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden) (due to the page being unloaded or backgrounded).
+### Basic usage
 
-### Log the results to the console
-
-The following example logs the result of each metric to the console once its value is ready to report.
+The following example measures each of the Core Web Vitals metrics and logs the result to the console once its value is ready to report.
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
@@ -62,23 +62,30 @@ getFID(console.log);
 getLCP(console.log);
 ```
 
-_**Note:** some of these metrics will not report until the user has interacted with the page, switched tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try switching tabs and then switching back._
+Note that some of these metrics will not report until the user has interacted with the page, switched tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try reloading the page (with [preserve log](https://developers.google.com/web/tools/chrome-devtools/console/reference#persist) enabled) or switching tabs and then switching back.
+
+Also, in some cases a metric callback may never be called:
+
+- FID is not reported if the user never interacts with the page.
+- FCP, FID, and LCP are not reported if the page was loaded in the background.
+
+In other cases, a metric callback may be called more than once:
+
+- CLS should be reported any time the [a page's `visibilityState` changes to hidden](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden).
+- CLS, FCP, FID, and LCP are reported again after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
 
 ### Report the value on every change
 
-In most cases, you only want to call `onReport` when the metric is ready. However, for metrics like LCP and CLS (where the value may change over time) you can pass an optional, second argument (`reportAllChanges`). If `true` then `onReport` will be called any time the value of the metric changes, or once the final value has been determined.
+In most cases, you only want `onReport` to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each layout shift as it happens) by setting the optional, second argument (`reportAllChanges`) to `true`.
 
-This could be useful if, for example, you want to report the current LCP candidate as the page is loading, or you want to report layout shifts (and the current CLS value) as users are interacting with the page. In general, though, using `reportAllChanges` is not needed (or recommended).
+This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended).
 
 ```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
+import {getCLS} from 'web-vitals';
 
+// Logs CLS as the value changes.
 getCLS(console.log, true);
-getFID(console.log); // Does not take a `reportAllChanges` param.
-getLCP(console.log, true);
 ```
-
-_**Note:** when using the `reportAllChanges` option, pay attention to the `isFinal` property of the reported metric, which will indicate whether or not the value might change in the future. See the [API](#api) reference below for more details._
 
 ### Report only the delta of changes
 
@@ -101,6 +108,8 @@ getLCP(logDelta);
 ```
 
 _**Note:** the first time the `onReport` function is called, its `value` and `delta` properties will be the same._
+
+In addition to using the `id` field to group multiple deltas for the same metric, it can also be used to differentiate different metrics reported on the same page. For example, after a back/forward cache restore, a new metric object is created with a new `id` (since back/forward cache restores are considered separate page visits).
 
 ### Send the results to an analytics endpoint
 
@@ -153,6 +162,8 @@ function sendToGoogleAnalytics({name, delta, id}) {
     eventLabel: id,
     // Use a non-interaction event to avoid affecting bounce rate.
     nonInteraction: true,
+    // Use `sendBeacon()` if the browser supports it.
+    transport: 'beacon',
   });
 }
 
@@ -229,7 +240,7 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
 
 ```html
 <!-- Load `web-vitals` using a classic script that sets the global `webVitals` object. -->
-<script defer src="https://unpkg.com/web-vitals@0.2.4/dist/web-vitals.es5.umd.min.js"></script>
+<script defer src="https://unpkg.com/web-vitals"></script>
 <script>
 addEventListener('DOMContentLoaded', function() {
   webVitals.getCLS(console.log);
@@ -242,7 +253,7 @@ addEventListener('DOMContentLoaded', function() {
 ```html
 <!-- Load `web-vitals` using a module script. -->
 <script type="module">
-  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals@0.2.4/dist/web-vitals.es5.min.js?module';
+  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals?module';
 
   getCLS(console.log);
   getFID(console.log);
@@ -251,6 +262,86 @@ addEventListener('DOMContentLoaded', function() {
 ```
 
 _**Note:** it's safe to use module scripts in legacy browsers because unknown script types are ignored._
+
+## Bundle options
+
+The `web-vitals` library includes a base set of libraries as well as a polyfill script to improve [browser support](#browser-support) for some of the metrics (where possible).
+
+The library is released as several different build versions, allowing developers to chose the version that best meets their needs or integrates with their architecture.
+
+<table>
+  <tr>
+    <td width="35%">
+      <strong>Filename</strong> <em>(all within <code>dist/*</code>)</em>
+    </td>
+    <td><strong>Export</strong></td>
+    <td><strong>Description</strong></td>
+  </tr>
+  <tr>
+    <td><code>web-vitals.full.js</code></td>
+    <td><code>pkg.module</code></td>
+    <td>
+      <p>An ES module bundle of all metric functions, including a minimal polyfill to support back/forward cache restores.</p>
+      Using the "full" bundle is the simplest way to consume this library out of the box.
+    </td>
+  </tr>
+  <tr>
+    <td><code>web-vitals.full.umd.js</code></td>
+    <td><code>pgk.main</code></td>
+    <td>
+      A UMD version of <code>web-vitals.full.js</code> (exposed on the <code>window.webVitals.*</code> namespace).
+    </td>
+  </tr>
+  <tr>
+    <td><code>web-vitals.base.js</code></td>
+    <td>--</td>
+    <td>
+      <p>An ES module bundle of the <code>web-vitals</code> library without any polyfills included.</p>
+      Use this bundle if (and only if) you've also added the <code>polyfill.js</code> script to the <code>&lt;head&gt;</code> of your pages. See <a href="#how-to-use-the-polyfill">how to use the polyfill</a> for more details.
+    </td>
+  </tr>
+  <tr>
+    <td><code>polyfill.js</code></td>
+    <td>--</td>
+    <td>
+      A set of small polyfills that expands browser supports (including back/forward cache restores) and fills in some measurements gaps. See <a href="#how-to-use-the-polyfill">how to use the polyfill</a> for more details.
+    </td>
+  </tr>
+</table>
+
+### Which bundle is right for you?
+
+Most developers will generally want to use the "full" bundle (either the ES module or UMD version, depending on your build system), as it's the easiest to use out of the box and integrate into existing build tools.
+
+However, there are a few good reasons to consider using the "base" version along with the `polyfill.js` script. For example:
+
+- FID can be measured in all browsers.
+- FCP, FID, and LCP will be more accurate in some cases (since the polyfill detects the page's initial `visibilityState` earlier).
+
+Also, the minimal polyfill to support back/forward cache restores that is found in the "full" version is largely the same as the code used in the `polyfill.js` script—just split out. This means that using the polyfill gets you wider browser support and more accurate results with almost no increased code cost (just increased implementation complexity).
+
+### How to use the polyfill
+
+Using the polyfill is a two step process:
+
+**1. Inline the code from `polyfill.js` into the `<head>` of your pages.**
+
+For the polyfill to work, it must be added to the `<head>`. The polyfill adds event listeners and records initial page visibility state, and that must happen before any other code runs or the page is rendered.
+
+The polyfill is quite small (~0.5 KiB, gzipped), so it can be inlined to avoid a blocking request.
+
+**2) Import the "base" build of the library**
+
+In your application code, import the "base" build rather than the "full" build. To do this, change any `import` statements to reference `web-vitals/base` rather than `web-vitals`:
+
+```diff
+- import {getLCP, getFID, getCLS} from 'web-vitals';
++ import {getLCP, getFID, getCLS} from 'web-vitals/base';
+```
+
+All other usage instructions (as well as the public API) are the same in both versions.
+
+_**Note:** while it's certainly possible to copy and paste the code in `polyfill.js` directly into your templates (for step #1 above), it's better to automate this within your build process—otherwise you risk the polyfill and base scripts getting out of sync when new versions are released._
 
 ## API
 
@@ -275,10 +366,6 @@ interface Metric {
   // multiple values sent for the same metric, or to group multiple deltas
   // together and calculate a total.
   id: string;
-
-  // `false` if the value of the metric may change in the future,
-  // for the current page.
-  isFinal: boolean;
 
   // Any performance entries used in the metric value calculation.
   // Note, entries will be added to the array as the value changes.
@@ -311,7 +398,7 @@ _**Important:** unlike other metrics, CLS continues to monitor changes for the e
 #### `getFCP()`
 
 ```ts
-type getFCP = (onReport: ReportHandler) => void
+type getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
 Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a `DOMHighResTimeStamp`.
@@ -319,7 +406,7 @@ Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls 
 #### `getFID()`
 
 ```ts
-type getFID = (onReport: ReportHandler) => void
+type getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
 Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)). The reported value is a `DOMHighResTimeStamp`.
@@ -339,7 +426,7 @@ If the `reportAllChanges` param is `true`, the `onReport` function will be calle
 #### `getTTFB()`
 
 ```ts
-type getTTFB = (onReport: ReportHandler) => void
+type getTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
 Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a `DOMHighResTimeStamp`.
@@ -364,25 +451,15 @@ using `performance.timing` (with the timestamps converted from epoch time to `DO
 
 ## Browser Support
 
-This code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9 (when transpiled to ES5). However, some of the APIs required to capture these metrics are only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
+The `web-vitals` code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9. However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
 
 Browser support for each function is as follows:
 
-- `getCLS()`: Chromium
-- `getFCP()`: Chromium
-- `getFID()`: Chromium, Firefox, Safari, Internet Explorer (with polyfill, [see below](#fid-polyfill))
+- `getCLS()`: Chromium,
+- `getFCP()`: Chromium, Safari Technology Preview
+- `getFID()`: Chromium, Firefox, Safari, Internet Explorer (with the [polyfill](#how-to-use-the-polyfill))
 - `getLCP()`: Chromium
 - `getTTFB()`: Chromium, Firefox, Safari, Internet Explorer
-
-### FID Polyfill
-
-The `getFID()` function will work in all browsers if the page has included the [FID polyfill](https://github.com/GoogleChromeLabs/first-input-delay).
-
-Browsers that support the native [Event Timing API](https://wicg.github.io/event-timing/) will use that and report the metric value from the `first-input` performance entry.
-
-Browsers that **do not** support the native Event Timing API will use the value reported by the polyfill, and the `entries` array will contain a plain-object version of the native [`PerformanceEventTiming`](https://wicg.github.io/event-timing/#sec-performance-event-timing) object.
-
-_**Note:** the `duration` and `processingEnd` properties of the `PerformanceEventTiming` will not be present, as they're not exposed by the polyfill._
 
 ## Development
 
