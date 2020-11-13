@@ -42,7 +42,7 @@ const configs = [
     input: 'dist/modules/index.js',
     output: {
       format: 'esm',
-      file: './dist/web-vitals.full.js',
+      file: './dist/web-vitals.js',
     },
     plugins: configurePlugins({module: true, polyfill: false}),
   },
@@ -50,7 +50,7 @@ const configs = [
     input: 'dist/modules/index.js',
     output: {
       format: 'umd',
-      file: `./dist/web-vitals.full.umd.js`,
+      file: `./dist/web-vitals.umd.js`,
       name: 'webVitals',
     },
     plugins: configurePlugins({module: false, polyfill: false}),

@@ -36,7 +36,7 @@ export interface Metric {
 
   // Any performance entries used in the metric value calculation.
   // Note, entries will be added to the array as the value changes.
-  entries: PerformanceEntry[];
+  entries: (PerformanceEntry | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
 }
 
 export interface ReportHandler {
@@ -46,14 +46,26 @@ export interface ReportHandler {
 // https://wicg.github.io/event-timing/#sec-performance-event-timing
 export interface PerformanceEventTiming extends PerformanceEntry {
   processingStart: DOMHighResTimeStamp;
+  processingEnd: DOMHighResTimeStamp;
+  duration: DOMHighResTimeStamp;
   cancelable?: boolean;
   target?: Element;
 }
 
+export type FirstInputPolyfillEntry =
+    Omit<PerformanceEventTiming, 'processingEnd' | 'processingEnd' | 'toJSON'>
+
+export interface FirstInputPolyfillCallback {
+  (entry: FirstInputPolyfillEntry): void;
+}
+
+export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
+    'initiatorType' | 'nextHopProtocol' | 'redirectCount' | 'transferSize' |
+    'encodedBodySize' | 'decodedBodySize' | 'toJSON'>
+
 export interface WebVitalsGlobal {
-  firstInputPolyfill: (onFirstInput: (entry: PerformanceEventTiming) => void) => void;
+  firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;
   resetFirstInputPolyfill: () => void;
-  // getFirstHiddenTime: () => number;
   firstHiddenTime: number;
 }
 

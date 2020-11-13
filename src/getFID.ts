@@ -21,8 +21,8 @@ import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {onHidden} from './lib/onHidden.js';
-import {PerformanceEventTiming, ReportHandler} from './types.js';
 import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
+import {FirstInputPolyfillCallback, PerformanceEventTiming, ReportHandler} from './types.js';
 
 
 export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
@@ -53,13 +53,13 @@ export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   if (self.__WEB_VITALS_POLYFILL__) {
     // Prefer the native implementation if available,
     if (!po) {
-      window.webVitals.firstInputPolyfill(entryHandler)
+      window.webVitals.firstInputPolyfill(entryHandler as FirstInputPolyfillCallback)
     }
     onBFCacheRestore(() => {
       metric = initMetric('FID');
       report = bindReporter(onReport, metric, reportAllChanges);
       window.webVitals.resetFirstInputPolyfill();
-      window.webVitals.firstInputPolyfill(entryHandler);
+      window.webVitals.firstInputPolyfill(entryHandler as FirstInputPolyfillCallback);
     });
   } else {
     // Only monitor bfcache restores if the browser supports FID natively.
@@ -68,9 +68,7 @@ export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
         metric = initMetric('FID');
         report = bindReporter(onReport, metric, reportAllChanges);
         resetFirstInputPolyfill();
-        firstInputPolyfill((entry) => {
-          entryHandler(entry)
-        });
+        firstInputPolyfill(entryHandler as FirstInputPolyfillCallback);
       });
     }
   }

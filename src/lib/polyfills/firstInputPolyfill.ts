@@ -14,20 +14,16 @@
  * limitations under the License.
  */
 
-import {PerformanceEventTiming} from '../../types.js';
+import {FirstInputPolyfillEntry, FirstInputPolyfillCallback} from '../../types.js';
 
 
 type addOrRemoveEventListener =
     typeof addEventListener | typeof removeEventListener;
 
-interface FirstInputCallback {
-  (entry: PerformanceEventTiming): void;
-}
-
 let firstInputEvent: Event|null;
 let firstInputDelay: number;
 let firstInputTimeStamp: Date;
-let callbacks: FirstInputCallback[]
+let callbacks: FirstInputPolyfillCallback[]
 
 const listenerOpts: AddEventListenerOptions = {passive: true, capture: true};
 const startTimeStamp: Date = new Date();
@@ -36,7 +32,9 @@ const startTimeStamp: Date = new Date();
  * Accepts a callback to be invoked once the first input delay and event
  * are known.
  */
-export const firstInputPolyfill = (onFirstInput: FirstInputCallback) => {
+export const firstInputPolyfill = (
+  onFirstInput: FirstInputPolyfillCallback
+) => {
   callbacks.push(onFirstInput);
   reportFirstInputDelayIfRecordedAndValid();
 }
@@ -83,7 +81,7 @@ const reportFirstInputDelayIfRecordedAndValid = () => {
       cancelable: firstInputEvent!.cancelable,
       startTime: firstInputEvent!.timeStamp,
       processingStart: firstInputEvent!.timeStamp + firstInputDelay,
-    } as PerformanceEventTiming;
+    } as FirstInputPolyfillEntry;
     callbacks.map(function(callback) {
       callback(entry);
     });

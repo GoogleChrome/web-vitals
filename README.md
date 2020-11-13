@@ -3,6 +3,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
+  - [Load the libary](#load-the-library)
   - [Basic usage](#basic-usage)
   - [Report the value on every change](#report-the-value-on-every-change)
   - [Report only the delta of changes](#report-only-the-delta-of-changes)
@@ -10,14 +11,16 @@
   - [Send the results to Google Analytics](#send-the-results-to-google-analytics)
   - [Send the results to Google Tag Manager](#send-the-results-to-google-tag-manager)
   - [Load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn)
-- [Bundle options](#bundle-options)
+- [Bundle versions](#bundle-versions)
   - [Which bundle is right for you?](#which-bundle-is-right-for-you)
-  - [How to use the polyfill](#how-to-use-the-polyfill)
+  - [How the polyfill works](#how-the-polyfill-works)
 - [API](#api)
   - [Types](#types)
   - [Functions](#functions)
-- [Development](#development)
 - [Browser Support](#browser-support)
+- [Limitations](#limitations)
+- [Development](#development)
+
 
 ## Overview
 
@@ -48,11 +51,58 @@ _**Note:** If you're not using npm, you can still load `web-vitals` via `<script
 
 ## Usage
 
-Each of the Web Vitals metrics is exposed as a single function that takes an `onReport` callback. This callback will be called any time the metric value is available and ready to be reported.
+### Load the library
+
+There are two different versions of the `web-vitals` library (the "standard" version and the "base+polyfill" version), and how you load the library depends on which version you want to use.
+
+For details on the difference between the two versions, see <a href="#which-version-is-right-for-you">which version is right for you</a>.
+
+**1. The "standard" version**
+
+To load the "standard" version, import modules from the `web-vitals` package in your application code (as you would with any npm package and node-based build tool):
+
+```js
+import {getLCP, getFID, getCLS} from 'web-vitals';
+```
+
+**2. The "base+polyfill" version**
+
+Loading the "base+polyfill" version is a two-step process:
+
+First, in your application code, import the "base" build rather than the "standard" build. To do this, change any `import` statements that reference `web-vitals` to `web-vitals/base`:
+
+```diff
+- import {getLCP, getFID, getCLS} from 'web-vitals';
++ import {getLCP, getFID, getCLS} from 'web-vitals/base';
+```
+
+Then, inline the code from `dist/polyfill.js` into the `<head>` of your pages.
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      // Inline code from `dist/polyfill.js` here
+    </script>
+  </head>
+  <body>
+    ...
+  </body>
+</html>
+```
+
+Note that the code _must_ go in the `<head>` of your pages in order to work. See [how the polyfill works](#how-the-polyfill-works) for more details.
+
+_**Tip:** while it's certainly possible to inline the code in `dist/polyfill.js` by copy and pasting it directly into your templates, it's better to automate this process in a build step—otherwise you risk the "base" and the "polyfill" scripts getting out of sync when new versions are released._
 
 ### Basic usage
 
+Each of the Web Vitals metrics is exposed as a single function that takes an `onReport` callback. This callback will be called any time the metric value is available and ready to be reported.
+
 The following example measures each of the Core Web Vitals metrics and logs the result to the console once its value is ready to report.
+
+_(The examples below import the "standard" version, but they will work with the polyfill version as well.)_
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
@@ -236,10 +286,25 @@ getLCP(sendToGTM);
 
 The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
-The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com) using either classic or module scripts:
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just modern browsers (using the "standard" version) or all browsers (using the "polyfill" version):
+
+**Load the "standard" version** (using a module script)
 
 ```html
-<!-- Load `web-vitals` using a classic script that sets the global `webVitals` object. -->
+<!-- Append the `?module` param to load the module version of `web-vitals` -->
+<script type="module">
+  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals?module';
+
+  getCLS(console.log);
+  getFID(console.log);
+  getLCP(console.log);
+</script>
+```
+
+**Load the "standard" version** _(using a classic script)_
+
+```html
+<!-- Without the `?module` param, the UMD version is loaded and sets the `webVitals` global -->
 <script defer src="https://unpkg.com/web-vitals"></script>
 <script>
 addEventListener('DOMContentLoaded', function() {
@@ -250,24 +315,36 @@ addEventListener('DOMContentLoaded', function() {
 </script>
 ```
 
-```html
-<!-- Load `web-vitals` using a module script. -->
-<script type="module">
-  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals?module';
+**Load the "base+polyfill" version** _(using a classic script)_
 
-  getCLS(console.log);
-  getFID(console.log);
-  getLCP(console.log);
-</script>
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      // Inline code from `https://unpkg.com/web-vitals/dist/polyfill.js` here.
+    </script>
+  </head>
+  <body>
+    ...
+    <!-- Load the UMD version of the "polyfill" base bundle. -->
+    <script defer src="https://unpkg.com/web-vitals/dist/web-vitals.base.umd.js"></script>
+    <script>
+    addEventListener('DOMContentLoaded', function() {
+      webVitals.getCLS(console.log);
+      webVitals.getFID(console.log);
+      webVitals.getLCP(console.log);
+    });
+    </script>
+  </body>
+</html>
 ```
 
-_**Note:** it's safe to use module scripts in legacy browsers because unknown script types are ignored._
+## Bundle versions
 
-## Bundle options
+The `web-vitals` package includes builds for both the "standard" and "base+polyfill" versions, as well as different formats of each to allow developers to choose the format that best meets their needs or integrates with their architecture.
 
-The `web-vitals` library includes a base set of libraries as well as a polyfill script to improve [browser support](#browser-support) for some of the metrics (where possible).
-
-The library is released as several different build versions, allowing developers to chose the version that best meets their needs or integrates with their architecture.
+The following table lists all the bundles distributed with the `web-vitals` package on npm.
 
 <table>
   <tr>
@@ -278,70 +355,61 @@ The library is released as several different build versions, allowing developers
     <td><strong>Description</strong></td>
   </tr>
   <tr>
-    <td><code>web-vitals.full.js</code></td>
+    <td><code>web-vitals.js</code></td>
     <td><code>pkg.module</code></td>
     <td>
-      <p>An ES module bundle of all metric functions, including a minimal polyfill to support back/forward cache restores.</p>
-      Using the "full" bundle is the simplest way to consume this library out of the box.
+      <p>An ES module bundle of all metric functions, without any extra polyfills to expand browser support.</p>
+      This is the "standard" version and is the simplest way to consume this library out of the box.
     </td>
   </tr>
   <tr>
-    <td><code>web-vitals.full.umd.js</code></td>
+    <td><code>web-vitals.umd.js</code></td>
     <td><code>pgk.main</code></td>
     <td>
-      A UMD version of <code>web-vitals.full.js</code> (exposed on the <code>window.webVitals.*</code> namespace).
+      A UMD version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
     </td>
   </tr>
   <tr>
     <td><code>web-vitals.base.js</code></td>
     <td>--</td>
     <td>
-      <p>An ES module bundle of the <code>web-vitals</code> library without any polyfills included.</p>
+      <p>An ES module bundle containing just the "base" part of the "base+polyfill" version.</p>
       Use this bundle if (and only if) you've also added the <code>polyfill.js</code> script to the <code>&lt;head&gt;</code> of your pages. See <a href="#how-to-use-the-polyfill">how to use the polyfill</a> for more details.
+    </td>
+  </tr>
+    <tr>
+    <td><code>web-vitals.base.umd.js</code></td>
+    <td><code>--</code></td>
+    <td>
+      A UMD version of the <code>web-vitals.base.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
     </td>
   </tr>
   <tr>
     <td><code>polyfill.js</code></td>
     <td>--</td>
     <td>
-      A set of small polyfills that expands browser supports (including back/forward cache restores) and fills in some measurements gaps. See <a href="#how-to-use-the-polyfill">how to use the polyfill</a> for more details.
+      <p>The "polyfill" part of the "base+polyfill" version. This script should be used with either <code>web-vitals.base.js</code> or <code>web-vitals.base.umd.js</code> (it will not work with the <code>web-vitals.js</code> or <code>web-vitals.umd.js</code> bundles).</p>
+      See <a href="#how-to-use-the-polyfill">how to use the polyfill</a> for more details.
     </td>
   </tr>
 </table>
 
 ### Which bundle is right for you?
 
-Most developers will generally want to use the "full" bundle (either the ES module or UMD version, depending on your build system), as it's the easiest to use out of the box and integrate into existing build tools.
+Most developers will generally want to use the "standard" bundle (either the ES module or UMD version, depending on your build system), as it's the easiest to use out of the box and integrate into existing build tools.
 
-However, there are a few good reasons to consider using the "base" version along with the `polyfill.js` script. For example:
+However, there are a few good reasons to consider using the "polyfill" version, for example:
 
 - FID can be measured in all browsers.
 - FCP, FID, and LCP will be more accurate in some cases (since the polyfill detects the page's initial `visibilityState` earlier).
 
-Also, the minimal polyfill to support back/forward cache restores that is found in the "full" version is largely the same as the code used in the `polyfill.js` script—just split out. This means that using the polyfill gets you wider browser support and more accurate results with almost no increased code cost (just increased implementation complexity).
+### How the polyfill works
 
-### How to use the polyfill
+The `polyfill.js` script adds event listeners (to track FID cross-browser), and it records initial page visibility state as well as the timestamp of the first visibility change to hidden (to improve the accuracy of FCP, LCP, and FID).
 
-Using the polyfill is a two step process:
+In order for it to work properly, the script must be the first script added to the page, and it must run before the browser renders any content to the screen. This is why it needs to be added to the `<head>` of the document.
 
-**1. Inline the code from `polyfill.js` into the `<head>` of your pages.**
-
-For the polyfill to work, it must be added to the `<head>`. The polyfill adds event listeners and records initial page visibility state, and that must happen before any other code runs or the page is rendered.
-
-The polyfill is quite small (~0.5 KiB, gzipped), so it can be inlined to avoid a blocking request.
-
-**2) Import the "base" build of the library**
-
-In your application code, import the "base" build rather than the "full" build. To do this, change any `import` statements to reference `web-vitals/base` rather than `web-vitals`:
-
-```diff
-- import {getLCP, getFID, getCLS} from 'web-vitals';
-+ import {getLCP, getFID, getCLS} from 'web-vitals/base';
-```
-
-All other usage instructions (as well as the public API) are the same in both versions.
-
-_**Note:** while it's certainly possible to copy and paste the code in `polyfill.js` directly into your templates (for step #1 above), it's better to automate this within your build process—otherwise you risk the polyfill and base scripts getting out of sync when new versions are released._
+The "standard" version of the `web-vitals` library includes some of the same logic found in `polyfill.js`. To avoid duplicating that code when using the "base+polyfill" version, the `web-vitals.base.js` bundle does not include any polyfill logic, instead it coordinates with the code in `polyfill.js`, which is why the two scripts must be used together.
 
 ## API
 
@@ -369,7 +437,7 @@ interface Metric {
 
   // Any performance entries used in the metric value calculation.
   // Note, entries will be added to the array as the value changes.
-  entries: PerformanceEntry[];
+  entries: (PerformanceEntry | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
 }
 ```
 
@@ -378,6 +446,45 @@ interface Metric {
 ```ts
 interface ReportHandler {
   (metric: Metric): void;
+}
+```
+
+#### `FirstInputPolyfillEntry`
+
+When using the FID polyfill (and if the browser doesn't natively support the Event Timing API), `metric.entries` will contain an object that polyfills the `PerformanceEventTiming` entry:
+
+```ts
+type FirstInputPolyfillEntry = Omit<PerformanceEventTiming,
+  'processingEnd' | 'processingEnd', 'toJSON'>
+```
+
+#### `FirstInputPolyfillCallback`
+
+```ts
+interface FirstInputPolyfillCallback {
+  (entry: FirstInputPolyfillEntry): void;
+}
+```
+
+#### `NavigationTimingPolyfillEntry`
+
+When calling `getTTFB()`, if the browser doesn't support the [Navigation Timing API Level 2](https://www.w3.org/TR/navigation-timing-2/) interface, it will polyfill the entry object using timings from `performance.timing`:
+
+```ts
+export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
+  'initiatorType' | 'nextHopProtocol' | 'redirectCount' | 'transferSize' |
+  'encodedBodySize' | 'decodedBodySize' | 'toJSON'>
+```
+
+#### `WebVitalsGlobal`
+
+If using the "base+polyfill" build, the `polyfill.js` script creates the global `webVitals` namespace matching the following interface:
+
+```ts
+interface WebVitalsGlobal {
+  firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;
+  resetFirstInputPolyfill: () => void;
+  firstHiddenTime: number;
 }
 ```
 
@@ -460,6 +567,18 @@ Browser support for each function is as follows:
 - `getFID()`: Chromium, Firefox, Safari, Internet Explorer (with the [polyfill](#how-to-use-the-polyfill))
 - `getLCP()`: Chromium
 - `getTTFB()`: Chromium, Firefox, Safari, Internet Explorer
+
+## Limitations
+
+The `web-vitals` library is primarily a wrapper around the Web APIs that
+measure the Web Vitals metrics, which means the limitations of those APIs will
+mostly apply to this library as well.
+
+The primary limitation of these APIs is they have no visibility into `<iframe>` content (not even same-origin iframes), which means pages that make use of iframes will likely see a difference between the data measured by this library and the data available in the Chrome User Experience Report (which does include iframe content).
+
+For same-origin iframes, it's possible to use the `web-vitals` library to measure metrics, but it's tricky because it requires the developer to add the library to every frame and `postMessage()` the results to the parent frame for aggregation.
+
+_**Note:** given the lack of iframe support, the `getCLS()` function technically measures [DCLS](https://github.com/wicg/layout-instability#cumulative-scores) (Document Cumulative Layout Shift) rather than CLS, if the page includes iframes)._
 
 ## Development
 
