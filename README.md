@@ -124,6 +124,8 @@ In other cases, a metric callback may be called more than once:
 - CLS should be reported any time the [a page's `visibilityState` changes to hidden](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden).
 - CLS, FCP, FID, and LCP are reported again after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
 
+_**Warning:** do not call any of the Web Vitals functions (e.g. `getCLS()`, `getFID()`, `getLCP()`) more than once per page load. Each of these function creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
+
 ### Report the value on every change
 
 In most cases, you only want `onReport` to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each layout shift as it happens) by setting the optional, second argument (`reportAllChanges`) to `true`.
