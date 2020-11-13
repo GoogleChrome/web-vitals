@@ -400,7 +400,7 @@ The following table lists all the bundles distributed with the `web-vitals` pack
 
 Most developers will generally want to use the "standard" bundle (either the ES module or UMD version, depending on your build system), as it's the easiest to use out of the box and integrate into existing build tools.
 
-However, there are a few good reasons to consider using the "polyfill" version, for example:
+However, there are a few good reasons to consider using the "base+polyfill" version, for example:
 
 - FID can be measured in all browsers.
 - FCP, FID, and LCP will be more accurate in some cases (since the polyfill detects the page's initial `visibilityState` earlier).
