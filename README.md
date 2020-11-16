@@ -3,7 +3,7 @@
 - [Overview](#overview)
 - [Installation](#installation)
 - [Usage](#usage)
-  - [Load the libary](#load-the-library)
+  - [Load the library](#load-the-library)
   - [Basic usage](#basic-usage)
   - [Report the value on every change](#report-the-value-on-every-change)
   - [Report only the delta of changes](#report-only-the-delta-of-changes)
@@ -20,7 +20,7 @@
 - [Browser Support](#browser-support)
 - [Limitations](#limitations)
 - [Development](#development)
-
+- [License](#license)
 
 ## Overview
 
@@ -121,10 +121,10 @@ Also, in some cases a metric callback may never be called:
 
 In other cases, a metric callback may be called more than once:
 
-- CLS should be reported any time the [a page's `visibilityState` changes to hidden](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden).
+- CLS should be reported any time the [page's `visibilityState` changes to hidden](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden).
 - CLS, FCP, FID, and LCP are reported again after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
 
-_**Warning:** do not call any of the Web Vitals functions (e.g. `getCLS()`, `getFID()`, `getLCP()`) more than once per page load. Each of these function creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
+_**Warning:** do not call any of the Web Vitals functions (e.g. `getCLS()`, `getFID()`, `getLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
 
 ### Report the value on every change
 
@@ -288,7 +288,7 @@ getLCP(sendToGTM);
 
 The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
-The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just modern browsers (using the "standard" version) or all browsers (using the "polyfill" version):
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just modern browsers (using the "standard" version) or all browsers (using the "base+polyfill" version):
 
 **Load the "standard" version** (using a module script)
 
@@ -329,7 +329,7 @@ addEventListener('DOMContentLoaded', function() {
   </head>
   <body>
     ...
-    <!-- Load the UMD version of the "polyfill" base bundle. -->
+    <!-- Load the UMD version of the "base" bundle. -->
     <script defer src="https://unpkg.com/web-vitals/dist/web-vitals.base.umd.js"></script>
     <script>
     addEventListener('DOMContentLoaded', function() {
