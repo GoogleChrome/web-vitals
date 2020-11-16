@@ -39,6 +39,9 @@
       }
     }());
   </script>
+  {% if polyfill %}
+    <script>{{ webVitalsPolyfill | safe }}</script>
+  {% endif %}
   {% block head %}{% endblock %}
   <style>
     html {

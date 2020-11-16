@@ -61,39 +61,7 @@ describe('getLCP()', async function() {
     // Load a new page to trigger the hidden state.
     await browser.url('about:blank');
 
-    await beaconCountIs(3);
-    assertFullReportsAreCorrect(await getBeacons());
-  });
-
-  it('reports the correct value on scroll (reportAllChanges === false)', async function() {
-    if (!browserSupportsLCP) this.skip();
-
-    await browser.url('/test/lcp');
-
-    // Wait until all images are loaded and fully rendered.
-    await imagesPainted();
-
-    // Scroll down
-    const footer = await $('footer');
-    await footer.scrollIntoView();
-
-    await beaconCountIs(1);
-    assertStandardReportsAreCorrect(await getBeacons());
-  });
-
-  it('reports the correct value on scroll (reportAllChanges === true)', async function() {
-    if (!browserSupportsLCP) this.skip();
-
-    await browser.url('/test/lcp?reportAllChanges=1');
-
-    // Wait until all images are loaded and fully rendered.
-    await imagesPainted();
-
-    // Scroll down
-    const footer = await $('footer');
-    await footer.scrollIntoView();
-
-    await beaconCountIs(3);
+    await beaconCountIs(2);
     assertFullReportsAreCorrect(await getBeacons());
   });
 
@@ -125,7 +93,7 @@ describe('getLCP()', async function() {
     const h1 = await $('h1');
     await h1.click();
 
-    await beaconCountIs(3);
+    await beaconCountIs(2);
     assertFullReportsAreCorrect(await getBeacons());
   });
 
@@ -223,7 +191,6 @@ describe('getLCP()', async function() {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.entries.length, 1);
     assert.strictEqual(lcp1.entries[0].element, 'h1');
-    assert.strictEqual(lcp1.isFinal, true);
   });
 
   it('stops reporting after the document changes to hidden (reportAllChanges === true)', async function() {
@@ -232,7 +199,15 @@ describe('getLCP()', async function() {
     await browser.url('/test/lcp?reportAllChanges=1&imgDelay=0&imgHidden=1');
 
     await beaconCountIs(1);
+    const [lcp] = await getBeacons();
 
+    assert(lcp.value > 0);
+    assert.strictEqual(lcp.name, 'LCP');
+    assert.strictEqual(lcp.value, lcp.delta);
+    assert.strictEqual(lcp.entries.length, 1);
+    assert.strictEqual(lcp.entries[0].element, 'h1');
+
+    await clearBeacons();
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
 
@@ -240,25 +215,11 @@ describe('getLCP()', async function() {
       document.querySelector('img').hidden = false;
     });
 
-    // Since we're dispatching a visibilitychange event,
-    // we don't need to do anything else to trigger the metric reporting.
-    await beaconCountIs(2);
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
 
-    const [lcp1, lcp2] = await getBeacons();
-
-    assert(lcp1.value > 0);
-    assert.strictEqual(lcp1.name, 'LCP');
-    assert.strictEqual(lcp1.value, lcp1.delta);
-    assert.strictEqual(lcp1.entries.length, 1);
-    assert.strictEqual(lcp1.entries[0].element, 'h1');
-    assert.strictEqual(lcp1.isFinal, false);
-
-    assert.strictEqual(lcp2.value, lcp1.value);
-    assert.strictEqual(lcp2.name, 'LCP');
-    assert.strictEqual(lcp2.delta, 0);
-    assert.strictEqual(lcp2.entries.length, 1);
-    assert.strictEqual(lcp2.entries[0].element, 'h1');
-    assert.strictEqual(lcp2.isFinal, true);
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
   });
 });
 
@@ -266,34 +227,24 @@ const assertStandardReportsAreCorrect = (beacons) => {
   const [lcp] = beacons;
 
   assert(lcp.value > 500); // Greater than the image load delay.
-  assert(lcp.id.match(/\d+-\d+/));
+  assert(lcp.id.match(/^v1-\d+-\d+$/));
   assert.strictEqual(lcp.name, 'LCP');
   assert.strictEqual(lcp.value, lcp.delta);
   assert.strictEqual(lcp.entries.length, 2);
-  assert.strictEqual(lcp.isFinal, true);
 };
 
 const assertFullReportsAreCorrect = (beacons) => {
-  const [lcp1, lcp2, lcp3] = beacons;
+  const [lcp1, lcp2] = beacons;
 
   assert(lcp1.value < 500); // Less than the image load delay.
-  assert(lcp1.id.match(/\d+-\d+/));
+  assert(lcp1.id.match(/^v1-\d+-\d+$/));
   assert.strictEqual(lcp1.name, 'LCP');
   assert.strictEqual(lcp1.value, lcp1.delta);
   assert.strictEqual(lcp1.entries.length, 1);
-  assert.strictEqual(lcp1.isFinal, false);
 
   assert(lcp2.value > 500); // Greater than the image load delay.
   assert.strictEqual(lcp2.value, lcp1.value + lcp2.delta);
   assert.strictEqual(lcp2.name, 'LCP');
   assert.strictEqual(lcp2.id, lcp1.id);
   assert.strictEqual(lcp2.entries.length, 2);
-  assert.strictEqual(lcp2.isFinal, false);
-
-  assert.strictEqual(lcp3.value, lcp2.value);
-  assert.strictEqual(lcp3.name, 'LCP');
-  assert.strictEqual(lcp3.id, lcp2.id);
-  assert.strictEqual(lcp3.delta, 0);
-  assert.strictEqual(lcp3.entries.length, 2);
-  assert.strictEqual(lcp3.isFinal, true);
 };

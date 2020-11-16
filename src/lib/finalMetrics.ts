@@ -15,15 +15,6 @@
  */
 
 import {Metric} from '../types.js';
-import {generateUniqueID} from './generateUniqueID.js';
 
 
-export const initMetric = (name: Metric['name'], value?: number): Metric => {
-  return {
-    name,
-    value: typeof value === 'undefined' ? -1 : 0,
-    delta: 0,
-    entries: [],
-    id: generateUniqueID()
-  };
-};
+export const finalMetrics: WeakSet<Metric> = new WeakSet();

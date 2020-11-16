@@ -14,19 +14,11 @@
  * limitations under the License.
  */
 
-let inputPromise: Promise<Event>;
+import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
+import {firstHiddenTime} from './lib/polyfills/firstHiddenTimePolyfill.js';
 
-export const whenInput = () => {
-  if (!inputPromise) {
-    inputPromise = new Promise((r) => {
-      return ['scroll', 'keydown', 'pointerdown'].map((type) => {
-        addEventListener(type, r, {
-          once: true,
-          passive: true,
-          capture: true,
-        });
-      });
-    });
-  }
-  return inputPromise;
-};
+resetFirstInputPolyfill();
+self['webVitals'] = self['webVitals'] || {};
+self['webVitals']['firstInputPolyfill'] = firstInputPolyfill;
+self['webVitals']['resetFirstInputPolyfill'] = resetFirstInputPolyfill;
+self['webVitals']['firstHiddenTime'] = firstHiddenTime;

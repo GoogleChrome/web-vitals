@@ -16,35 +16,31 @@
 
 
 export interface OnHiddenCallback {
-  // TODO(philipwalton): add `isPersisted` if needed for bfcache.
-  ({timeStamp, isUnloading}: {timeStamp: number; isUnloading: boolean}): void;
+  (event: Event): void;
 }
 
-let isUnloading = false;
-let listenersAdded = false;
+let beforeUnloadFixAdded = false;
 
-const onPageHide = (event: PageTransitionEvent) => {
-  isUnloading = !event.persisted;
-};
-
-const addListeners = () => {
-  addEventListener('pagehide', onPageHide);
-
-  // `beforeunload` is needed to fix this bug:
+export const onHidden = (cb: OnHiddenCallback, once?: boolean) => {
+  // Adding a `beforeunload` listener is needed to fix this bug:
   // https://bugs.chromium.org/p/chromium/issues/detail?id=987409
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  addEventListener('beforeunload', () => {});
-}
-
-export const onHidden = (cb: OnHiddenCallback, once = false) => {
-  if (!listenersAdded) {
-    addListeners();
-    listenersAdded = true;
+  if (!beforeUnloadFixAdded &&
+      // Avoid adding this in Firefox as it'll break bfcache:
+      // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
+      // @ts-ignore
+      typeof InstallTrigger === 'undefined') {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    addEventListener('beforeunload', () => {});
+    beforeUnloadFixAdded = true;
   }
 
-  addEventListener('visibilitychange', ({timeStamp}) => {
+  const onVisibilityChange = (event: Event) => {
     if (document.visibilityState === 'hidden') {
-      cb({timeStamp, isUnloading});
+      cb(event);
+      if (once) {
+        removeEventListener('visibilitychange', onVisibilityChange, true);
+      }
     }
-  }, {capture: true, once});
+  }
+  addEventListener('visibilitychange', onVisibilityChange, true);
 };

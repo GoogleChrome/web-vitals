@@ -9,7 +9,7 @@
     "noImplicitReturns": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
-    "outDir": "./dist",
+    "outDir": "./dist/modules",
     "preserveConstEnums": true,
     "rootDir": "./src",
     "strict": true,

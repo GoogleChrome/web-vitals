@@ -14,16 +14,15 @@
  * limitations under the License.
  */
 
-import {Metric} from '../types.js';
-import {generateUniqueID} from './generateUniqueID.js';
+export let firstHiddenTime =
+    document.visibilityState === 'hidden' ? 0 : Infinity;
 
+const onVisibilityChange = (event: Event) => {
+  if (document.visibilityState === 'hidden') {
+    firstHiddenTime = event.timeStamp;
+    removeEventListener('visibilitychange', onVisibilityChange, true);
+  }
+}
 
-export const initMetric = (name: Metric['name'], value?: number): Metric => {
-  return {
-    name,
-    value: typeof value === 'undefined' ? -1 : 0,
-    delta: 0,
-    entries: [],
-    id: generateUniqueID()
-  };
-};
+// Note: do not add event listeners unconditionally (outside of polyfills).
+addEventListener('visibilitychange', onVisibilityChange, true);

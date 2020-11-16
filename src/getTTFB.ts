@@ -15,56 +15,8 @@
  */
 
 import {initMetric} from './lib/initMetric.js';
-import {ReportHandler} from './types.js';
+import {ReportHandler, NavigationTimingPolyfillEntry} from './types.js';
 
-
-interface NavigationEntryShim {
-  // From `PerformanceNavigationTimingEntry`.
-  entryType: string;
-  startTime: number;
-
-  // From `performance.timing`.
-  connectEnd?: number;
-  connectStart?: number;
-  domComplete?: number;
-  domContentLoadedEventEnd?: number;
-  domContentLoadedEventStart?: number;
-  domInteractive?: number;
-  domainLookupEnd?: number;
-  domainLookupStart?: number;
-  fetchStart?: number;
-  loadEventEnd?: number;
-  loadEventStart?: number;
-  redirectEnd?: number;
-  redirectStart?: number;
-  requestStart?: number;
-  responseEnd?: number;
-  responseStart?: number;
-  secureConnectionStart?: number;
-  unloadEventEnd?: number;
-  unloadEventStart?: number;
-}
-
-type PerformanceTimingKeys =
-    'connectEnd' |
-    'connectStart' |
-    'domComplete' |
-    'domContentLoadedEventEnd' |
-    'domContentLoadedEventStart' |
-    'domInteractive' |
-    'domainLookupEnd' |
-    'domainLookupStart' |
-    'fetchStart' |
-    'loadEventEnd' |
-    'loadEventStart' |
-    'redirectEnd' |
-    'redirectStart' |
-    'requestStart' |
-    'responseEnd' |
-    'responseStart' |
-    'secureConnectionStart' |
-    'unloadEventEnd' |
-    'unloadEventStart';
 
 const afterLoad = (callback: () => void) => {
   if (document.readyState === 'complete') {
@@ -76,22 +28,23 @@ const afterLoad = (callback: () => void) => {
   }
 }
 
-const getNavigationEntryFromPerformanceTiming = () => {
+const getNavigationEntryFromPerformanceTiming = (): NavigationTimingPolyfillEntry => {
   // Really annoying that TypeScript errors when using `PerformanceTiming`.
   const timing = performance.timing;
 
-  const navigationEntry: NavigationEntryShim = {
+  const navigationEntry: {[key: string]: number | string} = {
     entryType: 'navigation',
     startTime: 0,
   };
 
   for (const key in timing) {
     if (key !== 'navigationStart' && key !== 'toJSON') {
-      navigationEntry[key as PerformanceTimingKeys] = Math.max(
-          timing[key as PerformanceTimingKeys] - timing.navigationStart, 0);
+      navigationEntry[key] = Math.max(
+          (timing[key as keyof PerformanceTiming] as number) -
+          timing.navigationStart, 0);
     }
   }
-  return navigationEntry as PerformanceNavigationTiming;
+  return navigationEntry as NavigationTimingPolyfillEntry;
 };
 
 export const getTTFB = (onReport: ReportHandler) => {
@@ -107,7 +60,6 @@ export const getTTFB = (onReport: ReportHandler) => {
           (navigationEntry as PerformanceNavigationTiming).responseStart;
 
       metric.entries = [navigationEntry];
-      metric.isFinal = true;
 
       onReport(metric);
     } catch (error) {

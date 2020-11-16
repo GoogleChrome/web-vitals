@@ -14,16 +14,14 @@
  * limitations under the License.
  */
 
-import {Metric} from '../types.js';
-import {generateUniqueID} from './generateUniqueID.js';
+interface onBFCacheRestoreCallback {
+  (event: PageTransitionEvent): void;
+}
 
-
-export const initMetric = (name: Metric['name'], value?: number): Metric => {
-  return {
-    name,
-    value: typeof value === 'undefined' ? -1 : 0,
-    delta: 0,
-    entries: [],
-    id: generateUniqueID()
-  };
+export const onBFCacheRestore = (cb: onBFCacheRestoreCallback) => {
+  addEventListener('pageshow', (event) => {
+    if (event.persisted) {
+      cb(event);
+    }
+  }, true);
 };

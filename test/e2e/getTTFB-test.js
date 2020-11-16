@@ -72,11 +72,10 @@ describe('getTTFB()', async function() {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/\d+-\d+/));
+    assert(ttfb.id.match(/^v1-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.entries.length, 1);
-    assert.strictEqual(ttfb.isFinal, true);
 
     assertValidEntry(ttfb.entries[0]);
   });
@@ -91,11 +90,10 @@ describe('getTTFB()', async function() {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/\d+-\d+/));
+    assert(ttfb.id.match(/^v1-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.entries.length, 1);
-    assert.strictEqual(ttfb.isFinal, true);
 
     assertValidEntry(ttfb.entries[0]);
   });
