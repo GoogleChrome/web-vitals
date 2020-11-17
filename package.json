@@ -4,8 +4,10 @@
   "description": "Easily measure performance metrics in JavaScript",
   "main": "dist/web-vitals.umd.js",
   "module": "dist/web-vitals.js",
-  "typings": "dist/index.d.ts",
+  "typings": "dist/modules/index.d.ts",
   "files": [
+    "base.js",
+    "base.d.ts",
     "dist",
     "src"
   ],
