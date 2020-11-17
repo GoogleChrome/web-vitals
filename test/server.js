@@ -51,8 +51,8 @@ app.post('/collect', bodyParser.text(), (req, res) => {
 app.get('/test/:view', function(req, res) {
   const data = {
     ...req.query,
-    modulePath: `/dist/web-vitals.${
-        req.query.polyfill ? `base` : `full`}.js`,
+    modulePath: `/dist/web-vitals${
+        req.query.polyfill ? `.base` : ``}.js`,
     webVitalsPolyfill: fs.readFileSync('./dist/polyfill.js', 'utf-8'),
   }
   res.send(nunjucks.render(`${req.params.view}.njk`, data));
