@@ -1,6 +1,10 @@
 # Changelog
 
-### v1.0.0 (2020-11-12)
+### v1.0.1 (2020-11-16)
+
+- Fix missing `typings` declaration ([#90](https://github.com/GoogleChrome/web-vitals/pull/90))
+
+### v1.0.0 (2020-11-16)
 
 - **[BREAKING]** Add support for reporting metrics on back/forward cache restore ([#87](https://github.com/GoogleChrome/web-vitals/pull/87))
 
