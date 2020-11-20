@@ -184,6 +184,19 @@ getFID(sendToAnalytics);
 getLCP(sendToAnalytics);
 ```
 
+You can batch reporting callbacks and send metrics with **one request** using [`web-vitals-reporter`](https://github.com/treosh/web-vitals-reporter):
+
+```js
+import { getCLS, getFID, getLCP } from 'web-vitals';
+import { createApiReporter } from 'web-vitals-reporter'; // 800 bytes
+
+const sendToApi = createApiReporter('/analytics');
+
+getLCP(sendToApi);
+getFID(sendToApi);
+getCLS(sendToApi);
+```
+
 ### Send the results to Google Analytics
 
 Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value (in this case, the metric `id`) on every metric instance that you send to Google Analytics, including that dimension in a custom report will allow you to construct a distribution manually.
