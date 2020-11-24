@@ -55,7 +55,7 @@ _**Note:** If you're not using npm, you can still load `web-vitals` via `<script
 
 There are two different versions of the `web-vitals` library (the "standard" version and the "base+polyfill" version), and how you load the library depends on which version you want to use.
 
-For details on the difference between the two versions, see <a href="#which-version-is-right-for-you">which version is right for you</a>.
+For details on the difference between the two versions, see <a href="#which-bundle-is-right-for-you">which version is right for you</a>.
 
 **1. The "standard" version**
 
