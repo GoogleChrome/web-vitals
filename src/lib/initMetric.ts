@@ -21,7 +21,7 @@ import {generateUniqueID} from './generateUniqueID.js';
 export const initMetric = (name: Metric['name'], value?: number): Metric => {
   return {
     name,
-    value: typeof value === 'undefined' ? -1 : 0,
+    value: typeof value === 'undefined' ? -1 : value,
     delta: 0,
     entries: [],
     id: generateUniqueID()
