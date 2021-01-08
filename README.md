@@ -186,11 +186,13 @@ getLCP(sendToAnalytics);
 
 ### Send the results to Google Analytics
 
-Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value (in this case, the metric `id`) on every metric instance that you send to Google Analytics, including that dimension in a custom report will allow you to construct a distribution manually.
+Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value (in this case, the metric `id`, as shown in the examples below) on every metric instance that you send to Google Analytics, you can create a report yourself using the [Google Analytics Reporting API](https://developers.google.com/analytics/devguides/reporting) and any data visualization library you choose.
 
-Using the [Google Analytics Reporting API](https://developers.google.com/analytics/devguides/reporting) and a tool like [Data Studio](https://datastudio.google.com/) (or your own visualization library), you can create dashboards with histograms reporting quantile data (the 75th percentile is recommended) for all of the Web Vitals metrics.
+As an example of this, the [Web Vitals Report](https://github.com/GoogleChromeLabs/web-vitals-report) is a free and open-source tool you can use to create visualizations of the Web Vitals data that you've sent to Google Analytics.
 
-The following code examples show how to send your metrics to Google Analytics in order to enable reporting quantile data:
+[![web-vitals-report](https://user-images.githubusercontent.com/326742/101584324-3f9a0900-3992-11eb-8f2d-182f302fb67b.png)](https://github.com/GoogleChromeLabs/web-vitals-report)
+
+In order to use the [Web Vitals Report](https://github.com/GoogleChromeLabs/web-vitals-report) (or build your own custom reports using the API) you need to send your data to Google Analytics following one of the examples outlined below:
 
 #### Using `analytics.js`
 
@@ -253,7 +255,7 @@ getFID(sendToGoogleAnalytics);
 getLCP(sendToGoogleAnalytics);
 ```
 
-### Send the results to Google Tag Manager
+#### Using Google Tag Manager
 
 The following example measures each of the Core Web Vitals metrics and sends them as separate `dataLayer-events` to be used by Google Tag Manager. With the `web-vitals` trigger you send the metrics to any tag inside your account (see [this comment](https://github.com/GoogleChrome/web-vitals/pull/28#discussion_r422701126) for implementation details).
 
