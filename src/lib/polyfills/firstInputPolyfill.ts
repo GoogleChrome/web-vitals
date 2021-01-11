@@ -82,7 +82,7 @@ const reportFirstInputDelayIfRecordedAndValid = () => {
       startTime: firstInputEvent!.timeStamp,
       processingStart: firstInputEvent!.timeStamp + firstInputDelay,
     } as FirstInputPolyfillEntry;
-    callbacks.map(function(callback) {
+    callbacks.forEach(function(callback) {
       callback(entry);
     });
     callbacks = [];
@@ -170,5 +170,5 @@ const eachEventType = (callback: addOrRemoveEventListener) => {
     'touchstart',
     'pointerdown',
   ];
-  eventTypes.map((type) => callback(type, onInput, listenerOpts));
+  eventTypes.forEach((type) => callback(type, onInput, listenerOpts));
 }

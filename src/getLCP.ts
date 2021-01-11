@@ -61,7 +61,7 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     // Stop listening after input. Note: while scrolling is an input that
     // stop LCP observation, it's unreliable since it can be programmatically
     // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
-    ['keydown', 'click'].map((type) => {
+    ['keydown', 'click'].forEach((type) => {
       addEventListener(type, stopListening, {once: true, capture: true});
     });
 
