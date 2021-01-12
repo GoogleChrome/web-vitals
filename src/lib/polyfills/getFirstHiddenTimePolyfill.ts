@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export let firstHiddenTime =
+let firstHiddenTime =
     document.visibilityState === 'hidden' ? 0 : Infinity;
 
 const onVisibilityChange = (event: Event) => {
@@ -26,3 +26,5 @@ const onVisibilityChange = (event: Event) => {
 
 // Note: do not add event listeners unconditionally (outside of polyfills).
 addEventListener('visibilitychange', onVisibilityChange, true);
+
+export const getFirstHiddenTime = () => firstHiddenTime;
