@@ -53,7 +53,7 @@ export interface PerformanceEventTiming extends PerformanceEntry {
 }
 
 export type FirstInputPolyfillEntry =
-    Omit<PerformanceEventTiming, 'processingEnd' | 'processingEnd' | 'toJSON'>
+    Omit<PerformanceEventTiming, 'processingEnd' | 'toJSON'>
 
 export interface FirstInputPolyfillCallback {
   (entry: FirstInputPolyfillEntry): void;
