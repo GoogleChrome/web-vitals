@@ -69,6 +69,7 @@ const configs = [
       format: 'umd',
       file: `./dist/web-vitals.base.umd.js`,
       name: 'webVitals',
+      extend: true,
     },
     plugins: configurePlugins({module: false, polyfill: true}),
   },
