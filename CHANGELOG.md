@@ -1,5 +1,11 @@
 # Changelog
 
+### v1.1.0 (2021-01-13)
+
+- Fix incorrect UMD config for base+polyfill script ([#117](https://github.com/GoogleChrome/web-vitals/pull/117))
+- Fix missing getter in polyfill ([#114](https://github.com/GoogleChrome/web-vitals/pull/114))
+- Add support for Set in place of WeakSet for IE11 compat ([#110](https://github.com/GoogleChrome/web-vitals/pull/110))
+
 ### v1.0.1 (2020-11-16)
 
 - Fix missing `typings` declaration ([#90](https://github.com/GoogleChrome/web-vitals/pull/90))
