@@ -20,25 +20,37 @@ import {Metric, ReportHandler} from '../types.js';
 
 export const bindReporter = (
   callback: ReportHandler,
-  metric: Metric,
+  metrics: Metric | Metric[],
   reportAllChanges?: boolean,
 ) => {
-  let prevValue: number;
+  let prevValues: number[] = [];
+  let wasChanged = false;
+  const m = Array.isArray(metrics) ? metrics : [metrics];
   return () => {
-    if (metric.value >= 0) {
-      if (reportAllChanges ||
-          finalMetrics.has(metric) ||
-          document.visibilityState === 'hidden') {
-        metric.delta = metric.value - (prevValue || 0);
+    for (let i = 0; i < m.length; i++ ) {
+      if (m[i].value >= 0) {
+        if (reportAllChanges ||
+            finalMetrics.has(m[i]) ||
+            document.visibilityState === 'hidden') {
+          m[i].delta = m[i].value - (prevValues[i] || 0);
 
-        // Report the metric if there's a non-zero delta, if the metric is
-        // final, or if no previous value exists (which can happen in the case
-        // of the document becoming hidden when the metric value is 0).
-        // See: https://github.com/GoogleChrome/web-vitals/issues/14
-        if (metric.delta || prevValue === undefined) {
-          prevValue = metric.value;
-          callback(metric);
+          // Report the metric if there's a non-zero delta, if the metric is
+          // final, or if no previous value exists (which can happen in the case
+          // of the document becoming hidden when the metric value is 0).
+          // See: https://github.com/GoogleChrome/web-vitals/issues/14
+          if (m[i].delta || prevValues[i] === undefined) {
+            wasChanged = true;
+          }
         }
+      }
+    }
+
+    prevValues = m.map((metric) => metric.value);
+    if (wasChanged) {
+      if (Array.isArray(metrics)) {
+        callback(metrics.reduce((o, metric) => ({...o, [metric.name]: metrics}), {} as Record<Metric['name'], Metric>));
+      } else {
+        callback(metrics);
       }
     }
   }

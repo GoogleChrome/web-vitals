@@ -16,7 +16,8 @@
 
 export interface Metric {
   // The name of the metric (in acronym form).
-  name: 'CLS' | 'FCP' | 'FID' | 'LCP' | 'TTFB';
+  name: 'CLS' | 'FCP' | 'FID' | 'LCP' | 'TTFB' |
+    'LSN-avg-session-gap5s' | 'LSN-max-session-gap1s' | 'LSN-max-session-gap1s-limit5s' | 'LSN-max-sliding1s' | 'LSN-max-sliding-300ms';
 
   // The current value of the metric.
   value: number;
@@ -40,7 +41,7 @@ export interface Metric {
 }
 
 export interface ReportHandler {
-  (metric: Metric): void;
+  (metric: Metric | Record<Metric['name'], Metric>): void;
 }
 
 // https://wicg.github.io/event-timing/#sec-performance-event-timing
