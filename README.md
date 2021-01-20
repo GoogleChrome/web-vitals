@@ -255,9 +255,9 @@ getFID(sendToGoogleAnalytics);
 getLCP(sendToGoogleAnalytics);
 ```
 
-#### Using Google Tag Manager
+### Send the results to Google Tag Manager
 
-The following example measures each of the Core Web Vitals metrics and sends them as separate `dataLayer-events` to be used by Google Tag Manager. With the `web-vitals` trigger you send the metrics to any tag inside your account (see [this comment](https://github.com/GoogleChrome/web-vitals/pull/28#discussion_r422701126) for implementation details).
+The following example measures each of the Core Web Vitals metrics and sends them as separate `dataLayer` events to be used by Google Tag Manager. With the `web-vitals` trigger you send the metrics to any tag inside your account (see [this comment](https://github.com/GoogleChrome/web-vitals/pull/28#discussion_r422701126) for implementation details).
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
@@ -308,14 +308,17 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
 **Load the "standard" version** _(using a classic script)_
 
 ```html
-<!-- Without the `?module` param, the UMD version is loaded and sets the `webVitals` global -->
-<script defer src="https://unpkg.com/web-vitals"></script>
 <script>
-addEventListener('DOMContentLoaded', function() {
-  webVitals.getCLS(console.log);
-  webVitals.getFID(console.log);
-  webVitals.getLCP(console.log);
-});
+(function() {
+  var script = document.createElement('script');
+  script.src = 'https://unpkg.com/web-vitals';
+  script.onload = function() {
+    webVitals.getCLS(console.log);
+    webVitals.getFID(console.log);
+    webVitals.getLCP(console.log);
+  }
+  document.head.appendChild(script);
+}())
 </script>
 ```
 
@@ -332,13 +335,17 @@ addEventListener('DOMContentLoaded', function() {
   <body>
     ...
     <!-- Load the UMD version of the "base" bundle. -->
-    <script defer src="https://unpkg.com/web-vitals/dist/web-vitals.base.umd.js"></script>
     <script>
-    addEventListener('DOMContentLoaded', function() {
-      webVitals.getCLS(console.log);
-      webVitals.getFID(console.log);
-      webVitals.getLCP(console.log);
-    });
+    (function() {
+      var script = document.createElement('script');
+      script.src = 'https://unpkg.com/web-vitals';
+      script.onload = function() {
+        webVitals.getCLS(console.log);
+        webVitals.getFID(console.log);
+        webVitals.getLCP(console.log);
+      }
+      document.head.appendChild(script);
+    }())
     </script>
   </body>
 </html>
