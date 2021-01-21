@@ -23,32 +23,34 @@ export const bindReporter = (
   metrics: Metric | Metric[],
   reportAllChanges?: boolean,
 ) => {
-  let prevValues: number[] = [];
-  let wasChanged = false;
   const m = Array.isArray(metrics) ? metrics : [metrics];
+  const prevValues: number[] = [...Array(m.length)];
   return () => {
-    for (let i = 0; i < m.length; i++ ) {
-      if (m[i].value >= 0) {
-        if (reportAllChanges ||
-            finalMetrics.has(m[i]) ||
-            document.visibilityState === 'hidden') {
-          m[i].delta = m[i].value - (prevValues[i] || 0);
+    const shouldReport = m.map((metric: Metric, i: number) => {
+        if (metric.value >= 0) {
+          if (reportAllChanges ||
+              finalMetrics.has(m[i]) ||
+              document.visibilityState === 'hidden') {
+            metric.delta = metric.value - (prevValues[i] || 0);
 
-          // Report the metric if there's a non-zero delta, if the metric is
-          // final, or if no previous value exists (which can happen in the case
-          // of the document becoming hidden when the metric value is 0).
-          // See: https://github.com/GoogleChrome/web-vitals/issues/14
-          if (m[i].delta || prevValues[i] === undefined) {
-            wasChanged = true;
+            // Report the metric if there's a non-zero delta, if the metric is
+            // final, or if no previous value exists (which can happen in the case
+            // of the document becoming hidden when the metric value is 0).
+            // See: https://github.com/GoogleChrome/web-vitals/issues/14
+            if (metric.delta || prevValues[i] === undefined) {
+              prevValues[i] = metric.value;
+              return true;
+            }
           }
         }
-      }
-    }
+        return false;
+      }).includes(true);
 
-    prevValues = m.map((metric) => metric.value);
-    if (wasChanged) {
+    // Since metrics can be an array, we only want to report once if anything has changed.
+    if (shouldReport) {
+      //console.log('wasChanged!', callback, metrics);
       if (Array.isArray(metrics)) {
-        callback(metrics.reduce((o, metric) => ({...o, [metric.name]: metrics}), {} as Record<Metric['name'], Metric>));
+        callback(metrics.reduce((o, metric, i) => ({...o, [metric.name]: metrics[i]}), {} as Record<Metric['name'], Metric>));
       } else {
         callback(metrics);
       }

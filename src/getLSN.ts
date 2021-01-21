@@ -34,15 +34,17 @@ class SessionWindow {
     this.limit_ = limit;
   }
 
-  addShift(shift: LayoutShift): number {
+  addShift(shift: LayoutShift): { prevScore: number; score: number  } {
+    let prevScore = 0;
     if (shift.startTime - this.prevTs_ > this.gap_ || shift.startTime - this.firstTs_ > this.limit_) {
+      prevScore = this.score_;
       this.firstTs_ = shift.startTime;
       this.score_ = 0;
     }
     this.prevTs_ = shift.startTime;
     this.score_ += shift.value;
 
-    return this.score_;
+    return { prevScore, score: this.score_ };
   }
 
   private gap_: number;
@@ -59,11 +61,13 @@ class SlidingWindow {
   }
 
   addShift(shift: LayoutShift): number {
-    while (this.shifts_ && shift.startTime - this.shifts_[0].startTime > this.limit_) {
+    while (this.shifts_.length && (shift.startTime - this.shifts_[0].startTime > this.limit_)) {
       this.shifts_.shift(); // No pun intended
     }
     this.shifts_.push(shift);
-    return this.shifts_.reduce((total,shift) => total+shift.value, 0);
+    const score = this.shifts_.reduce((total,shift) => total+shift.value, 0);
+
+    return score;
   }
 
   private limit_: number;
@@ -77,6 +81,7 @@ export const getLSN = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const sliding_limit1s = new SlidingWindow(1000);
   const sliding_limit300ms = new SlidingWindow(300);
 
+  let session_gap5s_total = 0, session_gap5s_count = 0;
   let metric_avg_session_gap5s = initMetric('LSN-avg-session-gap5s', 0);
   let metric_max_session_gap1s = initMetric('LSN-max-session-gap1s', 0);
   let metric_max_session_gap1s_limit5s = initMetric('LSN-max-session-gap1s-limit5s', 0);
@@ -87,18 +92,24 @@ export const getLSN = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
   const entryHandler = (entry: LayoutShift) => {
     // Only count layout shifts without recent user input.
-    if (entry.hadRecentInput) {
+    if (!entry.hadRecentInput) {
       metric_avg_session_gap5s.entries.push(entry);
       metric_max_session_gap1s.entries.push(entry);
       metric_max_session_gap1s_limit5s.entries.push(entry);
       metric_max_sliding1s.entries.push(entry);
       metric_max_sliding300ms.entries.push(entry);
 
-      metric_avg_session_gap5s.value = session_gap5s.addShift(entry); // TODO: actually average
-      metric_max_session_gap1s.value = session_gap1s.addShift(entry);
-      metric_max_session_gap1s_limit5s.value = session_gap1s_limit5s.addShift(entry);
-      metric_max_sliding1s.value = sliding_limit1s.addShift(entry);
-      metric_max_sliding300ms.value = sliding_limit300ms.addShift(entry);
+      const { prevScore, score } = session_gap5s.addShift(entry);
+      if (prevScore) {
+        session_gap5s_total += prevScore;
+        session_gap5s_count++;
+      }
+
+      metric_avg_session_gap5s.value = (session_gap5s_total + score) / (session_gap5s_count + 1);
+      metric_max_session_gap1s.value = Math.max(metric_max_session_gap1s.value, session_gap1s.addShift(entry).score);
+      metric_max_session_gap1s_limit5s.value = Math.max(metric_max_session_gap1s_limit5s.value, session_gap1s_limit5s.addShift(entry).score);
+      metric_max_sliding1s.value = Math.max(metric_max_sliding1s.value, sliding_limit1s.addShift(entry));
+      metric_max_sliding300ms.value = Math.max(metric_max_sliding300ms.value, sliding_limit300ms.addShift(entry));
 
       report();
     }
