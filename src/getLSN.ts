@@ -34,25 +34,26 @@ class SessionWindow {
     this.limit_ = limit;
   }
 
-  addShift(shift: LayoutShift): { prevScore: number; score: number  } {
-    let prevScore = 0;
+  addShift(shift: LayoutShift): { isNew: boolean; score: number  } {
+    const ret = { isNew: false, score: 0 };
     if (shift.startTime - this.prevTs_ > this.gap_ || shift.startTime - this.firstTs_ > this.limit_) {
-      prevScore = this.score_;
       this.firstTs_ = shift.startTime;
       this.score_ = 0;
+      ret.isNew = true;
     }
     this.prevTs_ = shift.startTime;
     this.score_ += shift.value;
+    ret.score = this.score_;
 
-    return { prevScore, score: this.score_ };
+    return ret;
   }
 
   private gap_: number;
   private limit_: number;
 
-  private firstTs_ = 0;
-  private prevTs_ = 0;
-  private score_ = 0;
+  private firstTs_ = Number.NEGATIVE_INFINITY;
+  private prevTs_ = Number.NEGATIVE_INFINITY;
+  private score_ = 0.0;
 }
 
 class SlidingWindow {
@@ -60,18 +61,19 @@ class SlidingWindow {
     this.limit_ = limit;
   }
 
-  addShift(shift: LayoutShift): number {
-    while (this.shifts_.length && (shift.startTime - this.shifts_[0].startTime > this.limit_)) {
-      this.shifts_.shift(); // No pun intended
+  addShift(shifts: LayoutShift[]): number {
+    let score = 0;
+    const end = shifts[shifts.length-1].startTime;
+    for (let i = shifts.length - 1; i >= 0; i--) {
+      if (end - shifts[i].startTime  > this.limit_) {
+        return score;
+      }
+      score += shifts[i].value;
     }
-    this.shifts_.push(shift);
-    const score = this.shifts_.reduce((total,shift) => total+shift.value, 0);
-
     return score;
   }
 
   private limit_: number;
-  private shifts_: LayoutShift[] = [];
 }
 
 export const getLSN = (onReport: ReportHandler, reportAllChanges?: boolean) => {
@@ -99,17 +101,17 @@ export const getLSN = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       metric_max_sliding1s.entries.push(entry);
       metric_max_sliding300ms.entries.push(entry);
 
-      const { prevScore, score } = session_gap5s.addShift(entry);
-      if (prevScore) {
-        session_gap5s_total += prevScore;
+      const { isNew } = session_gap5s.addShift(entry);
+      session_gap5s_total += entry.value;
+      if (isNew) {
         session_gap5s_count++;
       }
+      metric_avg_session_gap5s.value = (session_gap5s_total) / (session_gap5s_count);
 
-      metric_avg_session_gap5s.value = (session_gap5s_total + score) / (session_gap5s_count + 1);
       metric_max_session_gap1s.value = Math.max(metric_max_session_gap1s.value, session_gap1s.addShift(entry).score);
       metric_max_session_gap1s_limit5s.value = Math.max(metric_max_session_gap1s_limit5s.value, session_gap1s_limit5s.addShift(entry).score);
-      metric_max_sliding1s.value = Math.max(metric_max_sliding1s.value, sliding_limit1s.addShift(entry));
-      metric_max_sliding300ms.value = Math.max(metric_max_sliding300ms.value, sliding_limit300ms.addShift(entry));
+      metric_max_sliding1s.value = Math.max(metric_max_sliding1s.value, sliding_limit1s.addShift(metric_max_sliding1s.entries as LayoutShift[]));
+      metric_max_sliding300ms.value = Math.max(metric_max_sliding300ms.value, sliding_limit300ms.addShift(metric_max_sliding300ms.entries as LayoutShift[]));
 
       report();
     }
