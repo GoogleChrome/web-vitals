@@ -1,16 +1,16 @@
 # `web-vitals`
 
 - [Overview](#overview)
-- [Installation](#installation)
+- [Install and load the library](#installation)
+  - [From npm](#import-web-vitals-from-npm)
+  - [From a CDN](#load-web-vitals-from-a-cdn)
 - [Usage](#usage)
-  - [Load the library](#load-the-library)
   - [Basic usage](#basic-usage)
   - [Report the value on every change](#report-the-value-on-every-change)
   - [Report only the delta of changes](#report-only-the-delta-of-changes)
   - [Send the results to an analytics endpoint](#send-the-results-to-an-analytics-endpoint)
   - [Send the results to Google Analytics](#send-the-results-to-google-analytics)
   - [Send the results to Google Tag Manager](#send-the-results-to-google-tag-manager)
-  - [Load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn)
 - [Bundle versions](#bundle-versions)
   - [Which bundle is right for you?](#which-bundle-is-right-for-you)
   - [How the polyfill works](#how-the-polyfill-works)
@@ -39,7 +39,14 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 - [First Contentful Paint (FCP)](https://web.dev/fcp/)
 - [Time to First Byte (TTFB)](https://web.dev/time-to-first-byte/)
 
-## Installation
+<a name="installation"><a>
+<a name="load-the-library"><a>
+
+## Install and load the library
+
+<a name="import-web-vitals-from-npm"><a>
+
+### From npm
 
 You can install this library from npm by running:
 
@@ -48,10 +55,6 @@ npm install web-vitals
 ```
 
 _**Note:** If you're not using npm, you can still load `web-vitals` via `<script>` tags from a CDN like [unpkg.com](https://unpkg.com). See the [load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn) usage example below for details._
-
-## Usage
-
-### Load the library
 
 There are two different versions of the `web-vitals` library (the "standard" version and the "base+polyfill" version), and how you load the library depends on which version you want to use.
 
@@ -63,6 +66,10 @@ To load the "standard" version, import modules from the `web-vitals` package in 
 
 ```js
 import {getLCP, getFID, getCLS} from 'web-vitals';
+
+getCLS(console.log);
+getFID(console.log);
+getLCP(console.log);
 ```
 
 <a name="how-to-use-the-polyfill"><a>
@@ -78,7 +85,7 @@ First, in your application code, import the "base" build rather than the "standa
 + import {getLCP, getFID, getCLS} from 'web-vitals/base';
 ```
 
-Then, inline the code from `dist/polyfill.js` into the `<head>` of your pages.
+Then, inline the code from `dist/polyfill.js` into the `<head>` of your pages. This step is important since the "base" build will error if the polyfill code has not been added.
 
 ```html
 <!DOCTYPE html>
@@ -97,6 +104,79 @@ Then, inline the code from `dist/polyfill.js` into the `<head>` of your pages.
 Note that the code _must_ go in the `<head>` of your pages in order to work. See [how the polyfill works](#how-the-polyfill-works) for more details.
 
 _**Tip:** while it's certainly possible to inline the code in `dist/polyfill.js` by copy and pasting it directly into your templates, it's better to automate this process in a build step—otherwise you risk the "base" and the "polyfill" scripts getting out of sync when new versions are released._
+
+<a name="load-web-vitals-from-a-cdn"><a>
+
+### From a CDN
+
+The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
+
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just Chromium-based browsers (using the "standard" version) or additional browsers (using the "base+polyfill" version):
+
+**Load the "standard" version** (using a module script)
+
+```html
+<!-- Append the `?module` param to load the module version of `web-vitals` -->
+<script type="module">
+  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals?module';
+
+  getCLS(console.log);
+  getFID(console.log);
+  getLCP(console.log);
+</script>
+```
+
+**Load the "standard" version** _(using a classic script)_
+
+```html
+<script>
+(function() {
+  var script = document.createElement('script');
+  script.src = 'https://unpkg.com/web-vitals';
+  script.onload = function() {
+    // When loading `web-vitals` using a classic script, all the public
+    // methods can be found on the `webVitals` global namespace.
+    webVitals.getCLS(console.log);
+    webVitals.getFID(console.log);
+    webVitals.getLCP(console.log);
+  }
+  document.head.appendChild(script);
+}())
+</script>
+```
+
+**Load the "base+polyfill" version** _(using a classic script)_
+
+```html
+<!DOCTYPE html>
+<html>
+  <head>
+    <script>
+      // Inline code from `https://unpkg.com/web-vitals/dist/polyfill.js` here.
+    </script>
+  </head>
+  <body>
+    ...
+    <!-- Load the UMD version of the "base" bundle. -->
+    <script>
+    (function() {
+      var script = document.createElement('script');
+      script.src = 'https://unpkg.com/web-vitals';
+      script.onload = function() {
+        // When loading `web-vitals` using a classic script, all the public
+        // methods can be found on the `webVitals` global namespace.
+        webVitals.getCLS(console.log);
+        webVitals.getFID(console.log);
+        webVitals.getLCP(console.log);
+      }
+      document.head.appendChild(script);
+    }())
+    </script>
+  </body>
+</html>
+```
+
+## Usage
 
 ### Basic usage
 
@@ -228,7 +308,7 @@ getFID(sendToGoogleAnalytics);
 getLCP(sendToGoogleAnalytics);
 ```
 
-#### Using `gtag.js`
+#### Using `gtag.js` (Universal Analytics)
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
@@ -257,101 +337,38 @@ getFID(sendToGoogleAnalytics);
 getLCP(sendToGoogleAnalytics);
 ```
 
-### Send the results to Google Tag Manager
+#### Using `gtag.js` (Google Analytics 4)
 
-The following example measures each of the Core Web Vitals metrics and sends them as separate `dataLayer` events to be used by Google Tag Manager. With the `web-vitals` trigger you send the metrics to any tag inside your account (see [this comment](https://github.com/GoogleChrome/web-vitals/pull/28#discussion_r422701126) for implementation details).
+[Google Analytics 4](https://support.google.com/analytics/answer/10089681) introduces a new Event model allowing custom parameters instead of a fixed category, action, and label. It also supports non-integer values, making it easier to measure Web Vitals metrics compared to previous versions.
 
 ```js
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
-function sendToGTM({name, delta, id}) {
-  // Assumes the global `dataLayer` array exists, see:
-  // https://developers.google.com/tag-manager/devguide
-  dataLayer.push({
-    event: 'web-vitals',
-    event_category: 'Web Vitals',
-    event_action: name,
-    // The `id` value will be unique to the current page load. When sending
-    // multiple values from the same page (e.g. for CLS), Google Analytics can
-    // compute a total by grouping on this ID (note: requires `eventLabel` to
-    // be a dimension in your report).
-    event_label: id,
-    // Google Analytics metrics must be integers, so the value is rounded.
-    // For CLS the value is first multiplied by 1000 for greater precision
-    // (note: increase the multiplier for greater precision if needed).
-    event_value: Math.round(name === 'CLS' ? delta * 1000 : delta),
+function sendToGoogleAnalytics({name, delta, value, id}) {
+  // Assumes the global `gtag()` function exists, see:
+  // https://developers.google.com/analytics/devguides/collection/ga4
+  gtag('event', name, {
+    // Use the metric delta as the event's value parameter.
+    value: delta,
+    // Everything below is a custom event parameter.
+    web_vitals_metric_id: id, // Needed to aggregate events.
+    web_vitals_metric_value: value, // Optional
+    // Any additional params or metadata (e.g. debug information) can be
+    // set here as well, within the following limitations:
+    // https://support.google.com/analytics/answer/9267744
   });
 }
 
-getCLS(sendToGTM);
-getFID(sendToGTM);
-getLCP(sendToGTM);
+getCLS(sendToGoogleAnalytics);
+getFID(sendToGoogleAnalytics);
+getLCP(sendToGoogleAnalytics);
 ```
 
-### Load `web-vitals` from a CDN
+### Send the results to Google Tag Manager
 
-The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
+The recommended way to measure Web Vitals metrics with Google Tag Manager is using the [Core Web Vitals](https://www.simoahava.com/custom-templates/core-web-vitals/) custom template tag created and maintained by [Simo Ahava](https://www.simoahava.com/).
 
-The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just modern browsers (using the "standard" version) or all browsers (using the "base+polyfill" version):
-
-**Load the "standard" version** (using a module script)
-
-```html
-<!-- Append the `?module` param to load the module version of `web-vitals` -->
-<script type="module">
-  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals?module';
-
-  getCLS(console.log);
-  getFID(console.log);
-  getLCP(console.log);
-</script>
-```
-
-**Load the "standard" version** _(using a classic script)_
-
-```html
-<script>
-(function() {
-  var script = document.createElement('script');
-  script.src = 'https://unpkg.com/web-vitals';
-  script.onload = function() {
-    webVitals.getCLS(console.log);
-    webVitals.getFID(console.log);
-    webVitals.getLCP(console.log);
-  }
-  document.head.appendChild(script);
-}())
-</script>
-```
-
-**Load the "base+polyfill" version** _(using a classic script)_
-
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <script>
-      // Inline code from `https://unpkg.com/web-vitals/dist/polyfill.js` here.
-    </script>
-  </head>
-  <body>
-    ...
-    <!-- Load the UMD version of the "base" bundle. -->
-    <script>
-    (function() {
-      var script = document.createElement('script');
-      script.src = 'https://unpkg.com/web-vitals';
-      script.onload = function() {
-        webVitals.getCLS(console.log);
-        webVitals.getFID(console.log);
-        webVitals.getLCP(console.log);
-      }
-      document.head.appendChild(script);
-    }())
-    </script>
-  </body>
-</html>
-```
+For full installation and usage instructions, see Simo's post: [Track Core Web Vitals in GA4 with Google Tag Manager](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/).
 
 ## Bundle versions
 
