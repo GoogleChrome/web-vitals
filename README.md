@@ -65,6 +65,8 @@ To load the "standard" version, import modules from the `web-vitals` package in 
 import {getLCP, getFID, getCLS} from 'web-vitals';
 ```
 
+<a name="how-to-use-the-polyfill"><a>
+
 **2. The "base+polyfill" version**
 
 Loading the "base+polyfill" version is a two-step process:
