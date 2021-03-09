@@ -538,7 +538,7 @@ _**Important:** unlike other metrics, CLS continues to monitor changes for the e
 type getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a `DOMHighResTimeStamp`.
+Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 #### `getFID()`
 
@@ -546,7 +546,7 @@ Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls 
 type getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)). The reported value is a `DOMHighResTimeStamp`.
+Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 _**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
 
@@ -556,7 +556,7 @@ _**Important:** since FID is only reported after the user interacts with the pag
 type getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entries used to determine the value). The reported value is a `DOMHighResTimeStamp`.
+Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entries used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
 
@@ -566,7 +566,7 @@ If the `reportAllChanges` param is `true`, the `onReport` function will be calle
 type getTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a `DOMHighResTimeStamp`.
+Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 Note, this function waits until after the page is loaded to call `onReport` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
 
@@ -584,7 +584,7 @@ getTTFB((metric) => {
 ```
 
 _**Note:** browsers that do not support `navigation` entries will fall back to
-using `performance.timing` (with the timestamps converted from epoch time to `DOMHighResTimeStamp`). This ensures code referencing these values (like in the example above) will work the same in all browsers._
+using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers._
 
 ## Browser Support
 
