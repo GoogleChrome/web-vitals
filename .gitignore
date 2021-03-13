@@ -9,3 +9,6 @@ tsconfig.tsbuildinfo
 
 # Dist files
 dist
+
+# Husky files
+.husky
