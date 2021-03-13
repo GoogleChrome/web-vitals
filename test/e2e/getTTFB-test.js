@@ -49,10 +49,13 @@ function assertValidEntry(entry) {
 
   assert.strictEqual(entry.entryType, 'navigation');
   for (const timingProp of timingProps) {
-    if (!(entry[timingProp] >= 0)) {
-      console.log(timingProp, entry[timingProp]);
+    if (browser.capabilities.browserName === 'firefox' &&
+        timingProp === 'fetchStart' &&
+        entry[timingProp] === -1) {
+      // Firefox sometimes reports the fetchStart value as -1
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1429422
+      continue;
     }
-
     assert(entry[timingProp] >= 0);
   }
 }
