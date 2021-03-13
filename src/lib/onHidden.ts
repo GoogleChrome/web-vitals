@@ -19,28 +19,19 @@ export interface OnHiddenCallback {
   (event: Event): void;
 }
 
-let beforeUnloadFixAdded = false;
 
 export const onHidden = (cb: OnHiddenCallback, once?: boolean) => {
-  // Adding a `beforeunload` listener is needed to fix this bug:
-  // https://bugs.chromium.org/p/chromium/issues/detail?id=987409
-  if (!beforeUnloadFixAdded &&
-      // Avoid adding this in Firefox as it'll break bfcache:
-      // https://stackoverflow.com/questions/9847580/how-to-detect-safari-chrome-ie-firefox-and-opera-browser
-      // @ts-ignore
-      typeof InstallTrigger === 'undefined') {
-    // eslint-disable-next-line @typescript-eslint/no-empty-function
-    addEventListener('beforeunload', () => {});
-    beforeUnloadFixAdded = true;
-  }
-
-  const onVisibilityChange = (event: Event) => {
-    if (document.visibilityState === 'hidden') {
+  const onHiddenOrPageHide = (event: Event) => {
+    if (event.type === 'pagehide' || document.visibilityState === 'hidden') {
       cb(event);
       if (once) {
-        removeEventListener('visibilitychange', onVisibilityChange, true);
+        removeEventListener('visibilitychange', onHiddenOrPageHide, true);
+        removeEventListener('pagehide', onHiddenOrPageHide, true);
       }
     }
   }
-  addEventListener('visibilitychange', onVisibilityChange, true);
+  addEventListener('visibilitychange', onHiddenOrPageHide, true);
+  // Some browsers have buggy implementations of visibilitychange,
+  // so we use pagehide in addition, just to be safe.
+  addEventListener('pagehide', onHiddenOrPageHide, true);
 };
