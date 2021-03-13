@@ -1,5 +1,9 @@
 # Changelog
 
+### v1.1.1 (2021-03-13)
+
+- Remove use of legacy API to detect Firefox ([#128](https://github.com/GoogleChrome/web-vitals/pull/128))
+
 ### v1.1.0 (2021-01-13)
 
 - Fix incorrect UMD config for base+polyfill script ([#117](https://github.com/GoogleChrome/web-vitals/pull/117))
