@@ -526,7 +526,7 @@ interface WebVitalsGlobal {
 type getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `onReport` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift value](https://wicg.github.io/layout-instability/#layout-shift-value)).
+Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `onReport` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/cls/#layout-shift-score)).
 
 If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `layout-shift` performance entry is dispatched, or once the final value of the metric has been determined.
 
