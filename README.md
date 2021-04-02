@@ -300,6 +300,12 @@ function sendToGoogleAnalytics({name, delta, id}) {
     nonInteraction: true,
     // Use `sendBeacon()` if the browser supports it.
     transport: 'beacon',
+
+    // OPTIONAL: any additional params or debug info here.
+    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // dimension1: '...',
+    // dimension2: '...',
+    // ...
   });
 }
 
@@ -329,6 +335,12 @@ function sendToGoogleAnalytics({name, delta, id}) {
     value: Math.round(name === 'CLS' ? delta * 1000 : delta),
     // Use a non-interaction event to avoid affecting bounce rate.
     non_interaction: true,
+
+    // OPTIONAL: any additional params or debug info here.
+    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // metric_rating: 'good' | 'ni' | 'poor',
+    // debug_info: '...',
+    // ...
   });
 }
 
@@ -354,9 +366,12 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
     metric_id: id, // Needed to aggregate events.
     metric_value: value, // Optional.
     metric_delta: delta, // Optional.
-    // Any additional params or metadata (e.g. debug information) can be
-    // set here as well, within the following limitations:
-    // https://support.google.com/analytics/answer/9267744
+
+    // OPTIONAL: any additional params or debug info here.
+    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // metric_rating: 'good' | 'ni' | 'poor',
+    // debug_info: '...',
+    // ...
   });
 }
 
