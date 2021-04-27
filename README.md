@@ -609,7 +609,7 @@ The `web-vitals` code has been tested and will run without error in all major br
 Browser support for each function is as follows:
 
 - `getCLS()`: Chromium,
-- `getFCP()`: Chromium, Firefox, Safari Technology Preview
+- `getFCP()`: Chromium, Firefox, Safari
 - `getFID()`: Chromium, Firefox, Safari, Internet Explorer (with the [polyfill](#how-to-use-the-polyfill))
 - `getLCP()`: Chromium
 - `getTTFB()`: Chromium, Firefox, Safari, Internet Explorer
