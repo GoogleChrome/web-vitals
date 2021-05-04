@@ -44,9 +44,17 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     }
   };
 
-  const po = observe('paint', entryHandler);
-  if (po) {
+  // TODO(philipwalton): remove the use of `fcpEntry` once this bug is fixed.
+  // https://bugs.webkit.org/show_bug.cgi?id=225305
+  const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0];
+  const po = fcpEntry ? null : observe('paint', entryHandler);
+
+  if (fcpEntry || po) {
     report = bindReporter(onReport, metric, reportAllChanges);
+
+    if (fcpEntry) {
+      entryHandler(fcpEntry);
+    }
 
     onBFCacheRestore((event) => {
       metric = initMetric('FCP');
