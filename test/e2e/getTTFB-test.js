@@ -16,7 +16,7 @@
 
 const assert = require('assert');
 const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
-
+const {afterLoad} = require('../utils/afterLoad.js');
 
 /**
  * Accepts a PerformanceNavigationTimingEntry (or shim) and asserts that it
@@ -68,9 +68,12 @@ describe('getTTFB()', async function() {
   it('reports the correct value when run during page load', async function() {
     await browser.url('/test/ttfb');
 
-    await beaconCountIs(1);
+    const ttfb = await getTTFBBeacon();
 
-    const [ttfb] = await getBeacons();
+    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
+      // Skipping test in Firefox due to entry not reported.
+      this.skip();
+    }
 
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
@@ -86,9 +89,12 @@ describe('getTTFB()', async function() {
   it('reports the correct value when run after page load', async function() {
     await browser.url('/test/ttfb?awaitLoad=1');
 
-    await beaconCountIs(1);
+    const ttfb = await getTTFBBeacon();
 
-    const [ttfb] = await getBeacons();
+    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
+      // Skipping test in Firefox due to entry not reported.
+      this.skip();
+    }
 
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
@@ -101,3 +107,18 @@ describe('getTTFB()', async function() {
     assertValidEntry(ttfb.entries[0]);
   });
 });
+
+const getTTFBBeacon = async () => {
+  // In Firefox, sometimes no TTFB is reported due to negative values.
+  // https://github.com/GoogleChrome/web-vitals/issues/137
+  if (browser.capabilities.browserName === 'firefox') {
+    // In Firefox, wait 1 second after load.
+    await afterLoad();
+    await browser.pause(1000);
+  } else {
+    // Otherwise wait until the beacon is received.
+    await beaconCountIs(1);
+  }
+  const [ttfb] = await getBeacons();
+  return ttfb;
+};

@@ -59,6 +59,10 @@ export const getTTFB = (onReport: ReportHandler) => {
       metric.value = metric.delta =
           (navigationEntry as PerformanceNavigationTiming).responseStart;
 
+      // In some cases the value reported is negative. Ignore these cases:
+      // https://github.com/GoogleChrome/web-vitals/issues/137
+      if (metric.value < 0) return;
+
       metric.entries = [navigationEntry];
 
       onReport(metric);
