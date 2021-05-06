@@ -1,5 +1,11 @@
 # Changelog
 
+### v1.1.2 (2021-05-05)
+
+- Ignore negative TTFB values in Firefox ([#147](https://github.com/GoogleChrome/web-vitals/pull/147))
+- Add workaround for Safari FCP bug ([#145](https://github.com/GoogleChrome/web-vitals/pull/145))
+- Add more extensive FID feature detect ([#143](https://github.com/GoogleChrome/web-vitals/pull/143))
+
 ### v1.1.1 (2021-03-13)
 
 - Remove use of legacy API to detect Firefox ([#128](https://github.com/GoogleChrome/web-vitals/pull/128))
