@@ -44,19 +44,22 @@
   {% endif %}
   {% block head %}{% endblock %}
   <style>
-    html {
-      height: 100%
+    * {
+      box-sizing: border-box;
+    }
+    *[hidden] {
+      visibility: hidden;
     }
     body {
       font: 1em/1.5 sans-serif;
       margin: 0;
-      min-height: 100%;
     }
     main {
+      border: 1px solid transparent; /* Prevent margin collapsing */
+      min-height: 100vh;
       padding: 0 1em;
-    }
-    *[hidden] {
-      visibility: hidden;
+      position: relative;
+      width: 100%;
     }
   </style>
 </head>
