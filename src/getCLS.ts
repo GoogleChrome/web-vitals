@@ -32,12 +32,32 @@ export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   let metric = initMetric('CLS', 0);
   let report: ReturnType<typeof bindReporter>;
 
+  let sessionValue = 0;
+  let sessionEntries: PerformanceEntry[] = [];
+
   const entryHandler = (entry: LayoutShift) => {
     // Only count layout shifts without recent user input.
     if (!entry.hadRecentInput) {
-      (metric.value as number) += entry.value;
-      metric.entries.push(entry);
-      report();
+      const firstSessionEntry = sessionEntries[0];
+      const lastSessionEntry = sessionEntries[sessionEntries.length - 1];
+
+      // If the entry is part of the current session, add it.
+      // Otherwise, start a new session.
+      if (sessionValue &&
+          entry.startTime - lastSessionEntry.startTime < 1000 &&
+          entry.startTime - firstSessionEntry.startTime < 5000) {
+        sessionValue += entry.value;
+        sessionEntries.push(entry);
+      } else {
+        sessionValue = entry.value;
+        sessionEntries = [entry];
+      }
+
+      if (sessionValue > metric.value) {
+        metric.value = sessionValue;
+        metric.entries = sessionEntries;
+        report();
+      }
     }
   };
 
@@ -51,6 +71,7 @@ export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     });
 
     onBFCacheRestore(() => {
+      sessionValue = 0;
       metric = initMetric('CLS', 0);
       report = bindReporter(onReport, metric, reportAllChanges);
     });

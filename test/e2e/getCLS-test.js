@@ -72,6 +72,103 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.entries.length, 2);
   });
 
+  it('resets the session after timeout or gap elapses', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls');
+
+    // Wait until all images are loaded and rendered.
+    await imagesPainted();
+    await browser.pause(1000);
+
+    await stubVisibilityChange('hidden');
+    await beaconCountIs(1);
+
+    const [cls1] = await getBeacons();
+
+    assert(cls1.value >= 0);
+    assert(cls1.id.match(/^v1-\d+-\d+$/));
+    assert.strictEqual(cls1.name, 'CLS');
+    assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.entries.length, 2);
+
+    await browser.pause(1000);
+    await stubVisibilityChange('visible');
+    await clearBeacons();
+
+    // Force 2 layout shifts, totaling 0.5.
+    await browser.executeAsync((done) => {
+      document.body.style.overflow = 'hidden'; // Prevent scroll bars.
+      document.querySelector('main').style.left = '25vmax';
+      setTimeout(() => {
+        document.querySelector('main').style.left = '0px';
+        done();
+      }, 50);
+    });
+
+    await stubVisibilityChange('hidden');
+    await beaconCountIs(1);
+
+    const [cls2] = await getBeacons();
+
+    // The value should be exactly 0.5, but round just in case.
+    assert.strictEqual(Math.round(cls2.value * 100) / 100, 0.5);
+    assert.strictEqual(cls2.name, 'CLS');
+    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.entries.length, 2);
+    assert(cls2.id.match(/^v1-\d+-\d+$/));
+
+    await browser.pause(1000);
+    await stubVisibilityChange('visible');
+    await clearBeacons();
+
+    // Force 4 separate layout shifts, totaling 1.5.
+    await browser.executeAsync((done) => {
+      document.querySelector('main').style.left = '25vmax';
+      setTimeout(() => {
+        document.querySelector('main').style.left = '0px';
+        setTimeout(() => {
+          document.querySelector('main').style.left = '50vmax';
+          setTimeout(() => {
+            document.querySelector('main').style.left = '0px';
+            done();
+          }, 50);
+        }, 50);
+      }, 50);
+    });
+
+    await stubVisibilityChange('hidden');
+    await beaconCountIs(1);
+
+    const [cls3] = await getBeacons();
+
+    // The value should be exactly 1.5, but round just in case.
+    assert.strictEqual(Math.round(cls3.value * 100) / 100, 1.5);
+    assert.strictEqual(cls3.name, 'CLS');
+    assert.strictEqual(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.entries.length, 4);
+    assert(cls3.id.match(/^v1-\d+-\d+$/));
+
+    await browser.pause(1000);
+    await stubVisibilityChange('visible');
+    await clearBeacons();
+
+    // Force 2 layout shifts, totalling 1.0 (less than the previous max).
+    await browser.executeAsync((done) => {
+      document.querySelector('main').style.left = '50vmax';
+      setTimeout(() => {
+        document.querySelector('main').style.left = '0px';
+        done();
+      }, 50);
+    });
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
   it('does not report if the browser does not support CLS', async function() {
     if (browserSupportsCLS) this.skip();
 
