@@ -16,7 +16,7 @@
 
 import {bindReporter} from './lib/bindReporter.js';
 import {finalMetrics} from './lib/finalMetrics.js';
-import {getFirstHidden} from './lib/getFirstHidden.js';
+import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
@@ -25,7 +25,7 @@ import {ReportHandler} from './types.js';
 
 
 export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
-  const firstHidden = getFirstHidden();
+  const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;
 
@@ -36,7 +36,7 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
     // If the page was hidden prior to paint time of the entry,
     // ignore it and mark the metric as final, otherwise add the entry.
-    if (value < firstHidden.timeStamp) {
+    if (value < visibilityWatcher.firstHiddenTime) {
       metric.value = value;
       metric.entries.push(entry);
     }

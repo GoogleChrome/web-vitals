@@ -444,14 +444,11 @@ The following table lists all the bundles distributed with the `web-vitals` pack
 
 Most developers will generally want to use the "standard" bundle (either the ES module or UMD version, depending on your build system), as it's the easiest to use out of the box and integrate into existing build tools.
 
-However, there are a few good reasons to consider using the "base+polyfill" version, for example:
-
-- FID can be measured in all browsers.
-- FCP, FID, and LCP will be more accurate in some cases (since the polyfill detects the page's initial `visibilityState` earlier).
+However, developers willing to manage the additional usage complexity should consider the "base+polyfill" bundle if they would like to measure FID in all browsers.
 
 ### How the polyfill works
 
-The `polyfill.js` script adds event listeners (to track FID cross-browser), and it records initial page visibility state as well as the timestamp of the first visibility change to hidden (to improve the accuracy of FCP, LCP, and FID).
+The `polyfill.js` script adds event listeners that record the event processing delay of the first input, and then removes those event listeners after the first input occurs.
 
 In order for it to work properly, the script must be the first script added to the page, and it must run before the browser renders any content to the screen. This is why it needs to be added to the `<head>` of the document.
 
@@ -530,7 +527,6 @@ If using the "base+polyfill" build, the `polyfill.js` script creates the global 
 interface WebVitalsGlobal {
   firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;
   resetFirstInputPolyfill: () => void;
-  firstHiddenTime: number;
 }
 ```
 

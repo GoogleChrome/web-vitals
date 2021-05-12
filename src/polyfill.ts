@@ -15,15 +15,9 @@
  */
 
 import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
-import {getFirstHiddenTime} from './lib/polyfills/getFirstHiddenTimePolyfill.js';
 
 resetFirstInputPolyfill();
 self.webVitals = {
   firstInputPolyfill: firstInputPolyfill,
   resetFirstInputPolyfill: resetFirstInputPolyfill,
-  // TODO: in v2 this should just be `getFirstHiddenTime()`,
-  // but in v1 it needs to be a getter to avoid creating a breaking change.
-  get firstHiddenTime() {
-    return getFirstHiddenTime();
-  },
 };
