@@ -16,7 +16,7 @@
 
 import {bindReporter} from './lib/bindReporter.js';
 import {finalMetrics} from './lib/finalMetrics.js';
-import {getFirstHidden} from './lib/getFirstHidden.js';
+import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
@@ -24,7 +24,7 @@ import {ReportHandler} from './types.js';
 
 
 export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
-  const firstHidden = getFirstHidden();
+  const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FCP');
   let report: ReturnType<typeof bindReporter>;
 
@@ -35,7 +35,7 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       }
 
       // Only report if the page wasn't hidden prior to the first paint.
-      if (entry.startTime < firstHidden.timeStamp) {
+      if (entry.startTime < visibilityWatcher.firstHiddenTime) {
         metric.value = entry.startTime;
         metric.entries.push(entry);
         finalMetrics.add(metric);

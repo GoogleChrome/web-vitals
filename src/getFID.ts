@@ -16,7 +16,7 @@
 
 import {bindReporter} from './lib/bindReporter.js';
 import {finalMetrics} from './lib/finalMetrics.js';
-import {getFirstHidden} from './lib/getFirstHidden.js';
+import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
@@ -26,13 +26,13 @@ import {FirstInputPolyfillCallback, PerformanceEventTiming, ReportHandler} from 
 
 
 export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
-  const firstHidden = getFirstHidden();
+  const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FID');
   let report: ReturnType<typeof bindReporter>;
 
   const entryHandler = (entry: PerformanceEventTiming) => {
     // Only report if the page wasn't hidden prior to the first input.
-    if (entry.startTime < firstHidden.timeStamp) {
+    if (entry.startTime < visibilityWatcher.firstHiddenTime) {
       metric.value = entry.processingStart - entry.startTime;
       metric.entries.push(entry);
       finalMetrics.add(metric);

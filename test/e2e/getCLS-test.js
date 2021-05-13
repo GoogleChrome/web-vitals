@@ -49,8 +49,6 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.entries.length, 2);
-
-    await browser.url('/test/cls');
   });
 
   it('reports the correct value on page unload after shifts (reportAllChanges === false)', async function() {
@@ -495,6 +493,42 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
     assert.strictEqual(cls.entries.length, 0);
+  });
+
+  it('does not report if the document was hidden at page load time', async function() {
+    await browser.url('/test/cls?hidden=1');
+
+    await stubVisibilityChange('visible');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls?hidden=1');
+
+    await stubForwardBack();
+
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
+
+    await triggerLayoutShift();
+
+    await stubVisibilityChange('hidden');
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+
+    assert(cls.value >= 0);
+    assert(cls.id.match(/^v1-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.delta, cls.value);
+    assert.strictEqual(cls.entries.length, 1);
   });
 });
 
