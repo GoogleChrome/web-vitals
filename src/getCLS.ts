@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {getFCP} from './getFCP.js';
 import {ReportHandler} from './types.js';
 
 
@@ -29,17 +29,22 @@ interface LayoutShift extends PerformanceEntry {
   hadRecentInput: boolean;
 }
 
+
+let isMonitoringFCP = false;
+let fcpValue = -1;
+
 export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
-  const visibilityWatcher = getVisibilityWatcher();
+  // Start monitoring FCP so we can only report CLS if FCP is also reported.
+  // Note: this is done to match the current behavior of CrUX.
+  if (!isMonitoringFCP) {
+    getFCP((metric) => {
+      fcpValue = metric.value;
+    });
+    isMonitoringFCP = true;
+  }
 
   const onReportWrapped: ReportHandler = (arg) => {
-    // Only report if the page was visible at some point in its lifecycle.
-    // Note: this doesn't technically match the current behavior of CrUX, which
-    // only includes pages that report FCP. However, we plan to change the
-    // behavior of CrUX in the future, and matching it would couple CLS to FCP
-    // in an awkward way, so in this library we only ignore CLS if the page
-    // was never visible (which should be the same as CrUX in most)
-    if (visibilityWatcher.firstVisibleTime < performance.now()) {
+    if (fcpValue > -1) {
       onReport(arg);
     }
   };
@@ -71,7 +76,6 @@ export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       if (sessionValue > metric.value) {
         metric.value = sessionValue;
         metric.entries = sessionEntries;
-
         report();
       }
     }
@@ -88,6 +92,7 @@ export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
     onBFCacheRestore(() => {
       sessionValue = 0;
+      fcpValue = -1;
       metric = initMetric('CLS', 0);
       report = bindReporter(onReportWrapped, metric, reportAllChanges);
     });

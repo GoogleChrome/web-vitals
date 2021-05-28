@@ -17,12 +17,16 @@
 const assert = require('assert');
 const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
 const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
+const {afterLoad} = require('../utils/afterLoad.js');
 const {imagesPainted} = require('../utils/imagesPainted.js');
 const {stubForwardBack} = require('../utils/stubForwardBack.js');
 const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
 describe('getCLS()', async function() {
+  // Retry all tests in this suite up to 2 times.
+  this.retries(2);
+
   let browserSupportsCLS;
   before(async function() {
     browserSupportsCLS = await browserSupportsEntry('layout-shift');
@@ -432,6 +436,8 @@ describe('getCLS()', async function() {
 
     await browser.url(`/test/cls?noLayoutShifts=1`);
 
+    // Wait until the page is loaded before hiding.
+    await afterLoad();
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
@@ -449,6 +455,8 @@ describe('getCLS()', async function() {
 
     await browser.url(`/test/cls?reportAllChanges=1&noLayoutShifts=1`);
 
+    // Wait until the page is loaded before hiding.
+    await afterLoad();
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
@@ -466,6 +474,8 @@ describe('getCLS()', async function() {
 
     await browser.url(`/test/cls?noLayoutShifts=1`);
 
+    // Wait until the page is loaded before navigating away.
+    await afterLoad();
     await browser.url('about:blank');
 
     await beaconCountIs(1);
@@ -483,6 +493,8 @@ describe('getCLS()', async function() {
 
     await browser.url(`/test/cls?noLayoutShifts=1&reportAllChanges=1`);
 
+    // Wait until the page is loaded before navigating away.
+    await afterLoad();
     await browser.url('about:blank');
 
     await beaconCountIs(1);

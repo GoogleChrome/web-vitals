@@ -22,6 +22,9 @@ const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
 describe('getFID()', async function() {
+  // Retry all tests in this suite up to 2 times.
+  this.retries(2);
+
   let browserSupportsFID;
   before(async function() {
     browserSupportsFID = await browserSupportsEntry('first-input');
