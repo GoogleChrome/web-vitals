@@ -66,6 +66,7 @@ export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
 export interface WebVitalsGlobal {
   firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;
   resetFirstInputPolyfill: () => void;
+  firstHiddenTime: number;
 }
 
 declare global {
