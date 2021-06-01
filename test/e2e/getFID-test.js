@@ -47,7 +47,7 @@ describe('getFID()', async function() {
 
     const [fid] = await getBeacons();
     assert(fid.value >= 0);
-    assert(fid.id.match(/^v1-\d+-\d+$/));
+    assert(fid.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.entries[0].name, 'mousedown');
@@ -97,7 +97,7 @@ describe('getFID()', async function() {
     const [fid] = await getBeacons();
 
     assert(fid.value >= 0);
-    assert(fid.id.match(/^v1-\d+-\d+$/));
+    assert(fid.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.entries[0].name, 'mousedown');
@@ -162,7 +162,7 @@ describe('getFID()', async function() {
 
     const [fid1] = await getBeacons();
     assert(fid1.value >= 0);
-    assert(fid1.id.match(/^v1-\d+-\d+$/));
+    assert(fid1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid1.name, 'FID');
     assert.strictEqual(fid1.value, fid1.delta);
     assert.strictEqual(fid1.entries[0].name, 'mousedown');
@@ -177,7 +177,7 @@ describe('getFID()', async function() {
 
     const [fid2] = await getBeacons();
     assert(fid2.value >= 0);
-    assert(fid2.id.match(/^v1-\d+-\d+$/));
+    assert(fid2.id.match(/^v2-\d+-\d+$/));
     assert(fid1.id !== fid2.id);
     assert.strictEqual(fid2.name, 'FID');
     assert.strictEqual(fid2.value, fid2.delta);

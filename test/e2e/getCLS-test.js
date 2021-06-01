@@ -49,7 +49,7 @@ describe('getCLS()', async function() {
 
     const [cls] = await getBeacons();
     assert(cls.value >= 0);
-    assert(cls.id.match(/^v1-\d+-\d+$/));
+    assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.entries.length, 2);
@@ -68,7 +68,7 @@ describe('getCLS()', async function() {
 
     const [cls] = await getBeacons();
     assert(cls.value >= 0);
-    assert(cls.id.match(/^v1-\d+-\d+$/));
+    assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.entries.length, 2);
@@ -89,7 +89,7 @@ describe('getCLS()', async function() {
     const [cls1] = await getBeacons();
 
     assert(cls1.value >= 0);
-    assert(cls1.id.match(/^v1-\d+-\d+$/));
+    assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 2);
@@ -118,7 +118,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
     assert.strictEqual(cls2.entries.length, 2);
-    assert(cls2.id.match(/^v1-\d+-\d+$/));
+    assert(cls2.id.match(/^v2-\d+-\d+$/));
 
     await browser.pause(1000);
     await stubVisibilityChange('visible');
@@ -149,7 +149,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.value, cls2.value + cls3.delta);
     assert.strictEqual(cls3.entries.length, 4);
-    assert(cls3.id.match(/^v1-\d+-\d+$/));
+    assert(cls3.id.match(/^v2-\d+-\d+$/));
 
     await browser.pause(1000);
     await stubVisibilityChange('visible');
@@ -203,7 +203,7 @@ describe('getCLS()', async function() {
     const [cls1, cls2] = await getBeacons();
 
     assert(cls1.value >= 0);
-    assert(cls1.id.match(/^v1-\d+-\d+$/));
+    assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 1);
@@ -235,7 +235,7 @@ describe('getCLS()', async function() {
     const [cls1, cls2] = await getBeacons();
 
     assert(cls1.value >= 0);
-    assert(cls1.id.match(/^v1-\d+-\d+$/));
+    assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 1);
 
@@ -271,7 +271,7 @@ describe('getCLS()', async function() {
 
     assert(cls1.value >= 0);
     assert(cls1.delta >= 0);
-    assert(cls1.id.match(/^v1-\d+-\d+$/));
+    assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 2);
@@ -306,7 +306,7 @@ describe('getCLS()', async function() {
     const [cls1, cls2] = await getBeacons();
 
     assert(cls1.value > 0);
-    assert(cls1.id.match(/^v1-\d+-\d+$/));
+    assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 1);
@@ -351,7 +351,7 @@ describe('getCLS()', async function() {
     const [cls1] = await getBeacons();
 
     assert(cls1.value >= 0);
-    assert(cls1.id.match(/^v1-\d+-\d+$/));
+    assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.delta, cls1.value);
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
@@ -366,7 +366,7 @@ describe('getCLS()', async function() {
     const [cls2] = await getBeacons();
 
     assert(cls2.value >= 0);
-    assert(cls2.id.match(/^v1-\d+-\d+$/));
+    assert(cls2.id.match(/^v2-\d+-\d+$/));
     assert(cls2.id !== cls1.id);
 
     assert.strictEqual(cls2.delta, cls2.value);
@@ -383,7 +383,7 @@ describe('getCLS()', async function() {
     const [cls3] = await getBeacons();
 
     assert(cls3.value >= 0);
-    assert(cls3.id.match(/^v1-\d+-\d+$/));
+    assert(cls3.id.match(/^v2-\d+-\d+$/));
     assert(cls3.id !== cls2.id);
 
     assert.strictEqual(cls3.delta, cls3.value);
@@ -401,7 +401,7 @@ describe('getCLS()', async function() {
     const [cls1, cls2] = await getBeacons();
 
     assert(cls1.value > 0);
-    assert(cls1.id.match(/^v1-\d+-\d+$/));
+    assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 1);
@@ -424,7 +424,7 @@ describe('getCLS()', async function() {
     const [cls3] = await getBeacons();
 
     assert(cls3.value > 0);
-    assert(cls3.id.match(/^v1-\d+-\d+$/));
+    assert(cls3.id.match(/^v2-\d+-\d+$/));
     assert(cls3.id !== cls2.id);
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.value, cls3.delta);
@@ -443,7 +443,7 @@ describe('getCLS()', async function() {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.id.match(/^v1-\d+-\d+$/));
+    assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
@@ -462,7 +462,7 @@ describe('getCLS()', async function() {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.id.match(/^v1-\d+-\d+$/));
+    assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
@@ -481,7 +481,7 @@ describe('getCLS()', async function() {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.id.match(/^v1-\d+-\d+$/));
+    assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
@@ -500,7 +500,7 @@ describe('getCLS()', async function() {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.id.match(/^v1-\d+-\d+$/));
+    assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
@@ -537,7 +537,7 @@ describe('getCLS()', async function() {
     const [cls] = await getBeacons();
 
     assert(cls.value >= 0);
-    assert(cls.id.match(/^v1-\d+-\d+$/));
+    assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.delta, cls.value);
     assert.strictEqual(cls.entries.length, 1);
