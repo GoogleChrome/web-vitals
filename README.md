@@ -20,6 +20,7 @@
 - [Browser Support](#browser-support)
 - [Limitations](#limitations)
 - [Development](#development)
+- [Integrations](#integrations)
 - [License](#license)
 
 ## Overview
@@ -659,6 +660,12 @@ npm run test:server
 Then navigate to `http://localhost:9090/test/<view>`, where `<view>` is the basename of one the templates under [/test/views/](/test/views/).
 
 You'll likely want to combine this with `npm run watch` to ensure any changes you make are transpiled and rebuilt.
+
+## Integrations
+
+- [**Web Vitals Connector**](https://goo.gle/web-vitals-connector): Data Studio connector to create dashboards from [Web Vitals data captured in BiqQuery](https://web.dev/vitals-ga4/).
+- [**Core Web Vitals Custom Tag template**](https://www.simoahava.com/custom-templates/core-web-vitals/): Custom GTM template tag to [add measurement handlers](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/) for all Core Web Vitals metrics.
+- [**`web-vitals-reporter`**](https://github.com/treosh/web-vitals-reporter): JavaScript library to batch `onReport` callbacks and send data with a single request.
 
 ## License
 
