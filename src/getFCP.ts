@@ -46,7 +46,7 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
   // TODO(philipwalton): remove the use of `fcpEntry` once this bug is fixed.
   // https://bugs.webkit.org/show_bug.cgi?id=225305
-  const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0];
+  const fcpEntry = 'getEntriesByName' in performance ? performance.getEntriesByName('first-contentful-paint')[0] : null;
   const po = fcpEntry ? null : observe('paint', entryHandler);
 
   if (fcpEntry || po) {
