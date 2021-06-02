@@ -1,5 +1,12 @@
 # Changelog
 
+### v2.0.0 (2021-06-01)
+
+- **[BREAKING]** Update CLS to max session window 5s cap 1s gap ([#148](https://github.com/GoogleChrome/web-vitals/pull/148))
+- Ensure CLS is only reported if page was visible ([#149](https://github.com/GoogleChrome/web-vitals/pull/149))
+- Only report CLS when FCP is reported ([#154](https://github.com/GoogleChrome/web-vitals/pull/154))
+- Update the unique ID version prefix ([#157](https://github.com/GoogleChrome/web-vitals/pull/157)
+
 ### v1.1.2 (2021-05-05)
 
 - Ignore negative TTFB values in Firefox ([#147](https://github.com/GoogleChrome/web-vitals/pull/147))
@@ -23,9 +30,7 @@
 ### v1.0.0 (2020-11-16)
 
 - **[BREAKING]** Add support for reporting metrics on back/forward cache restore ([#87](https://github.com/GoogleChrome/web-vitals/pull/87))
-
 - **[BREAKING]** Remove the `isFinal` flag from the Metric interface ([#86](https://github.com/GoogleChrome/web-vitals/pull/86))
-
 - Remove the scroll listener to stop LCP observing ([#85](https://github.com/GoogleChrome/web-vitals/pull/85))
 
 ### v0.2.4 (2020-07-23)
