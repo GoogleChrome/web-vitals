@@ -113,7 +113,7 @@ The recommended way to use the `web-vitals` package is to install it from npm an
 
 The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just Chromium-based browsers (using the "standard" version) or additional browsers (using the "base+polyfill" version):
 
-**Load the "standard" version** (using a module script)
+**Load the "standard" version** _(using a module script)_
 
 ```html
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
@@ -132,7 +132,7 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
 <script>
 (function() {
   var script = document.createElement('script');
-  script.src = 'https://unpkg.com/web-vitals';
+  script.src = 'https://unpkg.com/web-vitals/dist/web-vitals.iife.js';
   script.onload = function() {
     // When loading `web-vitals` using a classic script, all the public
     // methods can be found on the `webVitals` global namespace.
@@ -161,7 +161,7 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
     <script>
     (function() {
       var script = document.createElement('script');
-      script.src = 'https://unpkg.com/web-vitals';
+      script.src = 'https://unpkg.com/web-vitals/dist/web-vitals.iife.js';
       script.onload = function() {
         // When loading `web-vitals` using a classic script, all the public
         // methods can be found on the `webVitals` global namespace.

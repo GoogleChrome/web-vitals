@@ -26,7 +26,7 @@
     "test": "npm-run-all build -p -r test:*",
     "test:e2e": "wdio wdio.conf.js",
     "test:server": "node test/server.js",
-    "start": "run-p watch test:server",
+    "start": "run-s build:ts test:server watch",
     "watch": "run-p watch:*",
     "watch:ts": "tsc -b -w",
     "watch:js": "rollup -c -w",

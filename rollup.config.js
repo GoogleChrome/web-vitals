@@ -32,7 +32,10 @@ const configurePlugins = ({module, polyfill = false}) => {
       compress: true,
     }),
     replace({
-      'self.__WEB_VITALS_POLYFILL__': polyfill,
+      values: {
+        'self.__WEB_VITALS_POLYFILL__': polyfill,
+      },
+      preventAssignment: true,
     })
   ]
 }
@@ -58,6 +61,15 @@ const configs = [
   {
     input: 'dist/modules/index.js',
     output: {
+      format: 'iife',
+      file: './dist/web-vitals.iife.js',
+      name: 'webVitals',
+    },
+    plugins: configurePlugins({module: false, polyfill: false}),
+  },
+  {
+    input: 'dist/modules/index.js',
+    output: {
       format: 'esm',
       file: './dist/web-vitals.base.js',
     },
@@ -68,6 +80,16 @@ const configs = [
     output: {
       format: 'umd',
       file: `./dist/web-vitals.base.umd.js`,
+      name: 'webVitals',
+      extend: true,
+    },
+    plugins: configurePlugins({module: false, polyfill: true}),
+  },
+  {
+    input: 'dist/modules/index.js',
+    output: {
+      format: 'iife',
+      file: `./dist/web-vitals.base.iife.js`,
       name: 'webVitals',
       extend: true,
     },
