@@ -46,7 +46,11 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
   // TODO(philipwalton): remove the use of `fcpEntry` once this bug is fixed.
   // https://bugs.webkit.org/show_bug.cgi?id=225305
-  const fcpEntry = 'getEntriesByName' in performance ? performance.getEntriesByName('first-contentful-paint')[0] : null;
+  // Also, the check for `getEntriesByName` is needed to support Opera:
+  // https://github.com/GoogleChrome/web-vitals/issues/159
+  const fcpEntry = performance.getEntriesByName &&
+      performance.getEntriesByName('first-contentful-paint')[0];
+
   const po = fcpEntry ? null : observe('paint', entryHandler);
 
   if (fcpEntry || po) {
