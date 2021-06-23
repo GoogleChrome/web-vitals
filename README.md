@@ -418,7 +418,7 @@ The following table lists all the bundles distributed with the `web-vitals` pack
   </tr>
   <tr>
     <td><code>web-vitals.iife.js</code></td>
-    <td><code>--</code></td>
+    <td>--</td>
     <td>
       An IIFE version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
     </td>
@@ -433,7 +433,7 @@ The following table lists all the bundles distributed with the `web-vitals` pack
   </tr>
     <tr>
     <td><code>web-vitals.base.umd.js</code></td>
-    <td><code>--</code></td>
+    <td>--</td>
     <td>
       A UMD version of the <code>web-vitals.base.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
     </td>
@@ -441,7 +441,7 @@ The following table lists all the bundles distributed with the `web-vitals` pack
   </tr>
     <tr>
     <td><code>web-vitals.base.iife.js</code></td>
-    <td><code>--</code></td>
+    <td>--</td>
     <td>
       An IIFE version of the <code>web-vitals.base.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
     </td>
