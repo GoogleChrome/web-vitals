@@ -417,6 +417,13 @@ The following table lists all the bundles distributed with the `web-vitals` pack
     </td>
   </tr>
   <tr>
+    <td><code>web-vitals.iife.js</code></td>
+    <td><code>--</code></td>
+    <td>
+      An IIFE version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
+    </td>
+  </tr>
+  <tr>
     <td><code>web-vitals.base.js</code></td>
     <td>--</td>
     <td>
@@ -431,11 +438,19 @@ The following table lists all the bundles distributed with the `web-vitals` pack
       A UMD version of the <code>web-vitals.base.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
     </td>
   </tr>
+  </tr>
+    <tr>
+    <td><code>web-vitals.base.iife.js</code></td>
+    <td><code>--</code></td>
+    <td>
+      An IIFE version of the <code>web-vitals.base.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
+    </td>
+  </tr>
   <tr>
     <td><code>polyfill.js</code></td>
     <td>--</td>
     <td>
-      <p>The "polyfill" part of the "base+polyfill" version. This script should be used with either <code>web-vitals.base.js</code> or <code>web-vitals.base.umd.js</code> (it will not work with the <code>web-vitals.js</code> or <code>web-vitals.umd.js</code> bundles).</p>
+      <p>The "polyfill" part of the "base+polyfill" version. This script should be used with either <code>web-vitals.base.js</code>, <code>web-vitals.base.umd.js</code>, or <code>web-vitals.base.iife.js</code> (it will not work with any script that doesn't have "base" in the filename).</p>
       See <a href="#how-to-use-the-polyfill">how to use the polyfill</a> for more details.
     </td>
   </tr>
