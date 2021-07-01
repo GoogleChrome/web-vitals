@@ -15,7 +15,6 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {finalMetrics} from './lib/finalMetrics.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -38,8 +37,7 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       if (entry.startTime < visibilityWatcher.firstHiddenTime) {
         metric.value = entry.startTime;
         metric.entries.push(entry);
-        finalMetrics.add(metric);
-        report();
+        report(true);
       }
     }
   };
@@ -66,8 +64,7 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           metric.value = performance.now() - event.timeStamp;
-          finalMetrics.add(metric);
-          report();
+          report(true);
         });
       });
     });

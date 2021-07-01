@@ -15,7 +15,6 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {finalMetrics} from './lib/finalMetrics.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
@@ -35,8 +34,7 @@ export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     if (entry.startTime < visibilityWatcher.firstHiddenTime) {
       metric.value = entry.processingStart - entry.startTime;
       metric.entries.push(entry);
-      finalMetrics.add(metric);
-      report();
+      report(true);
     }
   };
 

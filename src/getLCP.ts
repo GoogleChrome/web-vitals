@@ -15,7 +15,6 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {finalMetrics} from './lib/finalMetrics.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe, PerformanceEntryHandler} from './lib/observe.js';
@@ -23,6 +22,8 @@ import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {onHidden} from './lib/onHidden.js';
 import {ReportHandler} from './types.js';
 
+
+const reportedMetricIDs:Set<string> = new Set();
 
 export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const visibilityWatcher = getVisibilityWatcher();
@@ -50,11 +51,11 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     report = bindReporter(onReport, metric, reportAllChanges);
 
     const stopListening = () => {
-      if (!finalMetrics.has(metric)) {
+      if (!reportedMetricIDs.has(metric.id)) {
         po.takeRecords().map(entryHandler as PerformanceEntryHandler);
         po.disconnect();
-        finalMetrics.add(metric);
-        report();
+        reportedMetricIDs.add(metric.id);
+        report(true);
       }
     }
 
@@ -73,8 +74,8 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           metric.value = performance.now() - event.timeStamp;
-          finalMetrics.add(metric);
-          report();
+          reportedMetricIDs.add(metric.id);
+          report(true);
         });
       });
     });
