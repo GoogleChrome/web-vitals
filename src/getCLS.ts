@@ -90,7 +90,7 @@ export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
     onHidden(() => {
       po.takeRecords().map(entryHandler as PerformanceEntryHandler);
-      report();
+      report(true);
     });
 
     onBFCacheRestore(() => {

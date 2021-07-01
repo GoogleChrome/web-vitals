@@ -11,6 +11,7 @@
   - [Send the results to an analytics endpoint](#send-the-results-to-an-analytics-endpoint)
   - [Send the results to Google Analytics](#send-the-results-to-google-analytics)
   - [Send the results to Google Tag Manager](#send-the-results-to-google-tag-manager)
+  - [Batch multiple reports together](#batch-multiple-reports-together)
 - [Bundle versions](#bundle-versions)
   - [Which bundle is right for you?](#which-bundle-is-right-for-you)
   - [How the polyfill works](#how-the-polyfill-works)
@@ -256,7 +257,10 @@ The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://dev
 import {getCLS, getFID, getLCP} from 'web-vitals';
 
 function sendToAnalytics(metric) {
-  const body = JSON.stringify({[metric.name]: metric.value});
+  // Replace with whatever serialization method you prefer.
+  // Note: JSON.stringify will likely include more data than you need.
+  const body = JSON.stringify(metric);
+
   // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
   (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
       fetch('/analytics', {body, method: 'POST', keepalive: true});
@@ -386,6 +390,55 @@ getLCP(sendToGoogleAnalytics);
 The recommended way to measure Web Vitals metrics with Google Tag Manager is using the [Core Web Vitals](https://www.simoahava.com/custom-templates/core-web-vitals/) custom template tag created and maintained by [Simo Ahava](https://www.simoahava.com/).
 
 For full installation and usage instructions, see Simo's post: [Track Core Web Vitals in GA4 with Google Tag Manager](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/).
+
+### Batch multiple reports together
+
+Rather than reporting each individual Web Vitals metric separately, you can minimize your network usage by batching multiple metric reports together in a single network request.
+
+However, since not all Web Vitals metrics become available at the same time, and since not all metrics are reported on every page, you cannot simply defer reporting until all metrics are available.
+
+Instead, you should keep a queue of all metrics that were reported and flush the queue whenever the page is backgrounded or unloaded:
+
+```js
+import {getCLS, getFID, getLCP} from 'web-vitals';
+
+const queue = new Set();
+function addToQueue(metric) {
+  queue.add(metric);
+}
+
+function flushQueue() {
+  if (queue.size > 0) {
+    // Replace with whatever serialization method you prefer.
+    // Note: JSON.stringify will likely include more data than you need.
+    const body = JSON.stringify([...queue]);
+
+    // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
+    (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
+          fetch('/analytics', {body, method: 'POST', keepalive: true});
+
+    queue.clear();
+  }
+}
+
+getCLS(addToQueue);
+getFID(addToQueue);
+getLCP(addToQueue);
+
+// Report all available metrics whenever the page is backgrounded or unloaded.
+addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    flushQueue();
+  }
+});
+
+// NOTE: Safari does not reliably fire the `visibilitychange` event when the
+// page is being unloaded. If Safari support is needed, you should also flush
+// the queue in the `pagehide` event.
+addEventListener('pagehide', flushQueue);
+```
+
+_**Note:** see [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` and `pagehide` are recommended over events like `beforeunload` and `unload`._
 
 ## Bundle versions
 
