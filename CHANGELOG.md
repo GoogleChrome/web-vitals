@@ -2,18 +2,18 @@
 
 ### v2.1.0 (2021-07-01)
 
-- Add batch reporting support and guidance ([#166](https://github.com/GoogleChrome/web-vitals/pull/166)
+- Add batch reporting support and guidance ([#166](https://github.com/GoogleChrome/web-vitals/pull/166))
 
 ### v2.0.1 (2021-06-02)
 
-- Detect getEntriesByName support before calling ([#158](https://github.com/GoogleChrome/web-vitals/pull/158)
+- Detect getEntriesByName support before calling ([#158](https://github.com/GoogleChrome/web-vitals/pull/158))
 
 ### v2.0.0 (2021-06-01)
 
 - **[BREAKING]** Update CLS to max session window 5s cap 1s gap ([#148](https://github.com/GoogleChrome/web-vitals/pull/148))
 - Ensure CLS is only reported if page was visible ([#149](https://github.com/GoogleChrome/web-vitals/pull/149))
 - Only report CLS when FCP is reported ([#154](https://github.com/GoogleChrome/web-vitals/pull/154))
-- Update the unique ID version prefix ([#157](https://github.com/GoogleChrome/web-vitals/pull/157)
+- Update the unique ID version prefix ([#157](https://github.com/GoogleChrome/web-vitals/pull/157))
 
 ### v1.1.2 (2021-05-05)
 
