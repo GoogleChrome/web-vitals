@@ -163,7 +163,7 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
     <script>
     (function() {
       var script = document.createElement('script');
-      script.src = 'https://unpkg.com/web-vitals/dist/web-vitals.iife.js';
+      script.src = 'https://unpkg.com/web-vitals/dist/web-vitals.base.iife.js';
       script.onload = function() {
         // When loading `web-vitals` using a classic script, all the public
         // methods can be found on the `webVitals` global namespace.
