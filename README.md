@@ -570,7 +570,7 @@ When using the FID polyfill (and if the browser doesn't natively support the Eve
 
 ```ts
 type FirstInputPolyfillEntry = Omit<PerformanceEventTiming,
-  'processingEnd' | 'processingEnd', 'toJSON'>
+  'processingEnd' | 'processingEnd' | 'toJSON'>
 ```
 
 #### `FirstInputPolyfillCallback`
