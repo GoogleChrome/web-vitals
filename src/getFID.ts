@@ -48,7 +48,7 @@ export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     }, true);
   }
 
-  if (self.__WEB_VITALS_POLYFILL__) {
+  if (window.__WEB_VITALS_POLYFILL__) {
     // Prefer the native implementation if available,
     if (!po) {
       window.webVitals.firstInputPolyfill(entryHandler as FirstInputPolyfillCallback)

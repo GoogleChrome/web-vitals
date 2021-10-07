@@ -33,7 +33,7 @@ const configurePlugins = ({module, polyfill = false}) => {
     }),
     replace({
       values: {
-        'self.__WEB_VITALS_POLYFILL__': polyfill,
+        'window.__WEB_VITALS_POLYFILL__': polyfill,
       },
       preventAssignment: true,
     })

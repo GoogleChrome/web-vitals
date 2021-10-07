@@ -23,7 +23,7 @@ import {onHidden} from './lib/onHidden.js';
 import {ReportHandler} from './types.js';
 
 
-const reportedMetricIDs:Set<string> = new Set();
+const reportedMetricIDs: Record<string, boolean> = {};
 
 export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const visibilityWatcher = getVisibilityWatcher();
@@ -51,10 +51,10 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     report = bindReporter(onReport, metric, reportAllChanges);
 
     const stopListening = () => {
-      if (!reportedMetricIDs.has(metric.id)) {
+      if (!reportedMetricIDs[metric.id]) {
         po.takeRecords().map(entryHandler as PerformanceEntryHandler);
         po.disconnect();
-        reportedMetricIDs.add(metric.id);
+        reportedMetricIDs[metric.id] = true;
         report(true);
       }
     }
@@ -74,7 +74,7 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           metric.value = performance.now() - event.timeStamp;
-          reportedMetricIDs.add(metric.id);
+          reportedMetricIDs[metric.id] = true;
           report(true);
         });
       });
