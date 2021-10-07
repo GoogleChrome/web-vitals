@@ -1,5 +1,9 @@
 # Changelog
 
+### v2.1.1 (2021-10-06)
+
+- Add feature detects to support Opera mini in extreme data saver mode ([#186](https://github.com/GoogleChrome/web-vitals/pull/186))
+
 ### v2.1.0 (2021-07-01)
 
 - Add batch reporting support and guidance ([#166](https://github.com/GoogleChrome/web-vitals/pull/166))
