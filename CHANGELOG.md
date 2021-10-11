@@ -1,5 +1,9 @@
 # Changelog
 
+### v2.1.2 (2021-10-11)
+
+- Ensure reported TTFB values are less than the current page time ([#187](https://github.com/GoogleChrome/web-vitals/pull/187))
+
 ### v2.1.1 (2021-10-06)
 
 - Add feature detects to support Opera mini in extreme data saver mode ([#186](https://github.com/GoogleChrome/web-vitals/pull/186))
