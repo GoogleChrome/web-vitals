@@ -39,7 +39,7 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 ### Other Web Vitals
 
 - [First Contentful Paint (FCP)](https://web.dev/fcp/)
-- [Time to First Byte (TTFB)](https://web.dev/time-to-first-byte/)
+- [Time to First Byte (TTFB)](https://web.dev/ttfb/)
 
 <a name="installation"><a>
 <a name="load-the-library"><a>
