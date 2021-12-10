@@ -26,7 +26,7 @@ const initHiddenTime = () => {
 const trackChanges = () => {
   // Update the time if/when the document becomes hidden.
   onHidden(({timeStamp}) => {
-    firstHiddenTime = timeStamp
+    firstHiddenTime = timeStamp || initHiddenTime();
   }, true);
 };
 
