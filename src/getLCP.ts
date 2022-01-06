@@ -40,9 +40,8 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     if (value < visibilityWatcher.firstHiddenTime) {
       metric.value = value;
       metric.entries.push(entry);
+      report();
     }
-
-    report();
   };
 
   const po = observe('largest-contentful-paint', entryHandler);
