@@ -1,5 +1,9 @@
 # Changelog
 
+### v2.1.3 (2022-01-06)
+
+- Only call report if LCP occurs before first hidden ([#197](https://github.com/GoogleChrome/web-vitals/pull/197))
+
 ### v2.1.2 (2021-10-11)
 
 - Ensure reported TTFB values are less than the current page time ([#187](https://github.com/GoogleChrome/web-vitals/pull/187))
