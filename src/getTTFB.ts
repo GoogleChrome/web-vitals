@@ -44,7 +44,7 @@ const getNavigationEntryFromPerformanceTiming = (): NavigationTimingPolyfillEntr
           timing.navigationStart, 0);
     }
   }
-  return navigationEntry as NavigationTimingPolyfillEntry;
+  return navigationEntry as unknown as NavigationTimingPolyfillEntry;
 };
 
 export const getTTFB = (onReport: ReportHandler) => {

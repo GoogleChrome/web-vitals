@@ -1,5 +1,4 @@
 {
-  "parser": "babel-eslint",
   "env": {
     "browser": true,
     "es6": true,
@@ -7,7 +6,8 @@
     "mocha": true
   },
   "parserOptions": {
-    "sourceType": "module"
+    "sourceType": "module",
+    "ecmaVersion": "latest"
   },
   "overrides": [
     {
