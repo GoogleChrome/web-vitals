@@ -1,5 +1,9 @@
 # Changelog
 
+### v2.1.4 (2022-01-20)
+
+- Prevent TTFB from reporting after bfcache restore ([#201](https://github.com/GoogleChrome/web-vitals/pull/201))
+
 ### v2.1.3 (2022-01-06)
 
 - Only call report if LCP occurs before first hidden ([#197](https://github.com/GoogleChrome/web-vitals/pull/197))
