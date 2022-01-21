@@ -23,8 +23,8 @@ const afterLoad = (callback: () => void) => {
     // Queue a task so the callback runs after `loadEventEnd`.
     setTimeout(callback, 0);
   } else {
-    // Use `pageshow` so the callback runs after `loadEventEnd`.
-    addEventListener('pageshow', callback);
+    // Queue a task so the callback runs after `loadEventEnd`.
+    addEventListener('load', () => setTimeout(callback, 0));
   }
 }
 

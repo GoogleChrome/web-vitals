@@ -15,8 +15,9 @@
  */
 
 const assert = require('assert');
-const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
 const {afterLoad} = require('../utils/afterLoad.js');
+const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
+const {stubForwardBack} = require('../utils/stubForwardBack.js');
 
 /**
  * Accepts a PerformanceNavigationTimingEntry (or shim) and asserts that it
@@ -108,6 +109,36 @@ describe('getTTFB()', async function() {
     assert.strictEqual(ttfb.entries.length, 1);
 
     assertValidEntry(ttfb.entries[0]);
+  });
+
+  it('does not report after a bfcache restore', async function() {
+    await browser.url('/test/ttfb');
+
+    const ttfb = await getTTFBBeacon();
+
+    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
+      // Skipping test in Firefox due to entry not reported.
+      this.skip();
+    }
+
+    assert(ttfb.value >= 0);
+    assert(ttfb.value >= ttfb.entries[0].requestStart);
+    assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
+    assert(ttfb.id.match(/^v2-\d+-\d+$/));
+    assert.strictEqual(ttfb.name, 'TTFB');
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.entries.length, 1);
+
+    assertValidEntry(ttfb.entries[0]);
+
+    await clearBeacons();
+    await stubForwardBack();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const bfcacheRestoreBeacons = await getBeacons();
+    assert.strictEqual(bfcacheRestoreBeacons.length, 0);
   });
 });
 

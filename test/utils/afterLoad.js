@@ -25,7 +25,7 @@ function afterLoad() {
     if (document.readyState === 'complete') {
       setTimeout(done, 0);
     } else {
-      addEventListener('pageshow', done);
+      addEventListener('load', () => setTimeout(done, 0));
     }
   });
 }
