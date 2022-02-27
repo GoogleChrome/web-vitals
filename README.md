@@ -569,8 +569,7 @@ interface ReportHandler {
 When using the FID polyfill (and if the browser doesn't natively support the Event Timing API), `metric.entries` will contain an object that polyfills the `PerformanceEventTiming` entry:
 
 ```ts
-type FirstInputPolyfillEntry = Omit<PerformanceEventTiming,
-  'processingEnd' | 'processingEnd' | 'toJSON'>
+type FirstInputPolyfillEntry = Omit<PerformanceEventTiming, 'processingEnd' | 'toJSON'>
 ```
 
 #### `FirstInputPolyfillCallback`
