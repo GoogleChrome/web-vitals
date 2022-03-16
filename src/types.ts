@@ -16,7 +16,7 @@
 
 export interface Metric {
   // The name of the metric (in acronym form).
-  name: 'CLS' | 'FCP' | 'FID' | 'LCP' | 'TTFB';
+  name: 'CLS' | 'FCP' | 'FID' | 'INP' | 'LCP' | 'TTFB';
 
   // The current value of the metric.
   value: number;
@@ -50,6 +50,7 @@ export interface PerformanceEventTiming extends PerformanceEntry {
   duration: DOMHighResTimeStamp;
   cancelable?: boolean;
   target?: Element;
+  interactionId?: number; 
 }
 
 export type FirstInputPolyfillEntry =
