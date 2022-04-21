@@ -41,7 +41,11 @@ export const observe = (
       const po: PerformanceObserver =
           new PerformanceObserver((l) => l.getEntries().map(callback));
 
-      po.observe({type, buffered: true});
+      // This durationThreshold means event timing will fire often, potentially with
+      // performance implications.  It is much noisier than other PO observers.
+      // We may want to leave the default 104ms setting, or use an even high threshold
+      // and treat all pages without long responsiveness issues as if it were 0ms.
+      po.observe({type, buffered: true, durationThreshold: 0 } as PerformanceObserverInit);
       return po;
     }
   } catch (e) {
