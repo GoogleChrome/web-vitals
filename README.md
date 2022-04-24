@@ -550,9 +550,10 @@ interface Metric {
   // together and calculate a total.
   id: string;
 
-  // Any performance entries used in the metric value calculation.
-  // Note, entries will be added to the array as the value changes.
-  entries: (PerformanceEntry | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
+  // Any performance entries relevant to the metric value calculation.
+  // The array may also be empty if the metric value was not based on any
+  // entries (e.g. a CLS value of 0 given no layout shifts).
+  entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
 }
 ```
 
