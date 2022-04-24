@@ -30,32 +30,31 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;
 
-  const entryHandler = (entry: PerformanceEntry) => {
-    // The startTime attribute returns the value of the renderTime if it is not 0,
-    // and the value of the loadTime otherwise.
-    const value = entry.startTime;
+  const handleEntries = (entries: Metric['entries']) => {
+    const lastEntry = entries[entries.length - 1];
+    if (lastEntry) {
+      // The startTime attribute returns the value of the renderTime if it is
+      // not 0, and the value of the loadTime otherwise.
+      const value = lastEntry.startTime;
 
-    // If the page was hidden prior to paint time of the entry,
-    // ignore it and mark the metric as final, otherwise add the entry.
-    if (value < visibilityWatcher.firstHiddenTime) {
-      metric.value = value;
-      metric.entries.push(entry);
-      report();
+      // If the page was hidden prior to paint time of the entry,
+      // ignore it and mark the metric as final, otherwise add the entry.
+      if (value < visibilityWatcher.firstHiddenTime) {
+        metric.value = value;
+        metric.entries = [lastEntry];
+        report();
+      }
     }
   };
 
-  const entriesHandler = (entries: Metric['entries']) => {
-    entries.forEach(entryHandler);
-  };
-
-  const po = observe('largest-contentful-paint', entriesHandler);
+  const po = observe('largest-contentful-paint', handleEntries);
 
   if (po) {
     report = bindReporter(onReport, metric, reportAllChanges);
 
     const stopListening = () => {
       if (!reportedMetricIDs[metric.id]) {
-        entriesHandler(po.takeRecords());
+        handleEntries(po.takeRecords());
         po.disconnect();
         reportedMetricIDs[metric.id] = true;
         report(true);
