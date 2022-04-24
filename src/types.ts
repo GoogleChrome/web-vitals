@@ -34,9 +34,10 @@ export interface Metric {
   // get created).
   id: string;
 
-  // Any performance entries used in the metric value calculation.
-  // Note, entries will be added to the array as the value changes.
-  entries: (PerformanceEntry | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
+  // Any performance entries relevant to the metric value calculation.
+  // The array may also be empty if the metric value was not based on any
+  // entries (e.g. a CLS value of 0 given no layout shifts).
+  entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
 }
 
 export interface ReportHandler {
@@ -50,11 +51,17 @@ export interface PerformanceEventTiming extends PerformanceEntry {
   duration: DOMHighResTimeStamp;
   cancelable?: boolean;
   target?: Element;
-  interactionId?: number; 
+  interactionId?: number;
+}
+
+// https://wicg.github.io/layout-instability/#sec-layout-shift
+export interface LayoutShift extends PerformanceEntry {
+  value: number;
+  hadRecentInput: boolean;
 }
 
 export type FirstInputPolyfillEntry =
-    Omit<PerformanceEventTiming, 'processingEnd' | 'toJSON'>
+    Omit<PerformanceEventTiming, 'processingEnd'>
 
 export interface FirstInputPolyfillCallback {
   (entry: FirstInputPolyfillEntry): void;
@@ -62,7 +69,7 @@ export interface FirstInputPolyfillCallback {
 
 export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
     'initiatorType' | 'nextHopProtocol' | 'redirectCount' | 'transferSize' |
-    'encodedBodySize' | 'decodedBodySize' | 'toJSON'>
+    'encodedBodySize' | 'decodedBodySize'>
 
 export interface WebVitalsGlobal {
   firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;

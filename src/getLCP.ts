@@ -17,10 +17,10 @@
 import {bindReporter} from './lib/bindReporter.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
-import {observe, PerformanceEntryHandler} from './lib/observe.js';
+import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {onHidden} from './lib/onHidden.js';
-import {ReportHandler} from './types.js';
+import {Metric, ReportHandler} from './types.js';
 
 
 const reportedMetricIDs: Record<string, boolean> = {};
@@ -44,14 +44,18 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     }
   };
 
-  const po = observe('largest-contentful-paint', entryHandler);
+  const entriesHandler = (entries: Metric['entries']) => {
+    entries.forEach(entryHandler);
+  };
+
+  const po = observe('largest-contentful-paint', entriesHandler);
 
   if (po) {
     report = bindReporter(onReport, metric, reportAllChanges);
 
     const stopListening = () => {
       if (!reportedMetricIDs[metric.id]) {
-        po.takeRecords().map(entryHandler as PerformanceEntryHandler);
+        entriesHandler(po.takeRecords());
         po.disconnect();
         reportedMetricIDs[metric.id] = true;
         report(true);

@@ -17,11 +17,11 @@
 import {bindReporter} from './lib/bindReporter.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
-import {observe, PerformanceEntryHandler} from './lib/observe.js';
+import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {onHidden} from './lib/onHidden.js';
 import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
-import {FirstInputPolyfillCallback, PerformanceEventTiming, ReportHandler} from './types.js';
+import {FirstInputPolyfillCallback, Metric, PerformanceEventTiming, ReportHandler} from './types.js';
 
 
 export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
@@ -29,21 +29,25 @@ export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   let metric = initMetric('FID');
   let report: ReturnType<typeof bindReporter>;
 
-  const entryHandler = (entry: PerformanceEventTiming) => {
+  const handleEntry = (entry: PerformanceEventTiming) => {
     // Only report if the page wasn't hidden prior to the first input.
     if (entry.startTime < visibilityWatcher.firstHiddenTime) {
       metric.value = entry.processingStart - entry.startTime;
       metric.entries.push(entry);
       report(true);
     }
-  };
+  }
 
-  const po = observe('first-input', entryHandler as PerformanceEntryHandler);
+  const handleEntries = (entries: Metric['entries']) => {
+    (entries as PerformanceEventTiming[]).forEach(handleEntry);
+  }
+
+  const po = observe('first-input', handleEntries);
   report = bindReporter(onReport, metric, reportAllChanges);
 
   if (po) {
     onHidden(() => {
-      po.takeRecords().map(entryHandler as PerformanceEntryHandler);
+      handleEntries(po.takeRecords());
       po.disconnect();
     }, true);
   }
@@ -51,13 +55,13 @@ export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   if (window.__WEB_VITALS_POLYFILL__) {
     // Prefer the native implementation if available,
     if (!po) {
-      window.webVitals.firstInputPolyfill(entryHandler as FirstInputPolyfillCallback)
+      window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback)
     }
     onBFCacheRestore(() => {
       metric = initMetric('FID');
       report = bindReporter(onReport, metric, reportAllChanges);
       window.webVitals.resetFirstInputPolyfill();
-      window.webVitals.firstInputPolyfill(entryHandler as FirstInputPolyfillCallback);
+      window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
     });
   } else {
     // Only monitor bfcache restores if the browser supports FID natively.
@@ -66,7 +70,7 @@ export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
         metric = initMetric('FID');
         report = bindReporter(onReport, metric, reportAllChanges);
         resetFirstInputPolyfill();
-        firstInputPolyfill(entryHandler as FirstInputPolyfillCallback);
+        firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
       });
     }
   }

@@ -19,7 +19,7 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
-import {ReportHandler} from './types.js';
+import {Metric, ReportHandler} from './types.js';
 
 
 export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
@@ -27,19 +27,21 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   let metric = initMetric('FCP');
   let report: ReturnType<typeof bindReporter>;
 
-  const entryHandler = (entry: PerformanceEntry) => {
-    if (entry.name === 'first-contentful-paint') {
-      if (po) {
-        po.disconnect();
-      }
+  const handleEntries = (entries: Metric['entries']) => {
+    entries.forEach((entry) => {
+      if (entry.name === 'first-contentful-paint') {
+        if (po) {
+          po.disconnect();
+        }
 
-      // Only report if the page wasn't hidden prior to the first paint.
-      if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-        metric.value = entry.startTime;
-        metric.entries.push(entry);
-        report(true);
+        // Only report if the page wasn't hidden prior to the first paint.
+        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+          metric.value = entry.startTime;
+          metric.entries.push(entry);
+          report(true);
+        }
       }
-    }
+    });
   };
 
   // TODO(philipwalton): remove the use of `fcpEntry` once this bug is fixed.
@@ -51,13 +53,13 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const fcpEntry = window.performance && performance.getEntriesByName &&
       performance.getEntriesByName('first-contentful-paint')[0];
 
-  const po = fcpEntry ? null : observe('paint', entryHandler);
+  const po = fcpEntry ? null : observe('paint', handleEntries);
 
   if (fcpEntry || po) {
     report = bindReporter(onReport, metric, reportAllChanges);
 
     if (fcpEntry) {
-      entryHandler(fcpEntry);
+      handleEntries([fcpEntry]);
     }
 
     onBFCacheRestore((event) => {

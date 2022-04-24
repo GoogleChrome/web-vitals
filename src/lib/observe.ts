@@ -14,8 +14,11 @@
  * limitations under the License.
  */
 
-export interface PerformanceEntryHandler {
-  (entry: PerformanceEntry): void;
+import {Metric} from '../types.js';
+
+
+interface PerformanceEntriesHandler {
+  (entries: Metric['entries']): void;
 }
 
 /**
@@ -27,25 +30,19 @@ export interface PerformanceEntryHandler {
  * try/catch to avoid errors in unsupporting browsers.
  */
 export const observe = (
-    type: string,
-    callback: PerformanceEntryHandler,
+  type: string,
+  callback: PerformanceEntriesHandler,
+  opts?: PerformanceObserverInit,
 ): PerformanceObserver | undefined => {
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
-      // More extensive feature detect needed for Firefox due to:
-      // https://github.com/GoogleChrome/web-vitals/issues/142
-      if (type === 'first-input' && !('PerformanceEventTiming' in self)) {
-        return;
-      }
-
-      const po: PerformanceObserver =
-          new PerformanceObserver((l) => l.getEntries().map(callback));
-
-      // This durationThreshold means event timing will fire often, potentially with
-      // performance implications.  It is much noisier than other PO observers.
-      // We may want to leave the default 104ms setting, or use an even high threshold
-      // and treat all pages without long responsiveness issues as if it were 0ms.
-      po.observe({type, buffered: true, durationThreshold: 0 } as PerformanceObserverInit);
+      const po: PerformanceObserver = new PerformanceObserver((list) => {
+        callback(list.getEntries());
+      });
+      po.observe(Object.assign({
+        type,
+        buffered: true,
+      }, opts || {}) as PerformanceObserverInit);
       return po;
     }
   } catch (e) {
