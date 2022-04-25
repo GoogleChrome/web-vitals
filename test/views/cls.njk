@@ -28,9 +28,9 @@
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
   <script type="module">
-    import {getCLS} from '{{ modulePath }}';
+    import {onCLS} from '{{ modulePath }}';
 
-    getCLS((cls) => {
+    onCLS((cls) => {
       // Log for easier manual testing.
       console.log(cls);
 

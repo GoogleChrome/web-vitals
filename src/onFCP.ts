@@ -22,7 +22,7 @@ import {observe} from './lib/observe.js';
 import {Metric, ReportHandler} from './types.js';
 
 
-export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FCP');
   let report: ReturnType<typeof bindReporter>;

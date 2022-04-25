@@ -32,9 +32,9 @@
   <footer>Text below the full-height element.</footer>
 
   <script type="module">
-    import {getLCP} from '{{ modulePath }}';
+    import {onLCP} from '{{ modulePath }}';
 
-    getLCP((lcp) => {
+    onLCP((lcp) => {
       // Log for easier manual testing.
       console.log(lcp);
 
