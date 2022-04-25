@@ -46,6 +46,7 @@ describe('getFCP()', async function() {
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.entries.length, 1);
+    assert.match(fcp.navigationType, /navigate|reload/);
   });
 
   it('does not report if the browser does not support FCP (including bfcache restores)', async function() {
@@ -111,6 +112,7 @@ describe('getFCP()', async function() {
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
     assert.strictEqual(fcp1.entries.length, 1);
+    assert.match(fcp1.navigationType, /navigate|reload/);
 
     await clearBeacons();
     await stubForwardBack();
@@ -124,6 +126,7 @@ describe('getFCP()', async function() {
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
     assert.strictEqual(fcp2.entries.length, 0);
+    assert.strictEqual(fcp2.navigationType, 'back_forward_cache');
 
     await clearBeacons();
     await stubForwardBack();
@@ -137,6 +140,7 @@ describe('getFCP()', async function() {
     assert.strictEqual(fcp3.name, 'FCP');
     assert.strictEqual(fcp3.value, fcp3.delta);
     assert.strictEqual(fcp3.entries.length, 0);
+    assert.strictEqual(fcp3.navigationType, 'back_forward_cache');
   });
 
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function() {
@@ -162,6 +166,7 @@ describe('getFCP()', async function() {
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
     assert.strictEqual(fcp1.entries.length, 0);
+    assert.strictEqual(fcp1.navigationType, 'back_forward_cache');
 
     await clearBeacons();
     await stubForwardBack();
@@ -175,5 +180,6 @@ describe('getFCP()', async function() {
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
     assert.strictEqual(fcp2.entries.length, 0);
+    assert.strictEqual(fcp2.navigationType, 'back_forward_cache');
   });
 });

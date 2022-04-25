@@ -50,7 +50,8 @@ describe('getFID()', async function() {
     assert(fid.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
-    assert(fid.entries[0].name.match(/(mouse|pointer)down/));
+    assert.match(fid.navigationType, /navigate|reload/);
+    assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
 
   it('does not report if the browser does not support FID and the polyfill is not used', async function() {
@@ -100,7 +101,8 @@ describe('getFID()', async function() {
     assert(fid.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
-    assert(fid.entries[0].name.match(/(mouse|pointer)down/));
+    assert.match(fid.navigationType, /navigate|reload/);
+    assert.match(fid.entries[0].name, /(mouse|pointer)down/);
     if (browserSupportsFID) {
       assert('duration' in fid.entries[0]);
     } else {
@@ -165,7 +167,8 @@ describe('getFID()', async function() {
     assert(fid1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid1.name, 'FID');
     assert.strictEqual(fid1.value, fid1.delta);
-    assert(fid1.entries[0].name.match(/(mouse|pointer)down/));
+    assert.match(fid1.navigationType, /navigate|reload/);
+    assert.match(fid1.entries[0].name, /(mouse|pointer)down/);
 
     await clearBeacons();
     await stubForwardBack();
@@ -181,7 +184,8 @@ describe('getFID()', async function() {
     assert(fid1.id !== fid2.id);
     assert.strictEqual(fid2.name, 'FID');
     assert.strictEqual(fid2.value, fid2.delta);
-    assert(fid2.entries[0].name.match(/(mouse|pointer)down/));
+    assert.strictEqual(fid2.navigationType, 'back_forward_cache');
+    assert.match(fid2.entries[0].name, /(mouse|pointer)down/);
   });
 });
 

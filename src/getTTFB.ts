@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
-import {ReportHandler, NavigationTimingPolyfillEntry} from './types.js';
+import {getNavigationEntry} from './lib/getNavigationEntry.js';
+import {ReportHandler} from './types.js';
 
 
 const afterLoad = (callback: () => void) => {
@@ -28,36 +30,15 @@ const afterLoad = (callback: () => void) => {
   }
 }
 
-const getNavigationEntryFromPerformanceTiming = (): NavigationTimingPolyfillEntry => {
-  // Really annoying that TypeScript errors when using `PerformanceTiming`.
-  const timing = performance.timing;
-
-  const navigationEntry: {[key: string]: number | string} = {
-    entryType: 'navigation',
-    startTime: 0,
-  };
-
-  for (const key in timing) {
-    if (key !== 'navigationStart' && key !== 'toJSON') {
-      navigationEntry[key] = Math.max(
-          (timing[key as keyof PerformanceTiming] as number) -
-          timing.navigationStart, 0);
-    }
-  }
-  return navigationEntry as unknown as NavigationTimingPolyfillEntry;
-};
-
-export const getTTFB = (onReport: ReportHandler) => {
+export const getTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const metric = initMetric('TTFB');
+  const report = bindReporter(onReport, metric, reportAllChanges);
 
   afterLoad(() => {
-    try {
-      // Use the NavigationTiming L2 entry if available.
-      const navigationEntry = performance.getEntriesByType('navigation')[0] ||
-          getNavigationEntryFromPerformanceTiming();
+    const navigationEntry = getNavigationEntry();
 
-      metric.value = metric.delta =
-          (navigationEntry as PerformanceNavigationTiming).responseStart;
+    if (navigationEntry) {
+      metric.value = navigationEntry.responseStart;
 
       // In some cases the value reported is negative or is larger
       // than the current page time. Ignore these cases:
@@ -67,9 +48,7 @@ export const getTTFB = (onReport: ReportHandler) => {
 
       metric.entries = [navigationEntry];
 
-      onReport(metric);
-    } catch (error) {
-      // Do nothing.
+      report(true);
     }
   });
 };

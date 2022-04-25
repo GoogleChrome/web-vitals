@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {Metric, ReportHandler} from './types.js';
 
 
@@ -50,8 +50,8 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   // https://github.com/GoogleChrome/web-vitals/issues/159
   // The check for `window.performance` is needed to support Opera mini:
   // https://github.com/GoogleChrome/web-vitals/issues/185
-  const fcpEntry = window.performance && performance.getEntriesByName &&
-      performance.getEntriesByName('first-contentful-paint')[0];
+  const fcpEntry = window.performance && window.performance.getEntriesByName &&
+      window.performance.getEntriesByName('first-contentful-paint')[0];
 
   const po = fcpEntry ? null : observe('paint', handleEntries);
 

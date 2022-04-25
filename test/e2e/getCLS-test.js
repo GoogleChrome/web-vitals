@@ -53,6 +53,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.entries.length, 2);
+    assert.match(cls.navigationType, /navigate|reload/);
   });
 
   it('reports the correct value on page unload after shifts (reportAllChanges === false)', async function() {
@@ -72,6 +73,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.entries.length, 2);
+    assert.match(cls.navigationType, /navigate|reload/);
   });
 
   it('resets the session after timeout or gap elapses', async function() {
@@ -93,6 +95,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 2);
+    assert.match(cls1.navigationType, /navigate|reload/);
 
     await browser.pause(1000);
     await stubVisibilityChange('visible');
@@ -118,7 +121,8 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
     assert.strictEqual(cls2.entries.length, 2);
-    assert(cls2.id.match(/^v2-\d+-\d+$/));
+    assert.match(cls2.navigationType, /navigate|reload/);
+    assert.match(cls2.id, /^v2-\d+-\d+$/);
 
     await browser.pause(1000);
     await stubVisibilityChange('visible');
@@ -149,7 +153,8 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.value, cls2.value + cls3.delta);
     assert.strictEqual(cls3.entries.length, 4);
-    assert(cls3.id.match(/^v2-\d+-\d+$/));
+    assert.match(cls3.navigationType, /navigate|reload/);
+    assert.match(cls3.id, /^v2-\d+-\d+$/);
 
     await browser.pause(1000);
     await stubVisibilityChange('visible');
@@ -207,12 +212,14 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 1);
+    assert.match(cls1.navigationType, /navigate|reload/);
 
     assert(cls2.value >= cls1.value);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
     assert.strictEqual(cls2.entries.length, 2);
+    assert.match(cls2.navigationType, /navigate|reload/);
 
     await clearBeacons();
     await stubVisibilityChange('hidden');
@@ -238,12 +245,14 @@ describe('getCLS()', async function() {
     assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 1);
+    assert.match(cls1.navigationType, /navigate|reload/);
 
     assert(cls2.value >= cls1.value);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
     assert.strictEqual(cls2.entries.length, 2);
+    assert.match(cls2.navigationType, /navigate|reload/);
 
     // Unload the page after no new shifts have occurred.
     await clearBeacons();
@@ -275,6 +284,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 2);
+    assert.match(cls1.navigationType, /navigate|reload/);
 
     await clearBeacons();
     await stubVisibilityChange('visible');
@@ -295,6 +305,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
     assert.strictEqual(cls2.entries.length, 3);
+    assert.match(cls2.navigationType, /navigate|reload/);
   });
 
   it('continues reporting after visibilitychange (reportAllChanges === true)', async function() {
@@ -316,6 +327,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
     assert.strictEqual(cls2.entries.length, 2);
+    assert.match(cls2.navigationType, /navigate|reload/);
 
     // Unload the page after no new shifts have occurred.
     await clearBeacons();
@@ -335,6 +347,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls3.id, cls2.id);
     assert.strictEqual(cls3.value, cls2.value + cls3.delta);
     assert.strictEqual(cls3.entries.length, 3);
+    assert.match(cls3.navigationType, /navigate|reload/);
   });
 
   it('continues reporting after bfcache restore (reportAllChanges === false)', async function() {
@@ -356,6 +369,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 2);
+    assert.match(cls1.navigationType, /navigate|reload/);
 
     await clearBeacons();
     await triggerLayoutShift();
@@ -373,6 +387,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.value, cls2.delta);
     assert.strictEqual(cls2.entries.length, 1);
+    assert.strictEqual(cls2.navigationType, 'back_forward_cache');
 
     await clearBeacons();
     await triggerLayoutShift();
@@ -390,6 +405,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.value, cls3.delta);
     assert.strictEqual(cls3.entries.length, 1);
+    assert.strictEqual(cls3.navigationType, 'back_forward_cache');
   });
 
   it('continues reporting after bfcache restore (reportAllChanges === true)', async function() {
@@ -405,12 +421,14 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.entries.length, 1);
+    assert.match(cls1.navigationType, /navigate|reload/);
 
     assert(cls2.value > cls1.value);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
     assert.strictEqual(cls2.entries.length, 2);
+    assert.match(cls2.navigationType, /navigate|reload/);
 
     await clearBeacons();
     await stubForwardBack();
@@ -429,6 +447,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.value, cls3.delta);
     assert.strictEqual(cls3.entries.length, 1);
+    assert.strictEqual(cls3.navigationType, 'back_forward_cache');
   });
 
   it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === false)', async function() {
@@ -448,6 +467,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
     assert.strictEqual(cls.entries.length, 0);
+    assert.match(cls.navigationType, /navigate|reload/);
   });
 
   it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === true)', async function() {
@@ -467,6 +487,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
     assert.strictEqual(cls.entries.length, 0);
+    assert.match(cls.navigationType, /navigate|reload/);
   });
 
   it('reports zero if no layout shifts occurred on page unload (reportAllChanges === false)', async function() {
@@ -486,6 +507,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
     assert.strictEqual(cls.entries.length, 0);
+    assert.match(cls.navigationType, /navigate|reload/);
   });
 
   it('reports zero if no layout shifts occurred on page unload (reportAllChanges === true)', async function() {
@@ -505,6 +527,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
     assert.strictEqual(cls.entries.length, 0);
+    assert.match(cls.navigationType, /navigate|reload/);
   });
 
   it('does not report if the document was hidden at page load time', async function() {
@@ -541,6 +564,7 @@ describe('getCLS()', async function() {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.delta, cls.value);
     assert.strictEqual(cls.entries.length, 1);
+    assert.strictEqual(cls.navigationType, 'back_forward_cache');
   });
 });
 

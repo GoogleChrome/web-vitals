@@ -201,12 +201,12 @@ Note that some of these metrics will not report until the user has interacted wi
 Also, in some cases a metric callback may never be called:
 
 - FID is not reported if the user never interacts with the page.
-- FCP, FID, and LCP are not reported if the page was loaded in the background.
+- CLS, FCP, FID, and LCP are not reported if the page was loaded in the background.
 
 In other cases, a metric callback may be called more than once:
 
 - CLS should be reported any time the [page's `visibilityState` changes to hidden](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden).
-- CLS, FCP, FID, and LCP are reported again after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
+- All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
 
 _**Warning:** do not call any of the Web Vitals functions (e.g. `getCLS()`, `getFID()`, `getLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
 
@@ -554,6 +554,12 @@ interface Metric {
   // The array may also be empty if the metric value was not based on any
   // entries (e.g. a CLS value of 0 given no layout shifts).
   entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
+
+  // For regular navigations, the type will be the same as the type indicated
+  // by the Navigation Timing API (or `undefined` if the browser doesn't
+  // support that API). For pages that are restored from the bfcache, this
+  // value will be 'back_forward_cache'.
+  navigationType:  NavigationType | 'back_forward_cache' | undefined;
 }
 ```
 
