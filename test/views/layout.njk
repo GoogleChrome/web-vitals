@@ -20,6 +20,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
     (function() {
+      // Uncomment to stub running in a browser that doesn't support performance APIs
+      // (e.g. some version of Opera support this).
+      // delete self.performance;
+
       const params = new URL(location.href).searchParams;
 
       self.__reportAllChanges = params.has('reportAllChanges');
