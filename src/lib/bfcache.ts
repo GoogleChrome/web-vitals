@@ -18,9 +18,14 @@ interface onBFCacheRestoreCallback {
   (event: PageTransitionEvent): void;
 }
 
+let isPersisted = false;
+
+export const isBFCacheRestore = () => isPersisted;
+
 export const onBFCacheRestore = (cb: onBFCacheRestoreCallback) => {
   addEventListener('pageshow', (event) => {
     if (event.persisted) {
+      isPersisted = true;
       cb(event);
     }
   }, true);

@@ -14,16 +14,21 @@
  * limitations under the License.
  */
 
-import {Metric} from '../types.js';
+import {isBFCacheRestore} from './bfcache.js';
 import {generateUniqueID} from './generateUniqueID.js';
+import {getNavigationEntry} from './getNavigationEntry.js';
+import {Metric} from '../types.js';
 
 
 export const initMetric = (name: Metric['name'], value?: number): Metric => {
+  const navigationEntry = getNavigationEntry();
   return {
     name,
     value: typeof value === 'undefined' ? -1 : value,
     delta: 0,
     entries: [],
-    id: generateUniqueID()
+    id: generateUniqueID(),
+    navigationType: isBFCacheRestore() ? 'back_forward_cache' :
+        navigationEntry && navigationEntry.type,
   };
 };

@@ -85,6 +85,7 @@ describe('getTTFB()', async function() {
     assert(ttfb.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.navigationType, 'navigate');
     assert.strictEqual(ttfb.entries.length, 1);
 
     assertValidEntry(ttfb.entries[0]);
@@ -106,6 +107,7 @@ describe('getTTFB()', async function() {
     assert(ttfb.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.navigationType, 'navigate');
     assert.strictEqual(ttfb.entries.length, 1);
 
     assertValidEntry(ttfb.entries[0]);
@@ -127,6 +129,7 @@ describe('getTTFB()', async function() {
     assert(ttfb.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.navigationType, 'navigate');
     assert.strictEqual(ttfb.entries.length, 1);
 
     assertValidEntry(ttfb.entries[0]);

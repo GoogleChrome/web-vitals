@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {getFCP} from './getFCP.js';
 import {LayoutShift, Metric, ReportHandler} from './types.js';

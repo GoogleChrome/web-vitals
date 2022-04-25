@@ -38,10 +38,28 @@ export interface Metric {
   // The array may also be empty if the metric value was not based on any
   // entries (e.g. a CLS value of 0 given no layout shifts).
   entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
+
+  // For regular navigations, the type will be the same as the type indicated
+  // by the Navigation Timing API (or `undefined` if the browser doesn't
+  // support that API). For pages that are restored from the bfcache, this
+  // value will be 'back_forward_cache'.
+  navigationType:  NavigationType | 'back_forward_cache' | undefined;
 }
 
 export interface ReportHandler {
   (metric: Metric): void;
+}
+
+ interface PerformanceEntryMap {
+  'navigation': PerformanceNavigationTiming;
+  'resource': PerformanceResourceTiming;
+  'paint': PerformancePaintTiming;
+}
+
+declare global {
+  interface Performance {
+    getEntriesByType<K extends keyof PerformanceEntryMap>(type: K): PerformanceEntryMap[K][]
+  }
 }
 
 // https://wicg.github.io/event-timing/#sec-performance-event-timing

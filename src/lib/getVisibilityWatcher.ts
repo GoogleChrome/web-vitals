@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './onBFCacheRestore.js';
+import {onBFCacheRestore} from './bfcache.js';
 import {onHidden} from './onHidden.js';
 
 let firstHiddenTime = -1;
