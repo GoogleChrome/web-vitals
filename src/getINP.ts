@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,118 +14,151 @@
  * limitations under the License.
  */
 
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
-import {observe, PerformanceEntryHandler} from './lib/observe.js';
-import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
+import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {PerformanceEventTiming, ReportHandler} from './types.js';
+import {getInteractionCount, initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
+import {Metric, PerformanceEventTiming, ReportHandler} from './types.js';
 
-/*
- * In order to compute a High Percentile (p98-p100) Interaction for INP,
- * we need to store a list of the worst interactions measured.
- * 
- * EVERY_N is the number of interactions before moving to the next-highest (i.e. p98)
- * NUM_ENTRIES_TO_STORE is the max size of the list of entries
- * 
- * EVERY_N * NUM_ENTRIES_TO_STORE becomes, effectively, the max number of interactions
- * per page load for which getINP() works well.  Adjust as needed.
+interface Interaction {
+  id: number;
+  latency: number;
+  entries: PerformanceEventTiming[];
+}
+
+// Used to store the interaction count after a bfcache restore, since p98
+// interaction latencies should only consider the current navigation.
+let prevInteractionCount = 0;
+
+/**
+ * Returns the interaction count since the last bfcache restore (or for the
+ * full page lifecycle if there were no bfcache restores).
  */
-const EVERY_N = 50;
-const NUM_ENTRIES_TO_STORE = 10;
-const largestINPEntries: PerformanceEventTiming[] = [];
-let minKnownInteractionId = Number.POSITIVE_INFINITY;
-let maxKnownInteractionId = 0;
-
-function updateInteractionIds(interactionId: number): void {
-	minKnownInteractionId = Math.min(minKnownInteractionId, interactionId);
-	maxKnownInteractionId = Math.max(maxKnownInteractionId, interactionId);
+const getInteractionCountForNavigation = () => {
+  return getInteractionCount() - prevInteractionCount;
 }
 
-function estimateInteractionCount(): number {
-  return (maxKnownInteractionId > 0) ? ((maxKnownInteractionId - minKnownInteractionId) / 7) + 1 : 0;
-}
+// To prevent unnecessary memory usage on pages with lots of interactions,
+// store at most 10 of the longest interactions to consider as INP candidates.
+const MAX_INTERACTIONS_TO_CONSIDER = 10;
 
-function addInteractionEntryToINPList(entry: PerformanceEventTiming): void {
-	// Optional: Skip this entry early if we know it won't be needed.
-	if (largestINPEntries.length >= NUM_ENTRIES_TO_STORE && entry.duration < largestINPEntries[largestINPEntries.length-1].duration) {
-    return;
-	}
+// A list of longest interactions on the page (by latency) sorted so the
+// longest one is first. The list is as most MAX_INTERACTIONS_TO_CONSIDER long.
+let longestInteractionList: Interaction[] = [];
 
-  // If we already have an interaction with this same ID, merge with it.
-  const existing = largestINPEntries.findIndex((other) => entry.interactionId == other.interactionId);
-  if (existing >= 0) {
-    // Only replace if this one is actually longer
-    if (entry.duration > largestINPEntries[existing].duration) {
-      largestINPEntries[existing] = entry;
+// A mapping of longest interactions by their interaction ID.
+// This is used for faster lookup.
+const longestInteractionMap: {[interactionId: string]: Interaction} = {};
+
+/**
+ * Takes a performance entry and adds it to the list of worst interactions
+ * if its duration is long enough to make it among the worst. If the
+ * entry is part of an existing interaction, it is merged and the latency
+ * and entries list is updated as needed.
+ */
+const processEntry = (entry: PerformanceEventTiming) => {
+  // The least-long of the 10 longest interactions.
+  const minLongestInteraction =
+      longestInteractionList[longestInteractionList.length - 1]
+
+  const existingInteraction = longestInteractionMap[entry.interactionId!];
+
+  // Only process the entry if it's possibly one of the ten longest,
+  // or if it's part of an existing interaction.
+  if (existingInteraction ||
+      longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
+      entry.duration > minLongestInteraction.latency) {
+    // If the interaction already exists, update it. Otherwise create one.
+    if (existingInteraction) {
+      existingInteraction.entries.push(entry);
+      existingInteraction.latency =
+          Math.max(existingInteraction.latency, entry.duration);
+    } else {
+      const interaction = {
+        id: entry.interactionId!,
+        latency: entry.duration,
+        entries: [entry],
+      }
+      longestInteractionMap[interaction.id] = interaction;
+      longestInteractionList.push(interaction);
     }
-  } else {
-    largestINPEntries.push(entry);
-  }
 
-  largestINPEntries.sort((a,b) => b.duration - a.duration);
-  largestINPEntries.splice(NUM_ENTRIES_TO_STORE);
+    // Sort the entries by latency (descending) and keep only the top ten.
+    longestInteractionList.sort((a, b) => b.latency - a.latency);
+    longestInteractionList.splice(MAX_INTERACTIONS_TO_CONSIDER).forEach((i) => {
+      delete longestInteractionMap[i.id];
+    });
+  }
 }
 
-function getCurrentINPEntry(): PerformanceEventTiming {
-	const interactionCount = estimateInteractionCount();
-	const which = Math.min(largestINPEntries.length-1, Math.floor(interactionCount / EVERY_N));
-	return largestINPEntries[which];
+/**
+ * Returns the estimated p98 longest interaction based on the stored
+ * interaction candidates and the interaction count for the current page.
+ */
+const estimateP98LongestInteraction = () => {
+	const candidateInteractionIndex = Math.min(longestInteractionList.length - 1,
+      Math.floor(getInteractionCountForNavigation() / 50));
+
+	return longestInteractionList[candidateInteractionIndex];
 }
 
 export const getINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+  // TODO(philipwalton): remove once the polyfill is no longer needed.
+  initInteractionCountPolyfill();
+
   let metric = initMetric('INP');
   let report: ReturnType<typeof bindReporter>;
 
-  const entryHandler = (entry: PerformanceEventTiming) => {
-    // TODO: Perhaps ignore values before FCP
-    if (!entry.interactionId) return;
-    
-    updateInteractionIds(entry.interactionId);
-    addInteractionEntryToINPList(entry);
+  const handleEntries = (entries: Metric['entries']) => {
+    (entries as PerformanceEventTiming[]).forEach((entry) => {
+      if (entry.interactionId) {
+        processEntry(entry);
+      }
+    });
 
-    const inpEntry = getCurrentINPEntry();
+    const inp = estimateP98LongestInteraction();
 
-    // Only report when the IMP value changes.  However:
-    // * When we cross a %-ile boundary, pushing `which` up, or
-    // * A new long value is added to the top, moving the current INP entry down
-    // ...then the inpEntry will change, but `duration` value of the new entry may still be the same.
-    // While technically the INP metric.value doesn't change, we still report since metric.entries changes.
-    //
-    // Potentially, we may even want to compare the whole metric.entries range for equality, because:
-    // * We can have cases where a middle value updates due to new-longest value with same interactionId.
-    // * When we are already at MAX_ENTRIES and `which` stops changing, but the current smallest can get popped off.
-    const which = largestINPEntries.indexOf(inpEntry);
-    if (which >= metric.entries.length || metric.value != inpEntry.duration) {
-      metric.value = inpEntry.duration;
-      // We attach all the longest responsiveness entries, not just the HighP value.
-      // While technically the INP score is exactly the entry.duration of one specific HighP-ile entry...
-      // the entry would not have been picked (and IMP would be lower) if *any* of the worst entries were not so high.
-      // Improving any of them will improve score.
-      metric.entries.length = 0;
-      metric.entries.push(...largestINPEntries.slice(0, which + 1));
+    if (inp && inp.latency !== metric.value) {
+      metric.value = inp.latency;
+      metric.entries = inp.entries;
+      report();
     }
-
-    // Perhaps Event Timing is the first API that can have multiple entries in a single PO callback
-    // That means that we would ideally report() only after the whole list of entries is processed, not one per entry.
-    // If we were lucky, the entries would be in timestamp order so the first is the longest... but I've found they
-    // are ordered in other ways... by type, I think?
-    // Alternatively: sort entries in the observe() wrapper.
-    report();
   };
 
-  const po = observe('event', entryHandler as PerformanceEntryHandler);
+  const po = observe('event', handleEntries, {
+    // Event Timing entries have their durations rounded to the nearest 8ms,
+    // so a duration of 40ms would be any event that spans 2.5 or more frames
+    // at 60Hz. This threshold is chosen to strike a balance between usefulness
+    // and performance. Running this callback for any interaction that spans
+    // just one or two frames is likely not worth the insight that could be
+    // gained.
+    durationThreshold: 40,
+  } as PerformanceObserverInit);
+
   report = bindReporter(onReport, metric, reportAllChanges);
 
   if (po) {
     onHidden(() => {
-      po.takeRecords().map(entryHandler as PerformanceEntryHandler);
+      handleEntries(po.takeRecords());
+
+      // If the interaction count shows that there were interactions but
+      // none were captured by the PerformanceObserver, report a latency of 0.
+      if (metric.value < 0 && getInteractionCountForNavigation() > 0) {
+        metric.value = 0;
+        metric.entries = [];
+      }
+
       report(true);
-    }, true);
-    
-    // TODO: Test this
+    });
+
     onBFCacheRestore(() => {
-      largestINPEntries.length = 0;
+      longestInteractionList = [];
+      // Important, we want the count for the full page here,
+      // not just for the current navigation.
+      prevInteractionCount = getInteractionCount();
+
       metric = initMetric('INP');
       report = bindReporter(onReport, metric, reportAllChanges);
     });

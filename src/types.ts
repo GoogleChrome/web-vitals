@@ -78,6 +78,10 @@ export interface LayoutShift extends PerformanceEntry {
   hadRecentInput: boolean;
 }
 
+export interface PerformanceObserverInit {
+  durationThreshold?: number;
+}
+
 export type FirstInputPolyfillEntry =
     Omit<PerformanceEventTiming, 'processingEnd'>
 
