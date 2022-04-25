@@ -32,13 +32,25 @@ interface Interaction {
 // interaction latencies should only consider the current navigation.
 let prevInteractionCount = 0;
 
+/**
+ * Returns the interaction count since the last bfcache restore (or for the
+ * full page lifecycle if there were no bfcache restores).
+ */
+const getInteractionCountForNavigation = () => {
+  return getInteractionCount() - prevInteractionCount;
+}
+
 // To prevent unnecessary memory usage on pages with lots of interactions,
 // store at most 10 of the longest interactions to consider as INP candidates.
 const MAX_INTERACTIONS_TO_CONSIDER = 10;
 
 // A list of longest interactions on the page (by latency) sorted so the
 // longest one is first. The list is as most MAX_INTERACTIONS_TO_CONSIDER long.
-let longestInteractions: Interaction[] = [];
+let longestInteractionList: Interaction[] = [];
+
+// A mapping of longest interactions by their interaction ID.
+// This is used for faster lookup.
+const longestInteractionMap: {[interactionId: string]: Interaction} = {};
 
 /**
  * Takes a performance entry and adds it to the list of worst interactions
@@ -47,29 +59,37 @@ let longestInteractions: Interaction[] = [];
  * and entries list is updated as needed.
  */
 const processEntry = (entry: PerformanceEventTiming) => {
-  // Only process the entry if it's possibly one of the ten longest.
-  if (longestInteractions.length < MAX_INTERACTIONS_TO_CONSIDER ||
-      entry.duration > longestInteractions[longestInteractions.length - 1].latency) {
+  // The least-long of the 10 longest interactions.
+  const minLongestInteraction =
+      longestInteractionList[longestInteractionList.length - 1]
 
-    const existingInteractionIndex =
-        longestInteractions.findIndex((i) => entry.interactionId == i.id);
+  const existingInteraction = longestInteractionMap[entry.interactionId!];
 
+  // Only process the entry if it's possibly one of the ten longest,
+  // or if it's part of an existing interaction.
+  if (existingInteraction ||
+      longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
+      entry.duration > minLongestInteraction.latency) {
     // If the interaction already exists, update it. Otherwise create one.
-    if (existingInteractionIndex >= 0) {
-      const interaction = longestInteractions[existingInteractionIndex];
-      interaction.latency = Math.max(interaction.latency, entry.duration);
-      interaction.entries.push(entry);
+    if (existingInteraction) {
+      existingInteraction.entries.push(entry);
+      existingInteraction.latency =
+          Math.max(existingInteraction.latency, entry.duration);
     } else {
-      longestInteractions.push({
+      const interaction = {
         id: entry.interactionId!,
         latency: entry.duration,
         entries: [entry],
-      });
+      }
+      longestInteractionMap[interaction.id] = interaction;
+      longestInteractionList.push(interaction);
     }
 
     // Sort the entries by latency (descending) and keep only the top ten.
-    longestInteractions.sort((a, b) => b.latency - a.latency);
-    longestInteractions.splice(MAX_INTERACTIONS_TO_CONSIDER);
+    longestInteractionList.sort((a, b) => b.latency - a.latency);
+    longestInteractionList.splice(MAX_INTERACTIONS_TO_CONSIDER).forEach((i) => {
+      delete longestInteractionMap[i.id];
+    });
   }
 }
 
@@ -78,10 +98,10 @@ const processEntry = (entry: PerformanceEventTiming) => {
  * interaction candidates and the interaction count for the current page.
  */
 const estimateP98LongestInteraction = () => {
-	const candidateInteractionIndex = Math.min(longestInteractions.length - 1,
-      Math.floor((getInteractionCount() - prevInteractionCount) / 50));
+	const candidateInteractionIndex = Math.min(longestInteractionList.length - 1,
+      Math.floor(getInteractionCountForNavigation() / 50));
 
-	return longestInteractions[candidateInteractionIndex];
+	return longestInteractionList[candidateInteractionIndex];
 }
 
 export const getINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
@@ -108,10 +128,13 @@ export const getINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   };
 
   const po = observe('event', handleEntries, {
-    // The use of 50 here as a balance between not wanting the callback to
-    // run for too many already fast events (one frame or less), but also
-    // get enough fidelity below the recommended "good" threshold of 200.
-    durationThreshold: 50,
+    // Event Timing entries have their durations rounded to the nearest 8ms,
+    // so a duration of 40ms would be any event that spans 2.5 or more frames
+    // at 60Hz. This threshold is chosen to strike a balance between usefulness
+    // and performance. Running this callback for any interaction that spans
+    // just one or two frames is likely not worth the insight that could be
+    // gained.
+    durationThreshold: 40,
   } as PerformanceObserverInit);
 
   report = bindReporter(onReport, metric, reportAllChanges);
@@ -122,8 +145,7 @@ export const getINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
       // If the interaction count shows that there were interactions but
       // none were captured by the PerformanceObserver, report a latency of 0.
-      if (metric.value < 0 &&
-          getInteractionCount() - prevInteractionCount > 0) {
+      if (metric.value < 0 && getInteractionCountForNavigation() > 0) {
         metric.value = 0;
         metric.entries = [];
       }
@@ -132,7 +154,9 @@ export const getINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     });
 
     onBFCacheRestore(() => {
-      longestInteractions = [];
+      longestInteractionList = [];
+      // Important, we want the count for the full page here,
+      // not just for the current navigation.
       prevInteractionCount = getInteractionCount();
 
       metric = initMetric('INP');
