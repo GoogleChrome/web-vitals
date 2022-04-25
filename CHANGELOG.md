@@ -1,5 +1,13 @@
 # Changelog
 
+### v3.0.0-beta.0 (2022-04-25)
+
+- **[BREAKING]** Report TTFB after a bfcache restore ([#220](https://github.com/GoogleChrome/web-vitals/pull/220))
+- **[BREAKING]** Only include last LCP entry in metric entries ([#218](https://github.com/GoogleChrome/web-vitals/pull/218))
+- Add support for the new INP metric ([#221](https://github.com/GoogleChrome/web-vitals/pull/221))
+- Rename `getXXX()` functions to `onXXX()` ([#222](https://github.com/GoogleChrome/web-vitals/pull/222))
+- Add a `navigationType` property to the Metric object ([#219](https://github.com/GoogleChrome/web-vitals/pull/219))
+
 ### v2.1.4 (2022-01-20)
 
 - Prevent TTFB from reporting after bfcache restore ([#201](https://github.com/GoogleChrome/web-vitals/pull/201))

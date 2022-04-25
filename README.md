@@ -26,9 +26,9 @@
 
 ## Overview
 
-The `web-vitals` library is a tiny (~1K), modular library for measuring all the [Web Vitals](https://web.dev/vitals/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
+The `web-vitals` library is a tiny (~1K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/vitals/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
 
-The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) as well as all of the [other Web Vitals](https://web.dev/vitals/#other-web-vitals) that can be measured [in the field](https://web.dev/user-centric-performance-metrics/#how-metrics-are-measured):
+The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) as well as a number of other metrics that are useful in diagnosing [real-user](https://web.dev/user-centric-performance-metrics/) performance issues.
 
 ### Core Web Vitals
 
@@ -36,8 +36,9 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 - [First Input Delay (FID)](https://web.dev/fid/)
 - [Largest Contentful Paint (LCP)](https://web.dev/lcp/)
 
-### Other Web Vitals
+### Other metrics
 
+- [Interaction to next Paint (INP)](https://web.dev/responsiveness/) _(experimental)_
 - [First Contentful Paint (FCP)](https://web.dev/fcp/)
 - [Time to First Byte (TTFB)](https://web.dev/ttfb/)
 
@@ -53,6 +54,10 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 You can install this library from npm by running:
 
 ```sh
+# Install the latest version 3 beta (which includes INP).
+npm install web-vitals@next
+
+# Install the current stable version (version 2).
 npm install web-vitals
 ```
 
@@ -73,6 +78,8 @@ onCLS(console.log);
 onFID(console.log);
 onLCP(console.log);
 ```
+
+_**Note:** in version 2, these functioned were named `getXXX()` rather than `onXXX()`. They've [been renamed](https://github.com/GoogleChrome/web-vitals/pull/222) in version 3 to reduce confusion (see [#217](https://github.com/GoogleChrome/web-vitals/pull/217) for details) and will continue to be available using the `getXXX()` until at least version 4. Users are encouraged to switch to the new names, though, for future compatibility._
 
 <a name="how-to-use-the-polyfill"><a>
 
@@ -114,6 +121,8 @@ _**Tip:** while it's certainly possible to inline the code in `dist/polyfill.js`
 The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
 The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just Chromium-based browsers (using the "standard" version) or additional browsers (using the "base+polyfill" version):
+
+_**Important!** users who want to load version 3 beta from the unpkg CDN should specify a version number or link to the [web-vitals@next](https://unpkg.com/web-vitals@next?module) tag._
 
 **Load the "standard" version** _(using a module script)_
 
@@ -535,7 +544,7 @@ The "standard" version of the `web-vitals` library includes some of the same log
 ```ts
 interface Metric {
   // The name of the metric (in acronym form).
-  name: 'CLS' | 'FCP' | 'FID' | 'LCP' | 'TTFB';
+  name: 'CLS' | 'FCP' | 'FID' | 'INP' | 'LCP' | 'TTFB';
 
   // The current value of the metric.
   value: number;
@@ -619,9 +628,9 @@ type onCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 
 Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `onReport` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/cls/#layout-shift-score)).
 
-If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `layout-shift` performance entry is dispatched, or once the final value of the metric has been determined.
+If the `reportAllChanges` param is `true`, the `onReport` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
 
-_**Important:** unlike other metrics, CLS continues to monitor changes for the entire lifespan of the page&mdash;including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
+_**Important:** CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
 
 #### `onFCP()`
 
@@ -641,13 +650,25 @@ Calculates the [FID](https://web.dev/fid/) value for the current page and calls 
 
 _**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
 
+#### `onINP()`
+
+```ts
+type onINP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+```
+
+Calculates the [INP](https://web.dev/responsiveness/) value for the current page and calls the `onReport` function once the value is ready, along with the  `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+
+If the `reportAllChanges` param is `true`, the `onReport` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
+
+_**Important:** INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
+
 #### `onLCP()`
 
 ```ts
 type onLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
-Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entries used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
 
@@ -686,6 +707,7 @@ Browser support for each function is as follows:
 - `onCLS()`: Chromium,
 - `onFCP()`: Chromium, Firefox, Safari
 - `onFID()`: Chromium, Firefox, Safari, Internet Explorer (with the [polyfill](#how-to-use-the-polyfill))
+- `onINP()`: Chromium
 - `onLCP()`: Chromium
 - `onTTFB()`: Chromium, Firefox, Safari, Internet Explorer
 
