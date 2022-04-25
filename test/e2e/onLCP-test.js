@@ -22,7 +22,7 @@ const {stubForwardBack} = require('../utils/stubForwardBack.js');
 const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
-describe('getLCP()', async function() {
+describe('onLCP()', async function() {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 

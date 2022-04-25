@@ -25,7 +25,7 @@ import {Metric, ReportHandler} from './types.js';
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
-export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;

@@ -25,9 +25,9 @@
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
   <script type="module">
-    import {getFCP} from '{{ modulePath }}';
+    import {onFCP} from '{{ modulePath }}';
 
-    getFCP((fcp) => {
+    onFCP((fcp) => {
       // Log for easier manual testing.
       console.log(fcp);
 

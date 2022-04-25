@@ -104,7 +104,7 @@ const estimateP98LongestInteraction = () => {
 	return longestInteractionList[candidateInteractionIndex];
 }
 
-export const getINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   // TODO(philipwalton): remove once the polyfill is no longer needed.
   initInteractionCountPolyfill();
 

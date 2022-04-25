@@ -23,7 +23,7 @@ const {stubForwardBack} = require('../utils/stubForwardBack.js');
 const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
-describe('getCLS()', async function() {
+describe('onCLS()', async function() {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 

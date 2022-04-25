@@ -19,18 +19,18 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {bindReporter} from './lib/bindReporter.js';
-import {getFCP} from './getFCP.js';
+import {onFCP} from './onFCP.js';
 import {LayoutShift, Metric, ReportHandler} from './types.js';
 
 
 let isMonitoringFCP = false;
 let fcpValue = -1;
 
-export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   if (!isMonitoringFCP) {
-    getFCP((metric) => {
+    onFCP((metric) => {
       fcpValue = metric.value;
     });
     isMonitoringFCP = true;

@@ -21,7 +21,7 @@ const {stubForwardBack} = require('../utils/stubForwardBack.js');
 const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
 
 
-describe('getINP()', async function() {
+describe('onINP()', async function() {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 

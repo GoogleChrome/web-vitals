@@ -24,7 +24,7 @@ import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/first
 import {FirstInputPolyfillCallback, Metric, PerformanceEventTiming, ReportHandler} from './types.js';
 
 
-export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FID');
   let report: ReturnType<typeof bindReporter>;

@@ -31,7 +31,7 @@ const afterLoad = (callback: () => void) => {
   }
 }
 
-export const getTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   let metric = initMetric('TTFB');
   let report = bindReporter(onReport, metric, reportAllChanges);
 

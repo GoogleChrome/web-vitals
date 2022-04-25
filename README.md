@@ -67,11 +67,11 @@ For details on the difference between the two versions, see <a href="#which-bund
 To load the "standard" version, import modules from the `web-vitals` package in your application code (as you would with any npm package and node-based build tool):
 
 ```js
-import {getLCP, getFID, getCLS} from 'web-vitals';
+import {onLCP, onFID, onCLS} from 'web-vitals';
 
-getCLS(console.log);
-getFID(console.log);
-getLCP(console.log);
+onCLS(console.log);
+onFID(console.log);
+onLCP(console.log);
 ```
 
 <a name="how-to-use-the-polyfill"><a>
@@ -83,8 +83,8 @@ Loading the "base+polyfill" version is a two-step process:
 First, in your application code, import the "base" build rather than the "standard" build. To do this, change any `import` statements that reference `web-vitals` to `web-vitals/base`:
 
 ```diff
-- import {getLCP, getFID, getCLS} from 'web-vitals';
-+ import {getLCP, getFID, getCLS} from 'web-vitals/base';
+- import {onLCP, onFID, onCLS} from 'web-vitals';
++ import {onLCP, onFID, onCLS} from 'web-vitals/base';
 ```
 
 Then, inline the code from `dist/polyfill.js` into the `<head>` of your pages. This step is important since the "base" build will error if the polyfill code has not been added.
@@ -120,11 +120,11 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
 ```html
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
-  import {getCLS, getFID, getLCP} from 'https://unpkg.com/web-vitals?module';
+  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals?module';
 
-  getCLS(console.log);
-  getFID(console.log);
-  getLCP(console.log);
+  onCLS(console.log);
+  onFID(console.log);
+  onLCP(console.log);
 </script>
 ```
 
@@ -138,9 +138,9 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
   script.onload = function() {
     // When loading `web-vitals` using a classic script, all the public
     // methods can be found on the `webVitals` global namespace.
-    webVitals.getCLS(console.log);
-    webVitals.getFID(console.log);
-    webVitals.getLCP(console.log);
+    webVitals.onCLS(console.log);
+    webVitals.onFID(console.log);
+    webVitals.onLCP(console.log);
   }
   document.head.appendChild(script);
 }())
@@ -167,9 +167,9 @@ The following examples show how to load `web-vitals` from [unpkg.com](https://un
       script.onload = function() {
         // When loading `web-vitals` using a classic script, all the public
         // methods can be found on the `webVitals` global namespace.
-        webVitals.getCLS(console.log);
-        webVitals.getFID(console.log);
-        webVitals.getLCP(console.log);
+        webVitals.onCLS(console.log);
+        webVitals.onFID(console.log);
+        webVitals.onLCP(console.log);
       }
       document.head.appendChild(script);
     }())
@@ -189,11 +189,11 @@ The following example measures each of the Core Web Vitals metrics and logs the 
 _(The examples below import the "standard" version, but they will work with the polyfill version as well.)_
 
 ```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
+import {onCLS, onFID, onLCP} from 'web-vitals';
 
-getCLS(console.log);
-getFID(console.log);
-getLCP(console.log);
+onCLS(console.log);
+onFID(console.log);
+onLCP(console.log);
 ```
 
 Note that some of these metrics will not report until the user has interacted with the page, switched tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try reloading the page (with [preserve log](https://developers.google.com/web/tools/chrome-devtools/console/reference#persist) enabled) or switching tabs and then switching back.
@@ -208,7 +208,7 @@ In other cases, a metric callback may be called more than once:
 - CLS should be reported any time the [page's `visibilityState` changes to hidden](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden).
 - All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
 
-_**Warning:** do not call any of the Web Vitals functions (e.g. `getCLS()`, `getFID()`, `getLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
+_**Warning:** do not call any of the Web Vitals functions (e.g. `onCLS()`, `onFID()`, `onLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
 
 ### Report the value on every change
 
@@ -217,10 +217,10 @@ In most cases, you only want `onReport` to be called when the metric is ready to
 This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended).
 
 ```js
-import {getCLS} from 'web-vitals';
+import {onCLS} from 'web-vitals';
 
 // Logs CLS as the value changes.
-getCLS(console.log, true);
+onCLS(console.log, true);
 ```
 
 ### Report only the delta of changes
@@ -232,15 +232,15 @@ Other analytics providers, however, do not allow this, so instead of reporting t
 The following example shows how to use the `id` and `delta` properties:
 
 ```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
+import {onCLS, onFID, onLCP} from 'web-vitals';
 
 function logDelta({name, id, delta}) {
   console.log(`${name} matching ID ${id} changed by ${delta}`);
 }
 
-getCLS(logDelta);
-getFID(logDelta);
-getLCP(logDelta);
+onCLS(logDelta);
+onFID(logDelta);
+onLCP(logDelta);
 ```
 
 _**Note:** the first time the `onReport` function is called, its `value` and `delta` properties will be the same._
@@ -254,7 +254,7 @@ The following example measures each of the Core Web Vitals metrics and reports t
 The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
 
 ```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
+import {onCLS, onFID, onLCP} from 'web-vitals';
 
 function sendToAnalytics(metric) {
   // Replace with whatever serialization method you prefer.
@@ -266,9 +266,9 @@ function sendToAnalytics(metric) {
       fetch('/analytics', {body, method: 'POST', keepalive: true});
 }
 
-getCLS(sendToAnalytics);
-getFID(sendToAnalytics);
-getLCP(sendToAnalytics);
+onCLS(sendToAnalytics);
+onFID(sendToAnalytics);
+onLCP(sendToAnalytics);
 ```
 
 ### Send the results to Google Analytics
@@ -284,7 +284,7 @@ In order to use the [Web Vitals Report](https://github.com/GoogleChromeLabs/web-
 #### Using `analytics.js`
 
 ```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
+import {onCLS, onFID, onLCP} from 'web-vitals';
 
 function sendToGoogleAnalytics({name, delta, id}) {
   // Assumes the global `ga()` function exists, see:
@@ -314,15 +314,15 @@ function sendToGoogleAnalytics({name, delta, id}) {
   });
 }
 
-getCLS(sendToGoogleAnalytics);
-getFID(sendToGoogleAnalytics);
-getLCP(sendToGoogleAnalytics);
+onCLS(sendToGoogleAnalytics);
+onFID(sendToGoogleAnalytics);
+onLCP(sendToGoogleAnalytics);
 ```
 
 #### Using `gtag.js` (Universal Analytics)
 
 ```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
+import {onCLS, onFID, onLCP} from 'web-vitals';
 
 function sendToGoogleAnalytics({name, delta, id}) {
   // Assumes the global `gtag()` function exists, see:
@@ -349,9 +349,9 @@ function sendToGoogleAnalytics({name, delta, id}) {
   });
 }
 
-getCLS(sendToGoogleAnalytics);
-getFID(sendToGoogleAnalytics);
-getLCP(sendToGoogleAnalytics);
+onCLS(sendToGoogleAnalytics);
+onFID(sendToGoogleAnalytics);
+onLCP(sendToGoogleAnalytics);
 ```
 
 #### Using `gtag.js` (Google Analytics 4)
@@ -359,7 +359,7 @@ getLCP(sendToGoogleAnalytics);
 [Google Analytics 4](https://support.google.com/analytics/answer/10089681) introduces a new Event model allowing custom parameters instead of a fixed category, action, and label. It also supports non-integer values, making it easier to measure Web Vitals metrics compared to previous versions.
 
 ```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
+import {onCLS, onFID, onLCP} from 'web-vitals';
 
 function sendToGoogleAnalytics({name, delta, value, id}) {
   // Assumes the global `gtag()` function exists, see:
@@ -380,9 +380,9 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
   });
 }
 
-getCLS(sendToGoogleAnalytics);
-getFID(sendToGoogleAnalytics);
-getLCP(sendToGoogleAnalytics);
+onCLS(sendToGoogleAnalytics);
+onFID(sendToGoogleAnalytics);
+onLCP(sendToGoogleAnalytics);
 ```
 
 ### Send the results to Google Tag Manager
@@ -400,7 +400,7 @@ However, since not all Web Vitals metrics become available at the same time, and
 Instead, you should keep a queue of all metrics that were reported and flush the queue whenever the page is backgrounded or unloaded:
 
 ```js
-import {getCLS, getFID, getLCP} from 'web-vitals';
+import {onCLS, onFID, onLCP} from 'web-vitals';
 
 const queue = new Set();
 function addToQueue(metric) {
@@ -421,9 +421,9 @@ function flushQueue() {
   }
 }
 
-getCLS(addToQueue);
-getFID(addToQueue);
-getLCP(addToQueue);
+onCLS(addToQueue);
+onFID(addToQueue);
+onLCP(addToQueue);
 
 // Report all available metrics whenever the page is backgrounded or unloaded.
 addEventListener('visibilitychange', () => {
@@ -589,7 +589,7 @@ interface FirstInputPolyfillCallback {
 
 #### `NavigationTimingPolyfillEntry`
 
-When calling `getTTFB()`, if the browser doesn't support the [Navigation Timing API Level 2](https://www.w3.org/TR/navigation-timing-2/) interface, it will polyfill the entry object using timings from `performance.timing`:
+When calling `onTTFB()`, if the browser doesn't support the [Navigation Timing API Level 2](https://www.w3.org/TR/navigation-timing-2/) interface, it will polyfill the entry object using timings from `performance.timing`:
 
 ```ts
 export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
@@ -611,10 +611,10 @@ interface WebVitalsGlobal {
 
 ### Functions:
 
-#### `getCLS()`
+#### `onCLS()`
 
 ```ts
-type getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
 Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `onReport` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/cls/#layout-shift-score)).
@@ -623,38 +623,38 @@ If the `reportAllChanges` param is `true`, the `onReport` function will be calle
 
 _**Important:** unlike other metrics, CLS continues to monitor changes for the entire lifespan of the page&mdash;including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
 
-#### `getFCP()`
+#### `onFCP()`
 
 ```ts
-type getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
 Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
-#### `getFID()`
+#### `onFID()`
 
 ```ts
-type getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onFID = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
 Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 _**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
 
-#### `getLCP()`
+#### `onLCP()`
 
 ```ts
-type getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
 Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entries used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
 
-#### `getTTFB()`
+#### `onTTFB()`
 
 ```ts
-type getTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => void
 ```
 
 Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
@@ -664,9 +664,9 @@ Note, this function waits until after the page is loaded to call `onReport` in o
 For example, the TTFB metric starts from the page's [time origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it [includes](https://developers.google.com/web/fundamentals/performance/navigation-and-resource-timing#the_life_and_timings_of_a_network_request) time spent on DNS lookup, connection negotiation, network latency, and unloading the previous document. If, in addition to TTFB, you want a metric that excludes these timings and _just_ captures the time spent making the request and receiving the first byte of the response, you could compute that from data found on the performance entry:
 
 ```js
-import {getTTFB} from 'web-vitals';
+import {onTTFB} from 'web-vitals';
 
-getTTFB((metric) => {
+onTTFB((metric) => {
   // Calculate the request time by subtracting from TTFB
   // everything that happened prior to the request starting.
   const requestTime = metric.value - metric.entries[0].requestStart;
@@ -683,11 +683,11 @@ The `web-vitals` code has been tested and will run without error in all major br
 
 Browser support for each function is as follows:
 
-- `getCLS()`: Chromium,
-- `getFCP()`: Chromium, Firefox, Safari
-- `getFID()`: Chromium, Firefox, Safari, Internet Explorer (with the [polyfill](#how-to-use-the-polyfill))
-- `getLCP()`: Chromium
-- `getTTFB()`: Chromium, Firefox, Safari, Internet Explorer
+- `onCLS()`: Chromium,
+- `onFCP()`: Chromium, Firefox, Safari
+- `onFID()`: Chromium, Firefox, Safari, Internet Explorer (with the [polyfill](#how-to-use-the-polyfill))
+- `onLCP()`: Chromium
+- `onTTFB()`: Chromium, Firefox, Safari, Internet Explorer
 
 ## Limitations
 
@@ -699,7 +699,7 @@ The primary limitation of these APIs is they have no visibility into `<iframe>` 
 
 For same-origin iframes, it's possible to use the `web-vitals` library to measure metrics, but it's tricky because it requires the developer to add the library to every frame and `postMessage()` the results to the parent frame for aggregation.
 
-_**Note:** given the lack of iframe support, the `getCLS()` function technically measures [DCLS](https://github.com/wicg/layout-instability#cumulative-scores) (Document Cumulative Layout Shift) rather than CLS, if the page includes iframes)._
+_**Note:** given the lack of iframe support, the `onCLS()` function technically measures [DCLS](https://github.com/wicg/layout-instability#cumulative-scores) (Document Cumulative Layout Shift) rather than CLS, if the page includes iframes)._
 
 ## Development
 
