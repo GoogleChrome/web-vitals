@@ -113,35 +113,38 @@ describe('getTTFB()', async function() {
     assertValidEntry(ttfb.entries[0]);
   });
 
-  it('does not report after a bfcache restore', async function() {
+  it('reports after a bfcache restore', async function() {
     await browser.url('/test/ttfb');
 
-    const ttfb = await getTTFBBeacon();
+    const ttfb1 = await getTTFBBeacon();
 
-    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
+    if (browser.capabilities.browserName === 'firefox' && !ttfb1) {
       // Skipping test in Firefox due to entry not reported.
       this.skip();
     }
 
-    assert(ttfb.value >= 0);
-    assert(ttfb.value >= ttfb.entries[0].requestStart);
-    assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v2-\d+-\d+$/));
-    assert.strictEqual(ttfb.name, 'TTFB');
-    assert.strictEqual(ttfb.value, ttfb.delta);
-    assert.strictEqual(ttfb.navigationType, 'navigate');
-    assert.strictEqual(ttfb.entries.length, 1);
+    assert(ttfb1.value >= 0);
+    assert(ttfb1.value >= ttfb1.entries[0].requestStart);
+    assert(ttfb1.value <= ttfb1.entries[0].loadEventEnd);
+    assert(ttfb1.id.match(/^v2-\d+-\d+$/));
+    assert.strictEqual(ttfb1.name, 'TTFB');
+    assert.strictEqual(ttfb1.value, ttfb1.delta);
+    assert.strictEqual(ttfb1.navigationType, 'navigate');
+    assert.strictEqual(ttfb1.entries.length, 1);
 
-    assertValidEntry(ttfb.entries[0]);
+    assertValidEntry(ttfb1.entries[0]);
 
     await clearBeacons();
     await stubForwardBack();
 
-    // Wait a bit to ensure no beacons were sent.
-    await browser.pause(1000);
+    const ttfb2 = await getTTFBBeacon();
 
-    const bfcacheRestoreBeacons = await getBeacons();
-    assert.strictEqual(bfcacheRestoreBeacons.length, 0);
+    assert(ttfb2.value >= 0);
+    assert(ttfb2.id.match(/^v2-\d+-\d+$/));
+    assert.strictEqual(ttfb2.name, 'TTFB');
+    assert.strictEqual(ttfb2.value, ttfb2.delta);
+    assert.strictEqual(ttfb2.navigationType, 'back_forward_cache');
+    assert.strictEqual(ttfb2.entries.length, 0);
   });
 });
 
