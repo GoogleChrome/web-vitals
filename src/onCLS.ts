@@ -20,13 +20,16 @@ import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {onFCP} from './onFCP.js';
-import {LayoutShift, Metric, ReportHandler} from './types.js';
+import {LayoutShift, Metric, ReportCallback, ReportOpts} from './types.js';
 
 
 let isMonitoringFCP = false;
 let fcpValue = -1;
 
-export const onCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onCLS = (onReport: ReportCallback, opts?: ReportOpts) => {
+  // Set defaults
+  opts = opts || {};
+
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   if (!isMonitoringFCP) {
@@ -36,7 +39,7 @@ export const onCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     isMonitoringFCP = true;
   }
 
-  const onReportWrapped: ReportHandler = (arg) => {
+  const onReportWrapped: ReportCallback = (arg) => {
     if (fcpValue > -1) {
       onReport(arg);
     }
@@ -81,7 +84,7 @@ export const onCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
   const po = observe('layout-shift', handleEntries);
   if (po) {
-    report = bindReporter(onReportWrapped, metric, reportAllChanges);
+    report = bindReporter(onReportWrapped, metric, opts.reportAllChanges);
 
     onHidden(() => {
       handleEntries(po.takeRecords());
@@ -92,7 +95,7 @@ export const onCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       sessionValue = 0;
       fcpValue = -1;
       metric = initMetric('CLS', 0);
-      report = bindReporter(onReportWrapped, metric, reportAllChanges);
+      report = bindReporter(onReportWrapped, metric, opts!.reportAllChanges);
     });
   }
 };

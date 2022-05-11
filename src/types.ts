@@ -46,11 +46,16 @@ export interface Metric {
   navigationType:  NavigationType | 'back_forward_cache' | undefined;
 }
 
-export interface ReportHandler {
+export interface ReportCallback {
   (metric: Metric): void;
 }
 
- interface PerformanceEntryMap {
+export interface ReportOpts {
+  reportAllChanges?: boolean;
+  durationThreshold?: number;
+}
+
+interface PerformanceEntryMap {
   'navigation': PerformanceNavigationTiming;
   'resource': PerformanceResourceTiming;
   'paint': PerformancePaintTiming;

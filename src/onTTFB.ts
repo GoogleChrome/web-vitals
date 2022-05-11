@@ -18,7 +18,7 @@ import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {ReportHandler} from './types.js';
+import {ReportCallback, ReportOpts} from './types.js';
 
 
 const afterLoad = (callback: () => void) => {
@@ -31,9 +31,12 @@ const afterLoad = (callback: () => void) => {
   }
 }
 
-export const onTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
+  // Set defaults
+  opts = opts || {};
+
   let metric = initMetric('TTFB');
-  let report = bindReporter(onReport, metric, reportAllChanges);
+  let report = bindReporter(onReport, metric, opts.reportAllChanges);
 
   afterLoad(() => {
     const navigationEntry = getNavigationEntry();
@@ -55,7 +58,7 @@ export const onTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
   onBFCacheRestore((event) => {
     metric = initMetric('TTFB');
-    report = bindReporter(onReport, metric, reportAllChanges);
+    report = bindReporter(onReport, metric, opts!.reportAllChanges);
     metric.value = performance.now() - event.timeStamp;
     report(true);
   });

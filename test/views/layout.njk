@@ -26,7 +26,13 @@
 
       const params = new URL(location.href).searchParams;
 
-      self.__reportAllChanges = params.has('reportAllChanges');
+      if (params.has('reportAllChanges')) {
+        self.__reportAllChanges = Boolean(params.get('reportAllChanges'));
+      }
+
+      if (params.has('durationThreshold')) {
+        self.__durationThreshold = Number(params.get('durationThreshold'));
+      }
 
       if (params.has('hidden')) {
         // Stub the page being loaded in the hidden state, but defer to the

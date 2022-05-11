@@ -38,7 +38,7 @@
 
         // Test sending the metric to an analytics endpoint.
         navigator.sendBeacon(`/collect`, JSON.stringify(ttfb));
-      }, self.__reportAllChanges);
+      }, {reportAllChanges: self.__reportAllChanges});
     }());
   </script>
 {% endblock %}
