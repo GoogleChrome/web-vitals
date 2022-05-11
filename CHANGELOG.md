@@ -1,5 +1,10 @@
 # Changelog
 
+### v3.0.0-beta.1 (2022-05-11)
+
+- **[BREAKING]** Add a config object param to all metric functions ([#225](https://github.com/GoogleChrome/web-vitals/pull/225))
+- Fix `getTTFB()` not properly aliased to `onTTFB()` ([#226](https://github.com/GoogleChrome/web-vitals/pull/226))
+
 ### v3.0.0-beta.0 (2022-04-25)
 
 - **[BREAKING]** Report TTFB after a bfcache restore ([#220](https://github.com/GoogleChrome/web-vitals/pull/220))
