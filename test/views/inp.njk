@@ -94,6 +94,9 @@
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(inp));
-    }, self.__reportAllChanges);
+    }, {
+      reportAllChanges: self.__reportAllChanges,
+      durationThreshold: self.__durationThreshold,
+    });
   </script>
 {% endblock %}

@@ -21,10 +21,13 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
-import {FirstInputPolyfillCallback, Metric, PerformanceEventTiming, ReportHandler} from './types.js';
+import {FirstInputPolyfillCallback, Metric, PerformanceEventTiming, ReportCallback, ReportOpts} from './types.js';
 
 
-export const onFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
+  // Set defaults
+  opts = opts || {};
+
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FID');
   let report: ReturnType<typeof bindReporter>;
@@ -43,7 +46,7 @@ export const onFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   }
 
   const po = observe('first-input', handleEntries);
-  report = bindReporter(onReport, metric, reportAllChanges);
+  report = bindReporter(onReport, metric, opts.reportAllChanges);
 
   if (po) {
     onHidden(() => {
@@ -59,7 +62,7 @@ export const onFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     }
     onBFCacheRestore(() => {
       metric = initMetric('FID');
-      report = bindReporter(onReport, metric, reportAllChanges);
+      report = bindReporter(onReport, metric, opts!.reportAllChanges);
       window.webVitals.resetFirstInputPolyfill();
       window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
     });
@@ -68,7 +71,7 @@ export const onFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     if (po) {
       onBFCacheRestore(() => {
         metric = initMetric('FID');
-        report = bindReporter(onReport, metric, reportAllChanges);
+        report = bindReporter(onReport, metric, opts!.reportAllChanges);
         resetFirstInputPolyfill();
         firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
       });

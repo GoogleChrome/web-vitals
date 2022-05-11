@@ -20,12 +20,15 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {Metric, ReportHandler} from './types.js';
+import {Metric, ReportCallback, ReportOpts} from './types.js';
 
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
-export const onLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
+  // Set defaults
+  opts = opts || {};
+
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;
@@ -50,7 +53,7 @@ export const onLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const po = observe('largest-contentful-paint', handleEntries);
 
   if (po) {
-    report = bindReporter(onReport, metric, reportAllChanges);
+    report = bindReporter(onReport, metric, opts.reportAllChanges);
 
     const stopListening = () => {
       if (!reportedMetricIDs[metric.id]) {
@@ -72,7 +75,7 @@ export const onLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
     onBFCacheRestore((event) => {
       metric = initMetric('LCP');
-      report = bindReporter(onReport, metric, reportAllChanges);
+      report = bindReporter(onReport, metric, opts!.reportAllChanges);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           metric.value = performance.now() - event.timeStamp;

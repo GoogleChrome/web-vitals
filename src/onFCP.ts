@@ -19,10 +19,13 @@ import {bindReporter} from './lib/bindReporter.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {Metric, ReportHandler} from './types.js';
+import {Metric, ReportCallback, ReportOpts} from './types.js';
 
 
-export const onFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onFCP = (onReport: ReportCallback, opts?: ReportOpts) => {
+  // Set defaults
+  opts = opts || {};
+
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FCP');
   let report: ReturnType<typeof bindReporter>;
@@ -56,7 +59,7 @@ export const onFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   const po = fcpEntry ? null : observe('paint', handleEntries);
 
   if (fcpEntry || po) {
-    report = bindReporter(onReport, metric, reportAllChanges);
+    report = bindReporter(onReport, metric, opts.reportAllChanges);
 
     if (fcpEntry) {
       handleEntries([fcpEntry]);
@@ -64,7 +67,7 @@ export const onFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
 
     onBFCacheRestore((event) => {
       metric = initMetric('FCP');
-      report = bindReporter(onReport, metric, reportAllChanges);
+      report = bindReporter(onReport, metric, opts!.reportAllChanges);
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           metric.value = performance.now() - event.timeStamp;

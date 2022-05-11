@@ -20,7 +20,7 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {getInteractionCount, initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
-import {Metric, PerformanceEventTiming, ReportHandler} from './types.js';
+import {Metric, PerformanceEventTiming, ReportCallback, ReportOpts} from './types.js';
 
 interface Interaction {
   id: number;
@@ -104,7 +104,10 @@ const estimateP98LongestInteraction = () => {
 	return longestInteractionList[candidateInteractionIndex];
 }
 
-export const onINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
+  // Set defaults
+  opts = opts || {};
+
   // TODO(philipwalton): remove once the polyfill is no longer needed.
   initInteractionCountPolyfill();
 
@@ -134,10 +137,10 @@ export const onINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     // and performance. Running this callback for any interaction that spans
     // just one or two frames is likely not worth the insight that could be
     // gained.
-    durationThreshold: 40,
+    durationThreshold: opts.durationThreshold || 40,
   } as PerformanceObserverInit);
 
-  report = bindReporter(onReport, metric, reportAllChanges);
+  report = bindReporter(onReport, metric, opts.reportAllChanges);
 
   if (po) {
     onHidden(() => {
@@ -160,7 +163,7 @@ export const onINP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       prevInteractionCount = getInteractionCount();
 
       metric = initMetric('INP');
-      report = bindReporter(onReport, metric, reportAllChanges);
+      report = bindReporter(onReport, metric, opts!.reportAllChanges);
     });
   }
 };

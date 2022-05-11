@@ -191,7 +191,7 @@ _**Important!** users who want to load version 3 beta from the unpkg CDN should 
 
 ### Basic usage
 
-Each of the Web Vitals metrics is exposed as a single function that takes an `onReport` callback. This callback will be called any time the metric value is available and ready to be reported.
+Each of the Web Vitals metrics is exposed as a single function that takes a `callback` function that will be called any time the metric value is available and ready to be reported.
 
 The following example measures each of the Core Web Vitals metrics and logs the result to the console once its value is ready to report.
 
@@ -221,15 +221,15 @@ _**Warning:** do not call any of the Web Vitals functions (e.g. `onCLS()`, `onFI
 
 ### Report the value on every change
 
-In most cases, you only want `onReport` to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each layout shift as it happens) by setting the optional, second argument (`reportAllChanges`) to `true`.
+In most cases, you only want the `callback` function to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each layout shift as it happens) by setting `reportAllChanges` to `true` in the optional, [configuration object](#reportopts) (second parameter).
 
-This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended).
+This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production.
 
 ```js
 import {onCLS} from 'web-vitals';
 
 // Logs CLS as the value changes.
-onCLS(console.log, true);
+onCLS(console.log, {reportAllChange: true});
 ```
 
 ### Report only the delta of changes
@@ -252,7 +252,7 @@ onFID(logDelta);
 onLCP(logDelta);
 ```
 
-_**Note:** the first time the `onReport` function is called, its `value` and `delta` properties will be the same._
+_**Note:** the first time the `callback` function is called, its `value` and `delta` properties will be the same._
 
 In addition to using the `id` field to group multiple deltas for the same metric, it can also be used to differentiate different metrics reported on the same page. For example, after a back/forward cache restore, a new metric object is created with a new `id` (since back/forward cache restores are considered separate page visits).
 
@@ -572,11 +572,20 @@ interface Metric {
 }
 ```
 
-#### `ReportHandler`
+#### `ReportCallback`
 
 ```ts
-interface ReportHandler {
+interface ReportCallback {
   (metric: Metric): void;
+}
+```
+
+#### `ReportOpts`
+
+```ts
+interface ReportOpts {
+  reportAllChanges?: boolean;
+  durationThreshold?: number;
 }
 ```
 
@@ -623,64 +632,66 @@ interface WebVitalsGlobal {
 #### `onCLS()`
 
 ```ts
-type onCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onCLS = (callback: ReportCallback, opts?: ReportOpts) => void
 ```
 
-Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `onReport` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/cls/#layout-shift-score)).
+Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/cls/#layout-shift-score)).
 
-If the `reportAllChanges` param is `true`, the `onReport` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
 
-_**Important:** CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
+_**Important:** CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
 
 #### `onFCP()`
 
 ```ts
-type onFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onFCP = (callback: ReportCallback, opts?: ReportOpts) => void
 ```
 
-Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `callback` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 #### `onFID()`
 
 ```ts
-type onFID = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onFID = (callback: ReportCallback, opts?: ReportOpts) => void
 ```
 
-Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `onReport` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 _**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
 
 #### `onINP()`
 
 ```ts
-type onINP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onINP = (callback: ReportCallback, opts?: ReportOpts) => void
 ```
 
-Calculates the [INP](https://web.dev/responsiveness/) value for the current page and calls the `onReport` function once the value is ready, along with the  `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [INP](https://web.dev/responsiveness/) value for the current page and calls the `callback` function once the value is ready, along with the  `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
-If the `reportAllChanges` param is `true`, the `onReport` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
+A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/inp/#what-is-a-good-inp-score) threshold).
 
-_**Important:** INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `onReport` is always called when the page's visibility state changes to hidden. As a result, the `onReport` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
+
+_**Important:** INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
 
 #### `onLCP()`
 
 ```ts
-type onLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onLCP = (callback: ReportCallback, opts?: ReportOpts) => void
 ```
 
-Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `onReport` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `callback` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
-If the `reportAllChanges` param is `true`, the `onReport` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
 
 #### `onTTFB()`
 
 ```ts
-type onTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type onTTFB = (callback: ReportCallback, opts?: ReportOpts) => void
 ```
 
-Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `callback` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
-Note, this function waits until after the page is loaded to call `onReport` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
+Note, this function waits until after the page is loaded to call `callback` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
 
 For example, the TTFB metric starts from the page's [time origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it [includes](https://developers.google.com/web/fundamentals/performance/navigation-and-resource-timing#the_life_and_timings_of_a_network_request) time spent on DNS lookup, connection negotiation, network latency, and unloading the previous document. If, in addition to TTFB, you want a metric that excludes these timings and _just_ captures the time spent making the request and receiving the first byte of the response, you could compute that from data found on the performance entry:
 
@@ -761,7 +772,7 @@ You'll likely want to combine this with `npm run watch` to ensure any changes yo
 
 - [**Web Vitals Connector**](https://goo.gle/web-vitals-connector): Data Studio connector to create dashboards from [Web Vitals data captured in BiqQuery](https://web.dev/vitals-ga4/).
 - [**Core Web Vitals Custom Tag template**](https://www.simoahava.com/custom-templates/core-web-vitals/): Custom GTM template tag to [add measurement handlers](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/) for all Core Web Vitals metrics.
-- [**`web-vitals-reporter`**](https://github.com/treosh/web-vitals-reporter): JavaScript library to batch `onReport` callbacks and send data with a single request.
+- [**`web-vitals-reporter`**](https://github.com/treosh/web-vitals-reporter): JavaScript library to batch `callback` functions and send data with a single request.
 
 ## License
 
