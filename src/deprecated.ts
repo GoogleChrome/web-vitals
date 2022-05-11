@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -19,4 +19,4 @@ export {onFCP as getFCP} from './onFCP.js';
 export {onFID as getFID} from './onFID.js';
 export {onINP as getINP} from './onINP.js';
 export {onLCP as getLCP} from './onLCP.js';
-export {onTTFB as getTFB} from './onTTFB.js';
+export {onTTFB as getTTFB} from './onTTFB.js';
