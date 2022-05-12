@@ -1,8 +1,14 @@
 # Changelog
 
+### v3.0.0-beta.2 (2022-05-11)
+
+- Ensure all deprecated symbols are annotated ([#227](https://github.com/GoogleChrome/web-vitals/pull/227))
+- Alias, deprecate, and re-export `ReportCallback` as `ReportHandler`, so it's no longer a breaking change ([#227](https://github.com/GoogleChrome/web-vitals/pull/227))
+
 ### v3.0.0-beta.1 (2022-05-11)
 
 - **[BREAKING]** Add a config object param to all metric functions ([#225](https://github.com/GoogleChrome/web-vitals/pull/225))
+- **[BREAKING]** Rename the `ReportHandler` type to `ReportCallback` ([#225](https://github.com/GoogleChrome/web-vitals/pull/225))
 - Fix `getTTFB()` not properly aliased to `onTTFB()` ([#226](https://github.com/GoogleChrome/web-vitals/pull/226))
 
 ### v3.0.0-beta.0 (2022-04-25)
