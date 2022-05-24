@@ -116,7 +116,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
   const handleEntries = (entries: Metric['entries']) => {
     (entries as PerformanceEventTiming[]).forEach((entry) => {
-      if (entry.interactionId) {
+      if (entry.entryType == 'first-input' || entry.interactionId) {
         processEntry(entry);
       }
     });
@@ -130,7 +130,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     }
   };
 
-  const po = observe('event', handleEntries, {
+  const po = observe(['first-input', 'event'], handleEntries, {
     // Event Timing entries have their durations rounded to the nearest 8ms,
     // so a duration of 40ms would be any event that spans 2.5 or more frames
     // at 60Hz. This threshold is chosen to strike a balance between usefulness

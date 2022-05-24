@@ -45,7 +45,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
     (entries as PerformanceEventTiming[]).forEach(handleEntry);
   }
 
-  const po = observe('first-input', handleEntries);
+  const po = observe(['first-input'], handleEntries);
   report = bindReporter(onReport, metric, opts.reportAllChanges);
 
   if (po) {

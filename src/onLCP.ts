@@ -50,7 +50,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
     }
   };
 
-  const po = observe('largest-contentful-paint', handleEntries);
+  const po = observe(['largest-contentful-paint'], handleEntries);
 
   if (po) {
     report = bindReporter(onReport, metric, opts.reportAllChanges);

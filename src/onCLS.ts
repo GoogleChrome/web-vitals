@@ -82,7 +82,7 @@ export const onCLS = (onReport: ReportCallback, opts?: ReportOpts) => {
     });
   };
 
-  const po = observe('layout-shift', handleEntries);
+  const po = observe(['layout-shift'], handleEntries);
   if (po) {
     report = bindReporter(onReportWrapped, metric, opts.reportAllChanges);
 

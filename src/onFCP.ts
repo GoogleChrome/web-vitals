@@ -56,7 +56,7 @@ export const onFCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   const fcpEntry = window.performance && window.performance.getEntriesByName &&
       window.performance.getEntriesByName('first-contentful-paint')[0];
 
-  const po = fcpEntry ? null : observe('paint', handleEntries);
+  const po = fcpEntry ? null : observe(['paint'], handleEntries);
 
   if (fcpEntry || po) {
     report = bindReporter(onReport, metric, opts.reportAllChanges);

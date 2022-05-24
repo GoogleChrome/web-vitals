@@ -30,19 +30,21 @@ interface PerformanceEntriesHandler {
  * try/catch to avoid errors in unsupporting browsers.
  */
 export const observe = (
-  type: string,
+  types: string[],
   callback: PerformanceEntriesHandler,
   opts?: PerformanceObserverInit,
 ): PerformanceObserver | undefined => {
   try {
-    if (PerformanceObserver.supportedEntryTypes.includes(type)) {
+    if (types.every(type => PerformanceObserver.supportedEntryTypes.includes(type))) {
       const po: PerformanceObserver = new PerformanceObserver((list) => {
         callback(list.getEntries());
       });
-      po.observe(Object.assign({
-        type,
-        buffered: true,
-      }, opts || {}) as PerformanceObserverInit);
+      for (let type of types) {
+        po.observe(Object.assign({
+          type,
+          buffered: true,
+        }, opts || {}) as PerformanceObserverInit);
+      }
       return po;
     }
   } catch (e) {
