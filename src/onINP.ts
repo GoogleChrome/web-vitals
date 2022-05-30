@@ -119,6 +119,26 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       if (entry.interactionId) {
         processEntry(entry);
       }
+
+      // Entries of type `first-input` don't currently have an `interactionId`,
+      // so to consider them in INP we have to first check that an existing
+      // entry doesn't match the `duration` and `startTime`.
+      // Note that this logic assumes that `event` entries are dispatched
+      // before `first-input` entries. This is true in Chrome but it is not
+      // true in Firefox; however, Firefox doesn't support interactionId, so
+      // it's not an issue at the moment.
+      // TODO(philipwalton): remove once crbug.com/1325826 is fixed.
+      if (entry.entryType === 'first-input') {
+        const noMatchingEntry = !longestInteractionList.some((interaction) => {
+          return interaction.entries.some((prevEntry) => {
+            return entry.duration === prevEntry.duration &&
+                entry.startTime === prevEntry.startTime;
+          });
+        });
+        if (noMatchingEntry) {
+          processEntry(entry);
+        }
+      }
     });
 
     const inp = estimateP98LongestInteraction();
@@ -143,6 +163,10 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   report = bindReporter(onReport, metric, opts.reportAllChanges);
 
   if (po) {
+    // Also observe entries of type `first-input`. This is useful in cases
+    // where the first interaction is less than the `durationThreshold`.
+    po.observe({type: 'first-input', buffered: true});
+
     onHidden(() => {
       handleEntries(po.takeRecords());
 

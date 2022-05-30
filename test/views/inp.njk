@@ -89,7 +89,7 @@
       inp.entries = inp.entries.map((e) => ({
         ...e.toJSON(),
         interactionId: e.interactionId,
-        target: e.target.nodeName.toLowerCase(),
+        target: e.target?.nodeName.toLowerCase(),
       }));
 
       // Test sending the metric to an analytics endpoint.
