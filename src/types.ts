@@ -43,7 +43,7 @@ export interface Metric {
   // by the Navigation Timing API (or `undefined` if the browser doesn't
   // support that API). For pages that are restored from the bfcache, this
   // value will be 'back_forward_cache'.
-  navigationType:  NavigationType | 'back_forward_cache' | undefined;
+  navigationType:  NavigationTimingType | 'back_forward_cache' | undefined;
 }
 
 export interface ReportCallback {
