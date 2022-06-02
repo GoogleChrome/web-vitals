@@ -17,7 +17,7 @@
 {% block content %}
   <h1>TTFB Test</h1>
   <p>
-    <img src="/test/img/square.png">
+    <img src="/test/img/square.png{% if imgDelay %}?delay={{imgDelay}}{% endif %}">
   </p>
 
   <p>Text below the image</p>
@@ -35,6 +35,17 @@
       onTTFB((ttfb) => {
         // Log for easier manual testing.
         console.log(ttfb);
+
+        // The stubbed `activationStart` is lost when stringified, so we convert first.
+        ttfb.entries = ttfb.entries.map((e) => {
+          const newObj = {};
+          for (const k in e) {
+            if (typeof e[k] !== 'function') {
+              newObj[k] = e[k];
+            }
+          }
+          return newObj;
+        });
 
         // Test sending the metric to an analytics endpoint.
         navigator.sendBeacon(`/collect`, JSON.stringify(ttfb));

@@ -16,6 +16,7 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -31,7 +32,7 @@ export const onFCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   let report: ReturnType<typeof bindReporter>;
 
   const handleEntries = (entries: Metric['entries']) => {
-    entries.forEach((entry) => {
+    (entries as PerformancePaintTiming[]).forEach((entry) => {
       if (entry.name === 'first-contentful-paint') {
         if (po) {
           po.disconnect();
@@ -39,7 +40,10 @@ export const onFCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
         // Only report if the page wasn't hidden prior to the first paint.
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-          metric.value = entry.startTime;
+          // The activationStart reference is used because FCP should be
+          // relative to page activation rather than navigation start if the
+          // page was prerendered.
+          metric.value = entry.startTime - getActivationStart();
           metric.entries.push(entry);
           report(true);
         }

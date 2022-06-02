@@ -43,7 +43,7 @@ export interface Metric {
   // by the Navigation Timing API (or `undefined` if the browser doesn't
   // support that API). For pages that are restored from the bfcache, this
   // value will be 'back_forward_cache'.
-  navigationType:  NavigationTimingType | 'back_forward_cache' | undefined;
+  navigationType:  NavigationTimingType | 'back_forward_cache' | 'prerender' | undefined;
 }
 
 export interface ReportCallback {
@@ -61,9 +61,22 @@ interface PerformanceEntryMap {
   'paint': PerformancePaintTiming;
 }
 
+// Update built-in types to be more accurate.
 declare global {
+  // https://wicg.github.io/nav-speculation/prerendering.html#document-prerendering
+  interface Document {
+    prerendering?: boolean
+  }
   interface Performance {
     getEntriesByType<K extends keyof PerformanceEntryMap>(type: K): PerformanceEntryMap[K][]
+  }
+  // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
+  interface PerformanceObserverInit {
+    durationThreshold?: number;
+  }
+  // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
+  interface PerformanceNavigationTiming {
+    activationStart?: number;
   }
 }
 
@@ -83,8 +96,14 @@ export interface LayoutShift extends PerformanceEntry {
   hadRecentInput: boolean;
 }
 
-export interface PerformanceObserverInit {
-  durationThreshold?: number;
+// https://w3c.github.io/largest-contentful-paint/#sec-largest-contentful-paint-interface
+export interface LargestContentfulPaint extends PerformanceEntry {
+  renderTime: DOMHighResTimeStamp;
+  loadTime: DOMHighResTimeStamp;
+  size: number;
+  id: string;
+  url: string;
+  element?: Element;
 }
 
 export type FirstInputPolyfillEntry =
@@ -96,7 +115,9 @@ export interface FirstInputPolyfillCallback {
 
 export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
     'initiatorType' | 'nextHopProtocol' | 'redirectCount' | 'transferSize' |
-    'encodedBodySize' | 'decodedBodySize'>
+    'encodedBodySize' | 'decodedBodySize' | 'type'> & {
+  type?: PerformanceNavigationTiming['type'];
+}
 
 export interface WebVitalsGlobal {
   firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;
