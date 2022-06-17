@@ -229,7 +229,7 @@ This can be useful when debugging, but in general using `reportAllChanges` is no
 import {onCLS} from 'web-vitals';
 
 // Logs CLS as the value changes.
-onCLS(console.log, {reportAllChange: true});
+onCLS(console.log, {reportAllChanges: true});
 ```
 
 ### Report only the delta of changes
