@@ -113,6 +113,51 @@ describe('onTTFB()', async function() {
     assertValidEntry(ttfb.entries[0]);
   });
 
+  it('accounts for time prerendering the page', async function() {
+    await browser.url('/test/ttfb?prerender=1');
+
+    const ttfb = await getTTFBBeacon();
+
+    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
+      // Skipping test in Firefox due to entry not reported.
+      this.skip();
+    }
+
+    assert(ttfb.value >= 0);
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.entries.length, 1);
+    assert.strictEqual(ttfb.navigationType, 'prerender');
+    assert.strictEqual(ttfb.value, Math.max(
+        0, ttfb.entries[0].responseStart - ttfb.entries[0].activationStart));
+
+    assertValidEntry(ttfb.entries[0]);
+  });
+
+  it('reports the correct value when run while prerendering', async function() {
+    // Use 500 so prerendering finishes before load but after the module runs.
+    await browser.url('/test/ttfb?prerender=500&imgDelay=1000');
+
+    const ttfb = await getTTFBBeacon();
+
+    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
+      // Skipping test in Firefox due to entry not reported.
+      this.skip();
+    }
+
+    // Assert that prerendering finished after responseStart and before load.
+    assert(ttfb.entries[0].activationStart >= ttfb.entries[0].responseStart);
+    assert(ttfb.entries[0].activationStart <= ttfb.entries[0].loadEventEnd);
+
+    assert(ttfb.value >= 0);
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.entries.length, 1);
+    assert.strictEqual(ttfb.navigationType, 'prerender');
+    assert.strictEqual(ttfb.value, Math.max(
+        0, ttfb.entries[0].responseStart - ttfb.entries[0].activationStart));
+
+    assertValidEntry(ttfb.entries[0]);
+  });
+
   it('reports after a bfcache restore', async function() {
     await browser.url('/test/ttfb');
 

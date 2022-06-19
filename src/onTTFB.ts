@@ -19,15 +19,21 @@ import {initMetric} from './lib/initMetric.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {ReportCallback, ReportOpts} from './types.js';
+import { getActivationStart } from './lib/getActivationStart.js';
 
 
-const afterLoad = (callback: () => void) => {
-  if (document.readyState === 'complete') {
-    // Queue a task so the callback runs after `loadEventEnd`.
-    setTimeout(callback, 0);
+/**
+ * Runs in the next task after the page is done loading and/or prerendering.
+ * @param callback
+ */
+const whenReady = (callback: () => void) => {
+  if (document.prerendering) {
+    addEventListener('prerenderingchange', () => whenReady(callback), true);
+  } else if (document.readyState !== 'complete') {
+    addEventListener('load', () => whenReady(callback), true);
   } else {
     // Queue a task so the callback runs after `loadEventEnd`.
-    addEventListener('load', () => setTimeout(callback, 0));
+    setTimeout(callback, 0);
   }
 }
 
@@ -38,11 +44,15 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
   let metric = initMetric('TTFB');
   let report = bindReporter(onReport, metric, opts.reportAllChanges);
 
-  afterLoad(() => {
-    const navigationEntry = getNavigationEntry();
+  whenReady(() => {
+    const navEntry = getNavigationEntry();
 
-    if (navigationEntry) {
-      metric.value = navigationEntry.responseStart;
+    if (navEntry) {
+      // The activationStart reference is used because TTFB should be
+      // relative to page activation rather than navigation start if the
+      // page was prerendered. But in cases where `activationStart` occurs
+      // after the first byte is received, this time should be clamped at 0.
+      metric.value = Math.max(navEntry.responseStart - getActivationStart(), 0);
 
       // In some cases the value reported is negative or is larger
       // than the current page time. Ignore these cases:
@@ -50,7 +60,7 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       // https://github.com/GoogleChrome/web-vitals/issues/162
       if (metric.value < 0 || metric.value > performance.now()) return;
 
-      metric.entries = [navigationEntry];
+      metric.entries = [navEntry];
 
       report(true);
     }

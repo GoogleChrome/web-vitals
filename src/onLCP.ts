@@ -16,11 +16,12 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {Metric, ReportCallback, ReportOpts} from './types.js';
+import {Metric, LargestContentfulPaint, ReportCallback, ReportOpts} from './types.js';
 
 
 const reportedMetricIDs: Record<string, boolean> = {};
@@ -34,14 +35,15 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   let report: ReturnType<typeof bindReporter>;
 
   const handleEntries = (entries: Metric['entries']) => {
-    const lastEntry = entries[entries.length - 1];
+    const lastEntry = (entries[entries.length - 1] as LargestContentfulPaint);
     if (lastEntry) {
       // The startTime attribute returns the value of the renderTime if it is
-      // not 0, and the value of the loadTime otherwise.
-      const value = lastEntry.startTime;
+      // not 0, and the value of the loadTime otherwise. The activationStart
+      // reference is used because LCP should be relative to page activation
+      // rather than navigation start if the page was prerendered.
+      const value = lastEntry.startTime - getActivationStart();
 
-      // If the page was hidden prior to paint time of the entry,
-      // ignore it and mark the metric as final, otherwise add the entry.
+      // Only report if the page wasn't hidden prior to LCP.
       if (value < visibilityWatcher.firstHiddenTime) {
         metric.value = value;
         metric.entries = [lastEntry];

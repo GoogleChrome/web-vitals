@@ -49,6 +49,28 @@ describe('onFCP()', async function() {
     assert.match(fcp.navigationType, /navigate|reload/);
   });
 
+  it('accounts for time prerendering the page', async function() {
+    if (!browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp?prerender=1');
+
+    await beaconCountIs(1);
+
+    const [fcp] = await getBeacons();
+
+    const activationStart = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].activationStart;
+    });
+
+    assert(fcp.value >= 0);
+    assert(fcp.id.match(/^v2-\d+-\d+$/));
+    assert.strictEqual(fcp.name, 'FCP');
+    assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.strictEqual(fcp.entries[0].startTime - activationStart, fcp.value);
+    assert.strictEqual(fcp.navigationType, 'prerender');
+  });
+
   it('does not report if the browser does not support FCP (including bfcache restores)', async function() {
     if (browserSupportsFCP) this.skip();
 

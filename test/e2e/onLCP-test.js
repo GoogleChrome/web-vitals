@@ -101,6 +101,28 @@ describe('onLCP()', async function() {
     assertFullReportsAreCorrect(await getBeacons());
   });
 
+  it('accounts for time prerendering the page', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp?prerender=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    const activationStart = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].activationStart;
+    });
+
+    // Load a new page to trigger the hidden state.
+    await browser.url('about:blank');
+
+    await beaconCountIs(1);
+
+    const [lcp] = await getBeacons();
+    assert.strictEqual(lcp.entries[0].startTime - activationStart, lcp.value);
+    assert.strictEqual(lcp.navigationType, 'prerender');
+  });
+
   it('does not report if the browser does not support LCP (including bfcache restores)', async function() {
     if (browserSupportsLCP) this.skip();
 
@@ -117,8 +139,10 @@ describe('onLCP()', async function() {
     const footer = await $('footer');
     await footer.scrollIntoView();
 
-    // Load a new page to trigger the hidden state.
-    await browser.url('about:blank');
+    // Simulate a tab switch and switch back, which triggers reporting in
+    // browsers that support the API.
+    await stubVisibilityChange('hidden');
+    await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);

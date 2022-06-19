@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,10 @@
  * limitations under the License.
  */
 
+import {getNavigationEntry} from './getNavigationEntry.js';
 
-/**
- * Overrides the document's `visibilityState` property, sets the body's hidden
- * attribute (to prevent painting) and dispatches a `visibilitychange` event.
- * @return {Promise<void>}
- */
-function stubForwardBack(visibilityStateAfterRestore) {
-  return browser.executeAsync((visibilityStateAfterRestore, done) => {
-    self.__stubForwardBack(visibilityStateAfterRestore).then(done);
-  }, visibilityStateAfterRestore);
-}
 
-module.exports = {
-  stubForwardBack,
+export const getActivationStart = (): number => {
+  const navEntry = getNavigationEntry();
+  return navEntry && navEntry.activationStart || 0;
 };

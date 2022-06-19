@@ -16,19 +16,31 @@
 
 import {isBFCacheRestore} from './bfcache.js';
 import {generateUniqueID} from './generateUniqueID.js';
+import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
 import {Metric} from '../types.js';
 
 
 export const initMetric = (name: Metric['name'], value?: number): Metric => {
-  const navigationEntry = getNavigationEntry();
+  const navEntry = getNavigationEntry();
+  let navigationType: Metric['navigationType'];
+
+  if (isBFCacheRestore()) {
+    navigationType = 'back_forward_cache';
+  } else if (navEntry) {
+    if (document.prerendering || getActivationStart() > 0) {
+      navigationType = 'prerender';
+    } else {
+      navigationType = navEntry.type;
+    }
+  }
+
   return {
     name,
     value: typeof value === 'undefined' ? -1 : value,
     delta: 0,
     entries: [],
     id: generateUniqueID(),
-    navigationType: isBFCacheRestore() ? 'back_forward_cache' :
-        navigationEntry && navigationEntry.type,
+    navigationType,
   };
 };
