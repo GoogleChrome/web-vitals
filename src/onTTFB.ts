@@ -19,7 +19,7 @@ import {initMetric} from './lib/initMetric.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {ReportCallback, ReportOpts} from './types.js';
-import { getActivationStart } from './lib/getActivationStart.js';
+import {getActivationStart} from './lib/getActivationStart.js';
 
 
 /**
@@ -37,6 +37,21 @@ const whenReady = (callback: () => void) => {
   }
 }
 
+/**
+ * Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the
+ * current page and calls the `callback` function once the page has loaded,
+ * along with the relevant `navigation` performance entry used to determine the
+ * value. The reported value is a `DOMHighResTimeStamp`.
+ *
+ * Note, this function waits until after the page is loaded to call `callback`
+ * in order to ensure all properties of the `navigation` entry are populated.
+ * This is useful if you want to report on other metrics exposed by the
+ * [Navigation Timing API](https://w3c.github.io/navigation-timing/). For
+ * example, the TTFB metric starts from the page's [time
+ * origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it
+ * includes time spent on DNS lookup, connection negotiation, network latency,
+ * and server processing time.
+ */
 export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
@@ -66,10 +81,9 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
     }
   });
 
-  onBFCacheRestore((event) => {
-    metric = initMetric('TTFB');
+  onBFCacheRestore(() => {
+    metric = initMetric('TTFB', 0);
     report = bindReporter(onReport, metric, opts!.reportAllChanges);
-    metric.value = performance.now() - event.timeStamp;
     report(true);
   });
 };

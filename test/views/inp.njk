@@ -81,6 +81,10 @@
   <script type="module">
     import {onINP} from '{{ modulePath }}';
 
+    function jsonifyNode(node) {
+      return node && node.id ? `#${node.id}` : node.nodeName.toLowerCase();
+    }
+
     onINP((inp) => {
       // Log for easier manual testing.
       console.log(inp);
@@ -89,7 +93,7 @@
       inp.entries = inp.entries.map((e) => ({
         ...e.toJSON(),
         interactionId: e.interactionId,
-        target: e.target?.nodeName.toLowerCase(),
+        target: jsonifyNode(e.target),
       }));
 
       // Test sending the metric to an analytics endpoint.

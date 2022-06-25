@@ -20,12 +20,8 @@
  * attribute (to prevent painting) and dispatches a `visibilitychange` event.
  * @return {Promise<void>}
  */
-function stubVisibilityChange(visibilityState) {
+export function stubVisibilityChange(visibilityState) {
   return browser.execute((visibilityState) => {
     self.__stubVisibilityChange(visibilityState);
   }, visibilityState);
 }
-
-module.exports = {
-  stubVisibilityChange,
-};

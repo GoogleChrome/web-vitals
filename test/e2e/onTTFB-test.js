@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-const assert = require('assert');
-const {afterLoad} = require('../utils/afterLoad.js');
-const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
-const {stubForwardBack} = require('../utils/stubForwardBack.js');
+import assert from 'assert';
+import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {stubForwardBack} from '../utils/stubForwardBack.js';
+
 
 /**
  * Accepts a PerformanceNavigationTimingEntry (or shim) and asserts that it
@@ -50,13 +50,6 @@ function assertValidEntry(entry) {
 
   assert.strictEqual(entry.entryType, 'navigation');
   for (const timingProp of timingProps) {
-    if (browser.capabilities.browserName === 'firefox' &&
-        timingProp === 'fetchStart' &&
-        entry[timingProp] === -1) {
-      // Firefox sometimes reports the fetchStart value as -1
-      // https://bugzilla.mozilla.org/show_bug.cgi?id=1429422
-      continue;
-    }
     assert(entry[timingProp] >= 0);
   }
 }
@@ -73,11 +66,6 @@ describe('onTTFB()', async function() {
     await browser.url('/test/ttfb');
 
     const ttfb = await getTTFBBeacon();
-
-    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
-      // Skipping test in Firefox due to entry not reported.
-      this.skip();
-    }
 
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
@@ -96,11 +84,6 @@ describe('onTTFB()', async function() {
 
     const ttfb = await getTTFBBeacon();
 
-    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
-      // Skipping test in Firefox due to entry not reported.
-      this.skip();
-    }
-
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
@@ -118,11 +101,6 @@ describe('onTTFB()', async function() {
 
     const ttfb = await getTTFBBeacon();
 
-    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
-      // Skipping test in Firefox due to entry not reported.
-      this.skip();
-    }
-
     assert(ttfb.value >= 0);
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.entries.length, 1);
@@ -138,11 +116,6 @@ describe('onTTFB()', async function() {
     await browser.url('/test/ttfb?prerender=500&imgDelay=1000');
 
     const ttfb = await getTTFBBeacon();
-
-    if (browser.capabilities.browserName === 'firefox' && !ttfb) {
-      // Skipping test in Firefox due to entry not reported.
-      this.skip();
-    }
 
     // Assert that prerendering finished after responseStart and before load.
     assert(ttfb.entries[0].activationStart >= ttfb.entries[0].responseStart);
@@ -162,11 +135,6 @@ describe('onTTFB()', async function() {
     await browser.url('/test/ttfb');
 
     const ttfb1 = await getTTFBBeacon();
-
-    if (browser.capabilities.browserName === 'firefox' && !ttfb1) {
-      // Skipping test in Firefox due to entry not reported.
-      this.skip();
-    }
 
     assert(ttfb1.value >= 0);
     assert(ttfb1.value >= ttfb1.entries[0].requestStart);
@@ -191,19 +159,103 @@ describe('onTTFB()', async function() {
     assert.strictEqual(ttfb2.navigationType, 'back_forward_cache');
     assert.strictEqual(ttfb2.entries.length, 0);
   });
+
+  describe('attribution', function() {
+    it('includes attribution data on the metric object', async function() {
+      await browser.url('/test/ttfb?attribution=1');
+
+      const ttfb = await getTTFBBeacon();
+
+      assert(ttfb.value >= 0);
+      assert(ttfb.value >= ttfb.entries[0].requestStart);
+      assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
+      assert(ttfb.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(ttfb.name, 'TTFB');
+      assert.strictEqual(ttfb.value, ttfb.delta);
+      assert.strictEqual(ttfb.navigationType, 'navigate');
+      assert.strictEqual(ttfb.entries.length, 1);
+
+      assertValidEntry(ttfb.entries[0]);
+
+      const navEntry = ttfb.entries[0];
+      assert.strictEqual(ttfb.attribution.waitingTime,
+          navEntry.domainLookupStart);
+      assert.strictEqual(ttfb.attribution.dnsTime,
+          navEntry.connectStart - navEntry.domainLookupStart);
+      assert.strictEqual(ttfb.attribution.connectionTime,
+          navEntry.requestStart - navEntry.connectStart);
+      assert.strictEqual(ttfb.attribution.requestTime,
+          navEntry.responseStart - navEntry.requestStart);
+
+      assert.deepEqual(ttfb.attribution.navigationEntry, navEntry);
+    });
+
+    it('accounts for time prerendering the page', async function() {
+      await browser.url('/test/ttfb?attribution=1&prerender=1');
+
+      const ttfb = await getTTFBBeacon();
+
+      // Since this value is stubbed in the browser, get it separately.
+      const activationStart = await browser.execute(() => {
+        return performance.getEntriesByType('navigation')[0].activationStart;
+      });
+
+      assert(ttfb.value >= 0);
+      assert.strictEqual(ttfb.value, ttfb.delta);
+      assert.strictEqual(ttfb.entries.length, 1);
+      assert.strictEqual(ttfb.navigationType, 'prerender');
+      assert.strictEqual(ttfb.value,
+          Math.max(0, ttfb.entries[0].responseStart - activationStart));
+
+      assertValidEntry(ttfb.entries[0]);
+
+      const navEntry = ttfb.entries[0];
+      assert.strictEqual(ttfb.attribution.waitingTime,
+          Math.max(0, navEntry.domainLookupStart - activationStart));
+      assert.strictEqual(ttfb.attribution.dnsTime,
+          Math.max(0, navEntry.connectStart - activationStart) -
+          Math.max(0, navEntry.domainLookupStart - activationStart));
+      assert.strictEqual(ttfb.attribution.connectionTime,
+          Math.max(0, navEntry.requestStart - activationStart) -
+          Math.max(0, navEntry.connectStart - activationStart));
+
+      assert.strictEqual(ttfb.attribution.requestTime,
+          Math.max(0, navEntry.responseStart - activationStart) -
+          Math.max(0, navEntry.requestStart - activationStart));
+
+      assert.deepEqual(ttfb.attribution.navigationEntry, navEntry);
+    });
+
+    it('reports after a bfcache restore', async function() {
+      await browser.url('/test/ttfb?attribution=1');
+
+      await getTTFBBeacon();
+
+      await clearBeacons();
+      await stubForwardBack();
+
+      await beaconCountIs(1);
+
+      const ttfb = await getTTFBBeacon();
+
+      assert(ttfb.value >= 0);
+      assert(ttfb.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(ttfb.name, 'TTFB');
+      assert.strictEqual(ttfb.value, ttfb.delta);
+      assert.strictEqual(ttfb.navigationType, 'back_forward_cache');
+      assert.strictEqual(ttfb.entries.length, 0);
+
+      assert.strictEqual(ttfb.attribution.waitingTime, 0);
+      assert.strictEqual(ttfb.attribution.dnsTime, 0);
+      assert.strictEqual(ttfb.attribution.connectionTime, 0);
+      assert.strictEqual(ttfb.attribution.requestTime, 0);
+      assert.strictEqual(ttfb.attribution.navigationEntry, undefined);
+    });
+  });
 });
 
 const getTTFBBeacon = async () => {
-  // In Firefox, sometimes no TTFB is reported due to negative values.
-  // https://github.com/GoogleChrome/web-vitals/issues/137
-  if (browser.capabilities.browserName === 'firefox') {
-    // In Firefox, wait 1 second after load.
-    await afterLoad();
-    await browser.pause(1000);
-  } else {
-    // Otherwise wait until the beacon is received.
-    await beaconCountIs(1);
-  }
+  await beaconCountIs(1);
   const [ttfb] = await getBeacons();
   return ttfb;
 };

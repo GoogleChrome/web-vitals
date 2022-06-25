@@ -14,11 +14,15 @@
  * limitations under the License.
  */
 
-const assert = require('assert');
-const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
-const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
-const {stubForwardBack} = require('../utils/stubForwardBack.js');
-const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
+import assert from 'assert';
+import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {nextFrame} from '../utils/nextFrame.js';
+import {stubForwardBack} from '../utils/stubForwardBack.js';
+import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+
+
+const ROUNDING_ERROR = 8;
 
 
 describe('onINP()', async function() {
@@ -253,7 +257,7 @@ describe('onINP()', async function() {
     assert(inp1.id !== inp2.id);
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
-    assert(containsEntry(inp2.entries, 'keydown', 'textarea'));
+    assert(containsEntry(inp2.entries, 'keydown', '#textarea'));
     assert(interactionIDsMatch(inp2.entries));
     assert(inp2.entries[0].interactionId > inp1.entries[0].interactionId);
     assert.strictEqual(inp2.navigationType, 'back_forward_cache');
@@ -266,8 +270,8 @@ describe('onINP()', async function() {
     const button = await $('button');
     await button.click();
 
-    // Pause to ensure the interaction finishes (test is flakey without this).
-    await browser.pause(500);
+    // Ensure the interaction completes.
+    await nextFrame();
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -278,13 +282,13 @@ describe('onINP()', async function() {
     assert(inp1.id !== inp3.id);
     assert.strictEqual(inp3.name, 'INP');
     assert.strictEqual(inp3.value, inp3.delta);
-    assert(containsEntry(inp3.entries, 'pointerdown', 'button'));
+    assert(containsEntry(inp3.entries, 'pointerdown', '#reset'));
     assert(interactionIDsMatch(inp3.entries));
     assert(inp3.entries[0].interactionId > inp2.entries[0].interactionId);
     assert.strictEqual(inp3.navigationType, 'back_forward_cache');
   });
 
-  it('does not reports if there were no interactions', async function() {
+  it('does not report if there were no interactions', async function() {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp');
@@ -296,6 +300,118 @@ describe('onINP()', async function() {
 
     const beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
+  });
+
+  describe('attribution', function() {
+    it('includes attribution data on the metric object', async function() {
+      if (!browserSupportsINP) this.skip();
+
+      await browser.url('/test/inp?click=100&attribution=1');
+
+      const h1 = await $('h1');
+      await h1.click();
+
+      // Ensure the interaction completes.
+      await nextFrame();
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+
+      assert(inp1.value >= 100 - ROUNDING_ERROR);
+      assert(inp1.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(inp1.name, 'INP');
+      assert.strictEqual(inp1.value, inp1.delta);
+      assert(containsEntry(inp1.entries, 'click', 'h1'));
+      assert(interactionIDsMatch(inp1.entries));
+      assert(inp1.entries[0].interactionId > 0);
+      assert.match(inp1.navigationType, /navigate|reload/);
+
+      const clickEntry = inp1.entries.find((e) => e.name === 'click');
+      assert.equal(inp1.attribution.eventTarget, 'html>body>main>h1');
+      assert.equal(inp1.attribution.eventType, clickEntry.name);
+      assert.equal(inp1.attribution.eventTime, clickEntry.startTime);
+      assert.equal(inp1.attribution.loadState, 'loaded');
+
+      // Deep equal won't work since some of the properties are removed before
+      // sending to /collect, so just compare some.
+      const eventEntry1 = inp1.attribution.eventEntry;
+      assert.equal(eventEntry1.startTime, clickEntry.startTime);
+      assert.equal(eventEntry1.duration, clickEntry.duration);
+      assert.equal(eventEntry1.name, clickEntry.name);
+      assert.equal(eventEntry1.processingStart, clickEntry.processingStart);
+
+      await clearBeacons();
+      await setBlockingTime('pointerup', 200);
+
+      await stubVisibilityChange('visible');
+      const reset = await $('#reset');
+      await reset.click();
+
+      // Ensure the interaction completes.
+      await nextFrame();
+
+      await stubVisibilityChange('hidden');
+      await beaconCountIs(1);
+
+      const [inp2] = await getBeacons();
+
+      assert(inp2.value >= 300 - ROUNDING_ERROR);
+      assert(inp2.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(inp2.name, 'INP');
+      assert.strictEqual(inp2.value, inp1.value + inp2.delta);
+      assert(containsEntry(inp2.entries, 'pointerup', '#reset'));
+      assert(interactionIDsMatch(inp2.entries));
+      assert(inp2.entries[0].interactionId > 0);
+      assert.match(inp2.navigationType, /navigate|reload/);
+
+      const pointerupEntry = inp2.entries.find((e) => e.name === 'pointerup');
+      assert.equal(inp2.attribution.eventTarget, '#reset');
+      assert.equal(inp2.attribution.eventType, pointerupEntry.name);
+      assert.equal(inp2.attribution.eventTime, pointerupEntry.startTime);
+      assert.equal(inp2.attribution.loadState, 'loaded');
+
+      // Deep equal won't work since some of the properties are removed before
+      // sending to /collect, so just compare some.
+      const eventEntry2 = inp2.attribution.eventEntry;
+      assert.equal(eventEntry2.startTime, pointerupEntry.startTime);
+      assert.equal(eventEntry2.duration, pointerupEntry.duration);
+      assert.equal(eventEntry2.name, pointerupEntry.name);
+      assert.equal(eventEntry2.processingStart, pointerupEntry.processingStart);
+    });
+
+    it('reports the domReadyState when input occurred', async function() {
+      if (!browserSupportsINP) this.skip();
+
+      await browser.url('/test/inp?' +
+          'attribution=1&reportAllChanges=1&click=100&delayDCL=1000');
+
+      // Click on the <h1>.
+      const h1 = await $('h1');
+      await h1.click();
+
+      await stubVisibilityChange('visible');
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+      assert.equal(inp1.attribution.loadState, 'domInteractive');
+
+      await clearBeacons();
+
+      await browser.url('/test/inp?' +
+          'attribution=1&reportAllChanges=1&click=100&delayResponse=1000');
+
+      // Click on the <button>.
+      const reset = await $('#reset');
+      await reset.click();
+
+      await beaconCountIs(1);
+
+      const [inp2] = await getBeacons();
+      assert.equal(inp2.attribution.loadState, 'loading');
+    });
   });
 });
 

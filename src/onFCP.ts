@@ -20,10 +20,15 @@ import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {Metric, ReportCallback, ReportOpts} from './types.js';
+import {FCPMetric, FCPReportCallback, ReportOpts} from './types.js';
 
-
-export const onFCP = (onReport: ReportCallback, opts?: ReportOpts) => {
+/**
+ * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
+ * calls the `callback` function once the value is ready, along with the
+ * relevant `paint` performance entry used to determine the value. The reported
+ * value is a `DOMHighResTimeStamp`.
+ */
+export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
@@ -31,7 +36,7 @@ export const onFCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   let metric = initMetric('FCP');
   let report: ReturnType<typeof bindReporter>;
 
-  const handleEntries = (entries: Metric['entries']) => {
+  const handleEntries = (entries: FCPMetric['entries']) => {
     (entries as PerformancePaintTiming[]).forEach((entry) => {
       if (entry.name === 'first-contentful-paint') {
         if (po) {

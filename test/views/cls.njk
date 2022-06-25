@@ -18,36 +18,53 @@
 {% block content %}
   <h1>CLS Test</h1>
   {% if noLayoutShifts %}
-    <p>This text does not shift.</p>
+    <p id="p1">This text does not shift.</p>
   {% else %}
-    <p><img src="/test/img/square.png?delay=500" alt="Gray square" /></p>
-    <p><img src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
-    <p>Text below the images that will get pushed down.</p>
+    <p id="p2">
+      <img id="img1" src="/test/img/square.png?delay=500" alt="Gray square" />
+      [text node contents]
+    </p>
+    <p id="p3"><img id="img3" src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
+    <p id="p4">Text below the images that will get pushed down.</p>
   {% endif %}
 
-  <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+  <p id="p5"><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
   <script type="module">
     import {onCLS} from '{{ modulePath }}';
 
+    function jsonifyNode(node) {
+      return node.id ? `#${node.id}` : node.nodeName.toLowerCase();
+    }
+
+    function jsonifySource(source) {
+      const node = jsonifyNode(source.node);
+      return {node, previousRect: source.previousRect, currentRect: source.currentRect};
+    }
+
+    function jsonifyEntry(entry) {
+      const {entryType, hadRecentInput, startTime, value} = entry;
+      const sources = entry.sources.map(jsonifySource);
+      return {entryType, hadRecentInput, sources, startTime, value};
+    }
+
     onCLS((cls) => {
       // Log for easier manual testing.
-      console.log(cls);
+      console.log(window.cls = cls);
 
       // Sources is verbose to serialize, so remove first.
       cls = {
         ...cls,
-        entries: cls.entries.map((e) => {
-          const {entryType, hadRecentInput, startTime, value} = e;
-          const sources = e.sources.map((s) => {
-            let node = s.node.nodeName.toLowerCase() +
-                (s.node.id ? `#${s.node.id}` : ``);
-
-            return {node};
-          });
-          return {entryType, hadRecentInput, sources, startTime, value};
-        }),
+        entries: cls.entries.map(jsonifyEntry),
       };
+
+      if (cls.attribution) {
+        cls.attribution = Object.keys(cls.attribution).length ? {
+          ...cls.attribution,
+          largestShiftSource: jsonifySource(cls.attribution.largestShiftSource),
+          largestShiftEntry: jsonifyEntry(cls.attribution.largestShiftEntry),
+        } : {};
+      }
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(cls));

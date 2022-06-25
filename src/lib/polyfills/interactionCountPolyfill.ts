@@ -15,7 +15,7 @@
  */
 
 import {observe} from '../observe.js';
-import {Metric, PerformanceEventTiming} from '../../types.js';
+import {Metric} from '../../types.js';
 
 
 declare global {

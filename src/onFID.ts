@@ -21,9 +21,17 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
-import {FirstInputPolyfillCallback, Metric, PerformanceEventTiming, ReportCallback, ReportOpts} from './types.js';
+import {FIDMetric, FirstInputPolyfillCallback, ReportCallback, ReportOpts} from './types.js';
 
-
+/**
+ * Calculates the [FID](https://web.dev/fid/) value for the current page and
+ * calls the `callback` function once the value is ready, along with the
+ * relevant `first-input` performance entry used to determine the value. The
+ * reported value is a `DOMHighResTimeStamp`.
+ *
+ * _**Important:** since FID is only reported after the user interacts with the
+ * page, it's possible that it will not be reported for some page loads._
+ */
 export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
@@ -41,7 +49,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
     }
   }
 
-  const handleEntries = (entries: Metric['entries']) => {
+  const handleEntries = (entries: FIDMetric['entries']) => {
     (entries as PerformanceEventTiming[]).forEach(handleEntry);
   }
 
@@ -50,7 +58,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
 
   if (po) {
     onHidden(() => {
-      handleEntries(po.takeRecords());
+      handleEntries(po.takeRecords() as FIDMetric['entries']);
       po.disconnect();
     }, true);
   }

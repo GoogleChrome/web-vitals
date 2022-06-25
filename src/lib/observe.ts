@@ -14,11 +14,17 @@
  * limitations under the License.
  */
 
-import {Metric} from '../types.js';
+import {FirstInputPolyfillEntry, NavigationTimingPolyfillEntry} from '../types.js';
 
 
-interface PerformanceEntriesHandler {
-  (entries: Metric['entries']): void;
+interface PerformanceEntryMap {
+  'event': PerformanceEventTiming[];
+  'paint': PerformancePaintTiming[];
+  'layout-shift': LayoutShift[];
+  'largest-contentful-paint': LargestContentfulPaint[];
+  'first-input': PerformanceEventTiming[] | FirstInputPolyfillEntry[];
+  'navigation': PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
+  'resource': PerformanceResourceTiming[];
 }
 
 /**
@@ -29,15 +35,15 @@ interface PerformanceEntriesHandler {
  * This function also feature-detects entry support and wraps the logic in a
  * try/catch to avoid errors in unsupporting browsers.
  */
-export const observe = (
-  type: string,
-  callback: PerformanceEntriesHandler,
+export const observe = <K extends keyof PerformanceEntryMap>(
+  type: K,
+  callback: (entries: PerformanceEntryMap[K]) => void,
   opts?: PerformanceObserverInit,
 ): PerformanceObserver | undefined => {
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
-      const po: PerformanceObserver = new PerformanceObserver((list) => {
-        callback(list.getEntries());
+      const po = new PerformanceObserver((list) => {
+        callback(list.getEntries() as PerformanceEntryMap[K]);
       });
       po.observe(Object.assign({
         type,

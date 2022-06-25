@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,12 +16,20 @@
 
 
 /**
- * Overrides the document's `visibilityState` property, sets the body's hidden
- * attribute (to prevent painting) and dispatches a `visibilitychange` event.
+ * Returns a promise that resolves once the browser window has loaded and
+ * all load callbacks have finished executing.
  * @return {Promise<void>}
  */
-export function stubForwardBack(visibilityStateAfterRestore) {
-  return browser.executeAsync((visibilityStateAfterRestore, done) => {
-    self.__stubForwardBack(visibilityStateAfterRestore).then(done);
-  }, visibilityStateAfterRestore);
+export function domReadyState(state) {
+  return browser.executeAsync((state, done) => {
+    if (document.readyState === 'complete' || document.readyState === state) {
+      setTimeout(done, 0);
+    } else {
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState === state) {
+          setTimeout(done, 0);
+        }
+      });
+    }
+  }, state);
 }

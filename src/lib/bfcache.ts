@@ -18,14 +18,14 @@ interface onBFCacheRestoreCallback {
   (event: PageTransitionEvent): void;
 }
 
-let isPersisted = false;
+let bfcacheRestoreTime = -1;
 
-export const isBFCacheRestore = () => isPersisted;
+export const getBFCacheRestoreTime = () => bfcacheRestoreTime;
 
 export const onBFCacheRestore = (cb: onBFCacheRestoreCallback) => {
   addEventListener('pageshow', (event) => {
     if (event.persisted) {
-      isPersisted = true;
+      bfcacheRestoreTime = event.timeStamp;
       cb(event);
     }
   }, true);

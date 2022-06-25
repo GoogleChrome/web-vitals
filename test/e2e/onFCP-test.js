@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-const assert = require('assert');
-const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
-const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
-const {stubForwardBack} = require('../utils/stubForwardBack.js');
-const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
+import assert from 'assert';
+import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {domReadyState} from '../utils/domReadyState.js';
+import {stubForwardBack} from '../utils/stubForwardBack.js';
+import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+
 
 describe('onFCP()', async function() {
   // Retry all tests in this suite up to 2 times.
@@ -96,6 +98,7 @@ describe('onFCP()', async function() {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?hidden=1');
+    await domReadyState('interactive');
 
     await stubVisibilityChange('visible');
 
@@ -169,6 +172,7 @@ describe('onFCP()', async function() {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?hidden=1');
+    await domReadyState('interactive');
 
     await stubVisibilityChange('visible');
 
@@ -203,5 +207,122 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp2.value, fcp2.delta);
     assert.strictEqual(fcp2.entries.length, 0);
     assert.strictEqual(fcp2.navigationType, 'back_forward_cache');
+  });
+
+  describe('attribution', function() {
+    it('includes attribution data on the metric object', async function() {
+      if (!browserSupportsFCP) this.skip();
+
+      await browser.url('/test/fcp?attribution=1');
+
+      await beaconCountIs(1);
+
+      await domReadyState('complete');
+      const navEntry = await browser.execute(() => {
+        return performance.getEntriesByType('navigation')[0].toJSON();
+      });
+      const fcpEntry = await browser.execute(() => {
+        return performance
+            .getEntriesByName('first-contentful-paint')[0].toJSON();
+      });
+
+      const [fcp] = await getBeacons();
+
+      assert(fcp.value >= 0);
+      assert(fcp.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(fcp.name, 'FCP');
+      assert.strictEqual(fcp.value, fcp.delta);
+      assert.strictEqual(fcp.entries.length, 1);
+      assert.match(fcp.navigationType, /navigate|reload/);
+
+      assert.equal(fcp.attribution.timeToFirstByte, navEntry.responseStart);
+      assert.equal(fcp.attribution.firstByteToFCP,
+          fcp.value - navEntry.responseStart);
+      assert.match(fcp.attribution.loadState,
+          /load(ing|ed)|dom(Interactive|ContentLoaded)/);
+
+      assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
+
+      // When FCP is reported, not all values on the NavigationTiming entry
+      // are finalized, so just check some keys that should be set before FCP.
+      const {navigationEntry: attributionNavEntry} = fcp.attribution;
+      assert.equal(attributionNavEntry.startTime, navEntry.startTime);
+      assert.equal(attributionNavEntry.fetchStart, navEntry.fetchStart);
+      assert.equal(attributionNavEntry.requestStart, navEntry.requestStart);
+      assert.equal(attributionNavEntry.responseStart, navEntry.responseStart);
+    });
+
+    it('accounts for time prerendering the page', async function() {
+      if (!browserSupportsFCP) this.skip();
+
+      await browser.url('/test/fcp?attribution=1&prerender=1');
+
+      await beaconCountIs(1);
+
+      await domReadyState('complete');
+      const navEntry = await browser.execute(() => {
+        return performance.getEntriesByType('navigation')[0].toJSON();
+      });
+      const fcpEntry = await browser.execute(() => {
+        return performance
+            .getEntriesByName('first-contentful-paint')[0].toJSON();
+      });
+
+      // Since this value is stubbed in the browser, get it separately.
+      const activationStart = await browser.execute(() => {
+        return performance.getEntriesByType('navigation')[0].activationStart;
+      });
+
+      const [fcp] = await getBeacons();
+      assert(fcp.value >= 0);
+      assert(fcp.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(fcp.name, 'FCP');
+      assert.strictEqual(fcp.value, fcp.delta);
+      assert.strictEqual(fcp.entries.length, 1);
+      assert.strictEqual(fcp.navigationType, 'prerender');
+
+      assert.equal(fcp.attribution.timeToFirstByte,
+          Math.max(0, navEntry.responseStart - activationStart));
+      assert.equal(fcp.attribution.firstByteToFCP,
+          fcp.value - Math.max(0, navEntry.responseStart - activationStart));
+
+      assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
+
+      // When FCP is reported, not all values on the NavigationTiming entry
+      // are finalized, so just check some keys that should be set before FCP.
+      const {navigationEntry: attributionNavEntry} = fcp.attribution;
+      assert.equal(attributionNavEntry.startTime, navEntry.startTime);
+      assert.equal(attributionNavEntry.fetchStart, navEntry.fetchStart);
+      assert.equal(attributionNavEntry.requestStart, navEntry.requestStart);
+      assert.equal(attributionNavEntry.responseStart, navEntry.responseStart);
+    });
+
+    it('reports after a bfcache restore', async function() {
+      if (!browserSupportsFCP) this.skip();
+
+      await browser.url('/test/fcp?attribution=1');
+
+      await beaconCountIs(1);
+
+      await clearBeacons();
+
+      await domReadyState('complete');
+      await stubForwardBack();
+
+      await beaconCountIs(1);
+
+      const [fcp] = await getBeacons();
+      assert(fcp.value >= 0);
+      assert(fcp.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(fcp.name, 'FCP');
+      assert.strictEqual(fcp.value, fcp.delta);
+      assert.strictEqual(fcp.entries.length, 0);
+      assert.strictEqual(fcp.navigationType, 'back_forward_cache');
+
+      assert.equal(fcp.attribution.timeToFirstByte, 0);
+      assert.equal(fcp.attribution.firstByteToFCP, fcp.value);
+      assert.equal(fcp.attribution.loadState, 'loaded');
+      assert.equal(fcp.attribution.navigationEntry, undefined);
+    });
   });
 });

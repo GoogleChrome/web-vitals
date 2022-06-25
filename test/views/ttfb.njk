@@ -27,6 +27,16 @@
   <script type="module">
     import {onTTFB} from '{{ modulePath }}';
 
+    function jsonifyEntry(entry) {
+      const newObj = {};
+      for (const k in entry) {
+        if (typeof entry[k] !== 'function') {
+          newObj[k] = entry[k];
+        }
+      }
+      return newObj;
+    }
+
     (async function() {
       {% if awaitLoad %}
         await new Promise((resolve) => addEventListener('load', resolve));
@@ -37,15 +47,10 @@
         console.log(ttfb);
 
         // The stubbed `activationStart` is lost when stringified, so we convert first.
-        ttfb.entries = ttfb.entries.map((e) => {
-          const newObj = {};
-          for (const k in e) {
-            if (typeof e[k] !== 'function') {
-              newObj[k] = e[k];
-            }
-          }
-          return newObj;
-        });
+        ttfb.entries = ttfb.entries.map(jsonifyEntry);
+        if (ttfb.attribution && ttfb.attribution.navigationEntry) {
+          ttfb.attribution.navigationEntry = jsonifyEntry(ttfb.attribution.navigationEntry);
+        }
 
         // Test sending the metric to an analytics endpoint.
         navigator.sendBeacon(`/collect`, JSON.stringify(ttfb));
