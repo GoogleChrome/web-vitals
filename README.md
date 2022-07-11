@@ -113,7 +113,7 @@ _**Tip:** while it's certainly possible to inline the code in `dist/polyfill.js`
 
 The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
-The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just Chromium-based browsers (using the "standard" version) or additional browsers (using the "base+polyfill" version):
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether you're targeting just Chromium-based browsers (using the "standard" version) or additional browsers (using the "base+polyfill" version):
 
 **Load the "standard" version** _(using a module script)_
 
