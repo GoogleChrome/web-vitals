@@ -196,7 +196,7 @@ getFID(console.log);
 getLCP(console.log);
 ```
 
-Note that some of these metrics will not report until the user has interacted with the page, switched tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try reloading the page (with [preserve log](https://developers.google.com/web/tools/chrome-devtools/console/reference#persist) enabled) or switching tabs and then switching back.
+Note that some of these metrics will not report until the user has interacted with the page, switched tabs, or the page starts to unload. If you don't see the values logged to the console immediately, try reloading the page (with [preserve log](https://developer.chrome.com/docs/devtools/console/reference/#persist) enabled) or switching tabs and then switching back.
 
 Also, in some cases a metric callback may never be called:
 
