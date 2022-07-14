@@ -64,6 +64,8 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
   }
 
   if (window.__WEB_VITALS_POLYFILL__) {
+    console.warn('The web-vitals "base+polyfill" build is deprecated. See: https://bit.ly/3aqzsGm');
+
     // Prefer the native implementation if available,
     if (!po) {
       window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback)

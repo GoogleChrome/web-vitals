@@ -13,4 +13,53 @@
  limitations under the License.
 */
 
-export * from './dist/modules/index.js';
+export {
+  /**
+   * @deprecated The "base+polyfill" build is deprecated.
+   * See: https://bit.ly/3aqzsGm
+   */
+  onCLS,
+} from './dist/modules/index.js';
+
+export {
+  /**
+   * @deprecated The "base+polyfill" build is deprecated.
+   * See: https://bit.ly/3aqzsGm
+   */
+  onFCP,
+} from './dist/modules/index.js';
+
+export {
+  /**
+   * @deprecated The "base+polyfill" build is deprecated.
+   * See: https://bit.ly/3aqzsGm
+   */
+  onFID,
+} from './dist/modules/index.js';
+
+export {
+  /**
+   * @deprecated The "base+polyfill" build is deprecated.
+   * See: https://bit.ly/3aqzsGm
+   */
+  onINP,
+} from './dist/modules/index.js';
+
+export {
+  /**
+   * @deprecated The "base+polyfill" build is deprecated.
+   * See: https://bit.ly/3aqzsGm
+   */
+  onLCP,
+} from './dist/modules/index.js';
+
+export {
+  /**
+   * @deprecated The "base+polyfill" build is deprecated.
+   * See: https://bit.ly/3aqzsGm
+   */
+  onTTFB,
+} from './dist/modules/index.js';
+
+export * from './dist/modules/deprecated.js';
+export * from './dist/modules/types.js';

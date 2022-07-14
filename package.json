@@ -13,12 +13,12 @@
       "default": "./dist/web-vitals.js"
     },
     "./base": {
-      "types": "./dist/modules/index.d.ts",
+      "types": "./base.d.ts",
       "require": "./dist/web-vitals.base.umd.js",
       "default": "./dist/web-vitals.base.js"
     },
     "./base.js": {
-      "types": "./dist/modules/index.d.ts",
+      "types": "./base.d.ts",
       "require": "./dist/web-vitals.base.umd.js",
       "default": "./dist/web-vitals.base.js"
     },
