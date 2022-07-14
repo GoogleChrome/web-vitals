@@ -1,0 +1,44 @@
+###########################
+## Linter GitHub Actions ##
+###########################
+#
+# Documentation: https://github.com/github/super-linter/
+#
+# Exception config files are in the .github/linters directory
+#
+name: Lint Code Base
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+    branches:
+      - main
+jobs:
+  lint:
+    name: Lint Code Base
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          # Full git history is needed to get a proper list of changed files within `super-linter`
+          fetch-depth: 0
+      - name: Set VALIDATE_ALL_CODEBASE variable to false
+        # Only run the full workflow for manual runs or if upgrading the super linter
+        if: |
+            github.event_name != 'workflow_dispatch' &&
+            startsWith(github.event.pull_request.title,'Bump github/super-linter') != true
+        run: |
+          echo "VALIDATE_ALL_CODEBASE=false" >> $GITHUB_ENV
+      - name: Lint Code Base
+        uses: github/super-linter@v4.9.4
+        #uses: docker://github/super-linter:v4.7.1
+        env:
+          DEFAULT_BRANCH: main
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_EDITORCONFIG: true
+          VALIDATE_JAVASCRIPT_ES: true
+          JAVASCRIPT_ES_CONFIG_FILE: .eslintrc
+          VALIDATE_JSON: true
+          VALIDATE_MARKDOWN: true
+          VALIDATE_YAML: true

@@ -1,0 +1,40 @@
+---
+###########################
+###########################
+## Markdown Linter rules ##
+###########################
+###########################
+
+# Linter rules doc:
+# - https://github.com/DavidAnson/markdownlint
+#
+# Note:
+# To comment out a single error:
+#   <!-- markdownlint-disable -->
+#   any violations you want
+#   <!-- markdownlint-restore -->
+#
+
+###############
+# Rules by id #
+###############
+MD004: false                  # Unordered list style
+MD007: false                  # Allow extra spaces for lists - don't cause issues and will just annoy authors
+MD009: false                  # Allow trailing spaces - don't cause issues and will just annoy authors
+MD013: false                  # Don't demand maximum line lengths
+MD024:
+  siblings_only: true         # Allows sub-headings to be reused under different headings
+MD026:
+  punctuation: ".,;:。，；:"  # List of not allowed
+MD029: false                  # Ordered list item prefix
+MD033: false                  # Allow inline HTML
+MD034: false                  # Allow base URLs
+MD036: false                  # Emphasis used instead of a heading
+MD037: false                  # Checks for no spaces in emphasis but subject to false positives so turn off
+MD040: false                  # Don't demand language for all code blocks
+MD049: false                  # Allow _ or * to be used for emphasis
+
+#################
+# Rules by tags #
+#################
+blank_lines: false             # Error on blank lines

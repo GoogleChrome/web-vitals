@@ -1,0 +1,11 @@
+---
+########################################################
+# HTTP Archive Overrides for YAML Lint                 #
+# https://yamllint.readthedocs.io/en/stable/rules.html #
+########################################################
+rules:
+  document-start: disable
+  line-length:
+    max: 120
+  indentation:
+    indent-sequences: whatever
