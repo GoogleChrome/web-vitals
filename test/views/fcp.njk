@@ -18,7 +18,10 @@
 {% block content %}
   <h1>FCP Test</h1>
   <p>
-    <img src="/test/img/square.png?delay=500">
+    {% if not imgDelay %}
+      {% set imgDelay = 500 %}
+    {% endif %}
+    <img {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 

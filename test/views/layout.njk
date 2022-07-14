@@ -161,5 +161,11 @@
   <main>
     {% block content %}{% endblock %}
   </main>
-</body>
-</html>
+  {% if delayDCL %}
+    <script defer src="/test/script/defer.js?delay={{ delayDCL }}"></script>
+  {% endif %}
+
+  {% if delayLoad %}
+    <script async src="/test/script/async.js?delay={{ delayLoad }}"></script>
+  {% endif %}
+

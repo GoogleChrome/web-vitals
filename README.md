@@ -11,6 +11,7 @@
   - [Send the results to an analytics endpoint](#send-the-results-to-an-analytics-endpoint)
   - [Send the results to Google Analytics](#send-the-results-to-google-analytics)
   - [Send the results to Google Tag Manager](#send-the-results-to-google-tag-manager)
+  - [Send attribution data](#send-attribution-data)
   - [Batch multiple reports together](#batch-multiple-reports-together)
 - [Bundle versions](#bundle-versions)
   - [Which bundle is right for you?](#which-bundle-is-right-for-you)
@@ -18,6 +19,7 @@
 - [API](#api)
   - [Types](#types)
   - [Functions](#functions)
+  - [Attribution](#attribution)
 - [Browser Support](#browser-support)
 - [Limitations](#limitations)
 - [Development](#development)
@@ -38,7 +40,7 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 
 ### Other metrics
 
-- [Interaction to next Paint (INP)](https://web.dev/responsiveness/) _(experimental)_
+- [Interaction to next Paint (INP)](https://web.dev/inp/) _(experimental)_
 - [First Contentful Paint (FCP)](https://web.dev/fcp/)
 - [Time to First Byte (TTFB)](https://web.dev/ttfb/)
 
@@ -114,13 +116,34 @@ Note that the code _must_ go in the `<head>` of your pages in order to work. See
 
 _**Tip:** while it's certainly possible to inline the code in `dist/polyfill.js` by copy and pasting it directly into your templates, it's better to automate this process in a build step—otherwise you risk the "base" and the "polyfill" scripts getting out of sync when new versions are released._
 
+<a name="attribution-build"><a>
+
+**3. The "attribution" build**
+
+Measuring the Web Vitals scores for your real users is a great first step toward optimizing the user experience. But if your scores aren't _good_, the next step is to understand why they're not good and work to improve them.
+
+The "attribution" build helps you do that by including additional diagnostic information with each metric to help you identify the root cause of poor performance as well as prioritize the most important things to fix.
+
+The "attribution" build is slightly larger than the "standard" build (by about 500 bytes, brotli'd), so while the code size is still small, it's only recommended if you're actually using these features.
+
+To load the "attribution" build, change any `import` statements that reference `web-vitals` to `web-vitals/attribution`:
+
+```diff
+- import {onLCP, onFID, onCLS} from 'web-vitals';
++ import {onLCP, onFID, onCLS} from 'web-vitals/attribution';
+```
+
+Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [`Metric`](#metric) object will contain an additional [`attribution`](#metricwithattribution) property.
+
+See [Send attribution data](#send-attribution-data) for usage examples, and the [`attribution` reference](#attribution) for details on what values are added for each metric.
+
 <a name="load-web-vitals-from-a-cdn"><a>
 
 ### From a CDN
 
 The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
-The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just Chromium-based browsers (using the "standard" version) or additional browsers (using the "base+polyfill" version):
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether you're targeting just Chromium-based browsers (using the "standard" version) or additional browsers (using the "base+polyfill" version):
 
 _**Important!** users who want to load version 3 beta from the unpkg CDN should specify a version number or link to the [web-vitals@next](https://unpkg.com/web-vitals@next?module) tag._
 
@@ -214,7 +237,7 @@ Also, in some cases a metric callback may never be called:
 
 In other cases, a metric callback may be called more than once:
 
-- CLS should be reported any time the [page's `visibilityState` changes to hidden](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden).
+- CLS should be reported any time the [page's `visibilityState` changes to hidden](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden).
 - All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
 
 _**Warning:** do not call any of the Web Vitals functions (e.g. `onCLS()`, `onFID()`, `onLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
@@ -315,7 +338,7 @@ function sendToGoogleAnalytics({name, delta, id}) {
     // Use `sendBeacon()` if the browser supports it.
     transport: 'beacon',
 
-    // OPTIONAL: any additional params or debug info here.
+    // OPTIONAL: any additional attribution params here.
     // See: https://web.dev/debug-web-vitals-in-the-field/
     // dimension1: '...',
     // dimension2: '...',
@@ -350,10 +373,10 @@ function sendToGoogleAnalytics({name, delta, id}) {
     // Use a non-interaction event to avoid affecting bounce rate.
     non_interaction: true,
 
-    // OPTIONAL: any additional params or debug info here.
+    // OPTIONAL: any additional attribution params here.
     // See: https://web.dev/debug-web-vitals-in-the-field/
-    // metric_rating: 'good' | 'ni' | 'poor',
-    // debug_info: '...',
+    // dimension1: '...',
+    // dimension2: '...',
     // ...
   });
 }
@@ -399,6 +422,48 @@ onLCP(sendToGoogleAnalytics);
 The recommended way to measure Web Vitals metrics with Google Tag Manager is using the [Core Web Vitals](https://www.simoahava.com/custom-templates/core-web-vitals/) custom template tag created and maintained by [Simo Ahava](https://www.simoahava.com/).
 
 For full installation and usage instructions, see Simo's post: [Track Core Web Vitals in GA4 with Google Tag Manager](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/).
+
+### Send attribution data
+
+When using the [attribution build](#attribution-build), you can send additional data to help you debug _why_ the metric values are they way they are.
+
+This example sends an additional `debug_target` param to Google Analytics, corresponding to the element most associated with each metric.
+
+```js
+import {onCLS, onFID, onLCP} from 'web-vitals/attribution';
+
+function sendToGoogleAnalytics({name, delta, value, id, attribution}) {
+  const eventParams = {
+    // Built-in params:
+    value: delta, // Use `delta` so the value can be summed.
+    // Custom params:
+    metric_id: id, // Needed to aggregate events.
+    metric_value: value, // Optional.
+    metric_delta: delta, // Optional.
+  }
+
+  switch (name) {
+    case 'CLS':
+      eventParams.debug_target = attribution.largestShiftTarget;
+    case 'FID':
+      eventParams.debug_target = attribution.eventTarget;
+    case 'LCP':
+      eventParams.debug_target = attribution.element;
+  }
+
+  // Assumes the global `gtag()` function exists, see:
+  // https://developers.google.com/analytics/devguides/collection/ga4
+  gtag('event', name, eventParams);
+}
+
+onCLS(sendToGoogleAnalytics);
+onFID(sendToGoogleAnalytics);
+onLCP(sendToGoogleAnalytics);
+```
+
+_**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4. For Universal Analytics the attribution data should be set using a [custom dimension](https://support.google.com/analytics/answer/2709828) rather than `debug_target` as shown above.
+
+See [Debug Web Vitals in the field](https://web.dev/debug-web-vitals-in-the-field/) for more information and examples.
 
 ### Batch multiple reports together
 
@@ -467,7 +532,7 @@ The following table lists all the bundles distributed with the `web-vitals` pack
     <td><code>web-vitals.js</code></td>
     <td><code>pkg.module</code></td>
     <td>
-      <p>An ES module bundle of all metric functions, without any extra polyfills to expand browser support.</p>
+      <p>An ES module bundle of all metric functions, without any attribution features.</p>
       This is the "standard" version and is the simplest way to consume this library out of the box.
     </td>
   </tr>
@@ -483,6 +548,28 @@ The following table lists all the bundles distributed with the `web-vitals` pack
     <td>--</td>
     <td>
       An IIFE version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
+    </td>
+  </tr>
+  <tr>
+    <td><code>web-vitals.attribution.js</code></td>
+    <td>--</td>
+    <td>
+      An ES module bundle of all metric functions that includes <a href="#attribution-build">attribution</a> features.
+    </td>
+  </tr>
+    <tr>
+    <td><code>web-vitals.attribution.umd.js</code></td>
+    <td>--</td>
+    <td>
+      A UMD version of the <code>web-vitals.attribution.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
+    </td>
+  </tr>
+  </tr>
+    <tr>
+    <td><code>web-vitals.attribution.iife.js</code></td>
+    <td>--</td>
+    <td>
+      An IIFE version of the <code>web-vitals.attribution.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
     </td>
   </tr>
   <tr>
@@ -520,7 +607,7 @@ The following table lists all the bundles distributed with the `web-vitals` pack
 
 ### Which bundle is right for you?
 
-Most developers will generally want to use the "standard" bundle (either the ES module or UMD version, depending on your build system), as it's the easiest to use out of the box and integrate into existing build tools.
+Most developers will generally want to use either the "standard" bundle or the "attribution" bundle (via either the ES module or UMD version, depending on your build system), as they're the easiest to use out of the box and integrate into existing build tools.
 
 However, there are a few good reasons to consider using the "base+polyfill" version, for example:
 
@@ -568,9 +655,42 @@ interface Metric {
   // by the Navigation Timing API (or `undefined` if the browser doesn't
   // support that API). For pages that are restored from the bfcache, this
   // value will be 'back_forward_cache'.
-  navigationType:  NavigationType | 'back_forward_cache' | undefined;
+  navigationType:  NavigationType | 'back_forward_cache' | 'prerender' | undefined;
 }
 ```
+
+Metric-specific subclasses:
+
+- [`CLSMetric`](/src/types/cls.ts#:~:text=interface%20CLSMetric)
+- [`FCPMetric`](/src/types/cls.ts#:~:text=interface%20FCPMetric)
+- [`FIDMetric`](/src/types/cls.ts#:~:text=interface%20FIDMetric)
+- [`INPMetric`](/src/types/cls.ts#:~:text=interface%20INPMetric)
+- [`LCPMetric`](/src/types/cls.ts#:~:text=interface%20LCPMetric)
+- [`TTFBMetric`](/src/types/cls.ts#:~:text=interface%20TTFBMetric)
+
+#### `MetricWithAttribution`
+
+See the [attribution build](#attribution-build) section for details on how to use this feature.
+
+```ts
+interface MetricWithAttribution extends Metric {
+  /**
+   * An object containing potentially-helpful debugging information that
+   * can be sent along with the metric value for the current page visit in
+   * order to help identify issues happening to real-users in the field.
+   */
+ attribution: {[key: string]: unknown};
+}
+```
+
+Metric-specific subclasses:
+
+- [`CLSMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20CLSMetricWithAttribution)
+- [`FCPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20FCPMetricWithAttribution)
+- [`FIDMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20FIDMetricWithAttribution)
+- [`INPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20INPMetricWithAttribution)
+- [`LCPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20LCPMetricWithAttribution)
+- [`TTFBMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20TTFBMetricWithAttribution)
 
 #### `ReportCallback`
 
@@ -579,6 +699,15 @@ interface ReportCallback {
   (metric: Metric): void;
 }
 ```
+
+Metric-specific subclasses:
+
+- [`CLSReportCallback`](/src/types/cls.ts#:~:text=interface%20CLSReportCallback)
+- [`FCPReportCallback`](/src/types/cls.ts#:~:text=interface%20FCPReportCallback)
+- [`FIDReportCallback`](/src/types/cls.ts#:~:text=interface%20FIDReportCallback)
+- [`INPReportCallback`](/src/types/cls.ts#:~:text=interface%20INPReportCallback)
+- [`LCPReportCallback`](/src/types/cls.ts#:~:text=interface%20LCPReportCallback)
+- [`TTFBReportCallback`](/src/types/cls.ts#:~:text=interface%20TTFBReportCallback)
 
 #### `ReportOpts`
 
@@ -632,19 +761,19 @@ interface WebVitalsGlobal {
 #### `onCLS()`
 
 ```ts
-type onCLS = (callback: ReportCallback, opts?: ReportOpts) => void
+type onCLS = (callback: CLSReportCallback, opts?: ReportOpts) => void
 ```
 
 Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/cls/#layout-shift-score)).
 
 If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
 
-_**Important:** CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
+_**Important:** CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
 
 #### `onFCP()`
 
 ```ts
-type onFCP = (callback: ReportCallback, opts?: ReportOpts) => void
+type onFCP = (callback: FCPReportCallback, opts?: ReportOpts) => void
 ```
 
 Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `callback` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
@@ -652,17 +781,17 @@ Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls 
 #### `onFID()`
 
 ```ts
-type onFID = (callback: ReportCallback, opts?: ReportOpts) => void
+type onFID = (callback: FIDReportCallback, opts?: ReportOpts) => void
 ```
 
-Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value (and optionally the input event if using the [FID polyfill](#fid-polyfill)). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 _**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
 
 #### `onINP()`
 
 ```ts
-type onINP = (callback: ReportCallback, opts?: ReportOpts) => void
+type onINP = (callback: INPReportCallback, opts?: ReportOpts) => void
 ```
 
 Calculates the [INP](https://web.dev/responsiveness/) value for the current page and calls the `callback` function once the value is ready, along with the  `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
@@ -671,12 +800,12 @@ A custom `durationThreshold` [configuration option](#reportopts) can optionally 
 
 If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
 
-_**Important:** INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
+_**Important:** INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
 
 #### `onLCP()`
 
 ```ts
-type onLCP = (callback: ReportCallback, opts?: ReportOpts) => void
+type onLCP = (callback: LCPReportCallback, opts?: ReportOpts) => void
 ```
 
 Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `callback` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
@@ -686,14 +815,14 @@ If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, 
 #### `onTTFB()`
 
 ```ts
-type onTTFB = (callback: ReportCallback, opts?: ReportOpts) => void
+type onTTFB = (callback: TTFBReportCallback, opts?: ReportOpts) => void
 ```
 
 Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `callback` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 Note, this function waits until after the page is loaded to call `callback` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
 
-For example, the TTFB metric starts from the page's [time origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it [includes](https://developers.google.com/web/fundamentals/performance/navigation-and-resource-timing#the_life_and_timings_of_a_network_request) time spent on DNS lookup, connection negotiation, network latency, and unloading the previous document. If, in addition to TTFB, you want a metric that excludes these timings and _just_ captures the time spent making the request and receiving the first byte of the response, you could compute that from data found on the performance entry:
+For example, the TTFB metric starts from the page's [time origin](https://www.w3.org/TR/hr-time-2/#sec-time-origin), which means it includes time spent on DNS lookup, connection negotiation, network latency, and server processing time.
 
 ```js
 import {onTTFB} from 'web-vitals';
@@ -708,6 +837,231 @@ onTTFB((metric) => {
 
 _**Note:** browsers that do not support `navigation` entries will fall back to
 using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers._
+
+### Attribution:
+
+The following objects contain potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
+
+See the [attribution build](#attribution-build) section for details on how to use this feature.
+
+#### CLS `attribution`:
+
+```ts
+interface CLSAttribution {
+  /**
+   * A selector identifying the first element (in document order) that
+   * shifted when the single largest layout shift contributing to the page's
+   * CLS score occurred.
+   */
+  largestShiftTarget?: string;
+  /**
+   * The time when the single largest layout shift contributing to the page's
+   * CLS score occurred.
+   */
+  largestShiftTime?: DOMHighResTimeStamp;
+  /**
+   * The layout shift score of the single largest layout shift contributing to
+   * the page's CLS score.
+   */
+  largestShiftValue?: number;
+  /**
+   * The `LayoutShiftEntry` representing the single largest layout shift
+   * contributing to the page's CLS score. (Useful when you need more than just
+   * `largestShiftTarget`, `largestShiftTime`, and `largestShiftValue`).
+   */
+  largestShiftEntry?: LayoutShift;
+  /**
+   * The first element source (in document order) among the `sources` list
+   * of the `largestShiftEntry` object. (Also useful when you need more than
+   * just `largestShiftTarget`, `largestShiftTime`, and `largestShiftValue`).
+   */
+  largestShiftSource?: LayoutShiftAttribution;
+  /**
+   * The loading state of the document at the time when the largest layout
+   * shift contribution to the page's CLS score occurred (see `LoadState`
+   * for details).
+   */
+  loadState?: LoadState;
+}
+```
+
+#### FCP `attribution`:
+
+```ts
+interface FCPAttribution {
+  /**
+   * The time from when the user initiates loading the page until when the
+   * browser receives the first byte of the response (a.k.a. TTFB).
+   */
+  timeToFirstByte: number;
+  /**
+   * The delta between TTFB and the first contentful paint (FCP).
+   */
+  firstByteToFCP: number;
+  /**
+   * The loading state of the document at the time when FCP `occurred (see
+   * `LoadState` for details). Ideally, documents can paint before they finish
+   * loading (e.g. the `loading` or `domInteractive` phases).
+   */
+  loadState: LoadState,
+  /**
+   * The `PerformancePaintTiming` entry corresponding to FCP.
+   */
+  fcpEntry?: PerformancePaintTiming,
+  /**
+   * The `navigation` entry of the current page, which is useful for diagnosing
+   * general page load issues.
+   */
+  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+}
+```
+
+#### FID `attribution`:
+
+```ts
+interface FIDAttribution {
+  /**
+   * A selector identifying the element that the user interacted with. This
+   * element will be the `target` of the `event` dispatched.
+   */
+  eventTarget: string;
+  /**
+   * The time when the user interacted. This time will match the `timeStamp`
+   * value of the `event` dispatched.
+   */
+  eventTime: number;
+  /**
+   * The `type` of the `event` dispatched from the user interaction.
+   */
+  eventType: string;
+  /**
+   * The `PerformanceEventTiming` entry corresponding to FID (or the
+   * polyfill entry in browsers that don't support Event Timing).
+   */
+  eventEntry: PerformanceEventTiming | FirstInputPolyfillEntry,
+  /**
+   * The loading state of the document at the time when the first interaction
+   * occurred (see `LoadState` for details). If the first interaction occurred
+   * while the document was loading and executing script (e.g. usually in the
+   * `domInteractive` phase) it can result in long input delays.
+   */
+  loadState: LoadState;
+}
+```
+
+#### INP `attribution`:
+
+```ts
+interface INPAttribution {
+  /**
+   * A selector identifying the element that the user interacted with for
+   * the event corresponding to INP. This element will be the `target` of the
+   * `event` dispatched.
+   */
+  eventTarget?: string;
+  /**
+   * The time when the user interacted for the event corresponding to INP.
+   * This time will match the `timeStamp` value of the `event` dispatched.
+   */
+  eventTime?: number;
+  /**
+   * The `type` of the `event` dispatched corresponding to INP.
+   */
+  eventType?: string;
+  /**
+   * The `PerformanceEventTiming` entry corresponding to INP.
+   */
+  eventEntry?: PerformanceEventTiming;
+  /**
+   * The loading state of the document at the time when the even corresponding
+   * to INP occurred (see `LoadState` for details). If the interaction occurred
+   * while the document was loading and executing script (e.g. usually in the
+   * `domInteractive` phase) it can result in long delays.
+   */
+  loadState?: LoadState;
+}
+```
+
+#### LCP `attribution`:
+
+```ts
+interface LCPAttribution {
+  /**
+   * The element corresponding to the largest contentful paint for the page.
+   */
+  element?: string,
+  /**
+   * The time from when the user initiates loading the page until when the
+   * browser receives the first byte of the response (a.k.a. TTFB). See
+   * [Optimize LCP](https://web.dev/optimize-lcp/) for details.
+   */
+  timeToFirstByte: number;
+  /**
+   * The delta between TTFB and when the browser starts loading the LCP
+   * resource (if there is one, otherwise 0). See [Optimize
+   * LCP](https://web.dev/optimize-lcp/) for details.
+   */
+  resourceLoadDelay: number;
+  /**
+   * The total time it takes to load the LCP resource itself (if there is one,
+   * otherwise 0). See [Optimize LCP](https://web.dev/optimize-lcp/) for
+   * details.
+   */
+  resourceLoadTime: number;
+  /**
+   * The delta between when the LCP resource finishes loading until the LCP
+   * element is fully rendered. See [Optimize
+   * LCP](https://web.dev/optimize-lcp/) for details.
+   */
+  elementRenderDelay: number;
+  /**
+   * The `navigation` entry of the current page, which is useful for diagnosing
+   * general page load issues.
+   */
+  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+  /**
+   * The `resource` entry for the LCP resource (if applicable), which is useful
+   * for diagnosing resource load issues.
+   */
+  lcpResourceEntry?: PerformanceResourceTiming;
+  /**
+   * The `LargestContentfulPaint` entry corresponding to LCP.
+   */
+  lcpEntry?: LargestContentfulPaint;
+}
+```
+
+#### TTFB `attribution`:
+
+```ts
+interface TTFBAttribution {
+  /**
+   * The total time from when the user initiates loading the page to when the
+   * DNS lookup begins. This includes redirects, service worker startup, and
+   * HTTP cache lookup times.
+   */
+  waitingTime: number;
+  /**
+   * The total time to resolve the DNS for the current request.
+   */
+  dnsTime: number;
+  /**
+   * The total time to create the connection to the requested domain.
+   */
+  connectionTime: number;
+  /**
+   * The time time from when the request was sent until the first byte of the
+   * response was received. This includes network time as well as server
+   * processing time.
+   */
+  requestTime: number;
+  /**
+   * The `PerformanceNavigationTiming` entry used to determine TTFB (or the
+   * polyfill entry in browsers that don't support Navigation Timing).
+   */
+  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+}
+```
 
 ## Browser Support
 

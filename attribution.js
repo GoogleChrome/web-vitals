@@ -13,4 +13,6 @@
  limitations under the License.
 */
 
-export * from './dist/modules/index.js';
+// Creates the `web-vitals/attribution` import in node-based bundlers.
+// This will not be needed when export maps are widely supported.
+export * from './dist/web-vitals.attribution.js';

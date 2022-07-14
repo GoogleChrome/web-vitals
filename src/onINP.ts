@@ -20,7 +20,7 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {getInteractionCount, initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
-import {Metric, PerformanceEventTiming, ReportCallback, ReportOpts} from './types.js';
+import {INPMetric, ReportCallback, ReportOpts} from './types.js';
 
 interface Interaction {
   id: number;
@@ -104,6 +104,33 @@ const estimateP98LongestInteraction = () => {
 	return longestInteractionList[candidateInteractionIndex];
 }
 
+/**
+ * Calculates the [INP](https://web.dev/responsiveness/) value for the current
+ * page and calls the `callback` function once the value is ready, along with
+ * the `event` performance entries reported for that interaction. The reported
+ * value is a `DOMHighResTimeStamp`.
+ *
+ * A custom `durationThreshold` configuration option can optionally be passed to
+ * control what `event-timing` entries are considered for INP reporting. The
+ * default threshold is `40`, which means INP scores of less than 40 are
+ * reported as 0. Note that this will not affect your 75th percentile INP value
+ * unless that value is also less than 40 (well below the recommended
+ * [good](https://web.dev/inp/#what-is-a-good-inp-score) threshold).
+ *
+ * If the `reportAllChanges` configuration option is set to `true`, the
+ * `callback` function will be called as soon as the value is initially
+ * determined as well as any time the value changes throughout the page
+ * lifespan.
+ *
+ * _**Important:** INP should be continually monitored for changes throughout
+ * the entire lifespan of a page—including if the user returns to the page after
+ * it's been hidden/backgrounded. However, since browsers often [will not fire
+ * additional callbacks once the user has backgrounded a
+ * page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden),
+ * `callback` is always called when the page's visibility state changes to
+ * hidden. As a result, the `callback` function might be called multiple times
+ * during the same page load._
+ */
 export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
@@ -114,8 +141,8 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   let metric = initMetric('INP');
   let report: ReturnType<typeof bindReporter>;
 
-  const handleEntries = (entries: Metric['entries']) => {
-    (entries as PerformanceEventTiming[]).forEach((entry) => {
+  const handleEntries = (entries: INPMetric['entries']) => {
+    entries.forEach((entry) => {
       if (entry.interactionId) {
         processEntry(entry);
       }
@@ -168,7 +195,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     po.observe({type: 'first-input', buffered: true});
 
     onHidden(() => {
-      handleEntries(po.takeRecords());
+      handleEntries(po.takeRecords() as INPMetric['entries']);
 
       // If the interaction count shows that there were interactions but
       // none were captured by the PerformanceObserver, report a latency of 0.

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {isBFCacheRestore} from './bfcache.js';
+import {getBFCacheRestoreTime} from './bfcache.js';
 import {generateUniqueID} from './generateUniqueID.js';
 import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
@@ -25,7 +25,7 @@ export const initMetric = (name: Metric['name'], value?: number): Metric => {
   const navEntry = getNavigationEntry();
   let navigationType: Metric['navigationType'];
 
-  if (isBFCacheRestore()) {
+  if (getBFCacheRestoreTime() >= 0) {
     navigationType = 'back_forward_cache';
   } else if (navEntry) {
     if (document.prerendering || getActivationStart() > 0) {

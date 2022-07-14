@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-const assert = require('assert');
-const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
-const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
-const {afterLoad} = require('../utils/afterLoad.js');
-const {imagesPainted} = require('../utils/imagesPainted.js');
-const {stubForwardBack} = require('../utils/stubForwardBack.js');
-const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
+import assert from 'assert';
+import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {domReadyState} from '../utils/domReadyState.js';
+import {imagesPainted} from '../utils/imagesPainted.js';
+import {stubForwardBack} from '../utils/stubForwardBack.js';
+import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
 
 describe('onCLS()', async function() {
@@ -456,7 +456,7 @@ describe('onCLS()', async function() {
     await browser.url(`/test/cls?noLayoutShifts=1`);
 
     // Wait until the page is loaded before hiding.
-    await afterLoad();
+    await domReadyState('complete');
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
@@ -476,7 +476,7 @@ describe('onCLS()', async function() {
     await browser.url(`/test/cls?reportAllChanges=1&noLayoutShifts=1`);
 
     // Wait until the page is loaded before hiding.
-    await afterLoad();
+    await domReadyState('complete');
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
@@ -496,7 +496,7 @@ describe('onCLS()', async function() {
     await browser.url(`/test/cls?noLayoutShifts=1`);
 
     // Wait until the page is loaded before navigating away.
-    await afterLoad();
+    await domReadyState('complete');
     await browser.url('about:blank');
 
     await beaconCountIs(1);
@@ -516,7 +516,7 @@ describe('onCLS()', async function() {
     await browser.url(`/test/cls?noLayoutShifts=1&reportAllChanges=1`);
 
     // Wait until the page is loaded before navigating away.
-    await afterLoad();
+    await domReadyState('complete');
     await browser.url('about:blank');
 
     await beaconCountIs(1);
@@ -566,6 +566,102 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.entries.length, 1);
     assert.strictEqual(cls.navigationType, 'back_forward_cache');
   });
+
+  describe('attribution', function() {
+    it('includes attribution data on the metric object', async function() {
+      if (!browserSupportsCLS) this.skip();
+
+      await browser.url('/test/cls?attribution=1&delayDCL=2000');
+
+      // Wait until all images are loaded and rendered, then change to hidden.
+      await imagesPainted();
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [cls] = await getBeacons();
+      assert(cls.value >= 0);
+      assert(cls.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(cls.name, 'CLS');
+      assert.strictEqual(cls.value, cls.delta);
+      assert.strictEqual(cls.entries.length, 2);
+      assert.match(cls.navigationType, /navigate|reload/);
+
+      const {
+        largestShiftEntry,
+        largestShiftSource,
+      } = getAttribution(cls.entries);
+
+      assert.deepEqual(cls.attribution.largestShiftEntry, largestShiftEntry);
+      assert.deepEqual(cls.attribution.largestShiftSource, largestShiftSource);
+
+      assert.equal(cls.attribution.largestShiftValue, largestShiftEntry.value);
+      assert.equal(cls.attribution.largestShiftTarget, '#p3');
+      assert.equal(
+          cls.attribution.largestShiftTime, largestShiftEntry.startTime);
+
+      // The first shift (before the second image loads) is the largest.
+      assert.match(cls.attribution.loadState, /dom(ContentLoaded|Interactive)/);
+    });
+
+    it('reports whether the largest shift was before or after load', async function() {
+      if (!browserSupportsCLS) this.skip();
+
+      await browser.url('/test/cls?attribution=1&noLayoutShifts=1');
+
+      await domReadyState('complete');
+      await triggerLayoutShift();
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+      const [cls] = await getBeacons();
+
+      assert(cls.value >= 0);
+      assert(cls.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(cls.name, 'CLS');
+      assert.strictEqual(cls.value, cls.delta);
+      assert.strictEqual(cls.entries.length, 1);
+      assert.match(cls.navigationType, /navigate|reload/);
+
+      const {
+        largestShiftEntry,
+        largestShiftSource,
+      } = getAttribution(cls.entries);
+
+      assert.deepEqual(cls.attribution.largestShiftEntry, largestShiftEntry);
+      assert.deepEqual(cls.attribution.largestShiftSource, largestShiftSource);
+
+      assert.equal(cls.attribution.largestShiftValue, largestShiftEntry.value);
+      assert.equal(cls.attribution.largestShiftTarget, 'html>body>main>h1');
+      assert.equal(
+          cls.attribution.largestShiftTime, largestShiftEntry.startTime);
+
+      // The first shift (before the second image loads) is the largest.
+      assert.equal(cls.attribution.loadState, 'loaded');
+    });
+
+    it('reports an empty object when no shifts', async function() {
+      if (!browserSupportsCLS) this.skip();
+
+      await browser.url('/test/cls?attribution=1&noLayoutShifts=1');
+
+      // Wait until the page is loaded before navigating away.
+      await domReadyState('complete');
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+      const [cls] = await getBeacons();
+
+      assert(cls.value >= 0);
+      assert(cls.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(cls.name, 'CLS');
+      assert.strictEqual(cls.value, cls.delta);
+      assert.strictEqual(cls.entries.length, 0);
+      assert.match(cls.navigationType, /navigate|reload/);
+
+      assert.deepEqual(cls.attribution, {});
+    });
+  });
 });
 
 let marginTop = 0;
@@ -580,3 +676,24 @@ function triggerLayoutShift() {
     document.querySelector('h1').style.marginTop = marginTop + 'em';
   }, ++marginTop);
 }
+
+/**
+ *
+ * @param {Array} entries
+ * @return {Object}
+ */
+function getAttribution(entries) {
+  let largestShiftEntry;
+  for (const entry of entries) {
+    if (!largestShiftEntry || entry.value > largestShiftEntry.value) {
+      largestShiftEntry = entry;
+    }
+  }
+
+  const largestShiftSource = largestShiftEntry.sources.find((source) => {
+    return source.node !== '#text';
+  });
+
+  return {largestShiftEntry, largestShiftSource};
+}
+

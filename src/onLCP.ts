@@ -21,11 +21,22 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {Metric, LargestContentfulPaint, ReportCallback, ReportOpts} from './types.js';
+import {LCPMetric, ReportCallback, ReportOpts} from './types.js';
 
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
+/**
+ * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
+ * calls the `callback` function once the value is ready (along with the
+ * relevant `largest-contentful-paint` performance entry used to determine the
+ * value). The reported value is a `DOMHighResTimeStamp`.
+ *
+ * If the `reportAllChanges` configuration option is set to `true`, the
+ * `callback` function will be called any time a new `largest-contentful-paint`
+ * performance entry is dispatched, or once the final value of the metric has
+ * been determined.
+ */
 export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
@@ -34,7 +45,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;
 
-  const handleEntries = (entries: Metric['entries']) => {
+  const handleEntries = (entries: LCPMetric['entries']) => {
     const lastEntry = (entries[entries.length - 1] as LargestContentfulPaint);
     if (lastEntry) {
       // The startTime attribute returns the value of the renderTime if it is
@@ -59,7 +70,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     const stopListening = () => {
       if (!reportedMetricIDs[metric.id]) {
-        handleEntries(po.takeRecords());
+        handleEntries(po.takeRecords() as LCPMetric['entries']);
         po.disconnect();
         reportedMetricIDs[metric.id] = true;
         report(true);

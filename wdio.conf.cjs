@@ -66,6 +66,7 @@ module.exports.config = {
   //
   capabilities: [
     {
+      'pageLoadStrategy': 'none',
       // maxInstances can get overwritten per capability. So if you have an in-house Selenium
       // grid with only 5 firefox instances available you can make sure that not more than
       // 5 instances get started at a time.
@@ -83,12 +84,14 @@ module.exports.config = {
       },
     },
     {
-      maxInstances: 1,
       browserName: 'firefox',
+      maxInstances: 1,
+      pageLoadStrategy: 'none',
     },
     {
-      maxInstances: 1,
       browserName: 'safari',
+      maxInstances: 1,
+      pageLoadStrategy: 'none',
     },
   ],
   //

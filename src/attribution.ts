@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,11 @@
  * limitations under the License.
  */
 
+export {onCLS} from './attribution/onCLS.js';
+export {onFCP} from './attribution/onFCP.js';
+export {onFID} from './attribution/onFID.js';
+export {onINP} from './attribution/onINP.js';
+export {onLCP} from './attribution/onLCP.js';
+export {onTTFB} from './attribution/onTTFB.js';
 
-/**
- * Overrides the document's `visibilityState` property, sets the body's hidden
- * attribute (to prevent painting) and dispatches a `visibilitychange` event.
- * @return {Promise<void>}
- */
-export function stubForwardBack(visibilityStateAfterRestore) {
-  return browser.executeAsync((visibilityStateAfterRestore, done) => {
-    self.__stubForwardBack(visibilityStateAfterRestore).then(done);
-  }, visibilityStateAfterRestore);
-}
+export * from './types.js';

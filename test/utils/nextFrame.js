@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -20,16 +20,12 @@
  * all load callbacks have finished executing.
  * @return {Promise<void>}
  */
-function afterLoad() {
+export function nextFrame(state) {
   return browser.executeAsync((done) => {
-    if (document.readyState === 'complete') {
-      setTimeout(done, 0);
-    } else {
-      addEventListener('load', () => setTimeout(done, 0));
-    }
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        done();
+      });
+    });
   });
 }
-
-module.exports = {
-  afterLoad,
-};

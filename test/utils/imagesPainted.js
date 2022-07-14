@@ -20,7 +20,7 @@
  * the images in the document have decoded and rendered.
  * @return {Promise<void>}
  */
-function imagesPainted() {
+export function imagesPainted() {
   return browser.executeAsync((done) => {
     const windowLoaded = new Promise((resolve) => {
       if (document.readyState === 'complete') {
@@ -41,7 +41,3 @@ function imagesPainted() {
     });
   });
 }
-
-module.exports = {
-  imagesPainted,
-};

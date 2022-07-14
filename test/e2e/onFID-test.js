@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-const assert = require('assert');
-const {beaconCountIs, clearBeacons, getBeacons} = require('../utils/beacons.js');
-const {browserSupportsEntry} = require('../utils/browserSupportsEntry.js');
-const {stubForwardBack} = require('../utils/stubForwardBack.js');
-const {stubVisibilityChange} = require('../utils/stubVisibilityChange.js');
+import assert from 'assert';
+import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {domReadyState} from '../utils/domReadyState.js';
+import {stubForwardBack} from '../utils/stubForwardBack.js';
+import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
 
 describe('onFID()', async function() {
@@ -116,6 +117,7 @@ describe('onFID()', async function() {
     if (browser.capabilities.browserName === 'Safari') this.skip();
 
     await browser.url('/test/fid?hidden=1');
+    await domReadyState('interactive');
 
     await stubVisibilityChange('visible');
 
@@ -186,6 +188,64 @@ describe('onFID()', async function() {
     assert.strictEqual(fid2.value, fid2.delta);
     assert.strictEqual(fid2.navigationType, 'back_forward_cache');
     assert.match(fid2.entries[0].name, /(mouse|pointer)down/);
+  });
+
+  describe('attribution', function() {
+    it('includes attribution data on the metric object', async function() {
+      if (!browserSupportsFID) this.skip();
+
+      await browser.url('/test/fid?attribution=1');
+
+      // Click on the <h1>.
+      const h1 = await $('h1');
+      await h1.click();
+
+      await beaconCountIs(1);
+
+      const [fid] = await getBeacons();
+      assert(fid.value >= 0);
+      assert(fid.id.match(/^v2-\d+-\d+$/));
+      assert.strictEqual(fid.name, 'FID');
+      assert.strictEqual(fid.value, fid.delta);
+      assert.match(fid.navigationType, /navigate|reload/);
+      assert.match(fid.entries[0].name, /(mouse|pointer)down/);
+
+      // This value is frequently not set in Chrome for some reason,
+      // so just check that it's a string.
+      assert(typeof fid.attribution.eventTarget === 'string');
+      assert.equal(fid.attribution.eventTime, fid.entries[0].startTime);
+      assert.equal(fid.attribution.eventType, fid.entries[0].name);
+      assert.deepEqual(fid.attribution.eventEntry, fid.entries[0]);
+      assert.equal(fid.attribution.loadState, 'loaded');
+    });
+
+    it('reports the domReadyState when input occurred', async function() {
+      if (!browserSupportsFID) this.skip();
+
+      await browser.url('/test/fid?attribution=1&delayDCL=1000');
+
+      // Click on the <h1>.
+      const h1 = await $('h1');
+      await h1.click();
+
+      await beaconCountIs(1);
+
+      const [fid1] = await getBeacons();
+      assert.equal(fid1.attribution.loadState, 'domInteractive');
+
+      await clearBeacons();
+
+      await browser.url('/test/fid?attribution=1&delayResponse=1000');
+
+      // Click on the <h1>.
+      const p = await $('p');
+      await p.click();
+
+      await beaconCountIs(1);
+
+      const [fid2] = await getBeacons();
+      assert.equal(fid2.attribution.loadState, 'loading');
+    });
   });
 });
 

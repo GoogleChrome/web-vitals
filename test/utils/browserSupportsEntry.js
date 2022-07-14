@@ -20,7 +20,7 @@
  * @param {string} type The performance entry type.
  * @return {boolean}
  */
-function browserSupportsEntry(type) {
+export function browserSupportsEntry(type) {
   return browser.execute((type) => {
     // More extensive feature detect needed for Firefox due to:
     // https://github.com/GoogleChrome/web-vitals/issues/142
@@ -39,7 +39,3 @@ function browserSupportsEntry(type) {
         window.PerformanceObserver.supportedEntryTypes.includes(type);
   }, type);
 }
-
-module.exports = {
-  browserSupportsEntry,
-};
