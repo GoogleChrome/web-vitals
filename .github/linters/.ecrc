@@ -11,7 +11,7 @@
     // set these options to true to disable specific checks
     "EndOfLine": false,
     "Indentation": false,
-    "IndentSize": true,
+    "IndentSize": false,
     "InsertFinalNewline": false,
     "TrimTrailingWhitespace": false,
     "MaxLineLength": false
