@@ -528,7 +528,7 @@ The "standard" version of the `web-vitals` library includes some of the same log
 
 ## API
 
-### Types:
+### Types
 
 #### `Metric`
 
@@ -602,7 +602,7 @@ interface WebVitalsGlobal {
 }
 ```
 
-### Functions:
+### Functions
 
 #### `getCLS()`
 
