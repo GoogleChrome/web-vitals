@@ -8,7 +8,6 @@
   "AllowedContentTypes": [],
   "PassedFiles": [],
   "Disable": {
-    // set these options to true to disable specific checks
     "EndOfLine": false,
     "Indentation": false,
     "IndentSize": false,
