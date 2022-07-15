@@ -4,7 +4,7 @@
   "IgnoreDefaults": false,
   "SpacesAftertabs": false,
   "NoColor": false,
-  "Exclude": [],
+  "Exclude": ["LICENCE"],
   "AllowedContentTypes": [],
   "PassedFiles": [],
   "Disable": {
