@@ -37,6 +37,11 @@ export interface LCPAttribution {
    */
   element?: string,
   /**
+   * The URL (if applicable) of the LCP image resource. If the LCP element
+   * is a text node, this value will not be set.
+   */
+  url?: string,
+  /**
    * The time from when the user initiates loading the page until when the
    * browser receives the first byte of the response (a.k.a. TTFB). See
    * [Optimize LCP](https://web.dev/optimize-lcp/) for details.

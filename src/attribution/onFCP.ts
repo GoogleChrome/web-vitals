@@ -18,10 +18,10 @@ import {getBFCacheRestoreTime} from '../lib/bfcache.js';
 import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
-import {FCPMetricWithAttribution, FCPReportCallback, FCPReportCallbackWithAttribution, ReportOpts} from '../types.js';
+import {FCPMetric, FCPMetricWithAttribution, FCPReportCallback, FCPReportCallbackWithAttribution, ReportOpts} from '../types.js';
 
 
-const attributeFCP = (metric: FCPMetricWithAttribution): void => {
+const attributeFCP = (metric: FCPMetric): void => {
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
     const fcpEntry = metric.entries[metric.entries.length - 1];
@@ -30,7 +30,7 @@ const attributeFCP = (metric: FCPMetricWithAttribution): void => {
       const activationStart = navigationEntry.activationStart || 0;
       const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
 
-      metric.attribution = {
+      (metric as FCPMetricWithAttribution).attribution = {
         timeToFirstByte: ttfb,
         firstByteToFCP: metric.value - ttfb,
         loadState: getLoadState(metric.entries[0].startTime),
@@ -40,7 +40,7 @@ const attributeFCP = (metric: FCPMetricWithAttribution): void => {
     }
   } else {
     // There are no entries when restored from bfcache.
-    metric.attribution = {
+    (metric as FCPMetricWithAttribution).attribution = {
       timeToFirstByte: 0,
       firstByteToFCP: metric.value,
       loadState: getLoadState(getBFCacheRestoreTime()),

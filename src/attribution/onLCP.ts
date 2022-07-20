@@ -14,20 +14,21 @@
  * limitations under the License.
  */
 
+
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
-import {LCPMetricWithAttribution, LCPReportCallback, LCPReportCallbackWithAttribution, ReportOpts} from '../types.js';
+import {LCPAttribution, LCPMetric, LCPMetricWithAttribution, LCPReportCallback, LCPReportCallbackWithAttribution, ReportOpts} from '../types.js';
 
 
-const attributeLCP = (metric: LCPMetricWithAttribution): void => {
+const attributeLCP = (metric: LCPMetric) => {
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
 
     if (navigationEntry) {
       const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
-      const lcpResourceEntry = performance
+      const lcpResourceEntry = lcpEntry.url &&performance
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
 
@@ -48,20 +49,29 @@ const attributeLCP = (metric: LCPMetricWithAttribution): void => {
         lcpEntry ? lcpEntry.startTime - activationStart : 0
       );
 
-      metric.attribution = {
+      const attribution: LCPAttribution = {
         element: getSelector(lcpEntry.element),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
         resourceLoadTime: lcpResponseEnd - lcpRequestStart,
         elementRenderDelay: lcpRenderTime - lcpResponseEnd,
         navigationEntry,
-        lcpResourceEntry,
         lcpEntry,
       };
+
+      // Only attribution the URL and resource entry if they exist.
+      if (lcpEntry.url) {
+        attribution.url = lcpEntry.url;
+      }
+      if (lcpResourceEntry) {
+        attribution.lcpResourceEntry = lcpResourceEntry;
+      }
+
+      (metric as LCPMetricWithAttribution).attribution = attribution;
     }
   } else {
     // There are no entries when restored from bfcache.
-    metric.attribution = {
+    (metric as LCPMetricWithAttribution).attribution = {
       timeToFirstByte: 0,
       resourceLoadDelay: 0,
       resourceLoadTime: 0,

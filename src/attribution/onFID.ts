@@ -17,18 +17,18 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onFID as unattributedOnFID} from '../onFID.js';
-import {FIDAttribution, FIDMetricWithAttribution, FIDReportCallback, FIDReportCallbackWithAttribution, ReportOpts} from '../types.js';
+import {FIDMetric, FIDMetricWithAttribution, FIDReportCallback, FIDReportCallbackWithAttribution, ReportOpts} from '../types.js';
 
 
-const attributeFID = (metric: FIDMetricWithAttribution): void => {
+const attributeFID = (metric: FIDMetric): void => {
   const fidEntry = metric.entries[0];
-  metric.attribution = {
+  (metric as FIDMetricWithAttribution).attribution = {
     eventTarget: getSelector(fidEntry.target),
     eventType: fidEntry.name,
     eventTime: fidEntry.startTime,
     eventEntry: fidEntry,
     loadState: getLoadState(fidEntry.startTime),
-  } as FIDAttribution;
+  };
 };
 
 /**
