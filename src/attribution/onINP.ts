@@ -17,10 +17,10 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
-import {INPMetricWithAttribution, INPReportCallback, INPReportCallbackWithAttribution, ReportOpts} from '../types.js';
+import {INPMetric, INPMetricWithAttribution, INPReportCallback, INPReportCallbackWithAttribution, ReportOpts} from '../types.js';
 
 
-const attributeINP = (metric: INPMetricWithAttribution): void => {
+const attributeINP = (metric: INPMetric): void => {
   if (metric.entries.length) {
     const longestEntry = metric.entries.sort((a, b) => {
       // Sort by: 1) duration (DESC), then 2) processing time (DESC)
@@ -28,7 +28,7 @@ const attributeINP = (metric: INPMetricWithAttribution): void => {
       (a.processingEnd - a.processingStart);
     })[0];
 
-    metric.attribution = {
+    (metric as INPMetricWithAttribution).attribution = {
       eventTarget: getSelector(longestEntry.target),
       eventType: longestEntry.name,
       eventTime: longestEntry.startTime,
@@ -36,7 +36,7 @@ const attributeINP = (metric: INPMetricWithAttribution): void => {
       loadState: getLoadState(longestEntry.startTime),
     };
   } else {
-    metric.attribution = {};
+    (metric as INPMetricWithAttribution).attribution = {};
   }
 };
 

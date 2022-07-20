@@ -15,10 +15,10 @@
  */
 
 import {onTTFB as unattributedOnTTFB} from '../onTTFB.js';
-import {TTFBMetricWithAttribution, TTFBReportCallback, TTFBReportCallbackWithAttribution, ReportOpts} from '../types.js';
+import {TTFBMetric, TTFBMetricWithAttribution, TTFBReportCallback, TTFBReportCallbackWithAttribution, ReportOpts} from '../types.js';
 
 
-const attributeTTFB = (metric: TTFBMetricWithAttribution): void => {
+const attributeTTFB = (metric: TTFBMetric): void => {
   if (metric.entries.length) {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
@@ -30,7 +30,7 @@ const attributeTTFB = (metric: TTFBMetricWithAttribution): void => {
     const requestStart = Math.max(
         navigationEntry.requestStart - activationStart, 0);
 
-    metric.attribution = {
+    (metric as TTFBMetricWithAttribution).attribution = {
       waitingTime: dnsStart,
       dnsTime: connectStart - dnsStart,
       connectionTime: requestStart - connectStart,
@@ -38,7 +38,7 @@ const attributeTTFB = (metric: TTFBMetricWithAttribution): void => {
       navigationEntry: navigationEntry,
     };
   } else {
-    metric.attribution = {
+    (metric as TTFBMetricWithAttribution).attribution = {
       waitingTime: 0,
       dnsTime: 0,
       connectionTime: 0,

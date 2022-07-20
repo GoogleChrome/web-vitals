@@ -372,6 +372,7 @@ describe('onLCP()', async function() {
       const [lcp] = await getBeacons();
       assertStandardReportsAreCorrect([lcp]);
 
+      assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
       assert.equal(lcp.attribution.element, 'html>body>main>p>img');
       assert.equal(lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
@@ -414,6 +415,7 @@ describe('onLCP()', async function() {
 
       assertStandardReportsAreCorrect([lcp]);
 
+      assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
       assert.equal(lcp.attribution.element, 'html>body>main>p>img');
 
       // Specifically check that resourceLoadDelay falls back to `startTime`.
@@ -459,7 +461,8 @@ describe('onLCP()', async function() {
 
       const [lcp] = await getBeacons();
 
-      assert.strictEqual(lcp.navigationType, 'prerender');
+      assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
+      assert.equal(lcp.navigationType, 'prerender');
       assert.equal(lcp.attribution.element, 'html>body>main>p>img');
 
       // Assert each individual LCP sub-part accounts for `activationStart`
@@ -508,6 +511,7 @@ describe('onLCP()', async function() {
 
       const [lcp] = await getBeacons();
 
+      assert.equal(lcp.attribution.url, undefined);
       assert.equal(lcp.attribution.element, 'html>body>main>h1');
       assert.equal(lcp.attribution.resourceLoadDelay, 0);
       assert.equal(lcp.attribution.resourceLoadTime, 0);
