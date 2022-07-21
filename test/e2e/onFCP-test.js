@@ -47,6 +47,7 @@ describe('onFCP()', async function() {
     assert(fcp.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'good');
     assert.strictEqual(fcp.entries.length, 1);
     assert.match(fcp.navigationType, /navigate|reload/);
   });
@@ -68,6 +69,7 @@ describe('onFCP()', async function() {
     assert(fcp.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'good');
     assert.strictEqual(fcp.entries.length, 1);
     assert.strictEqual(fcp.entries[0].startTime - activationStart, fcp.value);
     assert.strictEqual(fcp.navigationType, 'prerender');
@@ -112,7 +114,7 @@ describe('onFCP()', async function() {
   it('does not report if the document changes to hidden before the first entry', async function() {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp?invisible=1');
+    await browser.url('/test/fcp?renderBlocking=1000');
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
@@ -122,6 +124,25 @@ describe('onFCP()', async function() {
 
     const beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
+  });
+
+  it('reports after a render delay before the page changes to hidden', async function() {
+    if (!browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp?renderBlocking=2000');
+
+    // Change to hidden after the first render.
+    await browser.pause(2500);
+    await stubVisibilityChange('hidden');
+
+    const [fcp] = await getBeacons();
+    assert(fcp.value >= 0);
+    assert(fcp.id.match(/^v2-\d+-\d+$/));
+    assert.strictEqual(fcp.name, 'FCP');
+    assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'needs-improvement');
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.match(fcp.navigationType, /navigate|reload/);
   });
 
   it('reports if the page is restored from bfcache', async function() {
@@ -136,6 +157,7 @@ describe('onFCP()', async function() {
     assert(fcp1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
+    assert.strictEqual(fcp1.rating, 'good');
     assert.strictEqual(fcp1.entries.length, 1);
     assert.match(fcp1.navigationType, /navigate|reload/);
 
@@ -150,6 +172,7 @@ describe('onFCP()', async function() {
     assert(fcp2.id !== fcp1.id);
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
+    assert.strictEqual(fcp2.rating, 'good');
     assert.strictEqual(fcp2.entries.length, 0);
     assert.strictEqual(fcp2.navigationType, 'back_forward_cache');
 
@@ -164,6 +187,7 @@ describe('onFCP()', async function() {
     assert(fcp3.id !== fcp2.id);
     assert.strictEqual(fcp3.name, 'FCP');
     assert.strictEqual(fcp3.value, fcp3.delta);
+    assert.strictEqual(fcp3.rating, 'good');
     assert.strictEqual(fcp3.entries.length, 0);
     assert.strictEqual(fcp3.navigationType, 'back_forward_cache');
   });
@@ -191,6 +215,7 @@ describe('onFCP()', async function() {
     assert(fcp1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
+    assert.strictEqual(fcp1.rating, 'good');
     assert.strictEqual(fcp1.entries.length, 0);
     assert.strictEqual(fcp1.navigationType, 'back_forward_cache');
 
@@ -205,6 +230,7 @@ describe('onFCP()', async function() {
     assert(fcp2.id !== fcp1.id);
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
+    assert.strictEqual(fcp2.rating, 'good');
     assert.strictEqual(fcp2.entries.length, 0);
     assert.strictEqual(fcp2.navigationType, 'back_forward_cache');
   });
@@ -232,6 +258,7 @@ describe('onFCP()', async function() {
       assert(fcp.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
+      assert.strictEqual(fcp.rating, 'good');
       assert.strictEqual(fcp.entries.length, 1);
       assert.match(fcp.navigationType, /navigate|reload/);
 
@@ -278,6 +305,7 @@ describe('onFCP()', async function() {
       assert(fcp.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
+      assert.strictEqual(fcp.rating, 'good');
       assert.strictEqual(fcp.entries.length, 1);
       assert.strictEqual(fcp.navigationType, 'prerender');
 
@@ -316,6 +344,7 @@ describe('onFCP()', async function() {
       assert(fcp.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
+      assert.strictEqual(fcp.rating, 'good');
       assert.strictEqual(fcp.entries.length, 0);
       assert.strictEqual(fcp.navigationType, 'back_forward_cache');
 

@@ -120,6 +120,7 @@ describe('onLCP()', async function() {
     await beaconCountIs(1);
 
     const [lcp] = await getBeacons();
+    assert.strictEqual(lcp.rating, 'good');
     assert.strictEqual(lcp.entries[0].startTime - activationStart, lcp.value);
     assert.strictEqual(lcp.navigationType, 'prerender');
   });
@@ -181,7 +182,7 @@ describe('onLCP()', async function() {
   it('does not report if the document changes to hidden before the first render', async function() {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?invisible=1');
+    await browser.url('/test/lcp?renderBlocking=1000');
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
@@ -195,6 +196,26 @@ describe('onLCP()', async function() {
 
     const beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
+  });
+
+  it('reports after a render delay before the page changes to hidden', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp?renderBlocking=3000');
+
+    // Change to hidden after the first render.
+    await browser.pause(3500);
+    await stubVisibilityChange('hidden');
+
+    const [lcp1] = await getBeacons();
+
+    assert(lcp1.value > 3000);
+    assert.strictEqual(lcp1.name, 'LCP');
+    assert.strictEqual(lcp1.value, lcp1.delta);
+    assert.strictEqual(lcp1.rating, 'needs-improvement');
+    assert.strictEqual(lcp1.entries.length, 1);
+    assert.strictEqual(lcp1.entries[0].element, 'img');
+    assert.match(lcp1.navigationType, /navigate|reload/);
   });
 
   it('stops reporting after the document changes to hidden (reportAllChanges === false)', async function() {
@@ -226,6 +247,7 @@ describe('onLCP()', async function() {
     assert(lcp1.value > 0);
     assert.strictEqual(lcp1.name, 'LCP');
     assert.strictEqual(lcp1.value, lcp1.delta);
+    assert.strictEqual(lcp1.rating, 'good');
     assert.strictEqual(lcp1.entries.length, 1);
     assert.strictEqual(lcp1.entries[0].element, 'h1');
     assert.match(lcp1.navigationType, /navigate|reload/);
@@ -242,6 +264,7 @@ describe('onLCP()', async function() {
     assert(lcp.value > 0);
     assert.strictEqual(lcp.name, 'LCP');
     assert.strictEqual(lcp.value, lcp.delta);
+    assert.strictEqual(lcp.rating, 'good');
     assert.strictEqual(lcp.entries.length, 1);
     assert.strictEqual(lcp.entries[0].element, 'h1');
     assert.match(lcp.navigationType, /navigate|reload/);
@@ -279,27 +302,29 @@ describe('onLCP()', async function() {
     await stubForwardBack();
     await beaconCountIs(1);
 
+    const [lcp1] = await getBeacons();
+
+    assert(lcp1.value > 0); // Greater than the image load delay.
+    assert(lcp1.id.match(/^v2-\d+-\d+$/));
+    assert.strictEqual(lcp1.name, 'LCP');
+    assert.strictEqual(lcp1.value, lcp1.delta);
+    assert.strictEqual(lcp1.rating, 'good');
+    assert.strictEqual(lcp1.entries.length, 0);
+    assert.strictEqual(lcp1.navigationType, 'back_forward_cache');
+
+    await clearBeacons();
+    await stubForwardBack();
+    await beaconCountIs(1);
+
     const [lcp2] = await getBeacons();
 
     assert(lcp2.value > 0); // Greater than the image load delay.
     assert(lcp2.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(lcp2.name, 'LCP');
     assert.strictEqual(lcp2.value, lcp2.delta);
+    assert.strictEqual(lcp2.rating, 'good');
     assert.strictEqual(lcp2.entries.length, 0);
     assert.strictEqual(lcp2.navigationType, 'back_forward_cache');
-
-    await clearBeacons();
-    await stubForwardBack();
-    await beaconCountIs(1);
-
-    const [lcp3] = await getBeacons();
-
-    assert(lcp3.value > 0); // Greater than the image load delay.
-    assert(lcp3.id.match(/^v2-\d+-\d+$/));
-    assert.strictEqual(lcp3.name, 'LCP');
-    assert.strictEqual(lcp3.value, lcp3.delta);
-    assert.strictEqual(lcp3.entries.length, 0);
-    assert.strictEqual(lcp3.navigationType, 'back_forward_cache');
   });
 
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function() {
@@ -323,27 +348,29 @@ describe('onLCP()', async function() {
     await stubForwardBack();
     await beaconCountIs(1);
 
+    const [lcp1] = await getBeacons();
+
+    assert(lcp1.value > 0); // Greater than the image load delay.
+    assert(lcp1.id.match(/^v2-\d+-\d+$/));
+    assert.strictEqual(lcp1.name, 'LCP');
+    assert.strictEqual(lcp1.value, lcp1.delta);
+    assert.strictEqual(lcp1.rating, 'good');
+    assert.strictEqual(lcp1.entries.length, 0);
+    assert.strictEqual(lcp1.navigationType, 'back_forward_cache');
+
+    await clearBeacons();
+    await stubForwardBack();
+    await beaconCountIs(1);
+
     const [lcp2] = await getBeacons();
 
     assert(lcp2.value > 0); // Greater than the image load delay.
     assert(lcp2.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(lcp2.name, 'LCP');
     assert.strictEqual(lcp2.value, lcp2.delta);
+    assert.strictEqual(lcp2.rating, 'good');
     assert.strictEqual(lcp2.entries.length, 0);
     assert.strictEqual(lcp2.navigationType, 'back_forward_cache');
-
-    await clearBeacons();
-    await stubForwardBack();
-    await beaconCountIs(1);
-
-    const [lcp3] = await getBeacons();
-
-    assert(lcp3.value > 0); // Greater than the image load delay.
-    assert(lcp3.id.match(/^v2-\d+-\d+$/));
-    assert.strictEqual(lcp3.name, 'LCP');
-    assert.strictEqual(lcp3.value, lcp3.delta);
-    assert.strictEqual(lcp3.entries.length, 0);
-    assert.strictEqual(lcp3.navigationType, 'back_forward_cache');
   });
 
   describe('attribution', function() {
@@ -577,6 +604,7 @@ const assertStandardReportsAreCorrect = (beacons) => {
   assert(lcp.id.match(/^v2-\d+-\d+$/));
   assert.strictEqual(lcp.name, 'LCP');
   assert.strictEqual(lcp.value, lcp.delta);
+  assert.strictEqual(lcp.rating, 'good');
   assert.strictEqual(lcp.entries.length, 1);
   assert.match(lcp.navigationType, /navigate|reload/);
 };
@@ -588,6 +616,7 @@ const assertFullReportsAreCorrect = (beacons) => {
   assert(lcp1.id.match(/^v2-\d+-\d+$/));
   assert.strictEqual(lcp1.name, 'LCP');
   assert.strictEqual(lcp1.value, lcp1.delta);
+  assert.strictEqual(lcp1.rating, 'good');
   assert.strictEqual(lcp1.entries.length, 1);
   assert.match(lcp1.navigationType, /navigate|reload/);
 
@@ -595,6 +624,7 @@ const assertFullReportsAreCorrect = (beacons) => {
   assert.strictEqual(lcp2.value, lcp1.value + lcp2.delta);
   assert.strictEqual(lcp2.name, 'LCP');
   assert.strictEqual(lcp2.id, lcp1.id);
+  assert.strictEqual(lcp2.rating, 'good');
   assert.strictEqual(lcp2.entries.length, 1);
   assert(lcp2.entries[0].startTime > lcp1.entries[0].startTime);
   assert.match(lcp2.navigationType, /navigate|reload/);

@@ -32,6 +32,9 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
+  // https://web.dev/fcp/#what-is-a-good-fcp-score
+  const thresholds = [1800, 3000];
+
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FCP');
   let report: ReturnType<typeof bindReporter>;
@@ -68,7 +71,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   const po = fcpEntry ? null : observe('paint', handleEntries);
 
   if (fcpEntry || po) {
-    report = bindReporter(onReport, metric, opts.reportAllChanges);
+    report = bindReporter(onReport, metric, thresholds, opts.reportAllChanges);
 
     if (fcpEntry) {
       handleEntries([fcpEntry]);
@@ -76,7 +79,9 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
 
     onBFCacheRestore((event) => {
       metric = initMetric('FCP');
-      report = bindReporter(onReport, metric, opts!.reportAllChanges);
+      report = bindReporter(
+          onReport, metric, thresholds, opts!.reportAllChanges);
+
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           metric.value = performance.now() - event.timeStamp;

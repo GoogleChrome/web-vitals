@@ -135,6 +135,9 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
+  // https://web.dev/inp/#what's-a-%22good%22-inp-value
+  const thresholds = [200, 500];
+
   // TODO(philipwalton): remove once the polyfill is no longer needed.
   initInteractionCountPolyfill();
 
@@ -187,7 +190,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     durationThreshold: opts.durationThreshold || 40,
   } as PerformanceObserverInit);
 
-  report = bindReporter(onReport, metric, opts.reportAllChanges);
+  report = bindReporter(onReport, metric, thresholds, opts.reportAllChanges);
 
   if (po) {
     // Also observe entries of type `first-input`. This is useful in cases
@@ -214,7 +217,8 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       prevInteractionCount = getInteractionCount();
 
       metric = initMetric('INP');
-      report = bindReporter(onReport, metric, opts!.reportAllChanges);
+      report = bindReporter(
+          onReport, metric, thresholds, opts!.reportAllChanges);
     });
   }
 };

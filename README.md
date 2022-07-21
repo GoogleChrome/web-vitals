@@ -421,7 +421,7 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
 
     // OPTIONAL: any additional params or debug info here.
     // See: https://web.dev/debug-web-vitals-in-the-field/
-    // metric_rating: 'good' | 'ni' | 'poor',
+    // metric_rating: 'good' | 'needs-improvement' | 'poor',
     // debug_info: '...',
     // ...
   });
@@ -657,32 +657,53 @@ The "standard" build of the `web-vitals` library includes some of the same logic
 
 ```ts
 interface Metric {
-  // The name of the metric (in acronym form).
+  /**
+   * The name of the metric (in acronym form).
+   */
   name: 'CLS' | 'FCP' | 'FID' | 'INP' | 'LCP' | 'TTFB';
 
-  // The current value of the metric.
+  /**
+   * The current value of the metric.
+   */
   value: number;
 
-  // The delta between the current value and the last-reported value.
-  // On the first report, `delta` and `value` will always be the same.
+  /**
+   * The rating as to whether the metric value is within the "good",
+   * "needs improvement", or "poor" thresholds of the metric.
+   */
+  rating: 'good' | 'needs-improvement' | 'poor';
+
+  /**
+   * The delta between the current value and the last-reported value.
+   * On the first report, `delta` and `value` will always be the same.
+   */
   delta: number;
 
-  // A unique ID representing this particular metric that's specific to the
-  // current page. This ID can be used by an analytics tool to dedupe
-  // multiple values sent for the same metric, or to group multiple deltas
-  // together and calculate a total.
+  /**
+   * A unique ID representing this particular metric instance. This ID can
+   * be used by an analytics tool to dedupe multiple values sent for the same
+   * metric instance, or to group multiple deltas together and calculate a
+   * total. It can also be used to differentiate multiple different metric
+   * instances sent from the same page, which can happen if the page is
+   * restored from the back/forward cache (in that case new metrics object
+   * get created).
+   */
   id: string;
 
-  // Any performance entries relevant to the metric value calculation.
-  // The array may also be empty if the metric value was not based on any
-  // entries (e.g. a CLS value of 0 given no layout shifts).
+  /**
+   * Any performance entries relevant to the metric value calculation.
+   * The array may also be empty if the metric value was not based on any
+   * entries (e.g. a CLS value of 0 given no layout shifts).
+   */
   entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
 
-  // For regular navigations, the type will be the same as the type indicated
-  // by the Navigation Timing API (or `undefined` if the browser doesn't
-  // support that API). For pages that are restored from the bfcache, this
-  // value will be 'back_forward_cache'.
-  navigationType:  NavigationType | 'back_forward_cache' | 'prerender' | undefined;
+  /**
+   * For regular navigations, the type will be the same as the type indicated
+   * by the Navigation Timing API (or `undefined` if the browser doesn't
+   * support that API). For pages that are restored from the bfcache, this
+   * value will be 'back_forward_cache'.
+   */
+  navigationType:  NavigationTimingType | 'back_forward_cache' | 'prerender' | undefined;
 }
 ```
 

@@ -19,6 +19,7 @@ import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {domReadyState} from '../utils/domReadyState.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
+import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
@@ -52,6 +53,7 @@ describe('onCLS()', async function() {
     assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 2);
     assert.match(cls.navigationType, /navigate|reload/);
   });
@@ -72,6 +74,7 @@ describe('onCLS()', async function() {
     assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 2);
     assert.match(cls.navigationType, /navigate|reload/);
   });
@@ -94,6 +97,7 @@ describe('onCLS()', async function() {
     assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.rating, 'good');
     assert.strictEqual(cls1.entries.length, 2);
     assert.match(cls1.navigationType, /navigate|reload/);
 
@@ -120,6 +124,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(Math.round(cls2.value * 100) / 100, 0.5);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.rating, 'poor');
     assert.strictEqual(cls2.entries.length, 2);
     assert.match(cls2.navigationType, /navigate|reload/);
     assert.match(cls2.id, /^v2-\d+-\d+$/);
@@ -152,6 +157,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(Math.round(cls3.value * 100) / 100, 1.5);
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.rating, 'poor');
     assert.strictEqual(cls3.entries.length, 4);
     assert.match(cls3.navigationType, /navigate|reload/);
     assert.match(cls3.id, /^v2-\d+-\d+$/);
@@ -211,6 +217,7 @@ describe('onCLS()', async function() {
     assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.rating, 'good');
     assert.strictEqual(cls1.entries.length, 1);
     assert.match(cls1.navigationType, /navigate|reload/);
 
@@ -218,6 +225,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.rating, 'good');
     assert.strictEqual(cls2.entries.length, 2);
     assert.match(cls2.navigationType, /navigate|reload/);
 
@@ -244,6 +252,7 @@ describe('onCLS()', async function() {
     assert(cls1.value >= 0);
     assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.rating, 'good');
     assert.strictEqual(cls1.entries.length, 1);
     assert.match(cls1.navigationType, /navigate|reload/);
 
@@ -251,6 +260,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.rating, 'good');
     assert.strictEqual(cls2.entries.length, 2);
     assert.match(cls2.navigationType, /navigate|reload/);
 
@@ -283,6 +293,7 @@ describe('onCLS()', async function() {
     assert(cls1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.rating, 'good');
     assert.strictEqual(cls1.entries.length, 2);
     assert.match(cls1.navigationType, /navigate|reload/);
 
@@ -326,6 +337,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.rating, 'good');
     assert.strictEqual(cls2.entries.length, 2);
     assert.match(cls2.navigationType, /navigate|reload/);
 
@@ -346,6 +358,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.id, cls2.id);
     assert.strictEqual(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.rating, 'good');
     assert.strictEqual(cls3.entries.length, 3);
     assert.match(cls3.navigationType, /navigate|reload/);
   });
@@ -368,6 +381,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls1.delta, cls1.value);
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.rating, 'good');
     assert.strictEqual(cls1.entries.length, 2);
     assert.match(cls1.navigationType, /navigate|reload/);
 
@@ -383,9 +397,9 @@ describe('onCLS()', async function() {
     assert(cls2.id.match(/^v2-\d+-\d+$/));
     assert(cls2.id !== cls1.id);
 
-    assert.strictEqual(cls2.delta, cls2.value);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.value, cls2.delta);
+    assert.strictEqual(cls2.rating, 'good');
     assert.strictEqual(cls2.entries.length, 1);
     assert.strictEqual(cls2.navigationType, 'back_forward_cache');
 
@@ -401,9 +415,9 @@ describe('onCLS()', async function() {
     assert(cls3.id.match(/^v2-\d+-\d+$/));
     assert(cls3.id !== cls2.id);
 
-    assert.strictEqual(cls3.delta, cls3.value);
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.value, cls3.delta);
+    assert.strictEqual(cls3.rating, 'good');
     assert.strictEqual(cls3.entries.length, 1);
     assert.strictEqual(cls3.navigationType, 'back_forward_cache');
   });
@@ -427,6 +441,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.rating, 'good');
     assert.strictEqual(cls2.entries.length, 2);
     assert.match(cls2.navigationType, /navigate|reload/);
 
@@ -446,6 +461,7 @@ describe('onCLS()', async function() {
     assert(cls3.id !== cls2.id);
     assert.strictEqual(cls3.name, 'CLS');
     assert.strictEqual(cls3.value, cls3.delta);
+    assert.strictEqual(cls3.rating, 'good');
     assert.strictEqual(cls3.entries.length, 1);
     assert.strictEqual(cls3.navigationType, 'back_forward_cache');
   });
@@ -466,6 +482,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
+    assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 0);
     assert.match(cls.navigationType, /navigate|reload/);
   });
@@ -486,6 +503,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
+    assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 0);
     assert.match(cls.navigationType, /navigate|reload/);
   });
@@ -506,6 +524,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
+    assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 0);
     assert.match(cls.navigationType, /navigate|reload/);
   });
@@ -526,6 +545,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, 0);
     assert.strictEqual(cls.delta, 0);
+    assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 0);
     assert.match(cls.navigationType, /navigate|reload/);
   });
@@ -550,7 +570,7 @@ describe('onCLS()', async function() {
     await stubForwardBack();
 
     // Wait for a frame to be painted.
-    await browser.executeAsync((done) => requestAnimationFrame(done));
+    await nextFrame();
 
     await triggerLayoutShift();
 
@@ -563,6 +583,7 @@ describe('onCLS()', async function() {
     assert(cls.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.delta, cls.value);
+    assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 1);
     assert.strictEqual(cls.navigationType, 'back_forward_cache');
   });
@@ -584,6 +605,7 @@ describe('onCLS()', async function() {
       assert(cls.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
+      assert.strictEqual(cls.rating, 'good');
       assert.strictEqual(cls.entries.length, 2);
       assert.match(cls.navigationType, /navigate|reload/);
 
@@ -620,6 +642,7 @@ describe('onCLS()', async function() {
       assert(cls.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
+      assert.strictEqual(cls.rating, 'good');
       assert.strictEqual(cls.entries.length, 1);
       assert.match(cls.navigationType, /navigate|reload/);
 
@@ -656,6 +679,7 @@ describe('onCLS()', async function() {
       assert(cls.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
+      assert.strictEqual(cls.rating, 'good');
       assert.strictEqual(cls.entries.length, 0);
       assert.match(cls.navigationType, /navigate|reload/);
 

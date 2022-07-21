@@ -55,6 +55,7 @@ describe('onINP()', async function() {
     assert(inp.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
     assert(interactionIDsMatch(inp.entries));
     assert(inp.entries[0].interactionId > 0);
@@ -78,6 +79,7 @@ describe('onINP()', async function() {
     assert(inp.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
     assert(interactionIDsMatch(inp.entries));
     assert(inp.entries[0].interactionId > 0);
@@ -101,6 +103,7 @@ describe('onINP()', async function() {
     assert(inp.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
     assert(interactionIDsMatch(inp.entries));
     assert(inp.entries[0].interactionId > 0);
@@ -124,6 +127,7 @@ describe('onINP()', async function() {
     assert(inp.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
     assert(interactionIDsMatch(inp.entries));
     assert(inp.entries[0].interactionId > 0);
@@ -151,6 +155,7 @@ describe('onINP()', async function() {
 
     const [inp1] = await getBeacons();
     assert(inp1.value >= 600); // Initial pointerdown blocking time.
+    assert.strictEqual(inp1.rating, 'poor');
 
     await clearBeacons();
     await stubVisibilityChange('visible');
@@ -167,6 +172,7 @@ describe('onINP()', async function() {
     const [inp2] = await getBeacons();
     assert(inp2.value >= 400); // Initial pointerdown blocking time.
     assert(inp2.value < inp1.value); // Should have gone down.
+    assert.strictEqual(inp2.rating, 'needs-improvement');
 
     await clearBeacons();
     await stubVisibilityChange('visible');
@@ -182,6 +188,7 @@ describe('onINP()', async function() {
     const [inp3] = await getBeacons();
     assert(inp3.value >= 200); // 2nd-highest pointerdown blocking time.
     assert(inp3.value < inp2.value); // Should have gone down.
+    assert.strictEqual(inp3.rating, 'needs-improvement');
   });
 
   it('reports approx p98 interaction when 50+ interactions (reportAllChanges === true)', async function() {
@@ -214,6 +221,10 @@ describe('onINP()', async function() {
     assert(inp2.value < inp1.value); // Should have gone down.
     assert(inp3.value >= 200); // 2nd-highest pointerdown blocking time.
     assert(inp3.value < inp2.value); // Should have gone down.
+
+    assert.strictEqual(inp1.rating, 'poor');
+    assert.strictEqual(inp2.rating, 'needs-improvement');
+    assert.strictEqual(inp3.rating, 'needs-improvement');
   });
 
   it('reports a new interaction after bfcache restore', async function() {
@@ -234,6 +245,7 @@ describe('onINP()', async function() {
     assert(inp1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(inp1.name, 'INP');
     assert.strictEqual(inp1.value, inp1.delta);
+    assert.strictEqual(inp1.rating, 'good');
     assert(containsEntry(inp1.entries, 'click', 'h1'));
     assert(interactionIDsMatch(inp1.entries));
     assert.match(inp1.navigationType, /navigate|reload/);
@@ -257,6 +269,7 @@ describe('onINP()', async function() {
     assert(inp1.id !== inp2.id);
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
+    assert.strictEqual(inp2.rating, 'good');
     assert(containsEntry(inp2.entries, 'keydown', '#textarea'));
     assert(interactionIDsMatch(inp2.entries));
     assert(inp2.entries[0].interactionId > inp1.entries[0].interactionId);
@@ -265,7 +278,7 @@ describe('onINP()', async function() {
     await stubForwardBack();
 
     await setBlockingTime('keydown', 0);
-    await setBlockingTime('pointerdown', 200);
+    await setBlockingTime('pointerdown', 300);
 
     const button = await $('button');
     await button.click();
@@ -282,6 +295,7 @@ describe('onINP()', async function() {
     assert(inp1.id !== inp3.id);
     assert.strictEqual(inp3.name, 'INP');
     assert.strictEqual(inp3.value, inp3.delta);
+    assert.strictEqual(inp3.rating, 'needs-improvement');
     assert(containsEntry(inp3.entries, 'pointerdown', '#reset'));
     assert(interactionIDsMatch(inp3.entries));
     assert(inp3.entries[0].interactionId > inp2.entries[0].interactionId);
@@ -324,6 +338,7 @@ describe('onINP()', async function() {
       assert(inp1.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(inp1.name, 'INP');
       assert.strictEqual(inp1.value, inp1.delta);
+      assert.strictEqual(inp1.rating, 'good');
       assert(containsEntry(inp1.entries, 'click', 'h1'));
       assert(interactionIDsMatch(inp1.entries));
       assert(inp1.entries[0].interactionId > 0);
@@ -362,6 +377,7 @@ describe('onINP()', async function() {
       assert(inp2.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(inp2.name, 'INP');
       assert.strictEqual(inp2.value, inp1.value + inp2.delta);
+      assert.strictEqual(inp2.rating, 'needs-improvement');
       assert(containsEntry(inp2.entries, 'pointerup', '#reset'));
       assert(interactionIDsMatch(inp2.entries));
       assert(inp2.entries[0].interactionId > 0);

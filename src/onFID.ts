@@ -36,6 +36,9 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
+  // https://web.dev/fid/#what-is-a-good-fid-score
+  const thresholds = [100, 300];
+
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FID');
   let report: ReturnType<typeof bindReporter>;
@@ -54,7 +57,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
   }
 
   const po = observe('first-input', handleEntries);
-  report = bindReporter(onReport, metric, opts.reportAllChanges);
+  report = bindReporter(onReport, metric, thresholds, opts.reportAllChanges);
 
   if (po) {
     onHidden(() => {
@@ -72,7 +75,9 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
     }
     onBFCacheRestore(() => {
       metric = initMetric('FID');
-      report = bindReporter(onReport, metric, opts!.reportAllChanges);
+      report = bindReporter(
+          onReport, metric, thresholds, opts!.reportAllChanges);
+
       window.webVitals.resetFirstInputPolyfill();
       window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
     });
@@ -81,7 +86,9 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
     if (po) {
       onBFCacheRestore(() => {
         metric = initMetric('FID');
-        report = bindReporter(onReport, metric, opts!.reportAllChanges);
+        report = bindReporter(
+            onReport, metric, thresholds, opts!.reportAllChanges);
+
         resetFirstInputPolyfill();
         firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
       });

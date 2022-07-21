@@ -41,6 +41,9 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
+  // https://web.dev/lcp/#what-is-a-good-lcp-score
+  const thresholds = [2500, 4000];
+
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;
@@ -66,7 +69,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   const po = observe('largest-contentful-paint', handleEntries);
 
   if (po) {
-    report = bindReporter(onReport, metric, opts.reportAllChanges);
+    report = bindReporter(onReport, metric, thresholds, opts.reportAllChanges);
 
     const stopListening = () => {
       if (!reportedMetricIDs[metric.id]) {
@@ -88,7 +91,9 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     onBFCacheRestore((event) => {
       metric = initMetric('LCP');
-      report = bindReporter(onReport, metric, opts!.reportAllChanges);
+      report = bindReporter(
+          onReport, metric, thresholds, opts!.reportAllChanges);
+
       requestAnimationFrame(() => {
         requestAnimationFrame(() => {
           metric.value = performance.now() - event.timeStamp;

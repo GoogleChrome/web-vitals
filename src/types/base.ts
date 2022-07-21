@@ -29,6 +29,12 @@ export interface Metric {
   value: number;
 
   /**
+   * The rating as to whether the metric value is within the "good",
+   * "needs improvement", or "poor" thresholds of the metric.
+   */
+  rating: 'good' | 'needs-improvement' | 'poor';
+
+  /**
    * The delta between the current value and the last-reported value.
    * On the first report, `delta` and `value` will always be the same.
    */

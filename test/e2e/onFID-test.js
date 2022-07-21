@@ -51,6 +51,7 @@ describe('onFID()', async function() {
     assert(fid.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
+    assert.strictEqual(fid.rating, 'good');
     assert.match(fid.navigationType, /navigate|reload/);
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
@@ -102,6 +103,7 @@ describe('onFID()', async function() {
     assert(fid.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
+    assert.strictEqual(fid.rating, 'good');
     assert.match(fid.navigationType, /navigate|reload/);
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
     if (browserSupportsFID) {
@@ -169,6 +171,7 @@ describe('onFID()', async function() {
     assert(fid1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(fid1.name, 'FID');
     assert.strictEqual(fid1.value, fid1.delta);
+    assert.strictEqual(fid1.rating, 'good');
     assert.match(fid1.navigationType, /navigate|reload/);
     assert.match(fid1.entries[0].name, /(mouse|pointer)down/);
 
@@ -185,6 +188,7 @@ describe('onFID()', async function() {
     assert(fid2.id.match(/^v2-\d+-\d+$/));
     assert(fid1.id !== fid2.id);
     assert.strictEqual(fid2.name, 'FID');
+    assert.strictEqual(fid2.rating, 'good');
     assert.strictEqual(fid2.value, fid2.delta);
     assert.strictEqual(fid2.navigationType, 'back_forward_cache');
     assert.match(fid2.entries[0].name, /(mouse|pointer)down/);
@@ -207,6 +211,7 @@ describe('onFID()', async function() {
       assert(fid.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(fid.name, 'FID');
       assert.strictEqual(fid.value, fid.delta);
+      assert.strictEqual(fid.rating, 'good');
       assert.match(fid.navigationType, /navigate|reload/);
       assert.match(fid.entries[0].name, /(mouse|pointer)down/);
 

@@ -137,6 +137,9 @@
     <script>{{ webVitalsPolyfill | safe }}</script>
   {% endif %}
   {% block head %}{% endblock %}
+  {% if renderBlocking %}
+    <link rel="stylesheet" href="/test/css/styles.css?delay={{ renderBlocking }}">
+  {% endif %}
   <style>
     * {
       box-sizing: border-box;
