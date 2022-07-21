@@ -460,10 +460,13 @@ function sendToGoogleAnalytics({name, delta, value, id, attribution}) {
   switch (name) {
     case 'CLS':
       eventParams.debug_target = attribution.largestShiftTarget;
+      break;
     case 'FID':
       eventParams.debug_target = attribution.eventTarget;
+      break;
     case 'LCP':
       eventParams.debug_target = attribution.element;
+      break;
   }
 
   // Assumes the global `gtag()` function exists, see:
