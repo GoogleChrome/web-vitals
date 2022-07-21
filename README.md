@@ -745,6 +745,29 @@ interface ReportOpts {
 }
 ```
 
+#### `LoadState`
+
+The `LoadState` type is used in several of the metric [attribution objects](#attribution).
+
+```ts
+/**
+ * The loading state of the document. Note: this value is similar to
+ * `document.readyState` but it subdivides the "interactive" state into the
+ * time before and after the DOMContentLoaded event fires.
+ *
+ * State descriptions:
+ * - `loading`: the initial document response has not yet been fully downloaded
+ *   and parsed. This is equivalent to the corresponding `readyState` value.
+ * - `domInteractive`: the document has been fully loaded and parsed, but
+ *   scripts may not have yet finished loading and executing.
+ * - `domContentLoaded`: the document is fully loaded and parsed, and all
+ *   scripts (except `async` scripts) have loaded and finished executing.
+ * - `loaded`: the document and all of its sub-resources have finished loading.
+ *   This is equivalent to a document `readyState` of "complete".
+ */
+export type LoadState = 'loading' | 'domInteractive' | 'domContentloaded' | 'loaded';
+```
+
 #### `FirstInputPolyfillEntry`
 
 When using the FID polyfill (and if the browser doesn't natively support the Event Timing API), `metric.entries` will contain an object that polyfills the `PerformanceEventTiming` entry:
