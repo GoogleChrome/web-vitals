@@ -56,8 +56,12 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
+  // https://web.dev/ttfb/#what-is-a-good-ttfb-score
+  const thresholds = [800, 1800];
+
   let metric = initMetric('TTFB');
-  let report = bindReporter(onReport, metric, opts.reportAllChanges);
+  let report = bindReporter(
+      onReport, metric, thresholds, opts.reportAllChanges);
 
   whenReady(() => {
     const navEntry = getNavigationEntry();
@@ -83,7 +87,7 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
 
   onBFCacheRestore(() => {
     metric = initMetric('TTFB', 0);
-    report = bindReporter(onReport, metric, opts!.reportAllChanges);
+    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
     report(true);
   });
 };

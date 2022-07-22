@@ -38,6 +38,7 @@ export const initMetric = (name: Metric['name'], value?: number): Metric => {
   return {
     name,
     value: typeof value === 'undefined' ? -1 : value,
+    rating: 'good', // Will be updated if the value changes.
     delta: 0,
     entries: [],
     id: generateUniqueID(),

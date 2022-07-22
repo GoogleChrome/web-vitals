@@ -51,6 +51,9 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
+  // https://web.dev/cls/#what-is-a-good-cls-score
+  const thresholds = [0.1, 0.25];
+
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   if (!isMonitoringFCP) {
@@ -106,7 +109,8 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
 
   const po = observe('layout-shift', handleEntries);
   if (po) {
-    report = bindReporter(onReportWrapped, metric, opts.reportAllChanges);
+    report = bindReporter(
+        onReportWrapped, metric, thresholds, opts.reportAllChanges);
 
     onHidden(() => {
       handleEntries(po.takeRecords() as CLSMetric['entries']);
@@ -117,7 +121,8 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       sessionValue = 0;
       fcpValue = -1;
       metric = initMetric('CLS', 0);
-      report = bindReporter(onReportWrapped, metric, opts!.reportAllChanges);
+      report = bindReporter(
+          onReportWrapped, metric, thresholds, opts!.reportAllChanges);
     });
   }
 };

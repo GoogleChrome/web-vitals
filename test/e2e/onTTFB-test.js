@@ -73,6 +73,7 @@ describe('onTTFB()', async function() {
     assert(ttfb.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
     assert.strictEqual(ttfb.navigationType, 'navigate');
     assert.strictEqual(ttfb.entries.length, 1);
 
@@ -90,6 +91,25 @@ describe('onTTFB()', async function() {
     assert(ttfb.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
+    assert.strictEqual(ttfb.navigationType, 'navigate');
+    assert.strictEqual(ttfb.entries.length, 1);
+
+    assertValidEntry(ttfb.entries[0]);
+  });
+
+  it('reports the correct value when the response is delayed', async function() {
+    await browser.url('/test/ttfb?delay=1000');
+
+    const ttfb = await getTTFBBeacon();
+
+    assert(ttfb.value >= 1000);
+    assert(ttfb.value >= ttfb.entries[0].requestStart);
+    assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
+    assert(ttfb.id.match(/^v2-\d+-\d+$/));
+    assert.strictEqual(ttfb.name, 'TTFB');
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'needs-improvement');
     assert.strictEqual(ttfb.navigationType, 'navigate');
     assert.strictEqual(ttfb.entries.length, 1);
 
@@ -103,6 +123,7 @@ describe('onTTFB()', async function() {
 
     assert(ttfb.value >= 0);
     assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
     assert.strictEqual(ttfb.entries.length, 1);
     assert.strictEqual(ttfb.navigationType, 'prerender');
     assert.strictEqual(ttfb.value, Math.max(
@@ -123,6 +144,7 @@ describe('onTTFB()', async function() {
 
     assert(ttfb.value >= 0);
     assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
     assert.strictEqual(ttfb.entries.length, 1);
     assert.strictEqual(ttfb.navigationType, 'prerender');
     assert.strictEqual(ttfb.value, Math.max(
@@ -141,6 +163,7 @@ describe('onTTFB()', async function() {
     assert(ttfb1.value <= ttfb1.entries[0].loadEventEnd);
     assert(ttfb1.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(ttfb1.name, 'TTFB');
+    assert.strictEqual(ttfb1.rating, 'good');
     assert.strictEqual(ttfb1.value, ttfb1.delta);
     assert.strictEqual(ttfb1.navigationType, 'navigate');
     assert.strictEqual(ttfb1.entries.length, 1);
@@ -156,6 +179,7 @@ describe('onTTFB()', async function() {
     assert(ttfb2.id.match(/^v2-\d+-\d+$/));
     assert.strictEqual(ttfb2.name, 'TTFB');
     assert.strictEqual(ttfb2.value, ttfb2.delta);
+    assert.strictEqual(ttfb2.rating, 'good');
     assert.strictEqual(ttfb2.navigationType, 'back_forward_cache');
     assert.strictEqual(ttfb2.entries.length, 0);
   });
@@ -172,6 +196,7 @@ describe('onTTFB()', async function() {
       assert(ttfb.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
+      assert.strictEqual(ttfb.rating, 'good');
       assert.strictEqual(ttfb.navigationType, 'navigate');
       assert.strictEqual(ttfb.entries.length, 1);
 
@@ -202,6 +227,7 @@ describe('onTTFB()', async function() {
 
       assert(ttfb.value >= 0);
       assert.strictEqual(ttfb.value, ttfb.delta);
+      assert.strictEqual(ttfb.rating, 'good');
       assert.strictEqual(ttfb.entries.length, 1);
       assert.strictEqual(ttfb.navigationType, 'prerender');
       assert.strictEqual(ttfb.value,
@@ -242,6 +268,7 @@ describe('onTTFB()', async function() {
       assert(ttfb.id.match(/^v2-\d+-\d+$/));
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
+      assert.strictEqual(ttfb.rating, 'good');
       assert.strictEqual(ttfb.navigationType, 'back_forward_cache');
       assert.strictEqual(ttfb.entries.length, 0);
 
