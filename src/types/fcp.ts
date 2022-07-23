@@ -44,7 +44,7 @@ export interface FCPMetric extends Metric {
   /**
    * The loading state of the document at the time when FCP `occurred (see
    * `LoadState` for details). Ideally, documents can paint before they finish
-   * loading (e.g. the `loading` or `domInteractive` phases).
+   * loading (e.g. the `loading` or `interactive` phases).
    */
   loadState: LoadState,
   /**

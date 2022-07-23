@@ -59,12 +59,13 @@ export interface Metric {
   entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
 
   /**
-   * For regular navigations, the type will be the same as the type indicated
-   * by the Navigation Timing API (or `undefined` if the browser doesn't
+   * The type of navigation
+   *
+   * Navigation Timing API (or `undefined` if the browser doesn't
    * support that API). For pages that are restored from the bfcache, this
-   * value will be 'back_forward_cache'.
+   * value will be 'back-forward-cache'.
    */
-  navigationType:  NavigationTimingType | 'back_forward_cache' | 'prerender' | undefined;
+  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender';
 }
 
 /**
@@ -96,11 +97,11 @@ export interface ReportOpts {
  * State descriptions:
  * - `loading`: the initial document response has not yet been fully downloaded
  *   and parsed. This is equivalent to the corresponding `readyState` value.
- * - `domInteractive`: the document has been fully loaded and parsed, but
+ * - `interactive`: the document has been fully loaded and parsed, but
  *   scripts may not have yet finished loading and executing.
- * - `domContentLoaded`: the document is fully loaded and parsed, and all
+ * - `content-loaded`: the document is fully loaded and parsed, and all
  *   scripts (except `async` scripts) have loaded and finished executing.
- * - `loaded`: the document and all of its sub-resources have finished loading.
- *   This is equivalent to a document `readyState` of "complete".
+ * - `complete`: the document and all of its sub-resources have finished
+ *   loading. This is equivalent to the corresponding `readyState` value.
  */
-export type LoadState = 'loading' | 'domInteractive' | 'domContentloaded' | 'loaded';
+export type LoadState = 'loading' | 'interactive' | 'content-loaded' | 'complete';

@@ -180,7 +180,7 @@ describe('onTTFB()', async function() {
     assert.strictEqual(ttfb2.name, 'TTFB');
     assert.strictEqual(ttfb2.value, ttfb2.delta);
     assert.strictEqual(ttfb2.rating, 'good');
-    assert.strictEqual(ttfb2.navigationType, 'back_forward_cache');
+    assert.strictEqual(ttfb2.navigationType, 'back-forward-cache');
     assert.strictEqual(ttfb2.entries.length, 0);
   });
 
@@ -269,7 +269,7 @@ describe('onTTFB()', async function() {
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
       assert.strictEqual(ttfb.rating, 'good');
-      assert.strictEqual(ttfb.navigationType, 'back_forward_cache');
+      assert.strictEqual(ttfb.navigationType, 'back-forward-cache');
       assert.strictEqual(ttfb.entries.length, 0);
 
       assert.strictEqual(ttfb.attribution.waitingTime, 0);
