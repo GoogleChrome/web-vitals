@@ -77,6 +77,8 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
       handleEntries([fcpEntry]);
     }
 
+    // Only report after a bfcache restore if the `PerformanceObserver`
+    // successfully registered or the `paint` entry exists.
     onBFCacheRestore((event) => {
       metric = initMetric('FCP');
       report = bindReporter(

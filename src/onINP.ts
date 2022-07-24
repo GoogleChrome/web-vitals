@@ -210,6 +210,8 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       report(true);
     });
 
+    // Only report after a bfcache restore if the `PerformanceObserver`
+    // successfully registered.
     onBFCacheRestore(() => {
       longestInteractionList = [];
       // Important, we want the count for the full page here,

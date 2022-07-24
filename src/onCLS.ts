@@ -117,6 +117,8 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       report(true);
     });
 
+    // Only report after a bfcache restore if the `PerformanceObserver`
+    // successfully registered.
     onBFCacheRestore(() => {
       sessionValue = 0;
       fcpValue = -1;
