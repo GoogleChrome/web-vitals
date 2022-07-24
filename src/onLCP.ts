@@ -89,6 +89,8 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     onHidden(stopListening, true);
 
+    // Only report after a bfcache restore if the `PerformanceObserver`
+    // successfully registered.
     onBFCacheRestore((event) => {
       metric = initMetric('LCP');
       report = bindReporter(

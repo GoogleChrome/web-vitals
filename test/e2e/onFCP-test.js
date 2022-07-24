@@ -174,7 +174,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp2.value, fcp2.delta);
     assert.strictEqual(fcp2.rating, 'good');
     assert.strictEqual(fcp2.entries.length, 0);
-    assert.strictEqual(fcp2.navigationType, 'back_forward_cache');
+    assert.strictEqual(fcp2.navigationType, 'back-forward-cache');
 
     await clearBeacons();
     await stubForwardBack();
@@ -189,7 +189,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp3.value, fcp3.delta);
     assert.strictEqual(fcp3.rating, 'good');
     assert.strictEqual(fcp3.entries.length, 0);
-    assert.strictEqual(fcp3.navigationType, 'back_forward_cache');
+    assert.strictEqual(fcp3.navigationType, 'back-forward-cache');
   });
 
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function() {
@@ -217,7 +217,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp1.value, fcp1.delta);
     assert.strictEqual(fcp1.rating, 'good');
     assert.strictEqual(fcp1.entries.length, 0);
-    assert.strictEqual(fcp1.navigationType, 'back_forward_cache');
+    assert.strictEqual(fcp1.navigationType, 'back-forward-cache');
 
     await clearBeacons();
     await stubForwardBack();
@@ -232,7 +232,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp2.value, fcp2.delta);
     assert.strictEqual(fcp2.rating, 'good');
     assert.strictEqual(fcp2.entries.length, 0);
-    assert.strictEqual(fcp2.navigationType, 'back_forward_cache');
+    assert.strictEqual(fcp2.navigationType, 'back-forward-cache');
   });
 
   describe('attribution', function() {
@@ -266,7 +266,7 @@ describe('onFCP()', async function() {
       assert.equal(fcp.attribution.firstByteToFCP,
           fcp.value - navEntry.responseStart);
       assert.match(fcp.attribution.loadState,
-          /load(ing|ed)|dom(Interactive|ContentLoaded)/);
+          /^(loading|dom-(interactive|content-loaded)|complete)$/);
 
       assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
 
@@ -346,11 +346,11 @@ describe('onFCP()', async function() {
       assert.strictEqual(fcp.value, fcp.delta);
       assert.strictEqual(fcp.rating, 'good');
       assert.strictEqual(fcp.entries.length, 0);
-      assert.strictEqual(fcp.navigationType, 'back_forward_cache');
+      assert.strictEqual(fcp.navigationType, 'back-forward-cache');
 
       assert.equal(fcp.attribution.timeToFirstByte, 0);
       assert.equal(fcp.attribution.firstByteToFCP, fcp.value);
-      assert.equal(fcp.attribution.loadState, 'loaded');
+      assert.equal(fcp.attribution.loadState, 'complete');
       assert.equal(fcp.attribution.navigationEntry, undefined);
     });
   });

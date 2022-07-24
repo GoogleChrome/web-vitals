@@ -310,7 +310,7 @@ describe('onLCP()', async function() {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'good');
     assert.strictEqual(lcp1.entries.length, 0);
-    assert.strictEqual(lcp1.navigationType, 'back_forward_cache');
+    assert.strictEqual(lcp1.navigationType, 'back-forward-cache');
 
     await clearBeacons();
     await stubForwardBack();
@@ -324,7 +324,7 @@ describe('onLCP()', async function() {
     assert.strictEqual(lcp2.value, lcp2.delta);
     assert.strictEqual(lcp2.rating, 'good');
     assert.strictEqual(lcp2.entries.length, 0);
-    assert.strictEqual(lcp2.navigationType, 'back_forward_cache');
+    assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
   });
 
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function() {
@@ -356,7 +356,7 @@ describe('onLCP()', async function() {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'good');
     assert.strictEqual(lcp1.entries.length, 0);
-    assert.strictEqual(lcp1.navigationType, 'back_forward_cache');
+    assert.strictEqual(lcp1.navigationType, 'back-forward-cache');
 
     await clearBeacons();
     await stubForwardBack();
@@ -370,7 +370,7 @@ describe('onLCP()', async function() {
     assert.strictEqual(lcp2.value, lcp2.delta);
     assert.strictEqual(lcp2.rating, 'good');
     assert.strictEqual(lcp2.entries.length, 0);
-    assert.strictEqual(lcp2.navigationType, 'back_forward_cache');
+    assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
   });
 
   describe('attribution', function() {
@@ -583,7 +583,7 @@ describe('onLCP()', async function() {
       assert.strictEqual(lcp2.name, 'LCP');
       assert.strictEqual(lcp2.value, lcp2.delta);
       assert.strictEqual(lcp2.entries.length, 0);
-      assert.strictEqual(lcp2.navigationType, 'back_forward_cache');
+      assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
 
       assert.equal(lcp2.attribution.element, undefined);
       assert.equal(lcp2.attribution.timeToFirstByte, 0);

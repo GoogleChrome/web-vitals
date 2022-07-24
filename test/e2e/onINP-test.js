@@ -273,7 +273,7 @@ describe('onINP()', async function() {
     assert(containsEntry(inp2.entries, 'keydown', '#textarea'));
     assert(interactionIDsMatch(inp2.entries));
     assert(inp2.entries[0].interactionId > inp1.entries[0].interactionId);
-    assert.strictEqual(inp2.navigationType, 'back_forward_cache');
+    assert.strictEqual(inp2.navigationType, 'back-forward-cache');
 
     await stubForwardBack();
 
@@ -299,7 +299,7 @@ describe('onINP()', async function() {
     assert(containsEntry(inp3.entries, 'pointerdown', '#reset'));
     assert(interactionIDsMatch(inp3.entries));
     assert(inp3.entries[0].interactionId > inp2.entries[0].interactionId);
-    assert.strictEqual(inp3.navigationType, 'back_forward_cache');
+    assert.strictEqual(inp3.navigationType, 'back-forward-cache');
   });
 
   it('does not report if there were no interactions', async function() {
@@ -348,7 +348,7 @@ describe('onINP()', async function() {
       assert.equal(inp1.attribution.eventTarget, 'html>body>main>h1');
       assert.equal(inp1.attribution.eventType, clickEntry.name);
       assert.equal(inp1.attribution.eventTime, clickEntry.startTime);
-      assert.equal(inp1.attribution.loadState, 'loaded');
+      assert.equal(inp1.attribution.loadState, 'complete');
 
       // Deep equal won't work since some of the properties are removed before
       // sending to /collect, so just compare some.
@@ -387,7 +387,7 @@ describe('onINP()', async function() {
       assert.equal(inp2.attribution.eventTarget, '#reset');
       assert.equal(inp2.attribution.eventType, pointerupEntry.name);
       assert.equal(inp2.attribution.eventTime, pointerupEntry.startTime);
-      assert.equal(inp2.attribution.loadState, 'loaded');
+      assert.equal(inp2.attribution.loadState, 'complete');
 
       // Deep equal won't work since some of the properties are removed before
       // sending to /collect, so just compare some.
@@ -412,7 +412,7 @@ describe('onINP()', async function() {
       await beaconCountIs(1);
 
       const [inp1] = await getBeacons();
-      assert.equal(inp1.attribution.loadState, 'domInteractive');
+      assert.equal(inp1.attribution.loadState, 'dom-interactive');
 
       await clearBeacons();
 

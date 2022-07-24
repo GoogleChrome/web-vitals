@@ -401,7 +401,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls2.value, cls2.delta);
     assert.strictEqual(cls2.rating, 'good');
     assert.strictEqual(cls2.entries.length, 1);
-    assert.strictEqual(cls2.navigationType, 'back_forward_cache');
+    assert.strictEqual(cls2.navigationType, 'back-forward-cache');
 
     await clearBeacons();
     await triggerLayoutShift();
@@ -419,7 +419,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls3.value, cls3.delta);
     assert.strictEqual(cls3.rating, 'good');
     assert.strictEqual(cls3.entries.length, 1);
-    assert.strictEqual(cls3.navigationType, 'back_forward_cache');
+    assert.strictEqual(cls3.navigationType, 'back-forward-cache');
   });
 
   it('continues reporting after bfcache restore (reportAllChanges === true)', async function() {
@@ -463,7 +463,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls3.value, cls3.delta);
     assert.strictEqual(cls3.rating, 'good');
     assert.strictEqual(cls3.entries.length, 1);
-    assert.strictEqual(cls3.navigationType, 'back_forward_cache');
+    assert.strictEqual(cls3.navigationType, 'back-forward-cache');
   });
 
   it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === false)', async function() {
@@ -585,7 +585,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.delta, cls.value);
     assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 1);
-    assert.strictEqual(cls.navigationType, 'back_forward_cache');
+    assert.strictEqual(cls.navigationType, 'back-forward-cache');
   });
 
   describe('attribution', function() {
@@ -623,7 +623,8 @@ describe('onCLS()', async function() {
           cls.attribution.largestShiftTime, largestShiftEntry.startTime);
 
       // The first shift (before the second image loads) is the largest.
-      assert.match(cls.attribution.loadState, /dom(ContentLoaded|Interactive)/);
+      assert.match(cls.attribution.loadState,
+          /^dom-(interactive|content-loaded)$/);
     });
 
     it('reports whether the largest shift was before or after load', async function() {
@@ -660,7 +661,7 @@ describe('onCLS()', async function() {
           cls.attribution.largestShiftTime, largestShiftEntry.startTime);
 
       // The first shift (before the second image loads) is the largest.
-      assert.equal(cls.attribution.loadState, 'loaded');
+      assert.equal(cls.attribution.loadState, 'complete');
     });
 
     it('reports an empty object when no shifts', async function() {

@@ -55,7 +55,7 @@ export interface FIDAttribution {
    * The loading state of the document at the time when the first interaction
    * occurred (see `LoadState` for details). If the first interaction occurred
    * while the document was loading and executing script (e.g. usually in the
-   * `domInteractive` phase) it can result in long input delays.
+   * `dom-interactive` phase) it can result in long input delays.
    */
   loadState: LoadState;
 }

@@ -779,14 +779,14 @@ The `LoadState` type is used in several of the metric [attribution objects](#att
  * State descriptions:
  * - `loading`: the initial document response has not yet been fully downloaded
  *   and parsed. This is equivalent to the corresponding `readyState` value.
- * - `domInteractive`: the document has been fully loaded and parsed, but
+ * - `dom-interactive`: the document has been fully loaded and parsed, but
  *   scripts may not have yet finished loading and executing.
- * - `domContentLoaded`: the document is fully loaded and parsed, and all
+ * - `dom-content-loaded`: the document is fully loaded and parsed, and all
  *   scripts (except `async` scripts) have loaded and finished executing.
- * - `loaded`: the document and all of its sub-resources have finished loading.
- *   This is equivalent to a document `readyState` of "complete".
+ * - `complete`: the document and all of its sub-resources have finished
+ *   loading. This is equivalent to the corresponding `readyState` value.
  */
-export type LoadState = 'loading' | 'domInteractive' | 'domContentloaded' | 'loaded';
+export type LoadState = 'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';
 ```
 
 #### `FirstInputPolyfillEntry`
@@ -972,7 +972,7 @@ interface FCPAttribution {
   /**
    * The loading state of the document at the time when FCP `occurred (see
    * `LoadState` for details). Ideally, documents can paint before they finish
-   * loading (e.g. the `loading` or `domInteractive` phases).
+   * loading (e.g. the `loading` or `dom-interactive` phases).
    */
   loadState: LoadState,
   /**
@@ -1014,7 +1014,7 @@ interface FIDAttribution {
    * The loading state of the document at the time when the first interaction
    * occurred (see `LoadState` for details). If the first interaction occurred
    * while the document was loading and executing script (e.g. usually in the
-   * `domInteractive` phase) it can result in long input delays.
+   * `dom-interactive` phase) it can result in long input delays.
    */
   loadState: LoadState;
 }
@@ -1047,7 +1047,7 @@ interface INPAttribution {
    * The loading state of the document at the time when the even corresponding
    * to INP occurred (see `LoadState` for details). If the interaction occurred
    * while the document was loading and executing script (e.g. usually in the
-   * `domInteractive` phase) it can result in long delays.
+   * `dom-interactive` phase) it can result in long delays.
    */
   loadState?: LoadState;
 }

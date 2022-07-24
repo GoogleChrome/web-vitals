@@ -33,17 +33,17 @@ export const getLoadState = (timestamp: number): LoadState => {
           timestamp < navigationEntry.domContentLoadedEventStart) {
         // If the `domContentLoadedEventStart` timestamp has not yet been
         // set, or if the given timestamp is less than that value.
-        return 'domInteractive';
+        return 'dom-interactive';
       } else if (navigationEntry.domComplete === 0 ||
           timestamp < navigationEntry.domComplete) {
         // If the `domComplete` timestamp has not yet been
         // set, or if the given timestamp is less than that value.
-        return 'domContentloaded';
+        return 'dom-content-loaded';
       }
     }
   }
   // If any of the above fail, default to loaded. This could really only
   // happy if the browser doesn't support the performance timeline, which
   // most likely means this code would never run anyway.
-  return 'loaded';
+  return 'complete';
 }

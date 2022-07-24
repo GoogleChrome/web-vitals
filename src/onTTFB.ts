@@ -82,12 +82,16 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       metric.entries = [navEntry];
 
       report(true);
-    }
-  });
 
-  onBFCacheRestore(() => {
-    metric = initMetric('TTFB', 0);
-    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
-    report(true);
+      // Only report TTFB after bfcache restores if a `navigation` entry
+      // was reported for the initial load.
+      onBFCacheRestore(() => {
+        metric = initMetric('TTFB', 0);
+        report = bindReporter(
+            onReport, metric, thresholds, opts!.reportAllChanges);
+
+        report(true);
+      });
+    }
   });
 };

@@ -23,5 +23,5 @@ export interface FirstInputPolyfillCallback {
 export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
     'initiatorType' | 'nextHopProtocol' | 'redirectCount' | 'transferSize' |
     'encodedBodySize' | 'decodedBodySize' | 'type'> & {
-  type?: PerformanceNavigationTiming['type'];
+  type: PerformanceNavigationTiming['type'];
 }

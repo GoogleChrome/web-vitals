@@ -190,7 +190,7 @@ describe('onFID()', async function() {
     assert.strictEqual(fid2.name, 'FID');
     assert.strictEqual(fid2.rating, 'good');
     assert.strictEqual(fid2.value, fid2.delta);
-    assert.strictEqual(fid2.navigationType, 'back_forward_cache');
+    assert.strictEqual(fid2.navigationType, 'back-forward-cache');
     assert.match(fid2.entries[0].name, /(mouse|pointer)down/);
   });
 
@@ -221,7 +221,7 @@ describe('onFID()', async function() {
       assert.equal(fid.attribution.eventTime, fid.entries[0].startTime);
       assert.equal(fid.attribution.eventType, fid.entries[0].name);
       assert.deepEqual(fid.attribution.eventEntry, fid.entries[0]);
-      assert.equal(fid.attribution.loadState, 'loaded');
+      assert.equal(fid.attribution.loadState, 'complete');
     });
 
     it('reports the domReadyState when input occurred', async function() {
@@ -236,7 +236,7 @@ describe('onFID()', async function() {
       await beaconCountIs(1);
 
       const [fid1] = await getBeacons();
-      assert.equal(fid1.attribution.loadState, 'domInteractive');
+      assert.equal(fid1.attribution.loadState, 'dom-interactive');
 
       await clearBeacons();
 

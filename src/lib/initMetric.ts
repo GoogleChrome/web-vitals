@@ -23,15 +23,16 @@ import {Metric} from '../types.js';
 
 export const initMetric = (name: Metric['name'], value?: number): Metric => {
   const navEntry = getNavigationEntry();
-  let navigationType: Metric['navigationType'];
+  let navigationType: Metric['navigationType'] = 'navigate';
 
   if (getBFCacheRestoreTime() >= 0) {
-    navigationType = 'back_forward_cache';
+    navigationType = 'back-forward-cache';
   } else if (navEntry) {
     if (document.prerendering || getActivationStart() > 0) {
       navigationType = 'prerender';
     } else {
-      navigationType = navEntry.type;
+      navigationType =
+          navEntry.type.replace(/_/g, '-') as Metric['navigationType'];
     }
   }
 
