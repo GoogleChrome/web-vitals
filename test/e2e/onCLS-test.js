@@ -623,7 +623,8 @@ describe('onCLS()', async function() {
           cls.attribution.largestShiftTime, largestShiftEntry.startTime);
 
       // The first shift (before the second image loads) is the largest.
-      assert.match(cls.attribution.loadState, /(interactive|content-loaded)/);
+      assert.match(cls.attribution.loadState,
+          /^dom-(interactive|content-loaded)$/);
     });
 
     it('reports whether the largest shift was before or after load', async function() {

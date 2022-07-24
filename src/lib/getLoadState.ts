@@ -33,12 +33,12 @@ export const getLoadState = (timestamp: number): LoadState => {
           timestamp < navigationEntry.domContentLoadedEventStart) {
         // If the `domContentLoadedEventStart` timestamp has not yet been
         // set, or if the given timestamp is less than that value.
-        return 'interactive';
+        return 'dom-interactive';
       } else if (navigationEntry.domComplete === 0 ||
           timestamp < navigationEntry.domComplete) {
         // If the `domComplete` timestamp has not yet been
         // set, or if the given timestamp is less than that value.
-        return 'content-loaded';
+        return 'dom-content-loaded';
       }
     }
   }

@@ -97,11 +97,11 @@ export interface ReportOpts {
  * State descriptions:
  * - `loading`: the initial document response has not yet been fully downloaded
  *   and parsed. This is equivalent to the corresponding `readyState` value.
- * - `interactive`: the document has been fully loaded and parsed, but
+ * - `dom-interactive`: the document has been fully loaded and parsed, but
  *   scripts may not have yet finished loading and executing.
- * - `content-loaded`: the document is fully loaded and parsed, and all
+ * - `dom-content-loaded`: the document is fully loaded and parsed, and all
  *   scripts (except `async` scripts) have loaded and finished executing.
  * - `complete`: the document and all of its sub-resources have finished
  *   loading. This is equivalent to the corresponding `readyState` value.
  */
-export type LoadState = 'loading' | 'interactive' | 'content-loaded' | 'complete';
+export type LoadState = 'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';

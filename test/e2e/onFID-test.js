@@ -236,7 +236,7 @@ describe('onFID()', async function() {
       await beaconCountIs(1);
 
       const [fid1] = await getBeacons();
-      assert.equal(fid1.attribution.loadState, 'interactive');
+      assert.equal(fid1.attribution.loadState, 'dom-interactive');
 
       await clearBeacons();
 

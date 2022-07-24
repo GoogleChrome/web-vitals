@@ -54,7 +54,7 @@ export interface INPAttribution {
    * The loading state of the document at the time when the even corresponding
    * to INP occurred (see `LoadState` for details). If the interaction occurred
    * while the document was loading and executing script (e.g. usually in the
-   * `interactive` phase) it can result in long delays.
+   * `dom-interactive` phase) it can result in long delays.
    */
   loadState?: LoadState;
 }

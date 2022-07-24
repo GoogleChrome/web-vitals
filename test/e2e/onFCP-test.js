@@ -266,7 +266,7 @@ describe('onFCP()', async function() {
       assert.equal(fcp.attribution.firstByteToFCP,
           fcp.value - navEntry.responseStart);
       assert.match(fcp.attribution.loadState,
-          /^(loading|interactive|content-loaded|complete)$/);
+          /^(loading|dom-(interactive|content-loaded)|complete)$/);
 
       assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
 
