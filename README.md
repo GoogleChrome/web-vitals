@@ -643,9 +643,9 @@ For guidance on how to collect and use real-user data to debug performance issue
 
 _**⚠️ Warning ⚠️** the "base+polyfill" build is deprecated. See [#238](https://github.com/GoogleChrome/web-vitals/issues/238) for details._
 
-The `polyfill.js` script adds event listeners (to track FID cross-browser), and it records initial page visibility state as well as the timestamp of the first visibility change to hidden (to improve the accuracy of CLS, FCP, LCP, and FID).
+The `polyfill.js` script adds event listeners (to track FID cross-browser), and it records initial page visibility state as well as the timestamp of the first visibility change to hidden (to improve the accuracy of CLS, FCP, LCP, and FID). It also polyfills the [Navigation Timing API Level 2](https://www.w3.org/TR/navigation-timing-2/) in browsers that only support the original (now deprecated) [Navigation Timing API](https://www.w3.org/TR/navigation-timing/).
 
-In order for it to work properly, the script must be the first script added to the page, and it must run before the browser renders any content to the screen. This is why it needs to be added to the `<head>` of the document.
+In order for the polyfill to work properly, the script must be the first script added to the page, and it must run before the browser renders any content to the screen. This is why it needs to be added to the `<head>` of the document.
 
 The "standard" build of the `web-vitals` library includes some of the same logic found in `polyfill.js`. To avoid duplicating that code when using the "base+polyfill" build, the `web-vitals.base.js` bundle does not include any polyfill logic, instead it coordinates with the code in `polyfill.js`, which is why the two scripts must be used together.
 
@@ -791,7 +791,7 @@ export type LoadState = 'loading' | 'dom-interactive' | 'dom-content-loaded' | '
 
 #### `FirstInputPolyfillEntry`
 
-When using the FID polyfill (and if the browser doesn't natively support the Event Timing API), `metric.entries` will contain an object that polyfills the `PerformanceEventTiming` entry:
+If using the "base+polyfill" build (and if the browser doesn't natively support the Event Timing API), the `metric.entries` reported by `onFID()` will contain an object that polyfills the `PerformanceEventTiming` entry:
 
 ```ts
 type FirstInputPolyfillEntry = Omit<PerformanceEventTiming, 'processingEnd' | 'toJSON'>
@@ -807,12 +807,14 @@ interface FirstInputPolyfillCallback {
 
 #### `NavigationTimingPolyfillEntry`
 
-When calling `onTTFB()`, if the browser doesn't support the [Navigation Timing API Level 2](https://www.w3.org/TR/navigation-timing-2/) interface, it will polyfill the entry object using timings from `performance.timing`:
+If using the "base+polyfill" build (and if the browser doesn't support the [Navigation Timing API Level 2](https://www.w3.org/TR/navigation-timing-2/) interface), the `metric.entries` reported by `onTTFB()` will contain an object that polyfills the `PerformanceNavigationTiming` entry using timings from the legacy `performance.timing` interface:
 
 ```ts
-export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
-  'initiatorType' | 'nextHopProtocol' | 'redirectCount' | 'transferSize' |
-  'encodedBodySize' | 'decodedBodySize' | 'toJSON'>
+type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
+    'initiatorType' | 'nextHopProtocol' | 'redirectCount' | 'transferSize' |
+    'encodedBodySize' | 'decodedBodySize' | 'type'> & {
+  type: PerformanceNavigationTiming['type'];
+}
 ```
 
 #### `WebVitalsGlobal`
@@ -1145,12 +1147,12 @@ The `web-vitals` code has been tested and will run without error in all major br
 
 Browser support for each function is as follows:
 
-- `onCLS()`: Chromium,
-- `onFCP()`: Chromium, Firefox, Safari
-- `onFID()`: Chromium, Firefox, Safari, Internet Explorer (with the [polyfill](#how-to-use-the-polyfill))
+- `onCLS()`: Chromium
+- `onFCP()`: Chromium, Firefox, Safari 14.1+
+- `onFID()`: Chromium, Firefox _(with [polyfill](#how-to-use-the-polyfill): Safari, Internet Explorer)_
 - `onINP()`: Chromium
 - `onLCP()`: Chromium
-- `onTTFB()`: Chromium, Firefox, Safari, Internet Explorer
+- `onTTFB()`: Chromium, Firefox, Safari 15+ _(with [polyfill](#how-to-use-the-polyfill): Safari 8+, Internet Explorer)_
 
 ## Limitations
 

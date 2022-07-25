@@ -38,7 +38,12 @@ const getNavigationEntryFromPerformanceTiming = (): NavigationTimingPolyfillEntr
 };
 
 export const getNavigationEntry = (): PerformanceNavigationTiming | NavigationTimingPolyfillEntry | undefined => {
-  return window.performance && (performance.getEntriesByType &&
-      performance.getEntriesByType('navigation')[0] ||
-          getNavigationEntryFromPerformanceTiming());
+  if (window.__WEB_VITALS_POLYFILL__) {
+    return window.performance && (performance.getEntriesByType &&
+        performance.getEntriesByType('navigation')[0] ||
+            getNavigationEntryFromPerformanceTiming());
+  } else {
+    return window.performance && (performance.getEntriesByType &&
+        performance.getEntriesByType('navigation')[0]);
+  }
 };
