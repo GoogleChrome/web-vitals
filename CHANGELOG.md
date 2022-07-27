@@ -1,5 +1,17 @@
 # Changelog
 
+### v3.0.0-rc.0 (2022-07-26)
+
+- **[BREAKING]** Update naming of Metric object enums to be consistent ([#247](https://github.com/GoogleChrome/web-vitals/pull/247))
+- Update the metric ID prefix for v3 ([#251](https://github.com/GoogleChrome/web-vitals/pull/251))
+- Move the Navigation Timing API polyfill to the base+polyfill build ([#248](https://github.com/GoogleChrome/web-vitals/pull/248))
+- Add a metric rating property ([#246](https://github.com/GoogleChrome/web-vitals/pull/246))
+- Add a URL property to LCP attribution ([#244](https://github.com/GoogleChrome/web-vitals/pull/244))
+- Add deprecation notices for base+polyfill builds ([#242](https://github.com/GoogleChrome/web-vitals/pull/242))
+- Add a new attribution build for debugging issues in the field ([#237](https://github.com/GoogleChrome/web-vitals/pull/237))
+- Add support for prerendered pages ([#233](https://github.com/GoogleChrome/web-vitals/pull/233))
+- Update `onINP()` to also observe `first-input` entries ([#232](https://github.com/GoogleChrome/web-vitals/pull/232))
+
 ### v3.0.0-beta.2 (2022-05-11)
 
 - Ensure all deprecated symbols are annotated ([#227](https://github.com/GoogleChrome/web-vitals/pull/227))
