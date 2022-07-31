@@ -33,13 +33,13 @@ interface LayoutShift extends PerformanceEntry {
 let isMonitoringFCP = false;
 let fcpValue = -1;
 
-export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean, win = window) => {
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   if (!isMonitoringFCP) {
     getFCP((metric) => {
       fcpValue = metric.value;
-    });
+    }, false, win);
     isMonitoringFCP = true;
   }
 
@@ -84,20 +84,20 @@ export const getCLS = (onReport: ReportHandler, reportAllChanges?: boolean) => {
     }
   };
 
-  const po = observe('layout-shift', entryHandler as PerformanceEntryHandler);
+  const po = observe('layout-shift', entryHandler as PerformanceEntryHandler, win);
   if (po) {
     report = bindReporter(onReportWrapped, metric, reportAllChanges);
 
     onHidden(() => {
       po.takeRecords().map(entryHandler as PerformanceEntryHandler);
       report(true);
-    });
+    }, false, win);
 
     onBFCacheRestore(() => {
       sessionValue = 0;
       fcpValue = -1;
       metric = initMetric('CLS', 0);
       report = bindReporter(onReportWrapped, metric, reportAllChanges);
-    });
+    }, win);
   }
 };

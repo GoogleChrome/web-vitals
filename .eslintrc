@@ -53,7 +53,17 @@
         "node/no-unsupported-features/es-syntax": "off",
         "node/no-missing-require": "off",
         "node/shebang": "off",
-        "no-dupe-class-members": "off"
+        "no-dupe-class-members": "off",
+        "no-restricted-globals": ["ERROR",
+          "clearTimeout",
+          "document",
+          "addEventListener",
+          "removeEventListener",
+          "performance",
+          "PerformanceObserver",
+          "requestAnimationFrame",
+          "setTimeout"
+        ]
       },
       "parserOptions": {
         "ecmaVersion": 2018,

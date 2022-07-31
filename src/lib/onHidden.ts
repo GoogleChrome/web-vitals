@@ -20,7 +20,8 @@ export interface OnHiddenCallback {
 }
 
 
-export const onHidden = (cb: OnHiddenCallback, once?: boolean) => {
+export const onHidden = (cb: OnHiddenCallback, once?: boolean, win = window) => {
+  const {addEventListener, document, removeEventListener} = win;
   const onHiddenOrPageHide = (event: Event) => {
     if (event.type === 'pagehide' || document.visibilityState === 'hidden') {
       cb(event);

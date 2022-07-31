@@ -18,7 +18,8 @@ import {initMetric} from './lib/initMetric.js';
 import {ReportHandler, NavigationTimingPolyfillEntry} from './types.js';
 
 
-const afterLoad = (callback: () => void) => {
+const afterLoad = (callback: () => void, win: Window) => {
+  const {addEventListener, document, setTimeout} = win;
   if (document.readyState === 'complete') {
     // Queue a task so the callback runs after `loadEventEnd`.
     setTimeout(callback, 0);
@@ -28,7 +29,7 @@ const afterLoad = (callback: () => void) => {
   }
 }
 
-const getNavigationEntryFromPerformanceTiming = (): NavigationTimingPolyfillEntry => {
+const getNavigationEntryFromPerformanceTiming = (performance: Performance): NavigationTimingPolyfillEntry => {
   // Really annoying that TypeScript errors when using `PerformanceTiming`.
   const timing = performance.timing;
 
@@ -47,14 +48,15 @@ const getNavigationEntryFromPerformanceTiming = (): NavigationTimingPolyfillEntr
   return navigationEntry as unknown as NavigationTimingPolyfillEntry;
 };
 
-export const getTTFB = (onReport: ReportHandler) => {
+export const getTTFB = (onReport: ReportHandler, win = window) => {
   const metric = initMetric('TTFB');
+  const {performance} = win;
 
   afterLoad(() => {
     try {
       // Use the NavigationTiming L2 entry if available.
       const navigationEntry = performance.getEntriesByType('navigation')[0] ||
-          getNavigationEntryFromPerformanceTiming();
+          getNavigationEntryFromPerformanceTiming(performance);
 
       metric.value = metric.delta =
           (navigationEntry as PerformanceNavigationTiming).responseStart;
@@ -71,5 +73,5 @@ export const getTTFB = (onReport: ReportHandler) => {
     } catch (error) {
       // Do nothing.
     }
-  });
+  }, win);
 };

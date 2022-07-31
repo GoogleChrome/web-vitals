@@ -65,11 +65,11 @@
   "size-limit": [
     {
       "path": "dist/web-vitals.js",
-      "limit": "1.72 kB"
+      "limit": "1.89 kB"
     },
     {
       "path": "dist/web-vitals.base.js",
-      "limit": "1.49 kB"
+      "limit": "1.67 kB"
     },
     {
       "path": "dist/polyfill.js",

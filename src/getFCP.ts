@@ -22,8 +22,9 @@ import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
 import {ReportHandler} from './types.js';
 
 
-export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
-  const visibilityWatcher = getVisibilityWatcher();
+export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean, win = window) => {
+  const {performance, requestAnimationFrame} = win;
+  const visibilityWatcher = getVisibilityWatcher(win);
   let metric = initMetric('FCP');
   let report: ReturnType<typeof bindReporter>;
 
@@ -48,10 +49,10 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
   // https://github.com/GoogleChrome/web-vitals/issues/159
   // The check for `window.performance` is needed to support Opera mini:
   // https://github.com/GoogleChrome/web-vitals/issues/185
-  const fcpEntry = window.performance && performance.getEntriesByName &&
+  const fcpEntry = performance && performance.getEntriesByName &&
       performance.getEntriesByName('first-contentful-paint')[0];
 
-  const po = fcpEntry ? null : observe('paint', entryHandler);
+  const po = fcpEntry ? null : observe('paint', entryHandler, win);
 
   if (fcpEntry || po) {
     report = bindReporter(onReport, metric, reportAllChanges);
@@ -69,6 +70,6 @@ export const getFCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
           report(true);
         });
       });
-    });
+    }, win);
   }
 };

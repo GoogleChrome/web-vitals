@@ -18,6 +18,8 @@ export interface PerformanceEntryHandler {
   (entry: PerformanceEntry): void;
 }
 
+type PerformanceObserverType = PerformanceObserver;
+
 /**
  * Takes a performance entry type and a callback function, and creates a
  * `PerformanceObserver` instance that will observe the specified entry type
@@ -29,7 +31,9 @@ export interface PerformanceEntryHandler {
 export const observe = (
     type: string,
     callback: PerformanceEntryHandler,
-): PerformanceObserver | undefined => {
+    win = window
+): PerformanceObserverType | undefined => {
+  const {PerformanceObserver} = win;
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
       // More extensive feature detect needed for Firefox due to:
@@ -38,7 +42,7 @@ export const observe = (
         return;
       }
 
-      const po: PerformanceObserver =
+      const po: PerformanceObserverType =
           new PerformanceObserver((l) => l.getEntries().map(callback));
 
       po.observe({type, buffered: true});

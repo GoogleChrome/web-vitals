@@ -19,31 +19,32 @@ import {onHidden} from './onHidden.js';
 
 let firstHiddenTime = -1;
 
-const initHiddenTime = () => {
+const initHiddenTime = (document: Document) => {
   return document.visibilityState === 'hidden' ? 0 : Infinity;
 }
 
-const trackChanges = () => {
+const trackChanges = (win: Window & typeof globalThis) => {
   // Update the time if/when the document becomes hidden.
   onHidden(({timeStamp}) => {
     firstHiddenTime = timeStamp
-  }, true);
+  }, true, win);
 };
 
-export const getVisibilityWatcher = () => {
+export const getVisibilityWatcher = (win = window) => {
+  const {document, setTimeout, webVitals} = win;
   if (firstHiddenTime < 0) {
     // If the document is hidden when this code runs, assume it was hidden
     // since navigation start. This isn't a perfect heuristic, but it's the
     // best we can do until an API is available to support querying past
     // visibilityState.
-    if (window.__WEB_VITALS_POLYFILL__) {
-      firstHiddenTime = window.webVitals.firstHiddenTime;
+    if (win.__WEB_VITALS_POLYFILL__) {
+      firstHiddenTime = webVitals.firstHiddenTime;
       if (firstHiddenTime === Infinity) {
-        trackChanges();
+        trackChanges(win);
       }
     } else {
-      firstHiddenTime = initHiddenTime();
-      trackChanges();
+      firstHiddenTime = initHiddenTime(document);
+      trackChanges(win);
     }
 
     // Reset the time on bfcache restores.
@@ -52,10 +53,10 @@ export const getVisibilityWatcher = () => {
       // had an opportunity to change to visible in all browsers.
       // https://bugs.chromium.org/p/chromium/issues/detail?id=1133363
       setTimeout(() => {
-        firstHiddenTime = initHiddenTime();
-        trackChanges();
+        firstHiddenTime = initHiddenTime(document);
+        trackChanges(win);
       }, 0);
-    });
+    }, win);
   }
   return {
     get firstHiddenTime() {

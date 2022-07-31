@@ -18,8 +18,8 @@ interface onBFCacheRestoreCallback {
   (event: PageTransitionEvent): void;
 }
 
-export const onBFCacheRestore = (cb: onBFCacheRestoreCallback) => {
-  addEventListener('pageshow', (event) => {
+export const onBFCacheRestore = (cb: onBFCacheRestoreCallback, win = window) => {
+  win.addEventListener('pageshow', (event) => {
     if (event.persisted) {
       cb(event);
     }

@@ -25,8 +25,9 @@ import {ReportHandler} from './types.js';
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
-export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
-  const visibilityWatcher = getVisibilityWatcher();
+export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean, win = window) => {
+  const {addEventListener, requestAnimationFrame, performance} = win;
+  const visibilityWatcher = getVisibilityWatcher(win);
   let metric = initMetric('LCP');
   let report: ReturnType<typeof bindReporter>;
 
@@ -65,7 +66,7 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
       addEventListener(type, stopListening, {once: true, capture: true});
     });
 
-    onHidden(stopListening, true);
+    onHidden(stopListening, true, win);
 
     onBFCacheRestore((event) => {
       metric = initMetric('LCP');
@@ -77,6 +78,6 @@ export const getLCP = (onReport: ReportHandler, reportAllChanges?: boolean) => {
           report(true);
         });
       });
-    });
+    }, win);
   }
 };
