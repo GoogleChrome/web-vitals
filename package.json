@@ -12,7 +12,7 @@
     "src"
   ],
   "scripts": {
-    "build": "run-s clean build:ts build:js size",
+    "build": "run-s clean build:ts build:js",
     "build:ts": "tsc -b",
     "build:js": "rollup -c",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
@@ -26,7 +26,6 @@
     "test": "npm-run-all build -p -r test:*",
     "test:e2e": "wdio wdio.conf.js",
     "test:server": "node test/server.js",
-    "size": "size-limit",
     "start": "run-s build:ts test:server watch",
     "watch": "run-p watch:*",
     "watch:ts": "tsc -b -w",
@@ -62,25 +61,10 @@
       "pre-commit": "npm run lint"
     }
   },
-  "size-limit": [
-    {
-      "path": "dist/web-vitals.js",
-      "limit": "1.89 kB"
-    },
-    {
-      "path": "dist/web-vitals.base.js",
-      "limit": "1.67 kB"
-    },
-    {
-      "path": "dist/polyfill.js",
-      "limit": "0.55 kB"
-    }
-  ],
   "devDependencies": {
     "@babel/core": "^7.16.10",
     "@babel/preset-env": "^7.16.11",
     "@rollup/plugin-replace": "^3.0.1",
-    "@size-limit/file": "^6.0.4",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
     "@typescript-eslint/parser": "^5.10.0",
     "@wdio/cli": "^7.16.13",
@@ -100,7 +84,6 @@
     "rollup": "^2.64.0",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-terser": "^7.0.2",
-    "size-limit": "^6.0.4",
     "typescript": "^4.5.5",
     "wdio-chromedriver-service": "^7.2.6"
   }
