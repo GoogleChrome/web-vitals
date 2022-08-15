@@ -647,7 +647,7 @@ If the `reportAllChanges` param is `true`, the `onReport` function will be calle
 #### `getTTFB()`
 
 ```ts
-type getTTFB = (onReport: ReportHandler, reportAllChanges?: boolean) => void
+type getTTFB = (onReport: ReportHandler) => void
 ```
 
 Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `onReport` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
