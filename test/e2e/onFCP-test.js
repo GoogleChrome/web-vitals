@@ -114,7 +114,7 @@ describe('onFCP()', async function() {
   it('does not report if the document changes to hidden before the first entry', async function() {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp?renderBlocking=1000');
+    await browser.url('/test/fcp?invisible=1');
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');

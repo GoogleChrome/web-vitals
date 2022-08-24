@@ -28,7 +28,7 @@
 
 ## Overview
 
-The `web-vitals` library is a tiny (~1K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/vitals/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
+The `web-vitals` library is a tiny (~1.5K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/vitals/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
 
 The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) as well as a number of other metrics that are useful in diagnosing [real-user](https://web.dev/user-centric-performance-metrics/) performance issues.
 
@@ -56,10 +56,6 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 You can install this library from npm by running:
 
 ```sh
-# Install the latest version 3 beta (which includes INP).
-npm install web-vitals@next
-
-# Install the current stable version (version 2).
 npm install web-vitals
 ```
 
@@ -81,7 +77,7 @@ onFID(console.log);
 onLCP(console.log);
 ```
 
-_**Note:** in version 2, these functioned were named `getXXX()` rather than `onXXX()`. They've [been renamed](https://github.com/GoogleChrome/web-vitals/pull/222) in version 3 to reduce confusion (see [#217](https://github.com/GoogleChrome/web-vitals/pull/217) for details) and will continue to be available using the `getXXX()` until at least version 4. Users are encouraged to switch to the new names, though, for future compatibility._
+_**Note:** in version 2, these functions were named `getXXX()` rather than `onXXX()`. They've [been renamed](https://github.com/GoogleChrome/web-vitals/pull/222) in version 3 to reduce confusion (see [#217](https://github.com/GoogleChrome/web-vitals/pull/217) for details) and will continue to be available using the `getXXX()` until at least version 4. Users are encouraged to switch to the new names, though, for future compatibility._
 
 <a name="attribution-build"><a>
 
@@ -91,7 +87,7 @@ Measuring the Web Vitals scores for your real users is a great first step toward
 
 The "attribution" build helps you do that by including additional diagnostic information with each metric to help you identify the root cause of poor performance as well as prioritize the most important things to fix.
 
-The "attribution" build is slightly larger than the "standard" build (by about 500 bytes, brotli'd), so while the code size is still small, it's only recommended if you're actually using these features.
+The "attribution" build is slightly larger than the "standard" build (by about 600 bytes, brotli'd), so while the code size is still small, it's only recommended if you're actually using these features.
 
 To load the "attribution" build, change any `import` statements that reference `web-vitals` to `web-vitals/attribution`:
 
@@ -157,7 +153,7 @@ _**Tip:** while it's certainly possible to inline the code in `dist/polyfill.js`
 
 The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
-The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com), whether your targeting just Chromium-based browsers (using the "standard" version) or additional browsers (using the "base+polyfill" version):
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com):
 
 _**Important!** users who want to load version 3 beta from the unpkg CDN should specify a version number or link to the [web-vitals@next](https://unpkg.com/web-vitals@next?module) tag._
 
@@ -479,7 +475,7 @@ onFID(sendToGoogleAnalytics);
 onLCP(sendToGoogleAnalytics);
 ```
 
-_**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4. For Universal Analytics the attribution data should be set using a [custom dimension](https://support.google.com/analytics/answer/2709828) rather than `debug_target` as shown above.
+_**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4. For Universal Analytics the attribution data should be set using a [custom dimension](https://support.google.com/analytics/answer/2709828) rather than `debug_target` as shown above._
 
 See [Debug Web Vitals in the field](https://web.dev/debug-web-vitals-in-the-field/) for more information and examples.
 
@@ -698,12 +694,13 @@ interface Metric {
   entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
 
   /**
-   * For regular navigations, the type will be the same as the type indicated
-   * by the Navigation Timing API (or `undefined` if the browser doesn't
+   * The type of navigation
+   *
+   * Navigation Timing API (or `undefined` if the browser doesn't
    * support that API). For pages that are restored from the bfcache, this
-   * value will be 'back_forward_cache'.
+   * value will be 'back-forward-cache'.
    */
-  navigationType:  NavigationTimingType | 'back_forward_cache' | 'prerender' | undefined;
+  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender';
 }
 ```
 
@@ -786,7 +783,7 @@ The `LoadState` type is used in several of the metric [attribution objects](#att
  * - `complete`: the document and all of its sub-resources have finished
  *   loading. This is equivalent to the corresponding `readyState` value.
  */
-export type LoadState = 'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';
+type LoadState = 'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';
 ```
 
 #### `FirstInputPolyfillEntry`
