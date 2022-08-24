@@ -20,11 +20,17 @@
  * @param {string} type The performance entry type.
  * @return {boolean}
  */
-function browserSupportsEntry(type) {
+export function browserSupportsEntry(type) {
   return browser.execute((type) => {
     // More extensive feature detect needed for Firefox due to:
     // https://github.com/GoogleChrome/web-vitals/issues/142
     if (type === 'first-input' && !('PerformanceEventTiming' in window)) {
+      return false;
+    }
+
+    // Firefox supports the event timing API but not `interactionId`.
+    if (type === 'event' && self.PerformanceEventTiming &&
+        !('interactionId' in PerformanceEventTiming.prototype)) {
       return false;
     }
 
@@ -33,7 +39,3 @@ function browserSupportsEntry(type) {
         window.PerformanceObserver.supportedEntryTypes.includes(type);
   }, type);
 }
-
-module.exports = {
-  browserSupportsEntry,
-};

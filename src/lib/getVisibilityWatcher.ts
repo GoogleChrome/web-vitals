@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './onBFCacheRestore.js';
+import {onBFCacheRestore} from './bfcache.js';
 import {onHidden} from './onHidden.js';
 
 let firstHiddenTime = -1;
 
 const initHiddenTime = () => {
-  return document.visibilityState === 'hidden' ? 0 : Infinity;
+  // If the document is hidden and not prerendering, assume it was always
+  // hidden and the page was loaded in the background.
+  return document.visibilityState === 'hidden' &&
+      !document.prerendering ? 0 : Infinity;
 }
 
 const trackChanges = () => {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,18 @@
  * limitations under the License.
  */
 
-interface onBFCacheRestoreCallback {
-  (event: PageTransitionEvent): void;
-}
 
-export const onBFCacheRestore = (cb: onBFCacheRestoreCallback) => {
-  addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-      cb(event);
-    }
-  }, true);
-};
+/**
+ * Returns a promise that resolves once the browser window has loaded and
+ * all load callbacks have finished executing.
+ * @return {Promise<void>}
+ */
+export function nextFrame(state) {
+  return browser.executeAsync((done) => {
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        done();
+      });
+    });
+  });
+}

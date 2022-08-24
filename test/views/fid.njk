@@ -24,14 +24,14 @@
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
   <script type="module">
-    import {getFID} from '{{ modulePath }}';
+    import {onFID} from '{{ modulePath }}';
 
-    getFID((fid) => {
+    onFID((fid) => {
       // Log for easier manual testing.
       console.log(fid);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(fid));
-    }, self.__reportAllChanges);
+    }, {reportAllChanges: self.__reportAllChanges});
   </script>
 {% endblock %}

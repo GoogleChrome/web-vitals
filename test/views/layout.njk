@@ -13,16 +13,106 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<html lang="en">
+<html lang="en" {% if invisible or hidden %}hidden{% endif %}>
 <head>
   <meta charset="utf-8">
   <title>Web Vitals Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
     (function() {
+      /**
+       * @param {string} visibilityState
+       * @return {void}
+       */
+      self.__stubVisibilityState = (visibilityState) => {
+        if (visibilityState === 'hidden') {
+          Object.defineProperty(document, 'visibilityState', {
+            value: visibilityState,
+            configurable: true,
+          });
+          document.documentElement.hidden = true;
+        } else {
+          delete document.visibilityState;
+          document.documentElement.hidden = false;
+        }
+      }
+
+      /**
+       * @param {string} visibilityState
+       * @return {void}
+       */
+      self.__stubVisibilityChange = (visibilityState) => {
+        self.__stubVisibilityState(visibilityState)
+        document.dispatchEvent(new Event('visibilitychange'));
+      }
+
+      /**
+       * @param {string} visibilityStateAfterRestore
+       * @return {Promise<void>}
+       */
+      self.__stubForwardBack = (visibilityStateAfterRestore) => {
+        return new Promise((resolve) => {
+          window.dispatchEvent(new PageTransitionEvent('pagehide', {
+            persisted: true,
+          }));
+          self.__stubVisibilityChange('hidden');
+          requestAnimationFrame(() => {
+            requestAnimationFrame(() => {
+              if (visibilityStateAfterRestore !== 'hidden') {
+                self.__stubVisibilityChange('visible');
+              }
+              window.dispatchEvent(new PageTransitionEvent('pageshow', {
+                persisted: true,
+              }));
+              resolve();
+            });
+          });
+        });
+      }
+
+      /**
+       * @return {Promise<void>}
+       */
+      self.__stubPrerender = () => {
+        return new Promise((resolve) => {
+          const navEntry = performance.getEntriesByType('navigation')[0];
+          // Only stub if the page isn't actually prerendered.
+          if (!(document.prerendering || navEntry.activationStart > 0)) {
+            self.__stubVisibilityState('hidden');
+            Object.defineProperty(document, 'prerendering', {
+              value: true,
+              configurable: true,
+            });
+            setTimeout(() => {
+              self.__stubVisibilityChange('visible');
+              const time = self.performance ? performance.now() : 0;
+              const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0];
+              Object.defineProperty(navEntry, 'activationStart', {
+                configurable: true,
+                enumerable: true,
+                value: Math.min(time, fcpEntry && fcpEntry.startTime || time),
+              });
+              delete document.prerendering;
+              document.dispatchEvent(new Event('prerenderingchange'));
+              resolve();
+            }, Number(params.get('prerender')) || 0);
+          }
+        });
+      }
+
+      // Uncomment to stub running in a browser that doesn't support performance APIs
+      // (e.g. some version of Opera support this).
+      // delete self.performance;
+
       const params = new URL(location.href).searchParams;
 
-      self.__reportAllChanges = params.has('reportAllChanges');
+      if (params.has('reportAllChanges')) {
+        self.__reportAllChanges = Boolean(params.get('reportAllChanges'));
+      }
+
+      if (params.has('durationThreshold')) {
+        self.__durationThreshold = Number(params.get('durationThreshold'));
+      }
 
       if (params.has('hidden')) {
         // Stub the page being loaded in the hidden state, but defer to the
@@ -37,12 +127,19 @@
           }
         }, true);
       }
+
+      if (params.has('prerender')) {
+        self.__stubPrerender();
+      }
     }());
   </script>
   {% if polyfill %}
     <script>{{ webVitalsPolyfill | safe }}</script>
   {% endif %}
   {% block head %}{% endblock %}
+  {% if renderBlocking %}
+    <link rel="stylesheet" href="/test/css/styles.css?delay={{ renderBlocking }}">
+  {% endif %}
   <style>
     * {
       box-sizing: border-box;
@@ -63,9 +160,15 @@
     }
   </style>
 </head>
-<body {% if invisible or hidden %}hidden{% endif %}>
+<body>
   <main>
     {% block content %}{% endblock %}
   </main>
-</body>
-</html>
+  {% if delayDCL %}
+    <script defer src="/test/script/defer.js?delay={{ delayDCL }}"></script>
+  {% endif %}
+
+  {% if delayLoad %}
+    <script async src="/test/script/async.js?delay={{ delayLoad }}"></script>
+  {% endif %}
+

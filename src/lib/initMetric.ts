@@ -14,16 +14,35 @@
  * limitations under the License.
  */
 
-import {Metric} from '../types.js';
+import {getBFCacheRestoreTime} from './bfcache.js';
 import {generateUniqueID} from './generateUniqueID.js';
+import {getActivationStart} from './getActivationStart.js';
+import {getNavigationEntry} from './getNavigationEntry.js';
+import {Metric} from '../types.js';
 
 
 export const initMetric = (name: Metric['name'], value?: number): Metric => {
+  const navEntry = getNavigationEntry();
+  let navigationType: Metric['navigationType'] = 'navigate';
+
+  if (getBFCacheRestoreTime() >= 0) {
+    navigationType = 'back-forward-cache';
+  } else if (navEntry) {
+    if (document.prerendering || getActivationStart() > 0) {
+      navigationType = 'prerender';
+    } else {
+      navigationType =
+          navEntry.type.replace(/_/g, '-') as Metric['navigationType'];
+    }
+  }
+
   return {
     name,
     value: typeof value === 'undefined' ? -1 : value,
+    rating: 'good', // Will be updated if the value changes.
     delta: 0,
     entries: [],
-    id: generateUniqueID()
+    id: generateUniqueID(),
+    navigationType,
   };
 };

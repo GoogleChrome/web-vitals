@@ -14,8 +14,17 @@
  * limitations under the License.
  */
 
-export interface PerformanceEntryHandler {
-  (entry: PerformanceEntry): void;
+import {FirstInputPolyfillEntry, NavigationTimingPolyfillEntry} from '../types.js';
+
+
+interface PerformanceEntryMap {
+  'event': PerformanceEventTiming[];
+  'paint': PerformancePaintTiming[];
+  'layout-shift': LayoutShift[];
+  'largest-contentful-paint': LargestContentfulPaint[];
+  'first-input': PerformanceEventTiming[] | FirstInputPolyfillEntry[];
+  'navigation': PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
+  'resource': PerformanceResourceTiming[];
 }
 
 /**
@@ -26,22 +35,20 @@ export interface PerformanceEntryHandler {
  * This function also feature-detects entry support and wraps the logic in a
  * try/catch to avoid errors in unsupporting browsers.
  */
-export const observe = (
-    type: string,
-    callback: PerformanceEntryHandler,
+export const observe = <K extends keyof PerformanceEntryMap>(
+  type: K,
+  callback: (entries: PerformanceEntryMap[K]) => void,
+  opts?: PerformanceObserverInit,
 ): PerformanceObserver | undefined => {
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
-      // More extensive feature detect needed for Firefox due to:
-      // https://github.com/GoogleChrome/web-vitals/issues/142
-      if (type === 'first-input' && !('PerformanceEventTiming' in self)) {
-        return;
-      }
-
-      const po: PerformanceObserver =
-          new PerformanceObserver((l) => l.getEntries().map(callback));
-
-      po.observe({type, buffered: true});
+      const po = new PerformanceObserver((list) => {
+        callback(list.getEntries() as PerformanceEntryMap[K]);
+      });
+      po.observe(Object.assign({
+        type,
+        buffered: true,
+      }, opts || {}) as PerformanceObserverInit);
       return po;
     }
   } catch (e) {

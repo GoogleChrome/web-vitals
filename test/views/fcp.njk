@@ -18,21 +18,24 @@
 {% block content %}
   <h1>FCP Test</h1>
   <p>
-    <img src="/test/img/square.png?delay=500">
+    {% if not imgDelay %}
+      {% set imgDelay = 500 %}
+    {% endif %}
+    <img {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
   <script type="module">
-    import {getFCP} from '{{ modulePath }}';
+    import {onFCP} from '{{ modulePath }}';
 
-    getFCP((fcp) => {
+    onFCP((fcp) => {
       // Log for easier manual testing.
       console.log(fcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(fcp));
-    }, self.__reportAllChanges);
+    }, {reportAllChanges: self.__reportAllChanges});
   </script>
 {% endblock %}

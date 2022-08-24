@@ -14,59 +14,83 @@
  * limitations under the License.
  */
 
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
-import {observe, PerformanceEntryHandler} from './lib/observe.js';
-import {onBFCacheRestore} from './lib/onBFCacheRestore.js';
+import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
-import {FirstInputPolyfillCallback, PerformanceEventTiming, ReportHandler} from './types.js';
+import {FIDMetric, FirstInputPolyfillCallback, ReportCallback, ReportOpts} from './types.js';
 
+/**
+ * Calculates the [FID](https://web.dev/fid/) value for the current page and
+ * calls the `callback` function once the value is ready, along with the
+ * relevant `first-input` performance entry used to determine the value. The
+ * reported value is a `DOMHighResTimeStamp`.
+ *
+ * _**Important:** since FID is only reported after the user interacts with the
+ * page, it's possible that it will not be reported for some page loads._
+ */
+export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
+  // Set defaults
+  opts = opts || {};
 
-export const getFID = (onReport: ReportHandler, reportAllChanges?: boolean) => {
+  // https://web.dev/fid/#what-is-a-good-fid-score
+  const thresholds = [100, 300];
+
   const visibilityWatcher = getVisibilityWatcher();
   let metric = initMetric('FID');
   let report: ReturnType<typeof bindReporter>;
 
-  const entryHandler = (entry: PerformanceEventTiming) => {
+  const handleEntry = (entry: PerformanceEventTiming) => {
     // Only report if the page wasn't hidden prior to the first input.
     if (entry.startTime < visibilityWatcher.firstHiddenTime) {
       metric.value = entry.processingStart - entry.startTime;
       metric.entries.push(entry);
       report(true);
     }
-  };
+  }
 
-  const po = observe('first-input', entryHandler as PerformanceEntryHandler);
-  report = bindReporter(onReport, metric, reportAllChanges);
+  const handleEntries = (entries: FIDMetric['entries']) => {
+    (entries as PerformanceEventTiming[]).forEach(handleEntry);
+  }
+
+  const po = observe('first-input', handleEntries);
+  report = bindReporter(onReport, metric, thresholds, opts.reportAllChanges);
 
   if (po) {
     onHidden(() => {
-      po.takeRecords().map(entryHandler as PerformanceEntryHandler);
+      handleEntries(po.takeRecords() as FIDMetric['entries']);
       po.disconnect();
     }, true);
   }
 
   if (window.__WEB_VITALS_POLYFILL__) {
+    console.warn('The web-vitals "base+polyfill" build is deprecated. See: https://bit.ly/3aqzsGm');
+
     // Prefer the native implementation if available,
     if (!po) {
-      window.webVitals.firstInputPolyfill(entryHandler as FirstInputPolyfillCallback)
+      window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback)
     }
     onBFCacheRestore(() => {
       metric = initMetric('FID');
-      report = bindReporter(onReport, metric, reportAllChanges);
+      report = bindReporter(
+          onReport, metric, thresholds, opts!.reportAllChanges);
+
       window.webVitals.resetFirstInputPolyfill();
-      window.webVitals.firstInputPolyfill(entryHandler as FirstInputPolyfillCallback);
+      window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
     });
   } else {
     // Only monitor bfcache restores if the browser supports FID natively.
     if (po) {
       onBFCacheRestore(() => {
         metric = initMetric('FID');
-        report = bindReporter(onReport, metric, reportAllChanges);
+        report = bindReporter(
+            onReport, metric, thresholds, opts!.reportAllChanges);
+
         resetFirstInputPolyfill();
-        firstInputPolyfill(entryHandler as FirstInputPolyfillCallback);
+        firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
       });
     }
   }

@@ -14,26 +14,41 @@
  * limitations under the License.
  */
 
-import {Metric, ReportHandler} from '../types.js';
+import {Metric, ReportCallback} from '../types.js';
+
+
+const getRating = (value: number, thresholds: number[]) => {
+  if (value > thresholds[1]) {
+    return 'poor';
+  }
+  if (value > thresholds[0]) {
+    return 'needs-improvement';
+  }
+  return 'good';
+};
 
 
 export const bindReporter = (
-  callback: ReportHandler,
+  callback: ReportCallback,
   metric: Metric,
+  thresholds: number[],
   reportAllChanges?: boolean,
 ) => {
   let prevValue: number;
+  let delta: number;
   return (forceReport?: boolean) => {
     if (metric.value >= 0) {
       if (forceReport || reportAllChanges) {
-        metric.delta = metric.value - (prevValue || 0);
+        delta = metric.value - (prevValue || 0);
 
         // Report the metric if there's a non-zero delta or if no previous
         // value exists (which can happen in the case of the document becoming
         // hidden when the metric value is 0).
         // See: https://github.com/GoogleChrome/web-vitals/issues/14
-        if (metric.delta || prevValue === undefined) {
+        if (delta || prevValue === undefined) {
           prevValue = metric.value;
+          metric.delta = delta;
+          metric.rating = getRating(metric.value, thresholds);
           callback(metric);
         }
       }
