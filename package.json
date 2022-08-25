@@ -1,11 +1,89 @@
 {
   "name": "web-vitals",
-  "version": "2.1.4",
+  "version": "3.0.0",
   "description": "Easily measure performance metrics in JavaScript",
+  "type": "module",
+  "typings": "dist/modules/index.d.ts",
   "main": "dist/web-vitals.umd.js",
   "module": "dist/web-vitals.js",
-  "typings": "dist/modules/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/modules/index.d.ts",
+      "require": "./dist/web-vitals.umd.js",
+      "default": "./dist/web-vitals.js"
+    },
+    "./base": {
+      "types": "./base.d.ts",
+      "require": "./dist/web-vitals.base.umd.js",
+      "default": "./dist/web-vitals.base.js"
+    },
+    "./base.js": {
+      "types": "./base.d.ts",
+      "require": "./dist/web-vitals.base.umd.js",
+      "default": "./dist/web-vitals.base.js"
+    },
+    "./attribution": {
+      "types": "./dist/modules/attribution.d.ts",
+      "require": "./dist/web-vitals.attribution.umd.js",
+      "default": "./dist/web-vitals.attribution.js"
+    },
+    "./attribution.js": {
+      "types": "./dist/modules/attribution.d.ts",
+      "require": "./dist/web-vitals.attribution.umd.js",
+      "default": "./dist/web-vitals.attribution.js"
+    },
+    "./onCLS.js": {
+      "types": "./dist/modules/onCLS.d.ts",
+      "default": "./dist/modules/onCLS.js"
+    },
+    "./onFCP.js": {
+      "types": "./dist/modules/onFCP.d.ts",
+      "default": "./dist/modules/onFCP.js"
+    },
+    "./onFID.js": {
+      "types": "./dist/modules/onFID.d.ts",
+      "default": "./dist/modules/onFID.js"
+    },
+    "./onINP.js": {
+      "types": "./dist/modules/onINP.d.ts",
+      "default": "./dist/modules/onINP.js"
+    },
+    "./onLCP.js": {
+      "types": "./dist/modules/onLCP.d.ts",
+      "default": "./dist/modules/onLCP.js"
+    },
+    "./onTTFB.js": {
+      "types": "./dist/modules/onTTFB.d.ts",
+      "default": "./dist/modules/onTTFB.js"
+    },
+    "./attribution/onCLS.js": {
+      "types": "./dist/modules/attribution/onCLS.d.ts",
+      "default": "./dist/modules/attribution/onCLS.js"
+    },
+    "./attribution/onFCP.js": {
+      "types": "./dist/modules/attribution/onFCP.d.ts",
+      "default": "./dist/modules/attribution/onFCP.js"
+    },
+    "./attribution/onFID.js": {
+      "types": "./dist/modules/attribution/onFID.d.ts",
+      "default": "./dist/modules/attribution/onFID.js"
+    },
+    "./attribution/onINP.js": {
+      "types": "./dist/modules/attribution/onINP.d.ts",
+      "default": "./dist/modules/attribution/onINP.js"
+    },
+    "./attribution/onLCP.js": {
+      "types": "./dist/modules/attribution/onLCP.d.ts",
+      "default": "./dist/modules/attribution/onLCP.js"
+    },
+    "./attribution/onTTFB.js": {
+      "types": "./dist/modules/attribution/onTTFB.d.ts",
+      "default": "./dist/modules/attribution/onTTFB.js"
+    }
+  },
   "files": [
+    "attribution.js",
+    "attribution.d.ts",
     "base.js",
     "base.d.ts",
     "dist",
@@ -24,7 +102,7 @@
     "release:minor": "npm version minor -m 'Release v%s' && npm publish",
     "release:patch": "npm version patch -m 'Release v%s' && npm publish",
     "test": "npm-run-all build -p -r test:*",
-    "test:e2e": "wdio wdio.conf.js",
+    "test:e2e": "wdio wdio.conf.cjs",
     "test:server": "node test/server.js",
     "start": "run-s build:ts test:server watch",
     "watch": "run-p watch:*",
@@ -37,9 +115,11 @@
     "crux",
     "performance",
     "metrics",
+    "Core Web Vitals",
     "CLS",
     "FCP",
     "FID",
+    "INP",
     "LCP",
     "TTFB"
   ],
@@ -62,29 +142,29 @@
     }
   },
   "devDependencies": {
-    "@babel/core": "^7.16.10",
-    "@babel/preset-env": "^7.16.11",
-    "@rollup/plugin-replace": "^3.0.1",
-    "@typescript-eslint/eslint-plugin": "^5.10.0",
-    "@typescript-eslint/parser": "^5.10.0",
-    "@wdio/cli": "^7.16.13",
-    "@wdio/local-runner": "^7.16.13",
-    "@wdio/mocha-framework": "^7.16.13",
-    "@wdio/selenium-standalone-service": "^7.16.13",
-    "@wdio/spec-reporter": "^7.16.13",
-    "body-parser": "^1.19.1",
-    "chromedriver": "^97.0.0",
-    "eslint": "^8.7.0",
+    "@babel/core": "^7.18.13",
+    "@babel/preset-env": "^7.18.10",
+    "@rollup/plugin-replace": "^4.0.0",
+    "@typescript-eslint/eslint-plugin": "^5.34.0",
+    "@typescript-eslint/parser": "^5.34.0",
+    "@wdio/cli": "^7.23.0",
+    "@wdio/local-runner": "^7.23.0",
+    "@wdio/mocha-framework": "^7.23.0",
+    "@wdio/selenium-standalone-service": "^7.23.0",
+    "@wdio/spec-reporter": "^7.23.0",
+    "body-parser": "^1.20.0",
+    "chromedriver": "^104.0.0",
+    "eslint": "^8.22.0",
     "eslint-config-google": "^0.14.0",
-    "express": "^4.17.2",
-    "fs-extra": "^10.0.0",
-    "husky": "^7.0.4",
+    "express": "^4.18.1",
+    "fs-extra": "^10.1.0",
+    "husky": "^8.0.1",
     "npm-run-all": "^4.1.5",
     "nunjucks": "^3.2.3",
-    "rollup": "^2.64.0",
+    "rollup": "^2.78.1",
     "rollup-plugin-babel": "^4.4.0",
     "rollup-plugin-terser": "^7.0.2",
-    "typescript": "^4.5.5",
-    "wdio-chromedriver-service": "^7.2.6"
+    "typescript": "^4.7.4",
+    "wdio-chromedriver-service": "^7.3.2"
   }
 }

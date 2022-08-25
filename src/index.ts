@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-export {getCLS} from './getCLS.js';
-export {getFCP} from './getFCP.js';
-export {getFID} from './getFID.js';
-export {getLCP} from './getLCP.js';
-export {getTTFB} from './getTTFB.js';
+export {onCLS} from './onCLS.js';
+export {onFCP} from './onFCP.js';
+export {onFID} from './onFID.js';
+export {onINP} from './onINP.js';
+export {onLCP} from './onLCP.js';
+export {onTTFB} from './onTTFB.js';
 
+export * from './deprecated.js';
 export * from './types.js';

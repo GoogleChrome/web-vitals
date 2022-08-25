@@ -1,0 +1,106 @@
+<!--
+ Copyright 2022 Google LLC
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+     https://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+{% extends 'layout.njk' %}
+
+{% block content %}
+  <h1>INP Test</h1>
+  <p>
+    <label><input type="number" value="0" id="pointerdown-blocking-time">
+    <code>pointerdown</code> blocking time</label>
+  </p>
+  <p>
+    <label><input type="number" value="0" id="pointerup-blocking-time">
+    <code>pointerup</code> blocking time</label>
+  </p>
+  <p>
+    <label><input type="number" value="0" id="keydown-blocking-time">
+    <code>keydown</code> blocking time</label>
+  </p>
+  <p>
+    <label><input type="number" value="0" id="keyup-blocking-time">
+    <code>keyup</code> blocking time</label>
+  </p>
+  <p>
+    <label><input type="number" value="0" id="click-blocking-time">
+    <code>click</code> blocking time</label>
+  </p>
+  <p>
+    <button id="reset">Reset blocking time to zero</button>
+  </p>
+
+  <p>
+    <textarea id="textarea" style="width:40em;height:5em"></textarea>
+  </p>
+
+  <script>
+    // Set the blocking values based on query params if present.
+    const params = new URLSearchParams(location.search);
+    for (const [key, value] of params) {
+      const el = document.getElementById(`${key}-blocking-time`);
+      if (el && el.nodeName.toLowerCase() === 'input') {
+        el.value = value;
+      }
+    }
+
+    function block(event) {
+      const blockingTime = Number(document.getElementById(`${event.type}-blocking-time`).value);
+      const startTime = performance.now();
+      while (performance.now() < startTime + blockingTime) {
+        // Block...
+      }
+    }
+
+    addEventListener('pointerdown', block, true);
+    addEventListener('pointerup', block, true);
+    addEventListener('keydown', block, true);
+    addEventListener('keyup', block, true);
+    addEventListener('click', block, true);
+
+    document.getElementById('reset').addEventListener('click', () => {
+      [...document.querySelectorAll('label>input')].forEach((n) => n.value = 0);
+    });
+  </script>
+
+  <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+
+  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nec porta orci, ac sagittis augue. Nullam orci tellus, suscipit sed magna id, mattis iaculis ex. Etiam felis lectus, accumsan eu magna lacinia, lobortis tempus lacus. Donec nulla metus, blandit eget ullamcorper in, placerat eu massa. Curabitur vitae elementum orci, ac tincidunt neque. Maecenas accumsan odio sit amet arcu elementum, non vestibulum enim finibus. Phasellus malesuada lacinia suscipit. Cras ac gravida urna. In et mauris non tellus pretium ultrices. Fusce mattis a risus at tincidunt. Donec ac fringilla magna, nec suscipit lectus. Sed risus massa, rutrum ut leo quis, tempor dapibus dui. Proin in mauris non risus maximus tincidunt quis a mauris.</p>
+
+  <script type="module">
+    import {onINP} from '{{ modulePath }}';
+
+    function jsonifyNode(node) {
+      return node && node.id ? `#${node.id}` : node.nodeName.toLowerCase();
+    }
+
+    onINP((inp) => {
+      // Log for easier manual testing.
+      console.log(inp);
+
+      // Elements can't be serialized, so we convert first.
+      inp.entries = inp.entries.map((e) => ({
+        ...e.toJSON(),
+        interactionId: e.interactionId,
+        target: jsonifyNode(e.target),
+      }));
+
+      // Test sending the metric to an analytics endpoint.
+      navigator.sendBeacon(`/collect`, JSON.stringify(inp));
+    }, {
+      reportAllChanges: self.__reportAllChanges,
+      durationThreshold: self.__durationThreshold,
+    });
+  </script>
+{% endblock %}

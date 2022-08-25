@@ -105,6 +105,32 @@ const configs = [
     },
     plugins: configurePlugins({module: false}),
   },
+  {
+    input: 'dist/modules/attribution.js',
+    output: {
+      format: 'esm',
+      file: './dist/web-vitals.attribution.js',
+    },
+    plugins: configurePlugins({module: true, polyfill: false}),
+  },
+  {
+    input: 'dist/modules/attribution.js',
+    output: {
+      format: 'umd',
+      file: `./dist/web-vitals.attribution.umd.js`,
+      name: 'webVitals',
+    },
+    plugins: configurePlugins({module: false, polyfill: false}),
+  },
+  {
+    input: 'dist/modules/attribution.js',
+    output: {
+      format: 'iife',
+      file: './dist/web-vitals.attribution.iife.js',
+      name: 'webVitals',
+    },
+    plugins: configurePlugins({module: false, polyfill: false}),
+  },
 ];
 
 export default configs;

@@ -32,24 +32,29 @@
   <footer>Text below the full-height element.</footer>
 
   <script type="module">
-    import {getLCP} from '{{ modulePath }}';
+    import {onLCP} from '{{ modulePath }}';
 
-    getLCP((lcp) => {
+    function jsonifyEntry(entry) {
+      return {
+        element: entry.element.nodeName.toLowerCase(),
+        size: entry.size,
+        startTime: entry.startTime,
+      };
+    }
+
+    onLCP((lcp) => {
       // Log for easier manual testing.
       console.log(lcp);
 
       // Elements can't be serialized, so we convert first.
-      lcp = {
-        ...lcp,
-        entries: lcp.entries.map((e) => ({
-          element: e.element.nodeName.toLowerCase(),
-          size: e.size,
-          startTime: e.startTime,
-        })),
-      };
+      lcp.entries = lcp.entries.map(jsonifyEntry);
+
+      if (lcp.attribution && lcp.attribution.lcpEntry) {
+        lcp.attribution.lcpEntry = jsonifyEntry(lcp.attribution.lcpEntry);
+      }
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(lcp));
-    }, self.__reportAllChanges);
+    }, {reportAllChanges: self.__reportAllChanges});
   </script>
 {% endblock %}
