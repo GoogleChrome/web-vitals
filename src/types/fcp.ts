@@ -31,7 +31,7 @@ export interface FCPMetric extends Metric {
  * can be sent along with the FCP value for the current page visit in order
  * to help identify issues happening to real-users in the field.
  */
- export interface FCPAttribution {
+export interface FCPAttribution {
   /**
    * The time from when the user initiates loading the page until when the
    * browser receives the first byte of the response (a.k.a. TTFB).
