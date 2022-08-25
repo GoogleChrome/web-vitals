@@ -724,7 +724,7 @@ interface MetricWithAttribution extends Metric {
    * can be sent along with the metric value for the current page visit in
    * order to help identify issues happening to real-users in the field.
    */
- attribution: {[key: string]: unknown};
+  attribution: {[key: string]: unknown};
 }
 ```
 
@@ -908,13 +908,13 @@ onTTFB((metric) => {
 _**Note:** browsers that do not support `navigation` entries will fall back to
 using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers._
 
-### Attribution:
+### Attribution
 
 The following objects contain potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
 
 See the [attribution build](#attribution-build) section for details on how to use this feature.
 
-#### CLS `attribution`:
+#### CLS `attribution`
 
 ```ts
 interface CLSAttribution {
@@ -955,7 +955,7 @@ interface CLSAttribution {
 }
 ```
 
-#### FCP `attribution`:
+#### FCP `attribution`
 
 ```ts
 interface FCPAttribution {
@@ -986,7 +986,7 @@ interface FCPAttribution {
 }
 ```
 
-#### FID `attribution`:
+#### FID `attribution`
 
 ```ts
 interface FIDAttribution {
@@ -1019,7 +1019,7 @@ interface FIDAttribution {
 }
 ```
 
-#### INP `attribution`:
+#### INP `attribution`
 
 ```ts
 interface INPAttribution {
@@ -1052,7 +1052,7 @@ interface INPAttribution {
 }
 ```
 
-#### LCP `attribution`:
+#### LCP `attribution`
 
 ```ts
 interface LCPAttribution {
@@ -1106,7 +1106,7 @@ interface LCPAttribution {
 }
 ```
 
-#### TTFB `attribution`:
+#### TTFB `attribution`
 
 ```ts
 interface TTFBAttribution {

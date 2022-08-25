@@ -50,6 +50,6 @@ export async function getBeacons(id = undefined) {
  * Clears the array of beacons on the page.
  * @return {Promise<void>}
  */
- export async function clearBeacons() {
+export async function clearBeacons() {
   await fs.truncate(BEACON_FILE);
 }

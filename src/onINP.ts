@@ -98,10 +98,10 @@ const processEntry = (entry: PerformanceEventTiming) => {
  * interaction candidates and the interaction count for the current page.
  */
 const estimateP98LongestInteraction = () => {
-	const candidateInteractionIndex = Math.min(longestInteractionList.length - 1,
+  const candidateInteractionIndex = Math.min(longestInteractionList.length - 1,
       Math.floor(getInteractionCountForNavigation() / 50));
 
-	return longestInteractionList[candidateInteractionIndex];
+  return longestInteractionList[candidateInteractionIndex];
 }
 
 /**
