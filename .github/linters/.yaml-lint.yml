@@ -1,6 +1,6 @@
 ---
 ########################################################
-# HTTP Archive Overrides for YAML Lint                 #
+# Overrides for YAML Lint                              #
 # https://yamllint.readthedocs.io/en/stable/rules.html #
 ########################################################
 rules:

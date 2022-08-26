@@ -65,7 +65,7 @@ There are a few different builds of the `web-vitals` library, and how you load t
 
 For details on the difference between the builds, see <a href="#which-build-is-right-for-you">which build is right for you</a>.
 
-**1. The "standard" build**
+#### 1. The "standard" build
 
 To load the "standard" build, import modules from the `web-vitals` package in your application code (as you would with any npm package and node-based build tool):
 
@@ -81,7 +81,7 @@ _**Note:** in version 2, these functions were named `getXXX()` rather than `onXX
 
 <a name="attribution-build"><a>
 
-**2. The "attribution" build**
+#### 2. The "attribution" build
 
 Measuring the Web Vitals scores for your real users is a great first step toward optimizing the user experience. But if your scores aren't _good_, the next step is to understand why they're not good and work to improve them.
 
@@ -102,7 +102,7 @@ See [Send attribution data](#send-attribution-data) for usage examples, and the 
 
 <a name="how-to-use-the-polyfill"><a>
 
-**3. The "base+polyfill" build**
+#### 3. The "base+polyfill" build
 
 _**⚠️ Warning ⚠️** the "base+polyfill" build is deprecated. See [#238](https://github.com/GoogleChrome/web-vitals/issues/238) for details._
 

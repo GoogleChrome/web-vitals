@@ -1,4 +1,10 @@
 # editorconfig.org
+# For Visual Studio code use this extension to enforce below rules:
+# https://marketplace.visualstudio.com/items?itemName=EditorConfig.EditorConfig
+# Other IDEs maye have built in editorconfig support, or their own extensions
+#
+# The similar .ecrc file is used by an editorconfig GitHub action to catch those
+# that don't use this.
 root = true
 
 [*]

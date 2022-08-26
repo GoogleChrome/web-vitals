@@ -6,13 +6,20 @@
 #
 # Exception config files are in the .github/linters directory
 #
+# We lint on:
+#   - pull requests
+#   - pushes to main only (otherwise a push to pull request causes two runs)
+#     Checking pushes to main runs an extra lint after merging just in case of merge
+#     errors if PR branch is not up to date. It should be clean always.
+#   - workflow_dispatch - manual kicks ofs in Actions tab
+#
 name: Lint Code Base
 on:
-  workflow_dispatch:
   pull_request:
   push:
     branches:
       - main
+  workflow_dispatch:
 jobs:
   lint:
     name: Lint Code Base
@@ -24,7 +31,9 @@ jobs:
           # Full git history is needed to get a proper list of changed files within `super-linter`
           fetch-depth: 0
       - name: Set VALIDATE_ALL_CODEBASE variable to false
-        # Only run the full workflow for manual runs or if upgrading the super linter
+        # Only run the full workflow for manual runs (workflow_dispatch)
+        # or if upgrading the super linter itself
+        # Otherwise just lint changed files.
         if: |
             github.event_name != 'workflow_dispatch' &&
             startsWith(github.event.pull_request.title,'Bump github/super-linter') != true
@@ -32,7 +41,6 @@ jobs:
           echo "VALIDATE_ALL_CODEBASE=false" >> $GITHUB_ENV
       - name: Lint Code Base
         uses: github/super-linter@v4
-        #uses: docker://github/super-linter:v4.7.1
         env:
           DEFAULT_BRANCH: main
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
