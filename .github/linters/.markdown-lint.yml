@@ -22,3 +22,4 @@ MD013: false             # Don't demand maximum line lengths
 MD026:                   # Don't allow trailing punctuation in headers
   punctuation: ".,;:"    # List of not allowed
 MD033: false             # Allow inline HTML as necessary sometimes.
+MD036: false             # Allow emphasis instead of a heading as sometimes we want a line all in italics
