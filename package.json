@@ -4,32 +4,32 @@
   "description": "Easily measure performance metrics in JavaScript",
   "type": "module",
   "typings": "dist/modules/index.d.ts",
-  "main": "dist/web-vitals.umd.js",
+  "main": "dist/web-vitals.umd.cjs",
   "module": "dist/web-vitals.js",
   "exports": {
     ".": {
       "types": "./dist/modules/index.d.ts",
-      "require": "./dist/web-vitals.umd.js",
+      "require": "./dist/web-vitals.umd.cjs",
       "default": "./dist/web-vitals.js"
     },
     "./base": {
       "types": "./base.d.ts",
-      "require": "./dist/web-vitals.base.umd.js",
+      "require": "./dist/web-vitals.base.umd.cjs",
       "default": "./dist/web-vitals.base.js"
     },
     "./base.js": {
       "types": "./base.d.ts",
-      "require": "./dist/web-vitals.base.umd.js",
+      "require": "./dist/web-vitals.base.umd.cjs",
       "default": "./dist/web-vitals.base.js"
     },
     "./attribution": {
       "types": "./dist/modules/attribution.d.ts",
-      "require": "./dist/web-vitals.attribution.umd.js",
+      "require": "./dist/web-vitals.attribution.umd.cjs",
       "default": "./dist/web-vitals.attribution.js"
     },
     "./attribution.js": {
       "types": "./dist/modules/attribution.d.ts",
-      "require": "./dist/web-vitals.attribution.umd.js",
+      "require": "./dist/web-vitals.attribution.umd.cjs",
       "default": "./dist/web-vitals.attribution.js"
     },
     "./onCLS.js": {
