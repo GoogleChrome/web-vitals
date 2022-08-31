@@ -553,7 +553,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     </td>
   </tr>
   <tr>
-    <td><code>web-vitals.umd.js</code></td>
+    <td><code>web-vitals.umd.cjs</code></td>
     <td><code>pgk.main</code></td>
     <td>
       A UMD version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
@@ -574,7 +574,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     </td>
   </tr>
     <tr>
-    <td><code>web-vitals.attribution.umd.js</code></td>
+    <td><code>web-vitals.attribution.umd.cjs</code></td>
     <td>--</td>
     <td>
       A UMD version of the <code>web-vitals.attribution.js</code> build (exposed on the <code>window.webVitals.*</code> namespace).
@@ -598,7 +598,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     </td>
   </tr>
     <tr>
-    <td><code>web-vitals.base.umd.js</code></td>
+    <td><code>web-vitals.base.umd.cjs</code></td>
     <td>--</td>
     <td>
       <p><strong>This build has been <a href="https://github.com/GoogleChrome/web-vitals/issues/238">deprecated</a>.</strong></p>
@@ -619,7 +619,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     <td>--</td>
     <td>
       <p><strong>This build has been <a href="https://github.com/GoogleChrome/web-vitals/issues/238">deprecated</a>.</strong></p>
-      <p>The "polyfill" part of the "base+polyfill" version. This script should be used with either <code>web-vitals.base.js</code>, <code>web-vitals.base.umd.js</code>, or <code>web-vitals.base.iife.js</code> (it will not work with any script that doesn't have "base" in the filename).</p>
+      <p>The "polyfill" part of the "base+polyfill" version. This script should be used with either <code>web-vitals.base.js</code>, <code>web-vitals.base.umd.cjs</code>, or <code>web-vitals.base.iife.js</code> (it will not work with any script that doesn't have "base" in the filename).</p>
       See <a href="#how-to-use-the-polyfill">how to use the polyfill</a> for more details.
     </td>
   </tr>
