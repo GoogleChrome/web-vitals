@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.0.1 (2022-08-31)
+
+- Use the cjs extension for all UMD builds ([#257](https://github.com/GoogleChrome/web-vitals/pull/257))
+
 ### v3.0.0 (2022-08-24)
 
 - **[BREAKING]** Add a config object param to all metric functions ([#225](https://github.com/GoogleChrome/web-vitals/pull/225))
