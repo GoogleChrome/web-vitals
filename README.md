@@ -155,14 +155,14 @@ The recommended way to use the `web-vitals` package is to install it from npm an
 
 The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com):
 
-_**Important!** users who want to load version 3 beta from the unpkg CDN should specify a version number or link to the [web-vitals@next](https://unpkg.com/web-vitals@next?module) tag._
+_**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example purposes only. `unpkg.com` is not affiliated with Google, and there are no guarantees that the URLs shown in these examples will continue to work in the future._
 
 **Load the "standard" build** _(using a module script)_
 
 ```html
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
-  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals?module';
+  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals@3?module';
 
   onCLS(console.log);
   onFID(console.log);
@@ -176,7 +176,7 @@ _**Important!** users who want to load version 3 beta from the unpkg CDN should 
 <script>
 (function() {
   var script = document.createElement('script');
-  script.src = 'https://unpkg.com/web-vitals/dist/web-vitals.iife.js';
+  script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.iife.js';
   script.onload = function() {
     // When loading `web-vitals` using a classic script, all the public
     // methods can be found on the `webVitals` global namespace.
@@ -194,7 +194,7 @@ _**Important!** users who want to load version 3 beta from the unpkg CDN should 
 ```html
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
-  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals/dist/web-vitals.attribution.js?module';
+  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.js?module';
 
   onCLS(console.log);
   onFID(console.log);
@@ -208,7 +208,7 @@ _**Important!** users who want to load version 3 beta from the unpkg CDN should 
 <script>
 (function() {
   var script = document.createElement('script');
-  script.src = 'https://unpkg.com/web-vitals/dist/web-vitals.attribution.iife.js';
+  script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.iife.js';
   script.onload = function() {
     // When loading `web-vitals` using a classic script, all the public
     // methods can be found on the `webVitals` global namespace.
