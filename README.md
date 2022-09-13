@@ -350,7 +350,7 @@ function sendToGoogleAnalytics({name, delta, id}) {
     transport: 'beacon',
 
     // OPTIONAL: any additional attribution params here.
-    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // See: https://web.dev/debug-performance-in-the-field/
     // dimension1: '...',
     // dimension2: '...',
     // ...
@@ -385,7 +385,7 @@ function sendToGoogleAnalytics({name, delta, id}) {
     non_interaction: true,
 
     // OPTIONAL: any additional attribution params here.
-    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // See: https://web.dev/debug-performance-in-the-field/
     // dimension1: '...',
     // dimension2: '...',
     // ...
@@ -416,7 +416,7 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
     metric_delta: delta, // Optional.
 
     // OPTIONAL: any additional params or debug info here.
-    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // See: https://web.dev/debug-performance-in-the-field/
     // metric_rating: 'good' | 'needs-improvement' | 'poor',
     // debug_info: '...',
     // ...
@@ -477,7 +477,7 @@ onLCP(sendToGoogleAnalytics);
 
 _**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4. For Universal Analytics the attribution data should be set using a [custom dimension](https://support.google.com/analytics/answer/2709828) rather than `debug_target` as shown above._
 
-See [Debug Web Vitals in the field](https://web.dev/debug-web-vitals-in-the-field/) for more information and examples.
+See [Debug performance in the field](https://web.dev/debug-performance-in-the-field/) for more information and examples.
 
 ### Batch multiple reports together
 
@@ -633,7 +633,7 @@ Most developers will generally want to use "standard" build (via either the ES m
 
 However, if you'd lke to collect additional debug information to help you diagnose performance bottlenecks based on real-user issues, use the ["attribution" build](#attribution-build).
 
-For guidance on how to collect and use real-user data to debug performance issues, see [Debug Web Vitals in the field](https://web.dev/debug-web-vitals-in-the-field/).
+For guidance on how to collect and use real-user data to debug performance issues, see [Debug performance in the field](https://web.dev/debug-performance-in-the-field/).
 
 ### How the polyfill works
 
