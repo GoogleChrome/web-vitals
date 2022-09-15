@@ -6,6 +6,7 @@
   "typings": "dist/modules/index.d.ts",
   "main": "dist/web-vitals.umd.cjs",
   "module": "dist/web-vitals.js",
+  "unpkg": "dist/web-vitals.iife.js",
   "exports": {
     ".": {
       "types": "./dist/modules/index.d.ts",
