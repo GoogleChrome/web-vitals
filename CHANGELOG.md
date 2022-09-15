@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.0.2 (2022-09-14)
+
+- Set an explicit unpkg dist file ([#261](https://github.com/GoogleChrome/web-vitals/pull/261))
+
 ### v3.0.1 (2022-08-31)
 
 - Use the cjs extension for all UMD builds ([#257](https://github.com/GoogleChrome/web-vitals/pull/257))
