@@ -55,10 +55,3 @@ export {
    */
   onTTFB as getTTFB,
 } from './onTTFB.js';
-
-export {
-  /**
-   * @deprecated Use `ReportCallback` instead.
-   */
-  ReportCallback as ReportHandler,
-} from './types.js';

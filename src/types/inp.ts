@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LoadState, Metric, ReportCallback} from './base.js';
+import {LoadState, Metric, MetricWithAttribution} from './base.js';
 
 
 /**
@@ -23,6 +23,12 @@ import {LoadState, Metric, ReportCallback} from './base.js';
 export interface INPMetric extends Metric {
   name: 'INP';
   entries: PerformanceEventTiming[];
+}
+/**
+ * An INP-specific version of the Metric object with attribution.
+ */
+export interface INPMetricWithAttribution extends MetricWithAttribution {
+  attribution: INPAttribution;
 }
 
 /**
@@ -60,22 +66,15 @@ export interface INPAttribution {
 }
 
 /**
- * An INP-specific version of the Metric object with attribution.
- */
-export interface INPMetricWithAttribution extends INPMetric {
-  attribution: INPAttribution;
-}
-
-/**
  * An INP-specific version of the ReportCallback function.
  */
-export interface INPReportCallback extends ReportCallback {
+export interface INPReportCallback {
   (metric: INPMetric): void;
 }
 
 /**
  * An INP-specific version of the ReportCallback function with attribution.
  */
-export interface INPReportCallbackWithAttribution extends INPReportCallback {
+export interface INPReportCallbackWithAttribution {
   (metric: INPMetricWithAttribution): void;
 }

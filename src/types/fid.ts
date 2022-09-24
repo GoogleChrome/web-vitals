@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LoadState, Metric, ReportCallback} from './base.js';
+import {LoadState, Metric, MetricWithAttribution} from './base.js';
 import {FirstInputPolyfillEntry} from './polyfills.js';
 
 
@@ -24,6 +24,12 @@ import {FirstInputPolyfillEntry} from './polyfills.js';
 export interface FIDMetric extends Metric {
   name: 'FID';
   entries: (PerformanceEventTiming | FirstInputPolyfillEntry)[];
+}
+/**
+ * An FID-specific version of the Metric object with attribution.
+ */
+export interface FIDMetricWithAttribution extends MetricWithAttribution {
+  attribution: FIDAttribution;
 }
 
 /**
@@ -61,22 +67,15 @@ export interface FIDAttribution {
 }
 
 /**
- * An FID-specific version of the Metric object with attribution.
- */
-export interface FIDMetricWithAttribution extends FIDMetric {
-  attribution: FIDAttribution;
-}
-
-/**
  * An FID-specific version of the ReportCallback function.
  */
-export interface FIDReportCallback extends ReportCallback {
+export interface FIDReportCallback {
   (metric: FIDMetric): void;
 }
 
 /**
  * An FID-specific version of the ReportCallback function with attribution.
  */
-export interface FIDReportCallbackWithAttribution extends FIDReportCallback {
+export interface FIDReportCallbackWithAttribution {
   (metric: FIDMetricWithAttribution): void;
 }

@@ -14,7 +14,13 @@
  * limitations under the License.
  */
 
+import { CLSAttribution } from './cls.js';
+import { FCPAttribution } from './fcp.js';
+import { FIDAttribution } from './fid.js';
+import { INPAttribution } from './inp.js';
+import { LCPAttribution } from './lcp.js';
 import {FirstInputPolyfillEntry, NavigationTimingPolyfillEntry} from './polyfills.js';
+import { TTFBAttribution } from './ttfb.js';
 
 
 export interface Metric {
@@ -77,11 +83,7 @@ export interface MetricWithAttribution extends Metric {
    * can be sent along with the metric value for the current page visit in
    * order to help identify issues happening to real-users in the field.
    */
-  attribution: {[key: string]: unknown};
-}
-
-export interface ReportCallback {
-  (metric: Metric): void;
+  attribution: CLSAttribution | FCPAttribution | FIDAttribution | INPAttribution | LCPAttribution | TTFBAttribution;
 }
 
 export interface ReportOpts {

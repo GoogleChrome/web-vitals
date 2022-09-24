@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Metric, ReportCallback} from './base.js';
+import {Metric, MetricWithAttribution} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 
@@ -24,6 +24,12 @@ import {NavigationTimingPolyfillEntry} from './polyfills.js';
 export interface LCPMetric extends Metric {
   name: 'LCP';
   entries: LargestContentfulPaint[];
+}
+/**
+ * An LCP-specific version of the Metric object with attribution.
+ */
+export interface LCPMetricWithAttribution extends MetricWithAttribution {
+  attribution: LCPAttribution;
 }
 
 /**
@@ -82,22 +88,15 @@ export interface LCPAttribution {
 }
 
 /**
- * An LCP-specific version of the Metric object with attribution.
- */
-export interface LCPMetricWithAttribution extends LCPMetric {
-  attribution: LCPAttribution;
-}
-
-/**
  * An LCP-specific version of the ReportCallback function.
  */
-export interface LCPReportCallback extends ReportCallback {
+export interface LCPReportCallback {
   (metric: LCPMetric): void;
 }
 
 /**
  * An LCP-specific version of the ReportCallback function with attribution.
  */
-export interface LCPReportCallbackWithAttribution extends LCPReportCallback {
+export interface LCPReportCallbackWithAttribution {
   (metric: LCPMetricWithAttribution): void;
 }
