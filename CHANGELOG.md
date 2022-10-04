@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.0.3 (2022-10-04)
+
+- Ensure `attribution` object is always present in attribution build ([#265](https://github.com/GoogleChrome/web-vitals/pull/265))
+
 ### v3.0.2 (2022-09-14)
 
 - Set an explicit unpkg dist file ([#261](https://github.com/GoogleChrome/web-vitals/pull/261))
