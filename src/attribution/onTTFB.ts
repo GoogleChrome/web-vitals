@@ -37,14 +37,15 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       requestTime: metric.value - requestStart,
       navigationEntry: navigationEntry,
     };
-  } else {
-    (metric as TTFBMetricWithAttribution).attribution = {
-      waitingTime: 0,
-      dnsTime: 0,
-      connectionTime: 0,
-      requestTime: 0,
-    };
+    return;
   }
+  // Set an empty object if no other attribution has been set.
+  (metric as TTFBMetricWithAttribution).attribution = {
+    waitingTime: 0,
+    dnsTime: 0,
+    connectionTime: 0,
+    requestTime: 0,
+  };
 };
 
 /**
