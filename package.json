@@ -167,5 +167,8 @@
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "^4.8.4",
     "wdio-chromedriver-service": "^8.0.0"
+  },
+  "dependencies": {
+    "web-vitals": "^3.0.3"
   }
 }
