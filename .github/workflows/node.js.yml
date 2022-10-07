@@ -5,7 +5,7 @@ name: Node.js CI
 
 on:
   push:
-    branches: [ "develop" ]
+    branches: [ "feature" ]
   pull_request:
     branches: [ "feature" ]
 
@@ -16,7 +16,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: 16 
+        node-version: 16.17.1 
         # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
 
     steps:
