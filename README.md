@@ -59,6 +59,11 @@ You can install this library from npm by running:
 npm install web-vitals
 ```
 
+```sh
+yarn  add web-vitals
+```
+
+
 _**Note:** If you're not using npm, you can still load `web-vitals` via `<script>` tags from a CDN like [unpkg.com](https://unpkg.com). See the [load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn) usage example below for details._
 
 There are a few different builds of the `web-vitals` library, and how you load the library depends on which build you want to use.
