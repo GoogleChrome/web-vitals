@@ -9,7 +9,7 @@ node_modules
 tsconfig.tsbuildinfo
 
 # Dist files
-dist
+#dist
 
 # Husky files
 .husky
