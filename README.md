@@ -707,11 +707,11 @@ interface Metric {
 Metric-specific subclasses:
 
 - [`CLSMetric`](/src/types/cls.ts#:~:text=interface%20CLSMetric)
-- [`FCPMetric`](/src/types/cls.ts#:~:text=interface%20FCPMetric)
-- [`FIDMetric`](/src/types/cls.ts#:~:text=interface%20FIDMetric)
-- [`INPMetric`](/src/types/cls.ts#:~:text=interface%20INPMetric)
-- [`LCPMetric`](/src/types/cls.ts#:~:text=interface%20LCPMetric)
-- [`TTFBMetric`](/src/types/cls.ts#:~:text=interface%20TTFBMetric)
+- [`FCPMetric`](/src/types/fcp.ts#:~:text=interface%20FCPMetric)
+- [`FIDMetric`](/src/types/fid.ts#:~:text=interface%20FIDMetric)
+- [`INPMetric`](/src/types/inp.ts#:~:text=interface%20INPMetric)
+- [`LCPMetric`](/src/types/lcp.ts#:~:text=interface%20LCPMetric)
+- [`TTFBMetric`](/src/types/ttfb.ts#:~:text=interface%20TTFBMetric)
 
 #### `MetricWithAttribution`
 
@@ -731,11 +731,11 @@ interface MetricWithAttribution extends Metric {
 Metric-specific subclasses:
 
 - [`CLSMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20CLSMetricWithAttribution)
-- [`FCPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20FCPMetricWithAttribution)
-- [`FIDMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20FIDMetricWithAttribution)
-- [`INPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20INPMetricWithAttribution)
-- [`LCPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20LCPMetricWithAttribution)
-- [`TTFBMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20TTFBMetricWithAttribution)
+- [`FCPMetricWithAttribution`](/src/types/fcp.ts#:~:text=interface%20FCPMetricWithAttribution)
+- [`FIDMetricWithAttribution`](/src/types/fid.ts#:~:text=interface%20FIDMetricWithAttribution)
+- [`INPMetricWithAttribution`](/src/types/inp.ts#:~:text=interface%20INPMetricWithAttribution)
+- [`LCPMetricWithAttribution`](/src/types/lcp.ts#:~:text=interface%20LCPMetricWithAttribution)
+- [`TTFBMetricWithAttribution`](/src/types/ttfb.ts#:~:text=interface%20TTFBMetricWithAttribution)
 
 #### `ReportCallback`
 
@@ -748,11 +748,11 @@ interface ReportCallback {
 Metric-specific subclasses:
 
 - [`CLSReportCallback`](/src/types/cls.ts#:~:text=interface%20CLSReportCallback)
-- [`FCPReportCallback`](/src/types/cls.ts#:~:text=interface%20FCPReportCallback)
-- [`FIDReportCallback`](/src/types/cls.ts#:~:text=interface%20FIDReportCallback)
-- [`INPReportCallback`](/src/types/cls.ts#:~:text=interface%20INPReportCallback)
-- [`LCPReportCallback`](/src/types/cls.ts#:~:text=interface%20LCPReportCallback)
-- [`TTFBReportCallback`](/src/types/cls.ts#:~:text=interface%20TTFBReportCallback)
+- [`FCPReportCallback`](/src/types/fcp.ts#:~:text=interface%20FCPReportCallback)
+- [`FIDReportCallback`](/src/types/fid.ts#:~:text=interface%20FIDReportCallback)
+- [`INPReportCallback`](/src/types/inp.ts#:~:text=interface%20INPReportCallback)
+- [`LCPReportCallback`](/src/types/lcp.ts#:~:text=interface%20LCPReportCallback)
+- [`TTFBReportCallback`](/src/types/ttfb.ts#:~:text=interface%20TTFBReportCallback)
 
 #### `ReportOpts`
 
