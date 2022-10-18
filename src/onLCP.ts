@@ -54,8 +54,10 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       // The startTime attribute returns the value of the renderTime if it is
       // not 0, and the value of the loadTime otherwise. The activationStart
       // reference is used because LCP should be relative to page activation
-      // rather than navigation start if the page was prerendered.
-      const value = lastEntry.startTime - getActivationStart();
+      // rather than navigation start if the page was prerendered. But in cases
+      // where `activationStart` occurs after the LCP, this time should be
+      // clamped at 0.
+      const value = Math.max(lastEntry.startTime - getActivationStart(), 0);
 
       // Only report if the page wasn't hidden prior to LCP.
       if (value < visibilityWatcher.firstHiddenTime) {

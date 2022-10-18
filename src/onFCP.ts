@@ -50,8 +50,9 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
           // The activationStart reference is used because FCP should be
           // relative to page activation rather than navigation start if the
-          // page was prerendered.
-          metric.value = entry.startTime - getActivationStart();
+          // page was prerendered. But in cases where `activationStart` occurs
+          // after the FCP, this time should be clamped at 0.
+          metric.value = Math.max(entry.startTime - getActivationStart(), 0);
           metric.entries.push(entry);
           report(true);
         }
