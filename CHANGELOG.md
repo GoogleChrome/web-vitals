@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.0.4 (2022-10-18)
+
+- Clamp LCP and FCP to 0 for prerendered pages ([#270](https://github.com/GoogleChrome/web-vitals/pull/270))
+
 ### v3.0.3 (2022-10-04)
 
 - Ensure `attribution` object is always present in attribution build ([#265](https://github.com/GoogleChrome/web-vitals/pull/265))
