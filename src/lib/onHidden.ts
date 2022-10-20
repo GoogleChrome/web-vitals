@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
+type Event = { type?: string, timeStamp?: number };
 
-export interface OnHiddenCallback {
-  (event: Event): void;
-}
+export type OnHiddenCallback = (event: Event) => void;
 
 
 export const onHidden = (cb: OnHiddenCallback, once?: boolean) => {
@@ -34,4 +33,7 @@ export const onHidden = (cb: OnHiddenCallback, once?: boolean) => {
   // Some browsers have buggy implementations of visibilitychange,
   // so we use pagehide in addition, just to be safe.
   addEventListener('pagehide', onHiddenOrPageHide, true);
+
+  // if the document is already hidden
+  onHiddenOrPageHide({});
 };
