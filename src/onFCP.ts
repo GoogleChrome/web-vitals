@@ -20,6 +20,7 @@ import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
+import {whenActivated} from './lib/whenActivated.js';
 import {FCPMetric, FCPReportCallback, ReportOpts} from './types.js';
 
 /**
@@ -32,51 +33,53 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
-  // https://web.dev/fcp/#what-is-a-good-fcp-score
-  const thresholds = [1800, 3000];
+  whenActivated(() => {
+    // https://web.dev/fcp/#what-is-a-good-fcp-score
+    const thresholds = [1800, 3000];
 
-  const visibilityWatcher = getVisibilityWatcher();
-  let metric = initMetric('FCP');
-  let report: ReturnType<typeof bindReporter>;
+    const visibilityWatcher = getVisibilityWatcher();
+    let metric = initMetric('FCP');
+    let report: ReturnType<typeof bindReporter>;
 
-  const handleEntries = (entries: FCPMetric['entries']) => {
-    (entries as PerformancePaintTiming[]).forEach((entry) => {
-      if (entry.name === 'first-contentful-paint') {
-        po!.disconnect();
+    const handleEntries = (entries: FCPMetric['entries']) => {
+      (entries as PerformancePaintTiming[]).forEach((entry) => {
+        if (entry.name === 'first-contentful-paint') {
+          po!.disconnect();
 
-        // Only report if the page wasn't hidden prior to the first paint.
-        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-          // The activationStart reference is used because FCP should be
-          // relative to page activation rather than navigation start if the
-          // page was prerendered. But in cases where `activationStart` occurs
-          // after the FCP, this time should be clamped at 0.
-          metric.value = Math.max(entry.startTime - getActivationStart(), 0);
-          metric.entries.push(entry);
-          report(true);
+          // Only report if the page wasn't hidden prior to the first paint.
+          if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+            // The activationStart reference is used because FCP should be
+            // relative to page activation rather than navigation start if the
+            // page was prerendered. But in cases where `activationStart` occurs
+            // after the FCP, this time should be clamped at 0.
+            metric.value = Math.max(entry.startTime - getActivationStart(), 0);
+            metric.entries.push(entry);
+            report(true);
+          }
         }
-      }
-    });
-  };
+      });
+    };
 
-  const po = observe('paint', handleEntries);
+    const po = observe('paint', handleEntries);
 
-  if (po) {
-    report = bindReporter(
-        onReport, metric, thresholds, opts!.reportAllChanges);
-
-    // Only report after a bfcache restore if the `PerformanceObserver`
-    // successfully registered or the `paint` entry exists.
-    onBFCacheRestore((event) => {
-      metric = initMetric('FCP');
+    if (po) {
       report = bindReporter(
           onReport, metric, thresholds, opts!.reportAllChanges);
 
-      requestAnimationFrame(() => {
+      // Only report after a bfcache restore if the `PerformanceObserver`
+      // successfully registered or the `paint` entry exists.
+      onBFCacheRestore((event) => {
+        metric = initMetric('FCP');
+        report = bindReporter(
+            onReport, metric, thresholds, opts!.reportAllChanges);
+
         requestAnimationFrame(() => {
-          metric.value = performance.now() - event.timeStamp;
-          report(true);
+          requestAnimationFrame(() => {
+            metric.value = performance.now() - event.timeStamp;
+            report(true);
+          });
         });
       });
-    });
-  }
+    }
+  });
 };

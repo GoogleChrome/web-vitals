@@ -15,23 +15,50 @@
  */
 
 import {onBFCacheRestore} from './bfcache.js';
-import {onHidden} from './onHidden.js';
+
 
 let firstHiddenTime = -1;
 
 const initHiddenTime = () => {
-  // If the document is hidden and not prerendering, assume it was always
-  // hidden and the page was loaded in the background.
+  // If the document is hidden when this code runs, assume it was always
+  // hidden and the page was loaded in the background, with the one exception
+  // that visibility state is always 'hidden' during prerendering, so we have
+  // to ignore that case until prerendering finishes (see: `prerenderingchange`
+  // event logic below).
   return document.visibilityState === 'hidden' &&
       !document.prerendering ? 0 : Infinity;
 }
 
-const trackChanges = () => {
-  // Update the time if/when the document becomes hidden.
-  onHidden(({timeStamp}) => {
-    firstHiddenTime = timeStamp
-  }, true);
+const onVisibilityUpdate = (event: Event) => {
+  // If the document is 'hidden' and no previous hidden timestamp has been
+  // set, update it based on the current event data.
+  if (document.visibilityState === 'hidden' && firstHiddenTime > -1) {
+    // If the event is a 'visibilitychange' event, it means the page was
+    // visible prior to this change, so the event timestamp is the first
+    // hidden time. However, if the event is a 'prerenderingchange' event and
+    // the document is 'hidden', assume the tab was activated in a background
+    // state and has always been hidden.
+    firstHiddenTime = event.type === 'visibilitychange' ? event.timeStamp : 0;
+
+    // Remove all listeners now that a `firstHiddenTime` value has been set.
+    removeChangeListeners();
+  }
+}
+
+const addChangeListeners = () => {
+  addEventListener('visibilitychange', onVisibilityUpdate, true);
+  // IMPORTANT: when a page is prerendering, its `visibilityState` is
+  // 'hidden', so in order to account for cases where this module checks for
+  // visibility during prerendering, an additional check after prerendering
+  // completes is also required.
+  addEventListener('prerenderingchange', onVisibilityUpdate, true);
 };
+
+const removeChangeListeners = () => {
+  removeEventListener('visibilitychange', onVisibilityUpdate, true);
+  removeEventListener('prerenderingchange', onVisibilityUpdate, true);
+};
+
 
 export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
@@ -42,11 +69,11 @@ export const getVisibilityWatcher = () => {
     if (window.__WEB_VITALS_POLYFILL__) {
       firstHiddenTime = window.webVitals.firstHiddenTime;
       if (firstHiddenTime === Infinity) {
-        trackChanges();
+        addChangeListeners();
       }
     } else {
       firstHiddenTime = initHiddenTime();
-      trackChanges();
+      addChangeListeners();
     }
 
     // Reset the time on bfcache restores.
@@ -56,7 +83,7 @@ export const getVisibilityWatcher = () => {
       // https://bugs.chromium.org/p/chromium/issues/detail?id=1133363
       setTimeout(() => {
         firstHiddenTime = initHiddenTime();
-        trackChanges();
+        addChangeListeners();
       }, 0);
     });
   }

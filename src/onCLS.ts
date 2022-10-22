@@ -19,6 +19,7 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {whenActivated} from './lib/whenActivated.js';
 import {onFCP} from './onFCP.js';
 import {CLSMetric, CLSReportCallback, ReportOpts} from './types.js';
 
@@ -51,80 +52,83 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
-  // https://web.dev/cls/#what-is-a-good-cls-score
-  const thresholds = [0.1, 0.25];
+  whenActivated(() => {
+    // https://web.dev/cls/#what-is-a-good-cls-score
+    const thresholds = [0.1, 0.25];
 
-  // Start monitoring FCP so we can only report CLS if FCP is also reported.
-  // Note: this is done to match the current behavior of CrUX.
-  if (!isMonitoringFCP) {
-    onFCP((metric) => {
-      fcpValue = metric.value;
-    });
-    isMonitoringFCP = true;
-  }
-
-  const onReportWrapped: CLSReportCallback = (arg) => {
-    if (fcpValue > -1) {
-      onReport(arg);
+    // Start monitoring FCP so we can only report CLS if FCP is also reported.
+    // Note: this is done to match the current behavior of CrUX.
+    if (!isMonitoringFCP) {
+      onFCP((metric) => {
+        fcpValue = metric.value;
+      });
+      isMonitoringFCP = true;
     }
-  };
 
-  let metric = initMetric('CLS', 0);
-  let report: ReturnType<typeof bindReporter>;
-
-  let sessionValue = 0;
-  let sessionEntries: PerformanceEntry[] = [];
-
-  // const handleEntries = (entries: Metric['entries']) => {
-  const handleEntries = (entries: LayoutShift[]) => {
-    entries.forEach((entry) => {
-      // Only count layout shifts without recent user input.
-      if (!entry.hadRecentInput) {
-        const firstSessionEntry = sessionEntries[0];
-        const lastSessionEntry = sessionEntries[sessionEntries.length - 1];
-
-        // If the entry occurred less than 1 second after the previous entry and
-        // less than 5 seconds after the first entry in the session, include the
-        // entry in the current session. Otherwise, start a new session.
-        if (sessionValue &&
-            entry.startTime - lastSessionEntry.startTime < 1000 &&
-            entry.startTime - firstSessionEntry.startTime < 5000) {
-          sessionValue += entry.value;
-          sessionEntries.push(entry);
-        } else {
-          sessionValue = entry.value;
-          sessionEntries = [entry];
-        }
-
-        // If the current session value is larger than the current CLS value,
-        // update CLS and the entries contributing to it.
-        if (sessionValue > metric.value) {
-          metric.value = sessionValue;
-          metric.entries = sessionEntries;
-          report();
-        }
+    const onReportWrapped: CLSReportCallback = (arg) => {
+      if (fcpValue > -1) {
+        onReport(arg);
       }
-    });
-  };
+    };
 
-  const po = observe('layout-shift', handleEntries);
-  if (po) {
-    report = bindReporter(
-        onReportWrapped, metric, thresholds, opts.reportAllChanges);
+    let metric = initMetric('CLS', 0);
+    let report: ReturnType<typeof bindReporter>;
 
-    onHidden(() => {
-      handleEntries(po.takeRecords() as CLSMetric['entries']);
-      report(true);
-    });
+    let sessionValue = 0;
+    let sessionEntries: PerformanceEntry[] = [];
 
-    // Only report after a bfcache restore if the `PerformanceObserver`
-    // successfully registered.
-    onBFCacheRestore(() => {
-      sessionValue = 0;
-      fcpValue = -1;
-      metric = initMetric('CLS', 0);
+    // const handleEntries = (entries: Metric['entries']) => {
+    const handleEntries = (entries: LayoutShift[]) => {
+      entries.forEach((entry) => {
+        // Only count layout shifts without recent user input.
+        if (!entry.hadRecentInput) {
+          const firstSessionEntry = sessionEntries[0];
+          const lastSessionEntry = sessionEntries[sessionEntries.length - 1];
+
+          // If the entry occurred less than 1 second after the previous entry
+          // and less than 5 seconds after the first entry in the session,
+          // include the entry in the current session. Otherwise, start a new
+          // session.
+          if (sessionValue &&
+              entry.startTime - lastSessionEntry.startTime < 1000 &&
+              entry.startTime - firstSessionEntry.startTime < 5000) {
+            sessionValue += entry.value;
+            sessionEntries.push(entry);
+          } else {
+            sessionValue = entry.value;
+            sessionEntries = [entry];
+          }
+
+          // If the current session value is larger than the current CLS value,
+          // update CLS and the entries contributing to it.
+          if (sessionValue > metric.value) {
+            metric.value = sessionValue;
+            metric.entries = sessionEntries;
+            report();
+          }
+        }
+      });
+    };
+
+    const po = observe('layout-shift', handleEntries);
+    if (po) {
       report = bindReporter(
           onReportWrapped, metric, thresholds, opts!.reportAllChanges);
-    });
-  }
+
+      onHidden(() => {
+        handleEntries(po.takeRecords() as CLSMetric['entries']);
+        report(true);
+      });
+
+      // Only report after a bfcache restore if the `PerformanceObserver`
+      // successfully registered.
+      onBFCacheRestore(() => {
+        sessionValue = 0;
+        fcpValue = -1;
+        metric = initMetric('CLS', 0);
+        report = bindReporter(
+            onReportWrapped, metric, thresholds, opts!.reportAllChanges);
+      });
+    }
+  });
 };
