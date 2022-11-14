@@ -24,6 +24,18 @@
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
+  <script>
+    // Set the blocking values based on query params if present.
+    const params = new URLSearchParams(location.search);
+
+    if (params.has('responseStart')) {
+      const navEntry = performance.getEntriesByType('navigation')[0];
+      Object.defineProperty(navEntry, 'responseStart', {
+        value: Number(params.get('responseStart')),
+      });
+    }
+  </script>
+
   <script type="module">
     import {onTTFB} from '{{ modulePath }}';
 
