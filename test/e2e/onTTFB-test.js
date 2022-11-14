@@ -16,6 +16,7 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {domReadyState} from '../utils/domReadyState.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 
 
@@ -175,13 +176,39 @@ describe('onTTFB()', async function() {
 
     const ttfb2 = await getTTFBBeacon();
 
-    assert(ttfb2.value >= 0);
     assert(ttfb2.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(ttfb2.value, 0);
     assert.strictEqual(ttfb2.name, 'TTFB');
     assert.strictEqual(ttfb2.value, ttfb2.delta);
     assert.strictEqual(ttfb2.rating, 'good');
     assert.strictEqual(ttfb2.navigationType, 'back-forward-cache');
     assert.strictEqual(ttfb2.entries.length, 0);
+  });
+
+  it('ignores navigations with no responseStart timestamp', async function() {
+    await browser.url('/test/ttfb?responseStart=0');
+
+    await domReadyState('complete');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const loadBeacons = await getBeacons();
+    assert.strictEqual(loadBeacons.length, 0);
+
+    // Test back-forward navigations to ensure they're sent, even if the
+    // initial page TTFB value is ignored.
+    await stubForwardBack();
+
+    const ttfb = await getTTFBBeacon();
+
+    assert(ttfb.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(ttfb.value, 0);
+    assert.strictEqual(ttfb.name, 'TTFB');
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
+    assert.strictEqual(ttfb.navigationType, 'back-forward-cache');
+    assert.strictEqual(ttfb.entries.length, 0);
   });
 
   describe('attribution', function() {

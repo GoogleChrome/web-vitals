@@ -67,21 +67,28 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
     const navEntry = getNavigationEntry();
 
     if (navEntry) {
-      // The activationStart reference is used because TTFB should be
-      // relative to page activation rather than navigation start if the
-      // page was prerendered. But in cases where `activationStart` occurs
-      // after the first byte is received, this time should be clamped at 0.
-      metric.value = Math.max(navEntry.responseStart - getActivationStart(), 0);
+      const responseStart = navEntry.responseStart;
 
       // In some cases the value reported is negative or is larger
       // than the current page time. Ignore these cases:
       // https://github.com/GoogleChrome/web-vitals/issues/137
       // https://github.com/GoogleChrome/web-vitals/issues/162
-      if (metric.value < 0 || metric.value > performance.now()) return;
+      if (responseStart < 0 || responseStart > performance.now()) return;
 
-      metric.entries = [navEntry];
+      // If the navigation entry's `responseStart` value is 0, ignore it.
+      // This likely means the request included a cross-origin redirect, and
+      // the browser has removed timing info for privacy/security reasons.
+      // See: https://github.com/GoogleChrome/web-vitals/issues/275
+      if (responseStart > 0) {
+        // The activationStart reference is used because TTFB should be
+        // relative to page activation rather than navigation start if the
+        // page was prerendered. But in cases where `activationStart` occurs
+        // after the first byte is received, this time should be clamped at 0.
+        metric.value = Math.max(responseStart - getActivationStart(), 0);
 
-      report(true);
+        metric.entries = [navEntry];
+        report(true);
+      }
 
       // Only report TTFB after bfcache restores if a `navigation` entry
       // was reported for the initial load.
