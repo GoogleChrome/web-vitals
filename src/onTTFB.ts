@@ -69,26 +69,22 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
     if (navEntry) {
       const responseStart = navEntry.responseStart;
 
-      // In some cases the value reported is negative or is larger
-      // than the current page time. Ignore these cases:
+      // In some cases no value is reported by the browser (for
+      // privacy/security reasons), and in other cases (bugs) the value is
+      // negative or is larger than the current page time. Ignore these cases:
       // https://github.com/GoogleChrome/web-vitals/issues/137
       // https://github.com/GoogleChrome/web-vitals/issues/162
-      if (responseStart < 0 || responseStart > performance.now()) return;
+      // https://github.com/GoogleChrome/web-vitals/issues/275
+      if (responseStart <= 0 || responseStart > performance.now()) return;
 
-      // If the navigation entry's `responseStart` value is 0, ignore it.
-      // This likely means the request included a cross-origin redirect, and
-      // the browser has removed timing info for privacy/security reasons.
-      // See: https://github.com/GoogleChrome/web-vitals/issues/275
-      if (responseStart > 0) {
-        // The activationStart reference is used because TTFB should be
-        // relative to page activation rather than navigation start if the
-        // page was prerendered. But in cases where `activationStart` occurs
-        // after the first byte is received, this time should be clamped at 0.
-        metric.value = Math.max(responseStart - getActivationStart(), 0);
+      // The activationStart reference is used because TTFB should be
+      // relative to page activation rather than navigation start if the
+      // page was prerendered. But in cases where `activationStart` occurs
+      // after the first byte is received, this time should be clamped at 0.
+      metric.value = Math.max(responseStart - getActivationStart(), 0);
 
-        metric.entries = [navEntry];
-        report(true);
-      }
+      metric.entries = [navEntry];
+      report(true);
 
       // Only report TTFB after bfcache restores if a `navigation` entry
       // was reported for the initial load.
