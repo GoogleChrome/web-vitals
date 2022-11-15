@@ -105,7 +105,6 @@
        */
       self.__stubWasDiscarded = () => {
         return new Promise((resolve) => {
-          const navEntry = performance.getEntriesByType('navigation')[0];
           // Only stub if the page isn't actually discarded.
           if (!document.wasDiscarded) {
             Object.defineProperty(document, 'wasDiscarded', {

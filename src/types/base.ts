@@ -105,12 +105,3 @@ export interface ReportOpts {
  *   loading. This is equivalent to the corresponding `readyState` value.
  */
 export type LoadState = 'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';
-
-/**
- * Extend the document with the new wasDiscarded boolean which is not supported
- * in typescript yet
- * https://github.com/WICG/page-lifecycle/blob/main/README.md
- */ 
-declare global {
-  interface Document { wasDiscarded?: boolean; }
-}
