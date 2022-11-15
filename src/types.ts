@@ -61,7 +61,7 @@ declare global {
   interface Document {
     // https://wicg.github.io/nav-speculation/prerendering.html#document-prerendering
     prerendering?: boolean;
-    // https://github.com/WICG/page-lifecycle/blob/main/README.md
+    // https://wicg.github.io/page-lifecycle/#sec-api
     wasDiscarded?: boolean;
   }
 
