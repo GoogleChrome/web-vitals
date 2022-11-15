@@ -199,10 +199,6 @@ describe('onFID()', async function() {
 
     await browser.url('/test/fid?prerender=1');
 
-    const activationStart = await browser.execute(() => {
-      return performance.getEntriesByType('navigation')[0].activationStart;
-    });
-
     // Click on the <h1>.
     const h1 = await $('h1');
     await h1.click();

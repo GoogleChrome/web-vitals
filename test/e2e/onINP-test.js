@@ -321,10 +321,6 @@ describe('onINP()', async function() {
 
     await browser.url('/test/inp?click=100&prerender=1');
 
-    const activationStart = await browser.execute(() => {
-      return performance.getEntriesByType('navigation')[0].activationStart;
-    });
-
 
     const h1 = await $('h1');
     await h1.click();

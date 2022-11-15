@@ -637,10 +637,6 @@ describe('onCLS()', async function() {
 
     await browser.url('/test/cls?prerender=1');
 
-    const activationStart = await browser.execute(() => {
-      return performance.getEntriesByType('navigation')[0].activationStart;
-    });
-
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();
     await stubVisibilityChange('hidden');
