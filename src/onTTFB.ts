@@ -20,6 +20,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {ReportCallback, ReportOpts} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
+import {whenActivated} from './lib/whenActivated.js';
 
 
 /**
@@ -28,7 +29,7 @@ import {getActivationStart} from './lib/getActivationStart.js';
  */
 const whenReady = (callback: () => void) => {
   if (document.prerendering) {
-    addEventListener('prerenderingchange', () => whenReady(callback), true);
+    whenActivated(() => whenReady(callback));
   } else if (document.readyState !== 'complete') {
     addEventListener('load', () => whenReady(callback), true);
   } else {
