@@ -701,9 +701,9 @@ interface Metric {
    * For pages that are restored from the bfcache, this value will
    * be 'back-forward-cache'.
    * For pages that are restored after being discarded, this value will
-   * be 'discarded'.
+   * be 'restore'.
    */
-  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'discarded';
+  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'restore';
 }
 ```
 

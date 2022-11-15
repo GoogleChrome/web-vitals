@@ -632,7 +632,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
   });
 
-  it('reports discarded as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function() {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls?wasDiscarded=1');
@@ -650,7 +650,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 2);
-    assert.strictEqual(cls.navigationType, 'discarded');
+    assert.strictEqual(cls.navigationType, 'restore');
   });
 
   describe('attribution', function() {

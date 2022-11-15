@@ -316,7 +316,7 @@ describe('onINP()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('reports discarded as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function() {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100&wasDiscarded=1');
@@ -337,7 +337,7 @@ describe('onINP()', async function() {
     assert(containsEntry(inp.entries, 'click', 'h1'));
     assert(interactionIDsMatch(inp.entries));
     assert(inp.entries[0].interactionId > 0);
-    assert.strictEqual(inp.navigationType, 'discarded');
+    assert.strictEqual(inp.navigationType, 'restore');
   });
 
   describe('attribution', function() {

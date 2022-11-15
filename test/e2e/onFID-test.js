@@ -194,7 +194,7 @@ describe('onFID()', async function() {
     assert.match(fid2.entries[0].name, /(mouse|pointer)down/);
   });
 
-  it('reports discarded as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function() {
     if (!browserSupportsFID) this.skip();
 
     await browser.url('/test/fid?wasDiscarded=1');
@@ -211,7 +211,7 @@ describe('onFID()', async function() {
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.rating, 'good');
-    assert.strictEqual(fid.navigationType, 'discarded');
+    assert.strictEqual(fid.navigationType, 'restore');
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
 

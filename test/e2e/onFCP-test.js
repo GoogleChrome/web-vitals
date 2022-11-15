@@ -235,7 +235,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp2.navigationType, 'back-forward-cache');
   });
 
-  it('reports discarded as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function() {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?wasDiscarded=1');
@@ -249,7 +249,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
     assert.strictEqual(fcp.entries.length, 1);
-    assert.strictEqual(fcp.navigationType, 'discarded');
+    assert.strictEqual(fcp.navigationType, 'restore');
   });
 
   describe('attribution', function() {

@@ -209,7 +209,7 @@ describe('onTTFB()', async function() {
     }
   });
 
-  it('reports discarded as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function() {
     await browser.url('/test/ttfb?wasDiscarded=1');
 
     const ttfb = await getTTFBBeacon();
@@ -221,7 +221,7 @@ describe('onTTFB()', async function() {
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
-    assert.strictEqual(ttfb.navigationType, 'discarded');
+    assert.strictEqual(ttfb.navigationType, 'restore');
     assert.strictEqual(ttfb.entries.length, 1);
 
     assertValidEntry(ttfb.entries[0]);

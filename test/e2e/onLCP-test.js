@@ -373,7 +373,7 @@ describe('onLCP()', async function() {
     assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
   });
 
-  it('reports discarded as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function() {
     if (!browserSupportsLCP) this.skip();
 
     await browser.url('/test/lcp?wasDiscarded=1');
@@ -394,7 +394,7 @@ describe('onLCP()', async function() {
     assert.strictEqual(lcp.value, lcp.delta);
     assert.strictEqual(lcp.rating, 'good');
     assert.strictEqual(lcp.entries.length, 1);
-    assert.strictEqual(lcp.navigationType, 'discarded');
+    assert.strictEqual(lcp.navigationType, 'restore');
   });
 
   describe('attribution', function() {
