@@ -16,6 +16,7 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
@@ -73,11 +74,9 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
             onReport, metric, thresholds, opts!.reportAllChanges);
 
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            metric.value = performance.now() - event.timeStamp;
-            report(true);
-          });
+        doubleRAF(() => {
+          metric.value = performance.now() - event.timeStamp;
+          report(true);
         });
       });
     }
