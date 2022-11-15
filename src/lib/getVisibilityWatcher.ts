@@ -35,9 +35,11 @@ const onVisibilityUpdate = (event: Event) => {
   if (document.visibilityState === 'hidden' && firstHiddenTime > -1) {
     // If the event is a 'visibilitychange' event, it means the page was
     // visible prior to this change, so the event timestamp is the first
-    // hidden time. However, if the event is a 'prerenderingchange' event and
-    // the document is 'hidden', assume the tab was activated in a background
-    // state and has always been hidden.
+    // hidden time.
+    // However, if the event is not a 'visibilitychange' event, then it must
+    // be a 'prerenderingchange' event, and the fact that the document is
+    // still 'hidden' from the above check means the tab was activated
+    // in a background state and so has always been hidden.
     firstHiddenTime = event.type === 'visibilitychange' ? event.timeStamp : 0;
 
     // Remove all listeners now that a `firstHiddenTime` value has been set.
