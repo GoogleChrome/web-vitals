@@ -235,6 +235,23 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp2.navigationType, 'back-forward-cache');
   });
 
+  it('reports restore as nav type for wasDiscarded', async function() {
+    if (!browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp?wasDiscarded=1');
+
+    await beaconCountIs(1);
+
+    const [fcp] = await getBeacons();
+    assert(fcp.value >= 0);
+    assert(fcp.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(fcp.name, 'FCP');
+    assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'good');
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.strictEqual(fcp.navigationType, 'restore');
+  });
+
   describe('attribution', function() {
     it('includes attribution data on the metric object', async function() {
       if (!browserSupportsFCP) this.skip();

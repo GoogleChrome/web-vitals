@@ -209,6 +209,24 @@ describe('onTTFB()', async function() {
     }
   });
 
+  it('reports restore as nav type for wasDiscarded', async function() {
+    await browser.url('/test/ttfb?wasDiscarded=1');
+
+    const ttfb = await getTTFBBeacon();
+
+    assert(ttfb.value >= 0);
+    assert(ttfb.value >= ttfb.entries[0].requestStart);
+    assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
+    assert(ttfb.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(ttfb.name, 'TTFB');
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
+    assert.strictEqual(ttfb.navigationType, 'restore');
+    assert.strictEqual(ttfb.entries.length, 1);
+
+    assertValidEntry(ttfb.entries[0]);
+  });
+
   describe('attribution', function() {
     it('includes attribution data on the metric object', async function() {
       await browser.url('/test/ttfb?attribution=1');

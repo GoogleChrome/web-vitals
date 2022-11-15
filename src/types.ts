@@ -58,9 +58,11 @@ interface PerformanceEntryMap {
 
 // Update built-in types to be more accurate.
 declare global {
-  // https://wicg.github.io/nav-speculation/prerendering.html#document-prerendering
   interface Document {
-    prerendering?: boolean
+    // https://wicg.github.io/nav-speculation/prerendering.html#document-prerendering
+    prerendering?: boolean;
+    // https://wicg.github.io/page-lifecycle/#sec-api
+    wasDiscarded?: boolean;
   }
 
   interface Performance {
