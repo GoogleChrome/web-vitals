@@ -316,6 +316,35 @@ describe('onINP()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
+  it('reports prerender as nav type for prerender', async function() {
+    if (!browserSupportsINP) this.skip();
+
+    await browser.url('/test/inp?click=100&prerender=1');
+
+    const activationStart = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].activationStart;
+    });
+
+
+    const h1 = await $('h1');
+    await h1.click();
+
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(interactionIDsMatch(inp.entries));
+    assert(inp.entries[0].interactionId > 0);
+    assert.strictEqual(inp.navigationType, 'prerender');
+  });
+
   it('reports restore as nav type for wasDiscarded', async function() {
     if (!browserSupportsINP) this.skip();
 
