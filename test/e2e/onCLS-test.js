@@ -632,6 +632,28 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
   });
 
+  it('reports prerender as nav type for prerender', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls?prerender=1');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+
+    await beaconCountIs(1);
+    const [cls] = await getBeacons();
+
+    assert(cls.value >= 0);
+    assert(cls.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.strictEqual(cls.navigationType, 'prerender');
+  });
+
   it('reports restore as nav type for wasDiscarded', async function() {
     if (!browserSupportsCLS) this.skip();
 
