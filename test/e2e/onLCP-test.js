@@ -373,6 +373,30 @@ describe('onLCP()', async function() {
     assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
   });
 
+  it('reports restore as nav type for wasDiscarded', async function() {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp?wasDiscarded=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Load a new page to trigger the hidden state.
+    await browser.url('about:blank');
+
+    await beaconCountIs(1);
+
+    const [lcp] = await getBeacons();
+
+    assert(lcp.value > 0); // Greater than the image load delay.
+    assert(lcp.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(lcp.name, 'LCP');
+    assert.strictEqual(lcp.value, lcp.delta);
+    assert.strictEqual(lcp.rating, 'good');
+    assert.strictEqual(lcp.entries.length, 1);
+    assert.strictEqual(lcp.navigationType, 'restore');
+  });
+
   describe('attribution', function() {
     it('includes attribution data on the metric object', async function() {
       if (!browserSupportsLCP) this.skip();

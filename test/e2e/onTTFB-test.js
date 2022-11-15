@@ -16,6 +16,7 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {domReadyState} from '../utils/domReadyState.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 
 
@@ -175,13 +176,55 @@ describe('onTTFB()', async function() {
 
     const ttfb2 = await getTTFBBeacon();
 
-    assert(ttfb2.value >= 0);
     assert(ttfb2.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(ttfb2.value, 0);
     assert.strictEqual(ttfb2.name, 'TTFB');
     assert.strictEqual(ttfb2.value, ttfb2.delta);
     assert.strictEqual(ttfb2.rating, 'good');
     assert.strictEqual(ttfb2.navigationType, 'back-forward-cache');
     assert.strictEqual(ttfb2.entries.length, 0);
+  });
+
+  it('ignores navigations with invalid responseStart timestamps', async function() {
+    for (const rs of [-1, 0, 1e12]) {
+      await browser.url(`/test/ttfb?responseStart=${rs}`);
+
+      await domReadyState('complete');
+
+      // Wait a bit to ensure no beacons were sent.
+      await browser.pause(1000);
+
+      const loadBeacons = await getBeacons();
+      assert.strictEqual(loadBeacons.length, 0);
+
+      // Test back-forward navigations to ensure they're not sent either
+      // in these situations.
+      await stubForwardBack();
+
+      // Wait a bit to ensure no beacons were sent.
+      await browser.pause(1000);
+
+      const bfcacheBeacons = await getBeacons();
+      assert.strictEqual(bfcacheBeacons.length, 0);
+    }
+  });
+
+  it('reports restore as nav type for wasDiscarded', async function() {
+    await browser.url('/test/ttfb?wasDiscarded=1');
+
+    const ttfb = await getTTFBBeacon();
+
+    assert(ttfb.value >= 0);
+    assert(ttfb.value >= ttfb.entries[0].requestStart);
+    assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
+    assert(ttfb.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(ttfb.name, 'TTFB');
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
+    assert.strictEqual(ttfb.navigationType, 'restore');
+    assert.strictEqual(ttfb.entries.length, 1);
+
+    assertValidEntry(ttfb.entries[0]);
   });
 
   describe('attribution', function() {

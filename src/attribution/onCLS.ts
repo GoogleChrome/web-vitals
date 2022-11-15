@@ -42,11 +42,12 @@ const attributeCLS = (metric: CLSMetric): void => {
           largestShiftEntry: largestEntry,
           loadState: getLoadState(largestEntry.startTime),
         };
+        return;
       }
     }
-  } else {
-    (metric as CLSMetricWithAttribution).attribution = {};
   }
+  // Set an empty object if no other attribution has been set.
+  (metric as CLSMetricWithAttribution).attribution = {};
 }
 
 /**

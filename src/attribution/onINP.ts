@@ -35,9 +35,10 @@ const attributeINP = (metric: INPMetric): void => {
       eventEntry: longestEntry,
       loadState: getLoadState(longestEntry.startTime),
     };
-  } else {
-    (metric as INPMetricWithAttribution).attribution = {};
+    return;
   }
+  // Set an empty object if no other attribution has been set.
+  (metric as INPMetricWithAttribution).attribution = {};
 };
 
 /**

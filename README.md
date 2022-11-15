@@ -155,14 +155,14 @@ The recommended way to use the `web-vitals` package is to install it from npm an
 
 The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com):
 
-_**Important!** users who want to load version 3 beta from the unpkg CDN should specify a version number or link to the [web-vitals@next](https://unpkg.com/web-vitals@next?module) tag._
+_**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example purposes only. `unpkg.com` is not affiliated with Google, and there are no guarantees that the URLs shown in these examples will continue to work in the future._
 
 **Load the "standard" build** _(using a module script)_
 
 ```html
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
-  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals?module';
+  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals@3?module';
 
   onCLS(console.log);
   onFID(console.log);
@@ -176,7 +176,7 @@ _**Important!** users who want to load version 3 beta from the unpkg CDN should 
 <script>
 (function() {
   var script = document.createElement('script');
-  script.src = 'https://unpkg.com/web-vitals/dist/web-vitals.iife.js';
+  script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.iife.js';
   script.onload = function() {
     // When loading `web-vitals` using a classic script, all the public
     // methods can be found on the `webVitals` global namespace.
@@ -194,7 +194,7 @@ _**Important!** users who want to load version 3 beta from the unpkg CDN should 
 ```html
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
-  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals/dist/web-vitals.attribution.js?module';
+  import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.js?module';
 
   onCLS(console.log);
   onFID(console.log);
@@ -208,7 +208,7 @@ _**Important!** users who want to load version 3 beta from the unpkg CDN should 
 <script>
 (function() {
   var script = document.createElement('script');
-  script.src = 'https://unpkg.com/web-vitals/dist/web-vitals.attribution.iife.js';
+  script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.iife.js';
   script.onload = function() {
     // When loading `web-vitals` using a classic script, all the public
     // methods can be found on the `webVitals` global namespace.
@@ -350,7 +350,7 @@ function sendToGoogleAnalytics({name, delta, id}) {
     transport: 'beacon',
 
     // OPTIONAL: any additional attribution params here.
-    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // See: https://web.dev/debug-performance-in-the-field/
     // dimension1: '...',
     // dimension2: '...',
     // ...
@@ -385,7 +385,7 @@ function sendToGoogleAnalytics({name, delta, id}) {
     non_interaction: true,
 
     // OPTIONAL: any additional attribution params here.
-    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // See: https://web.dev/debug-performance-in-the-field/
     // dimension1: '...',
     // dimension2: '...',
     // ...
@@ -416,7 +416,7 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
     metric_delta: delta, // Optional.
 
     // OPTIONAL: any additional params or debug info here.
-    // See: https://web.dev/debug-web-vitals-in-the-field/
+    // See: https://web.dev/debug-performance-in-the-field/
     // metric_rating: 'good' | 'needs-improvement' | 'poor',
     // debug_info: '...',
     // ...
@@ -477,7 +477,7 @@ onLCP(sendToGoogleAnalytics);
 
 _**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4. For Universal Analytics the attribution data should be set using a [custom dimension](https://support.google.com/analytics/answer/2709828) rather than `debug_target` as shown above._
 
-See [Debug Web Vitals in the field](https://web.dev/debug-web-vitals-in-the-field/) for more information and examples.
+See [Debug performance in the field](https://web.dev/debug-performance-in-the-field/) for more information and examples.
 
 ### Batch multiple reports together
 
@@ -553,7 +553,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     </td>
   </tr>
   <tr>
-    <td><code>web-vitals.umd.js</code></td>
+    <td><code>web-vitals.umd.cjs</code></td>
     <td><code>pgk.main</code></td>
     <td>
       A UMD version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
@@ -574,7 +574,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     </td>
   </tr>
     <tr>
-    <td><code>web-vitals.attribution.umd.js</code></td>
+    <td><code>web-vitals.attribution.umd.cjs</code></td>
     <td>--</td>
     <td>
       A UMD version of the <code>web-vitals.attribution.js</code> build (exposed on the <code>window.webVitals.*</code> namespace).
@@ -598,7 +598,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     </td>
   </tr>
     <tr>
-    <td><code>web-vitals.base.umd.js</code></td>
+    <td><code>web-vitals.base.umd.cjs</code></td>
     <td>--</td>
     <td>
       <p><strong>This build has been <a href="https://github.com/GoogleChrome/web-vitals/issues/238">deprecated</a>.</strong></p>
@@ -619,7 +619,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     <td>--</td>
     <td>
       <p><strong>This build has been <a href="https://github.com/GoogleChrome/web-vitals/issues/238">deprecated</a>.</strong></p>
-      <p>The "polyfill" part of the "base+polyfill" version. This script should be used with either <code>web-vitals.base.js</code>, <code>web-vitals.base.umd.js</code>, or <code>web-vitals.base.iife.js</code> (it will not work with any script that doesn't have "base" in the filename).</p>
+      <p>The "polyfill" part of the "base+polyfill" version. This script should be used with either <code>web-vitals.base.js</code>, <code>web-vitals.base.umd.cjs</code>, or <code>web-vitals.base.iife.js</code> (it will not work with any script that doesn't have "base" in the filename).</p>
       See <a href="#how-to-use-the-polyfill">how to use the polyfill</a> for more details.
     </td>
   </tr>
@@ -633,7 +633,7 @@ Most developers will generally want to use "standard" build (via either the ES m
 
 However, if you'd lke to collect additional debug information to help you diagnose performance bottlenecks based on real-user issues, use the ["attribution" build](#attribution-build).
 
-For guidance on how to collect and use real-user data to debug performance issues, see [Debug Web Vitals in the field](https://web.dev/debug-web-vitals-in-the-field/).
+For guidance on how to collect and use real-user data to debug performance issues, see [Debug performance in the field](https://web.dev/debug-performance-in-the-field/).
 
 ### How the polyfill works
 
@@ -697,21 +697,24 @@ interface Metric {
    * The type of navigation
    *
    * Navigation Timing API (or `undefined` if the browser doesn't
-   * support that API). For pages that are restored from the bfcache, this
-   * value will be 'back-forward-cache'.
+   * support that API).
+   * For pages that are restored from the bfcache, this value will
+   * be 'back-forward-cache'.
+   * For pages that are restored after being discarded, this value will
+   * be 'restore'.
    */
-  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender';
+  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'restore';
 }
 ```
 
 Metric-specific subclasses:
 
 - [`CLSMetric`](/src/types/cls.ts#:~:text=interface%20CLSMetric)
-- [`FCPMetric`](/src/types/cls.ts#:~:text=interface%20FCPMetric)
-- [`FIDMetric`](/src/types/cls.ts#:~:text=interface%20FIDMetric)
-- [`INPMetric`](/src/types/cls.ts#:~:text=interface%20INPMetric)
-- [`LCPMetric`](/src/types/cls.ts#:~:text=interface%20LCPMetric)
-- [`TTFBMetric`](/src/types/cls.ts#:~:text=interface%20TTFBMetric)
+- [`FCPMetric`](/src/types/fcp.ts#:~:text=interface%20FCPMetric)
+- [`FIDMetric`](/src/types/fid.ts#:~:text=interface%20FIDMetric)
+- [`INPMetric`](/src/types/inp.ts#:~:text=interface%20INPMetric)
+- [`LCPMetric`](/src/types/lcp.ts#:~:text=interface%20LCPMetric)
+- [`TTFBMetric`](/src/types/ttfb.ts#:~:text=interface%20TTFBMetric)
 
 #### `MetricWithAttribution`
 
@@ -731,11 +734,11 @@ interface MetricWithAttribution extends Metric {
 Metric-specific subclasses:
 
 - [`CLSMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20CLSMetricWithAttribution)
-- [`FCPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20FCPMetricWithAttribution)
-- [`FIDMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20FIDMetricWithAttribution)
-- [`INPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20INPMetricWithAttribution)
-- [`LCPMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20LCPMetricWithAttribution)
-- [`TTFBMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20TTFBMetricWithAttribution)
+- [`FCPMetricWithAttribution`](/src/types/fcp.ts#:~:text=interface%20FCPMetricWithAttribution)
+- [`FIDMetricWithAttribution`](/src/types/fid.ts#:~:text=interface%20FIDMetricWithAttribution)
+- [`INPMetricWithAttribution`](/src/types/inp.ts#:~:text=interface%20INPMetricWithAttribution)
+- [`LCPMetricWithAttribution`](/src/types/lcp.ts#:~:text=interface%20LCPMetricWithAttribution)
+- [`TTFBMetricWithAttribution`](/src/types/ttfb.ts#:~:text=interface%20TTFBMetricWithAttribution)
 
 #### `ReportCallback`
 
@@ -748,11 +751,11 @@ interface ReportCallback {
 Metric-specific subclasses:
 
 - [`CLSReportCallback`](/src/types/cls.ts#:~:text=interface%20CLSReportCallback)
-- [`FCPReportCallback`](/src/types/cls.ts#:~:text=interface%20FCPReportCallback)
-- [`FIDReportCallback`](/src/types/cls.ts#:~:text=interface%20FIDReportCallback)
-- [`INPReportCallback`](/src/types/cls.ts#:~:text=interface%20INPReportCallback)
-- [`LCPReportCallback`](/src/types/cls.ts#:~:text=interface%20LCPReportCallback)
-- [`TTFBReportCallback`](/src/types/cls.ts#:~:text=interface%20TTFBReportCallback)
+- [`FCPReportCallback`](/src/types/fcp.ts#:~:text=interface%20FCPReportCallback)
+- [`FIDReportCallback`](/src/types/fid.ts#:~:text=interface%20FIDReportCallback)
+- [`INPReportCallback`](/src/types/inp.ts#:~:text=interface%20INPReportCallback)
+- [`LCPReportCallback`](/src/types/lcp.ts#:~:text=interface%20LCPReportCallback)
+- [`TTFBReportCallback`](/src/types/ttfb.ts#:~:text=interface%20TTFBReportCallback)
 
 #### `ReportOpts`
 

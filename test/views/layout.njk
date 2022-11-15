@@ -84,7 +84,6 @@
               configurable: true,
             });
             setTimeout(() => {
-              self.__stubVisibilityChange('visible');
               const time = self.performance ? performance.now() : 0;
               const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0];
               Object.defineProperty(navEntry, 'activationStart', {
@@ -92,10 +91,26 @@
                 enumerable: true,
                 value: Math.min(time, fcpEntry && fcpEntry.startTime || time),
               });
+              self.__stubVisibilityChange('visible');
               delete document.prerendering;
               document.dispatchEvent(new Event('prerenderingchange'));
               resolve();
             }, Number(params.get('prerender')) || 0);
+          }
+        });
+      }
+
+      /**
+       * @return {Promise<void>}
+       */
+      self.__stubWasDiscarded = () => {
+        return new Promise((resolve) => {
+          // Only stub if the page isn't actually discarded.
+          if (!document.wasDiscarded) {
+            Object.defineProperty(document, 'wasDiscarded', {
+              value: true,
+              configurable: true,
+            });
           }
         });
       }
@@ -130,6 +145,10 @@
 
       if (params.has('prerender')) {
         self.__stubPrerender();
+      }
+
+      if (params.has('wasDiscarded')) {
+        self.__stubWasDiscarded();
       }
     }());
   </script>

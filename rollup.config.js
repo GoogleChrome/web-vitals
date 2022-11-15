@@ -53,7 +53,7 @@ const configs = [
     input: 'dist/modules/index.js',
     output: {
       format: 'umd',
-      file: `./dist/web-vitals.umd.js`,
+      file: `./dist/web-vitals.umd.cjs`,
       name: 'webVitals',
     },
     plugins: configurePlugins({module: false, polyfill: false}),
@@ -79,7 +79,7 @@ const configs = [
     input: 'dist/modules/index.js',
     output: {
       format: 'umd',
-      file: `./dist/web-vitals.base.umd.js`,
+      file: `./dist/web-vitals.base.umd.cjs`,
       name: 'webVitals',
       extend: true,
     },
@@ -117,7 +117,7 @@ const configs = [
     input: 'dist/modules/attribution.js',
     output: {
       format: 'umd',
-      file: `./dist/web-vitals.attribution.umd.js`,
+      file: `./dist/web-vitals.attribution.umd.cjs`,
       name: 'webVitals',
     },
     plugins: configurePlugins({module: false, polyfill: false}),

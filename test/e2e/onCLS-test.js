@@ -209,25 +209,33 @@ describe('onCLS()', async function() {
     await browser.url('/test/cls?reportAllChanges=1');
 
     // Beacons should be sent as soon as layout shifts occur, wait for them.
-    await beaconCountIs(2);
+    await beaconCountIs(3);
 
-    const [cls1, cls2] = await getBeacons();
+    const [cls1, cls2, cls3] = await getBeacons();
 
-    assert(cls1.value >= 0);
+    assert.strictEqual(cls1.value, 0);
     assert(cls1.id.match(/^v3-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.rating, 'good');
-    assert.strictEqual(cls1.entries.length, 1);
+    assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= cls1.value);
+    assert(cls2.value >= 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
-    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
     assert.strictEqual(cls2.rating, 'good');
-    assert.strictEqual(cls2.entries.length, 2);
+    assert.strictEqual(cls2.entries.length, 1);
     assert.match(cls2.navigationType, /navigate|reload/);
+
+    assert(cls3.value >= cls2.value);
+    assert.strictEqual(cls3.name, 'CLS');
+    assert.strictEqual(cls3.id, cls2.id);
+    assert.strictEqual(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.rating, 'good');
+    assert.strictEqual(cls3.entries.length, 2);
+    assert.match(cls3.navigationType, /navigate|reload/);
 
     await clearBeacons();
     await stubVisibilityChange('hidden');
@@ -245,24 +253,33 @@ describe('onCLS()', async function() {
     await browser.url('/test/cls?reportAllChanges=1');
 
     // Beacons should be sent as soon as layout shifts occur, wait for them.
-    await beaconCountIs(2);
+    await beaconCountIs(3);
 
-    const [cls1, cls2] = await getBeacons();
+    const [cls1, cls2, cls3] = await getBeacons();
 
-    assert(cls1.value >= 0);
+    assert.strictEqual(cls1.value, 0);
     assert(cls1.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.rating, 'good');
-    assert.strictEqual(cls1.entries.length, 1);
+    assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= cls1.value);
+    assert(cls2.value >= 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
-    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
     assert.strictEqual(cls2.rating, 'good');
-    assert.strictEqual(cls2.entries.length, 2);
+    assert.strictEqual(cls2.entries.length, 1);
     assert.match(cls2.navigationType, /navigate|reload/);
+
+    assert(cls3.value >= cls2.value);
+    assert.strictEqual(cls3.name, 'CLS');
+    assert.strictEqual(cls3.id, cls2.id);
+    assert.strictEqual(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.rating, 'good');
+    assert.strictEqual(cls3.entries.length, 2);
+    assert.match(cls3.navigationType, /navigate|reload/);
 
     // Unload the page after no new shifts have occurred.
     await clearBeacons();
@@ -323,23 +340,33 @@ describe('onCLS()', async function() {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?reportAllChanges=1`);
-    await beaconCountIs(2);
+    await beaconCountIs(3);
 
-    const [cls1, cls2] = await getBeacons();
+    const [cls1, cls2, cls3] = await getBeacons();
 
-    assert(cls1.value > 0);
+    assert.strictEqual(cls1.value, 0);
     assert(cls1.id.match(/^v3-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
-    assert.strictEqual(cls1.entries.length, 1);
+    assert.strictEqual(cls1.rating, 'good');
+    assert.strictEqual(cls1.entries.length, 0);
+    assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value > cls1.value);
+    assert(cls2.value >= 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
-    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
     assert.strictEqual(cls2.rating, 'good');
-    assert.strictEqual(cls2.entries.length, 2);
+    assert.strictEqual(cls2.entries.length, 1);
     assert.match(cls2.navigationType, /navigate|reload/);
+
+    assert(cls3.value >= cls2.value);
+    assert.strictEqual(cls3.name, 'CLS');
+    assert.strictEqual(cls3.id, cls2.id);
+    assert.strictEqual(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.rating, 'good');
+    assert.strictEqual(cls3.entries.length, 2);
+    assert.match(cls3.navigationType, /navigate|reload/);
 
     // Unload the page after no new shifts have occurred.
     await clearBeacons();
@@ -352,15 +379,15 @@ describe('onCLS()', async function() {
     await triggerLayoutShift();
 
     await beaconCountIs(1);
-    const [cls3] = await getBeacons();
+    const [cls4] = await getBeacons();
 
-    assert(cls3.value > cls2.value);
-    assert.strictEqual(cls3.name, 'CLS');
-    assert.strictEqual(cls3.id, cls2.id);
-    assert.strictEqual(cls3.value, cls2.value + cls3.delta);
-    assert.strictEqual(cls3.rating, 'good');
-    assert.strictEqual(cls3.entries.length, 3);
-    assert.match(cls3.navigationType, /navigate|reload/);
+    assert(cls4.value > cls3.value);
+    assert.strictEqual(cls4.name, 'CLS');
+    assert.strictEqual(cls4.id, cls3.id);
+    assert.strictEqual(cls4.value, cls3.value + cls4.delta);
+    assert.strictEqual(cls4.rating, 'good');
+    assert.strictEqual(cls4.entries.length, 3);
+    assert.match(cls4.navigationType, /navigate|reload/);
   });
 
   it('continues reporting after bfcache restore (reportAllChanges === false)', async function() {
@@ -426,24 +453,33 @@ describe('onCLS()', async function() {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?reportAllChanges=1`);
-    await beaconCountIs(2);
+    await beaconCountIs(3);
 
-    const [cls1, cls2] = await getBeacons();
+    const [cls1, cls2, cls3] = await getBeacons();
 
-    assert(cls1.value > 0);
+    assert.strictEqual(cls1.value, 0);
     assert(cls1.id.match(/^v3-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
-    assert.strictEqual(cls1.entries.length, 1);
+    assert.strictEqual(cls1.rating, 'good');
+    assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value > cls1.value);
+    assert(cls2.value >= 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
-    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
     assert.strictEqual(cls2.rating, 'good');
-    assert.strictEqual(cls2.entries.length, 2);
+    assert.strictEqual(cls2.entries.length, 1);
     assert.match(cls2.navigationType, /navigate|reload/);
+
+    assert(cls3.value >= cls2.value);
+    assert.strictEqual(cls3.name, 'CLS');
+    assert.strictEqual(cls3.id, cls2.id);
+    assert.strictEqual(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.rating, 'good');
+    assert.strictEqual(cls3.entries.length, 2);
+    assert.match(cls3.navigationType, /navigate|reload/);
 
     await clearBeacons();
     await stubForwardBack();
@@ -453,17 +489,25 @@ describe('onCLS()', async function() {
 
     await triggerLayoutShift();
 
-    await beaconCountIs(1);
-    const [cls3] = await getBeacons();
+    await beaconCountIs(2);
+    const [cls4, cls5] = await getBeacons();
 
-    assert(cls3.value > 0);
-    assert(cls3.id.match(/^v3-\d+-\d+$/));
-    assert(cls3.id !== cls2.id);
-    assert.strictEqual(cls3.name, 'CLS');
-    assert.strictEqual(cls3.value, cls3.delta);
-    assert.strictEqual(cls3.rating, 'good');
-    assert.strictEqual(cls3.entries.length, 1);
-    assert.strictEqual(cls3.navigationType, 'back-forward-cache');
+    assert.strictEqual(cls4.value, 0);
+    assert(cls4.id.match(/^v3-\d+-\d+$/));
+    assert(cls4.id !== cls3.id);
+    assert.strictEqual(cls4.name, 'CLS');
+    assert.strictEqual(cls4.value, cls4.delta);
+    assert.strictEqual(cls4.rating, 'good');
+    assert.strictEqual(cls4.entries.length, 0);
+    assert.strictEqual(cls4.navigationType, 'back-forward-cache');
+
+    assert(cls5.value > 0);
+    assert.strictEqual(cls5.id, cls4.id);
+    assert.strictEqual(cls5.name, 'CLS');
+    assert.strictEqual(cls5.value, cls4.delta + cls5.delta);
+    assert.strictEqual(cls5.rating, 'good');
+    assert.strictEqual(cls5.entries.length, 1);
+    assert.strictEqual(cls5.navigationType, 'back-forward-cache');
   });
 
   it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === false)', async function() {
@@ -586,6 +630,49 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 1);
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
+  });
+
+  it('reports prerender as nav type for prerender', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls?prerender=1');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+
+    await beaconCountIs(1);
+    const [cls] = await getBeacons();
+
+    assert(cls.value >= 0);
+    assert(cls.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.strictEqual(cls.navigationType, 'prerender');
+  });
+
+  it('reports restore as nav type for wasDiscarded', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls?wasDiscarded=1');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+    const [cls] = await getBeacons();
+
+    assert(cls.value >= 0);
+    assert(cls.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.strictEqual(cls.navigationType, 'restore');
   });
 
   describe('attribution', function() {

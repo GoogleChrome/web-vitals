@@ -37,15 +37,15 @@ const attributeFCP = (metric: FCPMetric): void => {
         navigationEntry,
         fcpEntry,
       };
+      return;
     }
-  } else {
-    // There are no entries when restored from bfcache.
-    (metric as FCPMetricWithAttribution).attribution = {
-      timeToFirstByte: 0,
-      firstByteToFCP: metric.value,
-      loadState: getLoadState(getBFCacheRestoreTime()),
-    };
   }
+  // Set an empty object if no other attribution has been set.
+  (metric as FCPMetricWithAttribution).attribution = {
+    timeToFirstByte: 0,
+    firstByteToFCP: metric.value,
+    loadState: getLoadState(getBFCacheRestoreTime()),
+  };
 };
 
 /**

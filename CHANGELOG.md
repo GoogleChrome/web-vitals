@@ -1,5 +1,21 @@
 # Changelog
 
+## v3.0.4 (2022-10-18)
+
+- Clamp LCP and FCP to 0 for prerendered pages ([#270](https://github.com/GoogleChrome/web-vitals/pull/270))
+
+## v3.0.3 (2022-10-04)
+
+- Ensure `attribution` object is always present in attribution build ([#265](https://github.com/GoogleChrome/web-vitals/pull/265))
+
+## v3.0.2 (2022-09-14)
+
+- Set an explicit unpkg dist file ([#261](https://github.com/GoogleChrome/web-vitals/pull/261))
+
+## v3.0.1 (2022-08-31)
+
+- Use the cjs extension for all UMD builds ([#257](https://github.com/GoogleChrome/web-vitals/pull/257))
+
 ## v3.0.0 (2022-08-24)
 
 - **[BREAKING]** Add a config object param to all metric functions ([#225](https://github.com/GoogleChrome/web-vitals/pull/225))

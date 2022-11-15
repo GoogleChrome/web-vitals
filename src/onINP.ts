@@ -20,6 +20,7 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {getInteractionCount, initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
+import {whenActivated} from './lib/whenActivated.js';
 import {INPMetric, ReportCallback, ReportOpts} from './types.js';
 
 interface Interaction {
@@ -135,92 +136,94 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
-  // https://web.dev/inp/#what's-a-%22good%22-inp-value
-  const thresholds = [200, 500];
+  whenActivated(() => {
+    // https://web.dev/inp/#what's-a-%22good%22-inp-value
+    const thresholds = [200, 500];
 
-  // TODO(philipwalton): remove once the polyfill is no longer needed.
-  initInteractionCountPolyfill();
+    // TODO(philipwalton): remove once the polyfill is no longer needed.
+    initInteractionCountPolyfill();
 
-  let metric = initMetric('INP');
-  let report: ReturnType<typeof bindReporter>;
+    let metric = initMetric('INP');
+    let report: ReturnType<typeof bindReporter>;
 
-  const handleEntries = (entries: INPMetric['entries']) => {
-    entries.forEach((entry) => {
-      if (entry.interactionId) {
-        processEntry(entry);
-      }
-
-      // Entries of type `first-input` don't currently have an `interactionId`,
-      // so to consider them in INP we have to first check that an existing
-      // entry doesn't match the `duration` and `startTime`.
-      // Note that this logic assumes that `event` entries are dispatched
-      // before `first-input` entries. This is true in Chrome but it is not
-      // true in Firefox; however, Firefox doesn't support interactionId, so
-      // it's not an issue at the moment.
-      // TODO(philipwalton): remove once crbug.com/1325826 is fixed.
-      if (entry.entryType === 'first-input') {
-        const noMatchingEntry = !longestInteractionList.some((interaction) => {
-          return interaction.entries.some((prevEntry) => {
-            return entry.duration === prevEntry.duration &&
-                entry.startTime === prevEntry.startTime;
-          });
-        });
-        if (noMatchingEntry) {
+    const handleEntries = (entries: INPMetric['entries']) => {
+      entries.forEach((entry) => {
+        if (entry.interactionId) {
           processEntry(entry);
         }
+
+        // Entries of type `first-input` don't currently have an `interactionId`,
+        // so to consider them in INP we have to first check that an existing
+        // entry doesn't match the `duration` and `startTime`.
+        // Note that this logic assumes that `event` entries are dispatched
+        // before `first-input` entries. This is true in Chrome but it is not
+        // true in Firefox; however, Firefox doesn't support interactionId, so
+        // it's not an issue at the moment.
+        // TODO(philipwalton): remove once crbug.com/1325826 is fixed.
+        if (entry.entryType === 'first-input') {
+          const noMatchingEntry = !longestInteractionList.some((interaction) => {
+            return interaction.entries.some((prevEntry) => {
+              return entry.duration === prevEntry.duration &&
+                  entry.startTime === prevEntry.startTime;
+            });
+          });
+          if (noMatchingEntry) {
+            processEntry(entry);
+          }
+        }
+      });
+
+      const inp = estimateP98LongestInteraction();
+
+      if (inp && inp.latency !== metric.value) {
+        metric.value = inp.latency;
+        metric.entries = inp.entries;
+        report();
       }
-    });
+    };
 
-    const inp = estimateP98LongestInteraction();
+    const po = observe('event', handleEntries, {
+      // Event Timing entries have their durations rounded to the nearest 8ms,
+      // so a duration of 40ms would be any event that spans 2.5 or more frames
+      // at 60Hz. This threshold is chosen to strike a balance between usefulness
+      // and performance. Running this callback for any interaction that spans
+      // just one or two frames is likely not worth the insight that could be
+      // gained.
+      durationThreshold: opts!.durationThreshold || 40,
+    } as PerformanceObserverInit);
 
-    if (inp && inp.latency !== metric.value) {
-      metric.value = inp.latency;
-      metric.entries = inp.entries;
-      report();
+    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
+
+    if (po) {
+      // Also observe entries of type `first-input`. This is useful in cases
+      // where the first interaction is less than the `durationThreshold`.
+      po.observe({type: 'first-input', buffered: true});
+
+      onHidden(() => {
+        handleEntries(po.takeRecords() as INPMetric['entries']);
+
+        // If the interaction count shows that there were interactions but
+        // none were captured by the PerformanceObserver, report a latency of 0.
+        if (metric.value < 0 && getInteractionCountForNavigation() > 0) {
+          metric.value = 0;
+          metric.entries = [];
+        }
+
+        report(true);
+      });
+
+      // Only report after a bfcache restore if the `PerformanceObserver`
+      // successfully registered.
+      onBFCacheRestore(() => {
+        longestInteractionList = [];
+        // Important, we want the count for the full page here,
+        // not just for the current navigation.
+        prevInteractionCount = getInteractionCount();
+
+        metric = initMetric('INP');
+        report = bindReporter(
+            onReport, metric, thresholds, opts!.reportAllChanges);
+      });
     }
-  };
-
-  const po = observe('event', handleEntries, {
-    // Event Timing entries have their durations rounded to the nearest 8ms,
-    // so a duration of 40ms would be any event that spans 2.5 or more frames
-    // at 60Hz. This threshold is chosen to strike a balance between usefulness
-    // and performance. Running this callback for any interaction that spans
-    // just one or two frames is likely not worth the insight that could be
-    // gained.
-    durationThreshold: opts.durationThreshold || 40,
-  } as PerformanceObserverInit);
-
-  report = bindReporter(onReport, metric, thresholds, opts.reportAllChanges);
-
-  if (po) {
-    // Also observe entries of type `first-input`. This is useful in cases
-    // where the first interaction is less than the `durationThreshold`.
-    po.observe({type: 'first-input', buffered: true});
-
-    onHidden(() => {
-      handleEntries(po.takeRecords() as INPMetric['entries']);
-
-      // If the interaction count shows that there were interactions but
-      // none were captured by the PerformanceObserver, report a latency of 0.
-      if (metric.value < 0 && getInteractionCountForNavigation() > 0) {
-        metric.value = 0;
-        metric.entries = [];
-      }
-
-      report(true);
-    });
-
-    // Only report after a bfcache restore if the `PerformanceObserver`
-    // successfully registered.
-    onBFCacheRestore(() => {
-      longestInteractionList = [];
-      // Important, we want the count for the full page here,
-      // not just for the current navigation.
-      prevInteractionCount = getInteractionCount();
-
-      metric = initMetric('INP');
-      report = bindReporter(
-          onReport, metric, thresholds, opts!.reportAllChanges);
-    });
-  }
+  });
 };

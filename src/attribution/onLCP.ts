@@ -68,16 +68,16 @@ const attributeLCP = (metric: LCPMetric) => {
       }
 
       (metric as LCPMetricWithAttribution).attribution = attribution;
+      return;
     }
-  } else {
-    // There are no entries when restored from bfcache.
-    (metric as LCPMetricWithAttribution).attribution = {
-      timeToFirstByte: 0,
-      resourceLoadDelay: 0,
-      resourceLoadTime: 0,
-      elementRenderDelay: metric.value,
-    };
   }
+  // Set an empty object if no other attribution has been set.
+  (metric as LCPMetricWithAttribution).attribution = {
+    timeToFirstByte: 0,
+    resourceLoadDelay: 0,
+    resourceLoadTime: 0,
+    elementRenderDelay: metric.value,
+  };
 };
 
 /**
