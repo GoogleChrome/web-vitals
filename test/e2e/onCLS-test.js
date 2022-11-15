@@ -641,6 +641,11 @@ describe('onCLS()', async function() {
       return performance.getEntriesByType('navigation')[0].activationStart;
     });
 
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+
     await beaconCountIs(1);
     const [cls] = await getBeacons();
 
