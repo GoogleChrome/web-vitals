@@ -697,10 +697,13 @@ interface Metric {
    * The type of navigation
    *
    * Navigation Timing API (or `undefined` if the browser doesn't
-   * support that API). For pages that are restored from the bfcache, this
-   * value will be 'back-forward-cache'.
+   * support that API).
+   * For pages that are restored from the bfcache, this value will
+   * be 'back-forward-cache'.
+   * For pages that are restored after being discarded, this value will
+   * be 'discarded'.
    */
-  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender';
+  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'discarded';
 }
 ```
 

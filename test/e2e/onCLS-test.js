@@ -632,6 +632,27 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
   });
 
+  it('reports discarded as nav type for wasDiscarded', async function() {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url('/test/cls?wasDiscarded=1');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+    const [cls] = await getBeacons();
+
+    assert(cls.value >= 0);
+    assert(cls.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.strictEqual(cls.navigationType, 'discarded');
+  });
+
   describe('attribution', function() {
     it('includes attribution data on the metric object', async function() {
       if (!browserSupportsCLS) this.skip();

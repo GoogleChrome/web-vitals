@@ -194,6 +194,28 @@ describe('onFID()', async function() {
     assert.match(fid2.entries[0].name, /(mouse|pointer)down/);
   });
 
+  it('reports discarded as nav type for wasDiscarded', async function() {
+    if (!browserSupportsFID) this.skip();
+
+    await browser.url('/test/fid?wasDiscarded=1');
+
+    // Click on the <h1>.
+    const h1 = await $('h1');
+    await h1.click();
+
+    await beaconCountIs(1);
+
+    const [fid] = await getBeacons();
+    assert(fid.value >= 0);
+    assert(fid.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(fid.name, 'FID');
+    assert.strictEqual(fid.value, fid.delta);
+    assert.strictEqual(fid.rating, 'good');
+    assert.strictEqual(fid.navigationType, 'discarded');
+    assert.match(fid.entries[0].name, /(mouse|pointer)down/);
+  });
+
+
   describe('attribution', function() {
     it('includes attribution data on the metric object', async function() {
       if (!browserSupportsFID) this.skip();

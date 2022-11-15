@@ -100,6 +100,22 @@
         });
       }
 
+      /**
+       * @return {Promise<void>}
+       */
+      self.__stubWasDiscarded = () => {
+        return new Promise((resolve) => {
+          const navEntry = performance.getEntriesByType('navigation')[0];
+          // Only stub if the page isn't actually discarded.
+          if (!document.wasDiscarded) {
+            Object.defineProperty(document, 'wasDiscarded', {
+              value: true,
+              configurable: true,
+            });
+          }
+        });
+      }
+
       // Uncomment to stub running in a browser that doesn't support performance APIs
       // (e.g. some version of Opera support this).
       // delete self.performance;
@@ -130,6 +146,10 @@
 
       if (params.has('prerender')) {
         self.__stubPrerender();
+      }
+
+      if (params.has('wasDiscarded')) {
+        self.__stubWasDiscarded();
       }
     }());
   </script>

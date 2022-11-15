@@ -30,6 +30,8 @@ export const initMetric = (name: Metric['name'], value?: number): Metric => {
   } else if (navEntry) {
     if (document.prerendering || getActivationStart() > 0) {
       navigationType = 'prerender';
+    } else if (document.wasDiscarded) {
+      navigationType = 'discarded';
     } else {
       navigationType =
           navEntry.type.replace(/_/g, '-') as Metric['navigationType'];
