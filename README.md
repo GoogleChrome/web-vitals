@@ -1200,6 +1200,14 @@ Then navigate to `http://localhost:9090/test/<view>`, where `<view>` is the base
 
 You'll likely want to combine this with `npm run watch` to ensure any changes you make are transpiled and rebuilt.
 
+To test only one metric, you can pass a `--suite` argument. For example to test just INP run this:
+
+```sh
+npm run test:e2e -- --suite INP
+```
+
+Note the `--` is needed to avoid this being seen as an argument to the `npm` command itself.
+
 ## Integrations
 
 - [**Web Vitals Connector**](https://goo.gle/web-vitals-connector): Data Studio connector to create dashboards from [Web Vitals data captured in BiqQuery](https://web.dev/vitals-ga4/).
