@@ -1208,7 +1208,13 @@ npm run test:e2e -- --suite INP
 
 Note the `--` is needed to avoid this being seen as an argument to the `npm` command itself.
 
-To test multiple metrics, use multiple `--suite` arguments:
+Short runs have been created to run single metrics:
+
+```sh
+npm run test:INP
+```
+
+To test multiple metrics, use multiple `--suite` arguments to the `test:e2e` command:
 
 ```sh
 npm run test:e2e -- --suite FID --suite INP
