@@ -38,6 +38,12 @@ module.exports.config = {
   specs: [
     'test/e2e/*-test.js',
   ],
+  // ====================
+  // Specify Test Suites
+  // ===================
+  // These can be run with using `--suite` command to override the full list of test files
+  // from the `specs` setting above
+  //
   suites: {
     CLS: [
       'test/e2e/onCLS-test.js',
