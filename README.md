@@ -1208,7 +1208,7 @@ npm run test:e2e -- --suite INP
 
 Note the `--` is needed to avoid this being seen as an argument to the `npm` command itself.
 
-Short runs have been created to run single metrics:
+Shortcuts have been created to run single metrics:
 
 ```sh
 npm run test:INP
