@@ -38,6 +38,32 @@ module.exports.config = {
   specs: [
     'test/e2e/*-test.js',
   ],
+  // ====================
+  // Specify Test Suites
+  // ===================
+  // These can be run with using `--suite` command to override the full list of test files
+  // from the `specs` setting above
+  //
+  suites: {
+    CLS: [
+      'test/e2e/onCLS-test.js',
+    ],
+    FCP: [
+      'test/e2e/onFCP-test.js',
+    ],
+    FID: [
+      'test/e2e/onFID-test.js',
+    ],
+    INP: [
+      'test/e2e/onINP-test.js',
+    ],
+    LCP: [
+      'test/e2e/onLCP-test.js',
+    ],
+    TTFB: [
+      'test/e2e/onTTFB-test.js',
+    ],
+  },
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
