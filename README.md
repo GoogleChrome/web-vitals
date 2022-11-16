@@ -1208,6 +1208,12 @@ npm run test:e2e -- --suite INP
 
 Note the `--` is needed to avoid this being seen as an argument to the `npm` command itself.
 
+To test multiple metircs, use multiple `--suite` arguments:
+
+```sh
+npm run test:e2e -- --suite FID --suite INP
+```
+
 ## Integrations
 
 - [**Web Vitals Connector**](https://goo.gle/web-vitals-connector): Data Studio connector to create dashboards from [Web Vitals data captured in BiqQuery](https://web.dev/vitals-ga4/).
