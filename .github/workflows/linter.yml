@@ -38,7 +38,7 @@ jobs:
             github.event_name != 'workflow_dispatch' &&
             startsWith(github.event.pull_request.title,'Bump github/super-linter') != true
         run: |
-          echo "VALIDATE_ALL_CODEBAS=false" >> $GITHUB_ENV
+          echo "VALIDATE_ALL_CODEBASE=false" >> $GITHUB_ENV
       - name: Lint Code Base
         uses: github/super-linter@v4
         env:
