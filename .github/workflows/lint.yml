@@ -12,6 +12,8 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+      - name: NPM install
+        uses: npm install
       - name: Run Prettier
         run: npm run format:check
       - name: Run ESlint
