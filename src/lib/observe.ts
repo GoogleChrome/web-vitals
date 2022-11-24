@@ -14,17 +14,19 @@
  * limitations under the License.
  */
 
-import {FirstInputPolyfillEntry, NavigationTimingPolyfillEntry} from '../types.js';
-
+import {
+  FirstInputPolyfillEntry,
+  NavigationTimingPolyfillEntry,
+} from '../types.js';
 
 interface PerformanceEntryMap {
-  'event': PerformanceEventTiming[];
-  'paint': PerformancePaintTiming[];
+  event: PerformanceEventTiming[];
+  paint: PerformancePaintTiming[];
   'layout-shift': LayoutShift[];
   'largest-contentful-paint': LargestContentfulPaint[];
   'first-input': PerformanceEventTiming[] | FirstInputPolyfillEntry[];
-  'navigation': PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
-  'resource': PerformanceResourceTiming[];
+  navigation: PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
+  resource: PerformanceResourceTiming[];
 }
 
 /**
@@ -38,7 +40,7 @@ interface PerformanceEntryMap {
 export const observe = <K extends keyof PerformanceEntryMap>(
   type: K,
   callback: (entries: PerformanceEntryMap[K]) => void,
-  opts?: PerformanceObserverInit,
+  opts?: PerformanceObserverInit
 ): PerformanceObserver | undefined => {
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
@@ -50,10 +52,15 @@ export const observe = <K extends keyof PerformanceEntryMap>(
           callback(list.getEntries() as PerformanceEntryMap[K]);
         });
       });
-      po.observe(Object.assign({
-        type,
-        buffered: true,
-      }, opts || {}) as PerformanceObserverInit);
+      po.observe(
+        Object.assign(
+          {
+            type,
+            buffered: true,
+          },
+          opts || {}
+        ) as PerformanceObserverInit
+      );
       return po;
     }
   } catch (e) {

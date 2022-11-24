@@ -17,7 +17,6 @@
 import {Metric, ReportCallback} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
-
 /**
  * A TTFB-specific version of the Metric object.
  */
@@ -31,7 +30,7 @@ export interface TTFBMetric extends Metric {
  * can be sent along with the TTFB value for the current page visit in order
  * to help identify issues happening to real-users in the field.
  */
- export interface TTFBAttribution {
+export interface TTFBAttribution {
   /**
    * The total time from when the user initiates loading the page to when the
    * DNS lookup begins. This includes redirects, service worker startup, and

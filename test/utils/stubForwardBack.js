@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 /**
  * Overrides the document's `visibilityState` property, sets the body's hidden
  * attribute (to prevent painting) and dispatches a `visibilitychange` event.

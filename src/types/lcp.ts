@@ -17,7 +17,6 @@
 import {Metric, ReportCallback} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
-
 /**
  * An LCP-specific version of the Metric object.
  */
@@ -35,12 +34,12 @@ export interface LCPAttribution {
   /**
    * The element corresponding to the largest contentful paint for the page.
    */
-  element?: string,
+  element?: string;
   /**
    * The URL (if applicable) of the LCP image resource. If the LCP element
    * is a text node, this value will not be set.
    */
-  url?: string,
+  url?: string;
   /**
    * The time from when the user initiates loading the page until when the
    * browser receives the first byte of the response (a.k.a. TTFB). See

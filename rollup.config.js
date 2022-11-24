@@ -20,11 +20,16 @@ import babel from 'rollup-plugin-babel';
 const configurePlugins = ({module, polyfill = false}) => {
   return [
     babel({
-      presets: [['@babel/preset-env', {
-        targets: {
-          browsers: ['ie 11'],
-        },
-      }]],
+      presets: [
+        [
+          '@babel/preset-env',
+          {
+            targets: {
+              browsers: ['ie 11'],
+            },
+          },
+        ],
+      ],
     }),
     terser({
       module,
@@ -36,9 +41,9 @@ const configurePlugins = ({module, polyfill = false}) => {
         'window.__WEB_VITALS_POLYFILL__': polyfill,
       },
       preventAssignment: true,
-    })
-  ]
-}
+    }),
+  ];
+};
 
 const configs = [
   {

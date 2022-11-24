@@ -17,15 +17,24 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
-import {INPMetric, INPMetricWithAttribution, INPReportCallback, INPReportCallbackWithAttribution, ReportOpts} from '../types.js';
-
+import {
+  INPMetric,
+  INPMetricWithAttribution,
+  INPReportCallback,
+  INPReportCallbackWithAttribution,
+  ReportOpts,
+} from '../types.js';
 
 const attributeINP = (metric: INPMetric): void => {
   if (metric.entries.length) {
     const longestEntry = metric.entries.sort((a, b) => {
       // Sort by: 1) duration (DESC), then 2) processing time (DESC)
-      return b.duration - a.duration || (b.processingEnd - b.processingStart) -
-      (a.processingEnd - a.processingStart);
+      return (
+        b.duration - a.duration ||
+        b.processingEnd -
+          b.processingStart -
+          (a.processingEnd - a.processingStart)
+      );
     })[0];
 
     (metric as INPMetricWithAttribution).attribution = {
@@ -68,9 +77,15 @@ const attributeINP = (metric: INPMetric): void => {
  * hidden. As a result, the `callback` function might be called multiple times
  * during the same page load._
  */
-export const onINP = (onReport: INPReportCallbackWithAttribution, opts?: ReportOpts) => {
-  unattributedOnINP(((metric: INPMetricWithAttribution) => {
-    attributeINP(metric);
-    onReport(metric);
-  }) as INPReportCallback, opts);
+export const onINP = (
+  onReport: INPReportCallbackWithAttribution,
+  opts?: ReportOpts
+) => {
+  unattributedOnINP(
+    ((metric: INPMetricWithAttribution) => {
+      attributeINP(metric);
+      onReport(metric);
+    }) as INPReportCallback,
+    opts
+  );
 };

@@ -17,16 +17,21 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onCLS as unattributedOnCLS} from '../onCLS.js';
-import {CLSReportCallback, CLSReportCallbackWithAttribution, CLSMetric, CLSMetricWithAttribution, ReportOpts} from '../types.js';
-
+import {
+  CLSReportCallback,
+  CLSReportCallbackWithAttribution,
+  CLSMetric,
+  CLSMetricWithAttribution,
+  ReportOpts,
+} from '../types.js';
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
-  return entries.reduce((a, b) => a && a.value > b.value ? a : b);
-}
+  return entries.reduce((a, b) => (a && a.value > b.value ? a : b));
+};
 
 const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
   return sources.find((s) => s.node && s.node.nodeType === 1) || sources[0];
-}
+};
 
 const attributeCLS = (metric: CLSMetric): void => {
   if (metric.entries.length) {
@@ -48,7 +53,7 @@ const attributeCLS = (metric: CLSMetric): void => {
   }
   // Set an empty object if no other attribution has been set.
   (metric as CLSMetricWithAttribution).attribution = {};
-}
+};
 
 /**
  * Calculates the [CLS](https://web.dev/cls/) value for the current page and
@@ -71,9 +76,15 @@ const attributeCLS = (metric: CLSMetric): void => {
  * hidden. As a result, the `callback` function might be called multiple times
  * during the same page load._
  */
-export const onCLS = (onReport: CLSReportCallbackWithAttribution, opts?: ReportOpts) => {
-  unattributedOnCLS(((metric: CLSMetric) => {
-    attributeCLS(metric);
-    onReport(metric);
-  }) as CLSReportCallback, opts);
+export const onCLS = (
+  onReport: CLSReportCallbackWithAttribution,
+  opts?: ReportOpts
+) => {
+  unattributedOnCLS(
+    ((metric: CLSMetric) => {
+      attributeCLS(metric);
+      onReport(metric);
+    }) as CLSReportCallback,
+    opts
+  );
 };

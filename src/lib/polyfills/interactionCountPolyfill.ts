@@ -17,7 +17,6 @@
 import {observe} from '../observe.js';
 import {Metric} from '../../types.js';
 
-
 declare global {
   interface Performance {
     interactionCount: number;
@@ -34,11 +33,12 @@ const updateEstimate = (entries: Metric['entries']) => {
       minKnownInteractionId = Math.min(minKnownInteractionId, e.interactionId);
       maxKnownInteractionId = Math.max(maxKnownInteractionId, e.interactionId);
 
-      interactionCountEstimate = maxKnownInteractionId ?
-          (maxKnownInteractionId - minKnownInteractionId) / 7 + 1 : 0;
+      interactionCountEstimate = maxKnownInteractionId
+        ? (maxKnownInteractionId - minKnownInteractionId) / 7 + 1
+        : 0;
     }
   });
-}
+};
 
 let po: PerformanceObserver | undefined;
 
@@ -48,7 +48,7 @@ let po: PerformanceObserver | undefined;
  */
 export const getInteractionCount = () => {
   return po ? interactionCountEstimate : performance.interactionCount || 0;
-}
+};
 
 /**
  * Feature detects native support or initializes the polyfill if needed.

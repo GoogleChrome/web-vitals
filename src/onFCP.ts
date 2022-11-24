@@ -65,14 +65,22 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
 
     if (po) {
       report = bindReporter(
-          onReport, metric, thresholds, opts!.reportAllChanges);
+        onReport,
+        metric,
+        thresholds,
+        opts!.reportAllChanges
+      );
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered or the `paint` entry exists.
       onBFCacheRestore((event) => {
         metric = initMetric('FCP');
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          thresholds,
+          opts!.reportAllChanges
+        );
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;

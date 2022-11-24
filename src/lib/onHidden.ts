@@ -14,11 +14,9 @@
  * limitations under the License.
  */
 
-
 export interface OnHiddenCallback {
   (event: Event): void;
 }
-
 
 export const onHidden = (cb: OnHiddenCallback, once?: boolean) => {
   const onHiddenOrPageHide = (event: Event) => {
@@ -29,7 +27,7 @@ export const onHidden = (cb: OnHiddenCallback, once?: boolean) => {
         removeEventListener('pagehide', onHiddenOrPageHide, true);
       }
     }
-  }
+  };
   addEventListener('visibilitychange', onHiddenOrPageHide, true);
   // Some browsers have buggy implementations of visibilitychange,
   // so we use pagehide in addition, just to be safe.
