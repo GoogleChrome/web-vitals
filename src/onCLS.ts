@@ -24,7 +24,6 @@ import {whenActivated} from './lib/whenActivated.js';
 import {onFCP} from './onFCP.js';
 import {CLSMetric, CLSReportCallback, ReportOpts} from './types.js';
 
-
 /**
  * Calculates the [CLS](https://web.dev/cls/) value for the current page and
  * calls the `callback` function once the value is ready to be reported, along
@@ -79,9 +78,11 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           // and less than 5 seconds after the first entry in the session,
           // include the entry in the current session. Otherwise, start a new
           // session.
-          if (sessionValue &&
-              entry.startTime - lastSessionEntry.startTime < 1000 &&
-              entry.startTime - firstSessionEntry.startTime < 5000) {
+          if (
+            sessionValue &&
+            entry.startTime - lastSessionEntry.startTime < 1000 &&
+            entry.startTime - firstSessionEntry.startTime < 5000
+          ) {
             sessionValue += entry.value;
             sessionEntries.push(entry);
           } else {
@@ -103,7 +104,11 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
     const po = observe('layout-shift', handleEntries);
     if (po) {
       report = bindReporter(
-          onReportWrapped, metric, thresholds, opts!.reportAllChanges);
+        onReportWrapped,
+        metric,
+        thresholds,
+        opts!.reportAllChanges
+      );
 
       // Start monitoring FCP so we can only report CLS if FCP is also reported.
       // Note: this is done to match the current behavior of CrUX.
@@ -129,7 +134,11 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         fcpValue = -1;
         metric = initMetric('CLS', 0);
         report = bindReporter(
-            onReportWrapped, metric, thresholds, opts!.reportAllChanges);
+          onReportWrapped,
+          metric,
+          thresholds,
+          opts!.reportAllChanges
+        );
 
         doubleRAF(() => report());
       });

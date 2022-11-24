@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
-import {FirstInputPolyfillEntry, NavigationTimingPolyfillEntry} from './polyfills.js';
-
+import {
+  FirstInputPolyfillEntry,
+  NavigationTimingPolyfillEntry,
+} from './polyfills.js';
 
 export interface Metric {
   /**
@@ -56,7 +58,12 @@ export interface Metric {
    * The array may also be empty if the metric value was not based on any
    * entries (e.g. a CLS value of 0 given no layout shifts).
    */
-  entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
+  entries: (
+    | PerformanceEntry
+    | LayoutShift
+    | FirstInputPolyfillEntry
+    | NavigationTimingPolyfillEntry
+  )[];
 
   /**
    * The type of navigation.
@@ -69,7 +76,13 @@ export interface Metric {
    * - 'restore': for pages that were discarded by the browser and then
    * restored by the user.
    */
-  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'restore';
+  navigationType:
+    | 'navigate'
+    | 'reload'
+    | 'back-forward'
+    | 'back-forward-cache'
+    | 'prerender'
+    | 'restore';
 }
 
 /**
@@ -108,4 +121,8 @@ export interface ReportOpts {
  * - `complete`: the document and all of its sub-resources have finished
  *   loading. This is equivalent to the corresponding `readyState` value.
  */
-export type LoadState = 'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';
+export type LoadState =
+  | 'loading'
+  | 'dom-interactive'
+  | 'dom-content-loaded'
+  | 'complete';

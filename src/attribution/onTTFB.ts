@@ -15,8 +15,13 @@
  */
 
 import {onTTFB as unattributedOnTTFB} from '../onTTFB.js';
-import {TTFBMetric, TTFBMetricWithAttribution, TTFBReportCallback, TTFBReportCallbackWithAttribution, ReportOpts} from '../types.js';
-
+import {
+  TTFBMetric,
+  TTFBMetricWithAttribution,
+  TTFBReportCallback,
+  TTFBReportCallbackWithAttribution,
+  ReportOpts,
+} from '../types.js';
 
 const attributeTTFB = (metric: TTFBMetric): void => {
   if (metric.entries.length) {
@@ -24,11 +29,17 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     const activationStart = navigationEntry.activationStart || 0;
 
     const dnsStart = Math.max(
-        navigationEntry.domainLookupStart - activationStart, 0);
+      navigationEntry.domainLookupStart - activationStart,
+      0
+    );
     const connectStart = Math.max(
-        navigationEntry.connectStart - activationStart, 0);
+      navigationEntry.connectStart - activationStart,
+      0
+    );
     const requestStart = Math.max(
-        navigationEntry.requestStart - activationStart, 0);
+      navigationEntry.requestStart - activationStart,
+      0
+    );
 
     (metric as TTFBMetricWithAttribution).attribution = {
       waitingTime: dnsStart,
@@ -63,9 +74,15 @@ const attributeTTFB = (metric: TTFBMetric): void => {
  * includes time spent on DNS lookup, connection negotiation, network latency,
  * and server processing time.
  */
-export const onTTFB = (onReport: TTFBReportCallbackWithAttribution, opts?: ReportOpts) => {
-  unattributedOnTTFB(((metric: TTFBMetricWithAttribution) => {
-    attributeTTFB(metric);
-    onReport(metric);
-  }) as TTFBReportCallback, opts);
+export const onTTFB = (
+  onReport: TTFBReportCallbackWithAttribution,
+  opts?: ReportOpts
+) => {
+  unattributedOnTTFB(
+    ((metric: TTFBMetricWithAttribution) => {
+      attributeTTFB(metric);
+      onReport(metric);
+    }) as TTFBReportCallback,
+    opts
+  );
 };

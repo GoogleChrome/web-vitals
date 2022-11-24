@@ -25,7 +25,6 @@ import {onHidden} from './lib/onHidden.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {LCPMetric, ReportCallback, ReportOpts} from './types.js';
 
-
 const reportedMetricIDs: Record<string, boolean> = {};
 
 /**
@@ -52,7 +51,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
     let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: LCPMetric['entries']) => {
-      const lastEntry = (entries[entries.length - 1] as LargestContentfulPaint);
+      const lastEntry = entries[entries.length - 1] as LargestContentfulPaint;
       if (lastEntry) {
         // The startTime attribute returns the value of the renderTime if it is
         // not 0, and the value of the loadTime otherwise. The activationStart
@@ -75,7 +74,11 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     if (po) {
       report = bindReporter(
-          onReport, metric, thresholds, opts!.reportAllChanges);
+        onReport,
+        metric,
+        thresholds,
+        opts!.reportAllChanges
+      );
 
       const stopListening = () => {
         if (!reportedMetricIDs[metric.id]) {
@@ -84,7 +87,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
           reportedMetricIDs[metric.id] = true;
           report(true);
         }
-      }
+      };
 
       // Stop listening after input. Note: while scrolling is an input that
       // stops LCP observation, it's unreliable since it can be programmatically
@@ -100,7 +103,11 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore((event) => {
         metric = initMetric('LCP');
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          thresholds,
+          opts!.reportAllChanges
+        );
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;

@@ -22,7 +22,6 @@ import {ReportCallback, ReportOpts} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {whenActivated} from './lib/whenActivated.js';
 
-
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
  * @param callback
@@ -36,7 +35,7 @@ const whenReady = (callback: () => void) => {
     // Queue a task so the callback runs after `loadEventEnd`.
     setTimeout(callback, 0);
   }
-}
+};
 
 /**
  * Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the
@@ -62,7 +61,11 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
 
   let metric = initMetric('TTFB');
   let report = bindReporter(
-      onReport, metric, thresholds, opts.reportAllChanges);
+    onReport,
+    metric,
+    thresholds,
+    opts.reportAllChanges
+  );
 
   whenReady(() => {
     const navEntry = getNavigationEntry();
@@ -92,7 +95,11 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore(() => {
         metric = initMetric('TTFB', 0);
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          thresholds,
+          opts!.reportAllChanges
+        );
 
         report(true);
       });
