@@ -185,7 +185,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
       webVitals.onLCP(console.log);
     };
     document.head.appendChild(script);
-  })();
+})();
 </script>
 ```
 
