@@ -97,6 +97,7 @@
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
     "dev": "run-p watch test:server",
     "format": "prettier \"**/*.{mjs,js,ts,css,html,md}\" --write --ignore-path .gitignore",
+    "format:check": "prettier \"**/*.{mjs,js,ts,css,html,md}\" --check --ignore-path .gitignore",
     "lint": "eslint \"*.js\" \"src/**/*.ts\" \"test/**/*.js\"",
     "lint:fix": "eslint --fix \"*.js\" \"src/**/*.ts\" \"test/**/*.js\"",
     "postversion": "git push --follow-tags",

@@ -30,11 +30,11 @@
       ],
       "rules": {
         "comma-dangle": ["error", {
-            "arrays": "always-multiline",
-            "objects": "never",
-            "imports": "never",
-            "exports": "never",
-            "functions": "never"
+          "arrays": "always-multiline",
+          "objects": "always-multiline",
+          "imports": "always-multiline",
+          "exports": "always-multiline",
+          "functions": "never"
         }],
         "indent": ["error", 2],
         "no-invalid-this": "off",
@@ -62,6 +62,14 @@
         "@typescript-eslint/explicit-module-boundary-types": "off",
         "@typescript-eslint/ban-ts-comment": "off",
         "@typescript-eslint/camelcase": "off",
+        "comma-dangle": ["error", {
+          "arrays": "always-multiline",
+          "objects": "always-multiline",
+          "imports": "always-multiline",
+          "exports": "always-multiline",
+          "functions": "never"
+        }],
+        "indent": ["error", 2],
         "node/no-missing-import": "off",
         "node/no-unsupported-features/es-syntax": "off",
         "node/no-missing-require": "off",
