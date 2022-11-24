@@ -29,11 +29,24 @@
         "eslint:recommended", "google"
       ],
       "rules": {
+        "comma-dangle": ["error", {
+            "arrays": "always-multiline",
+            "objects": "never",
+            "imports": "never",
+            "exports": "never",
+            "functions": "never"
+        }],
+        "indent": ["error", 2],
         "no-invalid-this": "off",
         "max-len": [2, {
           "ignorePattern": "^\\s*import|= require\\(|^\\s*it\\(|^\\s*describe\\(",
           "ignoreUrls": true
         }],
+        "space-before-function-paren": ["error", {
+            "anonymous": "always",
+            "named": "never",
+            "asyncArrow": "always"
+        }]
       }
     },
     {
@@ -53,7 +66,12 @@
         "node/no-unsupported-features/es-syntax": "off",
         "node/no-missing-require": "off",
         "node/shebang": "off",
-        "no-dupe-class-members": "off"
+        "no-dupe-class-members": "off",
+        "space-before-function-paren": ["error", {
+            "anonymous": "always",
+            "named": "never",
+            "asyncArrow": "always"
+        }]
       },
       "parserOptions": {
         "ecmaVersion": 2018,
