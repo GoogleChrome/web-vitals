@@ -32,9 +32,11 @@ export const initMetric = (name: Metric['name'], value?: number): Metric => {
       navigationType = 'prerender';
     } else if (document.wasDiscarded) {
       navigationType = 'restore';
-    } else {
+    } else if (navEntry.type) {
       navigationType =
           navEntry.type.replace(/_/g, '-') as Metric['navigationType'];
+    } else {
+       navigationType = 'unknown';
     }
   }
 
