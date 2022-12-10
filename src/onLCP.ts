@@ -22,6 +22,7 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
+import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {LCPMetric, ReportCallback, ReportOpts} from './types.js';
 
@@ -80,23 +81,23 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
         opts!.reportAllChanges
       );
 
-      const stopListening = () => {
+      const stopListening = runOnce(() => {
         if (!reportedMetricIDs[metric.id]) {
           handleEntries(po!.takeRecords() as LCPMetric['entries']);
           po!.disconnect();
           reportedMetricIDs[metric.id] = true;
           report(true);
         }
-      };
+      });
 
       // Stop listening after input. Note: while scrolling is an input that
       // stops LCP observation, it's unreliable since it can be programmatically
       // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
       ['keydown', 'click'].forEach((type) => {
-        addEventListener(type, stopListening, {once: true, capture: true});
+        addEventListener(type, stopListening, true);
       });
 
-      onHidden(stopListening, true);
+      onHidden(stopListening);
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.

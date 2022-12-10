@@ -15,9 +15,9 @@
 {% extends 'layout.njk' %}
 
 {% block content %}
-  <h1>TTFB Test</h1>
+  <h1 elementtiming="main-heading">TTFB Test</h1>
   <p>
-    <img src="/test/img/square.png{% if imgDelay %}?delay={{imgDelay}}{% endif %}">
+    <img elementtiming="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
 
   <p>Text below the image</p>
@@ -37,8 +37,6 @@
   </script>
 
   <script type="module">
-    import {onTTFB} from '{{ modulePath }}';
-
     function jsonifyEntry(entry) {
       const newObj = {};
       for (const k in entry) {
@@ -49,24 +47,20 @@
       return newObj;
     }
 
-    (async function() {
-      {% if awaitLoad %}
-        await new Promise((resolve) => addEventListener('load', resolve));
-      {% endif %}
+    const {onTTFB} = await __testImport('{{ modulePath }}');
 
-      onTTFB((ttfb) => {
-        // Log for easier manual testing.
-        console.log(ttfb);
+    onTTFB((ttfb) => {
+      // Log for easier manual testing.
+      console.log(ttfb);
 
-        // The stubbed `activationStart` is lost when stringified, so we convert first.
-        ttfb.entries = ttfb.entries.map(jsonifyEntry);
-        if (ttfb.attribution && ttfb.attribution.navigationEntry) {
-          ttfb.attribution.navigationEntry = jsonifyEntry(ttfb.attribution.navigationEntry);
-        }
+      // The stubbed `activationStart` is lost when stringified, so we convert first.
+      ttfb.entries = ttfb.entries.map(jsonifyEntry);
+      if (ttfb.attribution && ttfb.attribution.navigationEntry) {
+        ttfb.attribution.navigationEntry = jsonifyEntry(ttfb.attribution.navigationEntry);
+      }
 
-        // Test sending the metric to an analytics endpoint.
-        navigator.sendBeacon(`/collect`, JSON.stringify(ttfb));
-      }, {reportAllChanges: self.__reportAllChanges});
-    }());
+      // Test sending the metric to an analytics endpoint.
+      navigator.sendBeacon(`/collect`, JSON.stringify(ttfb));
+    }, {reportAllChanges: self.__reportAllChanges});
   </script>
 {% endblock %}

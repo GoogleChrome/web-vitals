@@ -20,24 +20,34 @@
  * @return {Promise<void>}
  */
 export function imagesPainted() {
-  return browser.executeAsync((done) => {
-    const windowLoaded = new Promise((resolve) => {
-      if (document.readyState === 'complete') {
-        resolve();
+  return browser.executeAsync(async (done) => {
+    // Await `DOMContentLoaded` to ensure all elements are in the DOM.
+    await new Promise((resolve) => {
+      if (document.readyState === 'loading') {
+        addEventListener('DOMContentLoaded', resolve);
       } else {
-        addEventListener('load', resolve);
+        resolve();
       }
     });
 
-    const imagesDecoded = [...document.querySelectorAll('img')].map((i) =>
-      i.decode()
-    );
+    if (PerformanceObserver.supportedEntryTypes.includes('element')) {
+      const nodes = new Set([
+        ...document.querySelectorAll('[elementtiming]:not([hidden])'),
+      ]);
 
-    Promise.all([windowLoaded, ...imagesDecoded]).then(() => {
-      // A bit of a hack, but since multiple frames can occur between an
-      // image being decoded and it painting to the screen, we wait 100ms just
-      // to avoid flakiness.
-      setTimeout(done, 100);
-    });
+      new PerformanceObserver((list) => {
+        for (const entry of list.getEntries()) {
+          if (nodes.has(entry.element)) {
+            nodes.delete(entry.element);
+          }
+        }
+        if (nodes.size === 0) {
+          // Queue a task so this resolves after other callbacks have run.
+          setTimeout(() => done(nodes), 0);
+        }
+      }).observe({type: 'element', buffered: true});
+    } else {
+      done();
+    }
   });
 }

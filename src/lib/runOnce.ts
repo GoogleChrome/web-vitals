@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,18 +14,16 @@
  * limitations under the License.
  */
 
-export interface OnHiddenCallback {
-  (event: Event): void;
+export interface RunOnceCallback {
+  (arg: unknown): void;
 }
 
-export const onHidden = (cb: OnHiddenCallback) => {
-  const onHiddenOrPageHide = (event: Event) => {
-    if (event.type === 'pagehide' || document.visibilityState === 'hidden') {
-      cb(event);
+export const runOnce = (cb: RunOnceCallback) => {
+  let called = false;
+  return (arg: unknown) => {
+    if (!called) {
+      cb(arg);
+      called = true;
     }
   };
-  addEventListener('visibilitychange', onHiddenOrPageHide, true);
-  // Some browsers have buggy implementations of visibilitychange,
-  // so we use pagehide in addition, just to be safe.
-  addEventListener('pagehide', onHiddenOrPageHide, true);
 };
