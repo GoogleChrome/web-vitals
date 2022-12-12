@@ -181,6 +181,6 @@
   },
   "lint-staged": {
     "**/*.js": "eslint --fix --ignore-path .gitignore",
-    "**/*.{cjs,html,js,ts}": "prettier --write --ignore-path .gitignore"
+    "**/*.{cjs,css,html,js,html,md,ts,yml,yaml}": "prettier --write --ignore-path .gitignore"
   }
 }
