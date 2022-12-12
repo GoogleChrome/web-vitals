@@ -147,7 +147,7 @@
   "prettier": {
     "arrowParens": "always",
     "bracketSpacing": false,
-    "quoteProps": "consistent",
+    "quoteProps": "preserve",
     "singleQuote": true
   },
   "devDependencies": {
