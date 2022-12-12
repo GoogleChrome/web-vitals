@@ -20,13 +20,13 @@ import {
 } from '../types.js';
 
 interface PerformanceEntryMap {
-  event: PerformanceEventTiming[];
-  paint: PerformancePaintTiming[];
+  'event': PerformanceEventTiming[];
+  'paint': PerformancePaintTiming[];
   'layout-shift': LayoutShift[];
   'largest-contentful-paint': LargestContentfulPaint[];
   'first-input': PerformanceEventTiming[] | FirstInputPolyfillEntry[];
-  navigation: PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
-  resource: PerformanceResourceTiming[];
+  'navigation': PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
+  'resource': PerformanceResourceTiming[];
 }
 
 /**
