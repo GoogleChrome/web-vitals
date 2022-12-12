@@ -694,17 +694,13 @@ interface Metric {
   entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
 
   /**
-   * The type of navigation.
+   * The type of navigation
    *
-   * This will be the value returned by the Navigation Timing API (or
-   * `undefined` if the browser doesn't support that API), with the following
-   * exceptions:
-   * - 'back-forward-cache': for pages that are restored from the bfcache.
-   * - 'prerender': for pages that were prerendered.
-   * - 'restore': for pages that were discarded by the browser and then
-   * restored by the user.
+   * Navigation Timing API (or `undefined` if the browser doesn't
+   * support that API). For pages that are restored from the bfcache, this
+   * value will be 'back-forward-cache'.
    */
-  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'restore';
+  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender';
 }
 ```
 

@@ -51,7 +51,7 @@ let longestInteractionList: Interaction[] = [];
 
 // A mapping of longest interactions by their interaction ID.
 // This is used for faster lookup.
-const longestInteractionMap: {[interactionId: string]: Interaction} = {};
+let longestInteractionMap: {[interactionId: string]: Interaction} = {};
 
 /**
  * Takes a performance entry and adds it to the list of worst interactions
@@ -106,6 +106,16 @@ const estimateP98LongestInteraction = () => {
 }
 
 /**
+ * Resets internal state of counter.
+ *
+ * Could be used in reinitialization cases(BFC, SPA)
+ */
+export const resetINPState = () => {
+  longestInteractionList = [];
+  longestInteractionMap = {};
+};
+
+/**
  * Calculates the [INP](https://web.dev/responsiveness/) value for the current
  * page and calls the `callback` function once the value is ready, along with
  * the `event` performance entries reported for that interaction. The reported
@@ -133,6 +143,9 @@ const estimateP98LongestInteraction = () => {
  * during the same page load._
  */
 export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
+  let report: ReturnType<typeof bindReporter>;
+  // allows force report from outer code
+  const getCurrentReporter = () => report;
   // Set defaults
   opts = opts || {};
 
@@ -144,7 +157,6 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     initInteractionCountPolyfill();
 
     let metric = initMetric('INP');
-    let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: INPMetric['entries']) => {
       entries.forEach((entry) => {
@@ -215,7 +227,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        longestInteractionList = [];
+        resetINPState();
         // Important, we want the count for the full page here,
         // not just for the current navigation.
         prevInteractionCount = getInteractionCount();
@@ -226,4 +238,6 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       });
     }
   });
+
+  return getCurrentReporter;
 };

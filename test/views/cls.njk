@@ -50,7 +50,7 @@
 
     onCLS((cls) => {
       // Log for easier manual testing.
-      console.log(cls);
+      console.log(window.cls = cls);
 
       // Sources is verbose to serialize, so remove first.
       cls = {

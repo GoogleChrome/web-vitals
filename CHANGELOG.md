@@ -1,13 +1,5 @@
 # Changelog
 
-### v3.1.0 (2022-11-15)
-
-- Add support for `'restore'` as a `navigationType` ([#284](https://github.com/GoogleChrome/web-vitals/pull/284))
-- Report initial CLS value when `reportAllChanges` is true ([#283](https://github.com/GoogleChrome/web-vitals/pull/283))
-- Defer all observers until after activation ([#282](https://github.com/GoogleChrome/web-vitals/pull/282))
-- Ignore TTFB for loads where responseStart is zero ([#281](https://github.com/GoogleChrome/web-vitals/pull/281))
-- Defer execution of observer callbacks ([#278](https://github.com/GoogleChrome/web-vitals/pull/278))
-
 ### v3.0.4 (2022-10-18)
 
 - Clamp LCP and FCP to 0 for prerendered pages ([#270](https://github.com/GoogleChrome/web-vitals/pull/270))

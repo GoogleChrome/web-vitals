@@ -19,11 +19,13 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {bindReporter} from './lib/bindReporter.js';
-import {doubleRAF} from './lib/doubleRAF.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {onFCP} from './onFCP.js';
 import {CLSMetric, CLSReportCallback, ReportOpts} from './types.js';
 
+
+let isMonitoringFCP = false;
+let fcpValue = -1;
 
 /**
  * Calculates the [CLS](https://web.dev/cls/) value for the current page and
@@ -54,18 +56,26 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
     // https://web.dev/cls/#what-is-a-good-cls-score
     const thresholds = [0.1, 0.25];
 
-    let metric = initMetric('CLS');
-    let report: ReturnType<typeof bindReporter>;
-
-    let fcpValue = -1;
-    let sessionValue = 0;
-    let sessionEntries: PerformanceEntry[] = [];
+    // Start monitoring FCP so we can only report CLS if FCP is also reported.
+    // Note: this is done to match the current behavior of CrUX.
+    if (!isMonitoringFCP) {
+      onFCP((metric) => {
+        fcpValue = metric.value;
+      });
+      isMonitoringFCP = true;
+    }
 
     const onReportWrapped: CLSReportCallback = (arg) => {
       if (fcpValue > -1) {
         onReport(arg);
       }
     };
+
+    let metric = initMetric('CLS', 0);
+    let report: ReturnType<typeof bindReporter>;
+
+    let sessionValue = 0;
+    let sessionEntries: PerformanceEntry[] = [];
 
     // const handleEntries = (entries: Metric['entries']) => {
     const handleEntries = (entries: LayoutShift[]) => {
@@ -105,18 +115,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       report = bindReporter(
           onReportWrapped, metric, thresholds, opts!.reportAllChanges);
 
-      // Start monitoring FCP so we can only report CLS if FCP is also reported.
-      // Note: this is done to match the current behavior of CrUX.
-      // Also, if there have not been any layout shifts when FCP is dispatched,
-      // call "report" with a zero value
-      onFCP((fcpMetric) => {
-        fcpValue = fcpMetric.value;
-        if (metric.value < 0) {
-          metric.value = 0;
-          report();
-        }
-      });
-
       onHidden(() => {
         handleEntries(po.takeRecords() as CLSMetric['entries']);
         report(true);
@@ -130,8 +128,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         metric = initMetric('CLS', 0);
         report = bindReporter(
             onReportWrapped, metric, thresholds, opts!.reportAllChanges);
-
-        doubleRAF(() => report());
       });
     }
   });
