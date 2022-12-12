@@ -131,7 +131,7 @@ Then, inline the code from `dist/polyfill.js` into the `<head>` of your pages. T
 </html>
 ```
 
-It's important that the code is inlined directly into the HTML. \*Do not link to an external script file, as that will negatively affect performance:
+It's important that the code is inlined directly into the HTML. _Do not link to an external script file, as that will negatively affect performance:_
 
 ```html
 <!-- GOOD -->
