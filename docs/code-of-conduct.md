@@ -24,7 +24,7 @@ conduct, which may have additional detailed expectations for participants. Most
 of those projects will use our [modified Contributor Covenant][].
 
 [may adopt]: https://opensource.google/docs/releasing/preparing/#conduct
-[modified contributor covenant]: https://opensource.google/docs/releasing/template/CODE_OF_CONDUCT/
+[modified Contributor Covenant]: https://opensource.google/docs/releasing/template/CODE_OF_CONDUCT/
 
 ## Resolve peacefully
 
