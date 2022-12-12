@@ -29,13 +29,18 @@ export function browserSupportsEntry(type) {
     }
 
     // Firefox supports the event timing API but not `interactionId`.
-    if (type === 'event' && self.PerformanceEventTiming &&
-        !('interactionId' in PerformanceEventTiming.prototype)) {
+    if (
+      type === 'event' &&
+      self.PerformanceEventTiming &&
+      !('interactionId' in PerformanceEventTiming.prototype)
+    ) {
       return false;
     }
 
-    return window.PerformanceObserver &&
-        window.PerformanceObserver.supportedEntryTypes &&
-        window.PerformanceObserver.supportedEntryTypes.includes(type);
+    return (
+      window.PerformanceObserver &&
+      window.PerformanceObserver.supportedEntryTypes &&
+      window.PerformanceObserver.supportedEntryTypes.includes(type)
+    );
   }, type);
 }

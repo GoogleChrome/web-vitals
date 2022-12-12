@@ -16,7 +16,6 @@
 
 import {onBFCacheRestore} from './bfcache.js';
 
-
 let firstHiddenTime = -1;
 
 const initHiddenTime = () => {
@@ -25,9 +24,10 @@ const initHiddenTime = () => {
   // that visibility state is always 'hidden' during prerendering, so we have
   // to ignore that case until prerendering finishes (see: `prerenderingchange`
   // event logic below).
-  return document.visibilityState === 'hidden' &&
-      !document.prerendering ? 0 : Infinity;
-}
+  return document.visibilityState === 'hidden' && !document.prerendering
+    ? 0
+    : Infinity;
+};
 
 const onVisibilityUpdate = (event: Event) => {
   // If the document is 'hidden' and no previous hidden timestamp has been
@@ -45,7 +45,7 @@ const onVisibilityUpdate = (event: Event) => {
     // Remove all listeners now that a `firstHiddenTime` value has been set.
     removeChangeListeners();
   }
-}
+};
 
 const addChangeListeners = () => {
   addEventListener('visibilitychange', onVisibilityUpdate, true);
@@ -60,7 +60,6 @@ const removeChangeListeners = () => {
   removeEventListener('visibilitychange', onVisibilityUpdate, true);
   removeEventListener('prerenderingchange', onVisibilityUpdate, true);
 };
-
 
 export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
@@ -92,6 +91,6 @@ export const getVisibilityWatcher = () => {
   return {
     get firstHiddenTime() {
       return firstHiddenTime;
-    }
-  }
+    },
+  };
 };

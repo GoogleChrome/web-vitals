@@ -35,9 +35,7 @@ module.exports.config = {
   // NPM script (see https://docs.npmjs.com/cli/run-script) then the current working
   // directory is where your package.json resides, so `wdio` will be called from there.
   //
-  specs: [
-    'test/e2e/*-test.js',
-  ],
+  specs: ['test/e2e/*-test.js'],
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -78,7 +76,7 @@ module.exports.config = {
       // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
       // excludeDriverLogs: ['bugreport', 'server'],
       'goog:chromeOptions': {
-        'excludeSwitches': ['enable-automation'],
+        excludeSwitches: ['enable-automation'],
         // Uncomment to test on Chrome Canary.
         // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'
       },
@@ -278,10 +276,10 @@ module.exports.config = {
   // onComplete: function(exitCode, config, capabilities, results) {
   // },
   /**
-  * Gets executed when a refresh happens.
-  * @param {String} oldSessionId session ID of the old session
-  * @param {String} newSessionId session ID of the new session
-  */
+   * Gets executed when a refresh happens.
+   * @param {String} oldSessionId session ID of the old session
+   * @param {String} newSessionId session ID of the new session
+   */
   // onReload: function(oldSessionId, newSessionId) {
   // }
 };

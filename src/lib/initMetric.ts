@@ -20,7 +20,6 @@ import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
 import {Metric} from '../types.js';
 
-
 export const initMetric = (name: Metric['name'], value?: number): Metric => {
   const navEntry = getNavigationEntry();
   let navigationType: Metric['navigationType'] = 'navigate';
@@ -33,8 +32,10 @@ export const initMetric = (name: Metric['name'], value?: number): Metric => {
     } else if (document.wasDiscarded) {
       navigationType = 'restore';
     } else {
-      navigationType =
-          navEntry.type.replace(/_/g, '-') as Metric['navigationType'];
+      navigationType = navEntry.type.replace(
+        /_/g,
+        '-'
+      ) as Metric['navigationType'];
     }
   }
 

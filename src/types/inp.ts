@@ -16,7 +16,6 @@
 
 import {LoadState, Metric, ReportCallback} from './base.js';
 
-
 /**
  * An INP-specific version of the Metric object.
  */

@@ -23,21 +23,20 @@ import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
-
-describe('onCLS()', async function() {
+describe('onCLS()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
   let browserSupportsCLS;
-  before(async function() {
+  before(async function () {
     browserSupportsCLS = await browserSupportsEntry('layout-shift');
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     await clearBeacons();
   });
 
-  it('reports the correct value on visibility hidden after shifts (reportAllChanges === false)', async function() {
+  it('reports the correct value on visibility hidden after shifts (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls');
@@ -58,7 +57,7 @@ describe('onCLS()', async function() {
     assert.match(cls.navigationType, /navigate|reload/);
   });
 
-  it('reports the correct value on page unload after shifts (reportAllChanges === false)', async function() {
+  it('reports the correct value on page unload after shifts (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls');
@@ -79,7 +78,7 @@ describe('onCLS()', async function() {
     assert.match(cls.navigationType, /navigate|reload/);
   });
 
-  it('resets the session after timeout or gap elapses', async function() {
+  it('resets the session after timeout or gap elapses', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls');
@@ -182,7 +181,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('does not report if the browser does not support CLS', async function() {
+  it('does not report if the browser does not support CLS', async function () {
     if (browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls');
@@ -203,7 +202,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('reports no new values on visibility hidden after shifts (reportAllChanges === true)', async function() {
+  it('reports no new values on visibility hidden after shifts (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls?reportAllChanges=1');
@@ -247,7 +246,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('does not report if the value has not changed (reportAllChanges === true)', async function() {
+  it('does not report if the value has not changed (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls?reportAllChanges=1');
@@ -292,7 +291,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('continues reporting after visibilitychange (reportAllChanges === false)', async function() {
+  it('continues reporting after visibilitychange (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls`);
@@ -336,7 +335,7 @@ describe('onCLS()', async function() {
     assert.match(cls2.navigationType, /navigate|reload/);
   });
 
-  it('continues reporting after visibilitychange (reportAllChanges === true)', async function() {
+  it('continues reporting after visibilitychange (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?reportAllChanges=1`);
@@ -390,7 +389,7 @@ describe('onCLS()', async function() {
     assert.match(cls4.navigationType, /navigate|reload/);
   });
 
-  it('continues reporting after bfcache restore (reportAllChanges === false)', async function() {
+  it('continues reporting after bfcache restore (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls`);
@@ -449,7 +448,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls3.navigationType, 'back-forward-cache');
   });
 
-  it('continues reporting after bfcache restore (reportAllChanges === true)', async function() {
+  it('continues reporting after bfcache restore (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?reportAllChanges=1`);
@@ -510,7 +509,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls5.navigationType, 'back-forward-cache');
   });
 
-  it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === false)', async function() {
+  it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?noLayoutShifts=1`);
@@ -531,7 +530,7 @@ describe('onCLS()', async function() {
     assert.match(cls.navigationType, /navigate|reload/);
   });
 
-  it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === true)', async function() {
+  it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?reportAllChanges=1&noLayoutShifts=1`);
@@ -552,7 +551,7 @@ describe('onCLS()', async function() {
     assert.match(cls.navigationType, /navigate|reload/);
   });
 
-  it('reports zero if no layout shifts occurred on page unload (reportAllChanges === false)', async function() {
+  it('reports zero if no layout shifts occurred on page unload (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?noLayoutShifts=1`);
@@ -573,7 +572,7 @@ describe('onCLS()', async function() {
     assert.match(cls.navigationType, /navigate|reload/);
   });
 
-  it('reports zero if no layout shifts occurred on page unload (reportAllChanges === true)', async function() {
+  it('reports zero if no layout shifts occurred on page unload (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url(`/test/cls?noLayoutShifts=1&reportAllChanges=1`);
@@ -594,7 +593,7 @@ describe('onCLS()', async function() {
     assert.match(cls.navigationType, /navigate|reload/);
   });
 
-  it('does not report if the document was hidden at page load time', async function() {
+  it('does not report if the document was hidden at page load time', async function () {
     await browser.url('/test/cls?hidden=1');
 
     await stubVisibilityChange('visible');
@@ -606,7 +605,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function() {
+  it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls?hidden=1');
@@ -632,7 +631,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
   });
 
-  it('reports prerender as nav type for prerender', async function() {
+  it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls?prerender=1');
@@ -640,7 +639,6 @@ describe('onCLS()', async function() {
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();
     await stubVisibilityChange('hidden');
-
 
     await beaconCountIs(1);
     const [cls] = await getBeacons();
@@ -654,7 +652,7 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.navigationType, 'prerender');
   });
 
-  it('reports restore as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await browser.url('/test/cls?wasDiscarded=1');
@@ -675,8 +673,8 @@ describe('onCLS()', async function() {
     assert.strictEqual(cls.navigationType, 'restore');
   });
 
-  describe('attribution', function() {
-    it('includes attribution data on the metric object', async function() {
+  describe('attribution', function () {
+    it('includes attribution data on the metric object', async function () {
       if (!browserSupportsCLS) this.skip();
 
       await browser.url('/test/cls?attribution=1&delayDCL=2000');
@@ -696,10 +694,9 @@ describe('onCLS()', async function() {
       assert.strictEqual(cls.entries.length, 2);
       assert.match(cls.navigationType, /navigate|reload/);
 
-      const {
-        largestShiftEntry,
-        largestShiftSource,
-      } = getAttribution(cls.entries);
+      const {largestShiftEntry, largestShiftSource} = getAttribution(
+        cls.entries
+      );
 
       assert.deepEqual(cls.attribution.largestShiftEntry, largestShiftEntry);
       assert.deepEqual(cls.attribution.largestShiftSource, largestShiftSource);
@@ -707,14 +704,18 @@ describe('onCLS()', async function() {
       assert.equal(cls.attribution.largestShiftValue, largestShiftEntry.value);
       assert.equal(cls.attribution.largestShiftTarget, '#p3');
       assert.equal(
-          cls.attribution.largestShiftTime, largestShiftEntry.startTime);
+        cls.attribution.largestShiftTime,
+        largestShiftEntry.startTime
+      );
 
       // The first shift (before the second image loads) is the largest.
-      assert.match(cls.attribution.loadState,
-          /^dom-(interactive|content-loaded)$/);
+      assert.match(
+        cls.attribution.loadState,
+        /^dom-(interactive|content-loaded)$/
+      );
     });
 
-    it('reports whether the largest shift was before or after load', async function() {
+    it('reports whether the largest shift was before or after load', async function () {
       if (!browserSupportsCLS) this.skip();
 
       await browser.url('/test/cls?attribution=1&noLayoutShifts=1');
@@ -734,10 +735,9 @@ describe('onCLS()', async function() {
       assert.strictEqual(cls.entries.length, 1);
       assert.match(cls.navigationType, /navigate|reload/);
 
-      const {
-        largestShiftEntry,
-        largestShiftSource,
-      } = getAttribution(cls.entries);
+      const {largestShiftEntry, largestShiftSource} = getAttribution(
+        cls.entries
+      );
 
       assert.deepEqual(cls.attribution.largestShiftEntry, largestShiftEntry);
       assert.deepEqual(cls.attribution.largestShiftSource, largestShiftSource);
@@ -745,13 +745,15 @@ describe('onCLS()', async function() {
       assert.equal(cls.attribution.largestShiftValue, largestShiftEntry.value);
       assert.equal(cls.attribution.largestShiftTarget, 'html>body>main>h1');
       assert.equal(
-          cls.attribution.largestShiftTime, largestShiftEntry.startTime);
+        cls.attribution.largestShiftTime,
+        largestShiftEntry.startTime
+      );
 
       // The first shift (before the second image loads) is the largest.
       assert.equal(cls.attribution.loadState, 'complete');
     });
 
-    it('reports an empty object when no shifts', async function() {
+    it('reports an empty object when no shifts', async function () {
       if (!browserSupportsCLS) this.skip();
 
       await browser.url('/test/cls?attribution=1&noLayoutShifts=1');
@@ -808,4 +810,3 @@ function getAttribution(entries) {
 
   return {largestShiftEntry, largestShiftSource};
 }
-
