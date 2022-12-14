@@ -1,4 +1,5 @@
 .DS_Store
+.vscode
 node_modules
 
 # Log files
@@ -9,6 +10,3 @@ tsconfig.tsbuildinfo
 
 # Dist files
 dist
-
-# Husky files
-.husky

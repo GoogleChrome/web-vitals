@@ -14,28 +14,13 @@
  * limitations under the License.
  */
 
-
 /**
  * Overrides the document's `visibilityState` property, sets the body's hidden
  * attribute (to prevent painting) and dispatches a `visibilitychange` event.
  * @return {Promise<void>}
  */
-function stubVisibilityChange(visibilityState) {
+export function stubVisibilityChange(visibilityState) {
   return browser.execute((visibilityState) => {
-    if (visibilityState === 'hidden') {
-      Object.defineProperty(document, 'visibilityState', {
-        value: visibilityState,
-        configurable: true,
-      });
-      document.body.hidden = true;
-    } else {
-      delete document.visibilityState;
-      document.body.hidden = false;
-    }
-    document.dispatchEvent(new Event('visibilitychange'));
+    self.__stubVisibilityChange(visibilityState);
   }, visibilityState);
 }
-
-module.exports = {
-  stubVisibilityChange,
-};

@@ -16,8 +16,6 @@
     "target": "esnext",
     "types": ["node", "webdriverio"]
   },
-  "include": [
-    "**/*.js"
-  ],
+  "include": ["**/*.js"],
   "exclude": []
 }

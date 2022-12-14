@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,9 @@
  * limitations under the License.
  */
 
-interface onBFCacheRestoreCallback {
-  (event: PageTransitionEvent): void;
-}
+import {getNavigationEntry} from './getNavigationEntry.js';
 
-export const onBFCacheRestore = (cb: onBFCacheRestoreCallback) => {
-  addEventListener('pageshow', (event) => {
-    if (event.persisted) {
-      cb(event);
-    }
-  }, true);
+export const getActivationStart = (): number => {
+  const navEntry = getNavigationEntry();
+  return (navEntry && navEntry.activationStart) || 0;
 };

@@ -14,13 +14,12 @@
  * limitations under the License.
  */
 
-
 /**
  * Returns a promise that resolves once the browser window has loaded and all
  * the images in the document have decoded and rendered.
  * @return {Promise<void>}
  */
-function imagesPainted() {
+export function imagesPainted() {
   return browser.executeAsync((done) => {
     const windowLoaded = new Promise((resolve) => {
       if (document.readyState === 'complete') {
@@ -30,8 +29,9 @@ function imagesPainted() {
       }
     });
 
-    const imagesDecoded = [...document.querySelectorAll('img')]
-        .map((i) => i.decode());
+    const imagesDecoded = [...document.querySelectorAll('img')].map((i) =>
+      i.decode()
+    );
 
     Promise.all([windowLoaded, ...imagesDecoded]).then(() => {
       // A bit of a hack, but since multiple frames can occur between an
@@ -41,7 +41,3 @@ function imagesPainted() {
     });
   });
 }
-
-module.exports = {
-  imagesPainted,
-};

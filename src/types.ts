@@ -14,54 +14,21 @@
  * limitations under the License.
  */
 
-export interface Metric {
-  // The name of the metric (in acronym form).
-  name: 'CLS' | 'FCP' | 'FID' | 'LCP' | 'TTFB';
+import {FirstInputPolyfillCallback} from './types/polyfills.js';
 
-  // The current value of the metric.
-  value: number;
+export * from './types/base.js';
+export * from './types/polyfills.js';
 
-  // The delta between the current value and the last-reported value.
-  // On the first report, `delta` and `value` will always be the same.
-  delta: number;
+export * from './types/cls.js';
+export * from './types/fcp.js';
+export * from './types/fid.js';
+export * from './types/inp.js';
+export * from './types/lcp.js';
+export * from './types/ttfb.js';
 
-  // A unique ID representing this particular metric instance. This ID can
-  // be used by an analytics tool to dedupe multiple values sent for the same
-  // metric instance, or to group multiple deltas together and calculate a
-  // total. It can also be used to differentiate multiple different metric
-  // instances sent from the same page, which can happen if the page is
-  // restored from the back/forward cache (in that case new metrics object
-  // get created).
-  id: string;
-
-  // Any performance entries used in the metric value calculation.
-  // Note, entries will be added to the array as the value changes.
-  entries: (PerformanceEntry | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
-}
-
-export interface ReportHandler {
-  (metric: Metric): void;
-}
-
-// https://wicg.github.io/event-timing/#sec-performance-event-timing
-export interface PerformanceEventTiming extends PerformanceEntry {
-  processingStart: DOMHighResTimeStamp;
-  processingEnd: DOMHighResTimeStamp;
-  duration: DOMHighResTimeStamp;
-  cancelable?: boolean;
-  target?: Element;
-}
-
-export type FirstInputPolyfillEntry =
-    Omit<PerformanceEventTiming, 'processingEnd' | 'toJSON'>
-
-export interface FirstInputPolyfillCallback {
-  (entry: FirstInputPolyfillEntry): void;
-}
-
-export type NavigationTimingPolyfillEntry = Omit<PerformanceNavigationTiming,
-    'initiatorType' | 'nextHopProtocol' | 'redirectCount' | 'transferSize' |
-    'encodedBodySize' | 'decodedBodySize' | 'toJSON'>
+// --------------------------------------------------------------------------
+// Web Vitals package globals
+// --------------------------------------------------------------------------
 
 export interface WebVitalsGlobal {
   firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;
@@ -75,5 +42,71 @@ declare global {
 
     // Build flags:
     __WEB_VITALS_POLYFILL__: boolean;
+  }
+}
+
+// --------------------------------------------------------------------------
+// Everything below is modifications to built-in modules.
+// --------------------------------------------------------------------------
+
+interface PerformanceEntryMap {
+  navigation: PerformanceNavigationTiming;
+  resource: PerformanceResourceTiming;
+  paint: PerformancePaintTiming;
+}
+
+// Update built-in types to be more accurate.
+declare global {
+  interface Document {
+    // https://wicg.github.io/nav-speculation/prerendering.html#document-prerendering
+    prerendering?: boolean;
+    // https://wicg.github.io/page-lifecycle/#sec-api
+    wasDiscarded?: boolean;
+  }
+
+  interface Performance {
+    getEntriesByType<K extends keyof PerformanceEntryMap>(
+      type: K
+    ): PerformanceEntryMap[K][];
+  }
+
+  // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
+  interface PerformanceObserverInit {
+    durationThreshold?: number;
+  }
+
+  // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
+  interface PerformanceNavigationTiming {
+    activationStart?: number;
+  }
+
+  // https://wicg.github.io/event-timing/#sec-performance-event-timing
+  interface PerformanceEventTiming extends PerformanceEntry {
+    duration: DOMHighResTimeStamp;
+    interactionId?: number;
+  }
+
+  // https://wicg.github.io/layout-instability/#sec-layout-shift-attribution
+  interface LayoutShiftAttribution {
+    node?: Node;
+    previousRect: DOMRectReadOnly;
+    currentRect: DOMRectReadOnly;
+  }
+
+  // https://wicg.github.io/layout-instability/#sec-layout-shift
+  interface LayoutShift extends PerformanceEntry {
+    value: number;
+    sources: LayoutShiftAttribution[];
+    hadRecentInput: boolean;
+  }
+
+  // https://w3c.github.io/largest-contentful-paint/#sec-largest-contentful-paint-interface
+  interface LargestContentfulPaint extends PerformanceEntry {
+    renderTime: DOMHighResTimeStamp;
+    loadTime: DOMHighResTimeStamp;
+    size: number;
+    id: string;
+    url: string;
+    element?: Element;
   }
 }

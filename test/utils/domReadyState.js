@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,22 +14,21 @@
  * limitations under the License.
  */
 
-
 /**
  * Returns a promise that resolves once the browser window has loaded and
  * all load callbacks have finished executing.
  * @return {Promise<void>}
  */
-function afterLoad() {
-  return browser.executeAsync((done) => {
-    if (document.readyState === 'complete') {
+export function domReadyState(state) {
+  return browser.executeAsync((state, done) => {
+    if (document.readyState === 'complete' || document.readyState === state) {
       setTimeout(done, 0);
     } else {
-      addEventListener('load', () => setTimeout(done, 0));
+      document.addEventListener('readystatechange', () => {
+        if (document.readyState === state) {
+          setTimeout(done, 0);
+        }
+      });
     }
-  });
+  }, state);
 }
-
-module.exports = {
-  afterLoad,
-};

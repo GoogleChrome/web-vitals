@@ -1,5 +1,45 @@
 # Changelog
 
+### v3.1.0 (2022-11-15)
+
+- Add support for `'restore'` as a `navigationType` ([#284](https://github.com/GoogleChrome/web-vitals/pull/284))
+- Report initial CLS value when `reportAllChanges` is true ([#283](https://github.com/GoogleChrome/web-vitals/pull/283))
+- Defer all observers until after activation ([#282](https://github.com/GoogleChrome/web-vitals/pull/282))
+- Ignore TTFB for loads where responseStart is zero ([#281](https://github.com/GoogleChrome/web-vitals/pull/281))
+- Defer execution of observer callbacks ([#278](https://github.com/GoogleChrome/web-vitals/pull/278))
+
+### v3.0.4 (2022-10-18)
+
+- Clamp LCP and FCP to 0 for prerendered pages ([#270](https://github.com/GoogleChrome/web-vitals/pull/270))
+
+### v3.0.3 (2022-10-04)
+
+- Ensure `attribution` object is always present in attribution build ([#265](https://github.com/GoogleChrome/web-vitals/pull/265))
+
+### v3.0.2 (2022-09-14)
+
+- Set an explicit unpkg dist file ([#261](https://github.com/GoogleChrome/web-vitals/pull/261))
+
+### v3.0.1 (2022-08-31)
+
+- Use the cjs extension for all UMD builds ([#257](https://github.com/GoogleChrome/web-vitals/pull/257))
+
+### v3.0.0 (2022-08-24)
+
+- **[BREAKING]** Add a config object param to all metric functions ([#225](https://github.com/GoogleChrome/web-vitals/pull/225))
+- **[BREAKING]** Report TTFB after a bfcache restore ([#220](https://github.com/GoogleChrome/web-vitals/pull/220))
+- **[BREAKING]** Only include last LCP entry in metric entries ([#218](https://github.com/GoogleChrome/web-vitals/pull/218))
+- Update the metric ID prefix for v3 ([#251](https://github.com/GoogleChrome/web-vitals/pull/251))
+- Move the Navigation Timing API polyfill to the base+polyfill build ([#248](https://github.com/GoogleChrome/web-vitals/pull/248))
+- Add a metric rating property ([#246](https://github.com/GoogleChrome/web-vitals/pull/246))
+- Add deprecation notices for base+polyfill builds ([#242](https://github.com/GoogleChrome/web-vitals/pull/242))
+- Add a new attribution build for debugging issues in the field ([#237](https://github.com/GoogleChrome/web-vitals/pull/237), [#244](https://github.com/GoogleChrome/web-vitals/pull/244))
+- Add support for prerendered pages ([#233](https://github.com/GoogleChrome/web-vitals/pull/233))
+- Rename the `ReportHandler` type to `ReportCallback`, with alias for back-compat ([#225](https://github.com/GoogleChrome/web-vitals/pull/225), [#227](https://github.com/GoogleChrome/web-vitals/pull/227))
+- Add support for the new INP metric ([#221](https://github.com/GoogleChrome/web-vitals/pull/221), [#232](https://github.com/GoogleChrome/web-vitals/pull/232))
+- Rename `getXXX()` functions to `onXXX()` ([#222](https://github.com/GoogleChrome/web-vitals/pull/222))
+- Add a `navigationType` property to the Metric object ([#219](https://github.com/GoogleChrome/web-vitals/pull/219))
+
 ### v2.1.4 (2022-01-20)
 
 - Prevent TTFB from reporting after bfcache restore ([#201](https://github.com/GoogleChrome/web-vitals/pull/201))

@@ -14,8 +14,7 @@
  * limitations under the License.
  */
 
-const fs = require('fs-extra');
-
+import fs from 'fs-extra';
 
 const BEACON_FILE = './test/beacons.log';
 
@@ -23,7 +22,7 @@ const BEACON_FILE = './test/beacons.log';
  * @param {Object} count
  * @return {Promise<boolean>} True if the beacon count matches.
  */
-async function beaconCountIs(count) {
+export async function beaconCountIs(count) {
   await browser.waitUntil(async () => {
     const beacons = await getBeacons();
     return beacons.length === count;
@@ -35,7 +34,7 @@ async function beaconCountIs(count) {
  * most recently sent beacons with the same metric ID).
  * @return {Promise<Array>}
  */
-async function getBeacons(id = undefined) {
+export async function getBeacons(id = undefined) {
   const json = await fs.readFile(BEACON_FILE, 'utf-8');
   const allBeacons = json.trim().split('\n').filter(Boolean).map(JSON.parse);
 
@@ -50,12 +49,6 @@ async function getBeacons(id = undefined) {
  * Clears the array of beacons on the page.
  * @return {Promise<void>}
  */
-async function clearBeacons() {
+export async function clearBeacons() {
   await fs.truncate(BEACON_FILE);
 }
-
-module.exports = {
-  beaconCountIs,
-  getBeacons,
-  clearBeacons,
-};

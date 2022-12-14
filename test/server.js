@@ -13,11 +13,10 @@
  limitations under the License.
 */
 
-const bodyParser = require('body-parser');
-const express = require('express');
-const fs = require('fs-extra');
-const nunjucks = require('nunjucks');
-
+import bodyParser from 'body-parser';
+import express from 'express';
+import fs from 'fs-extra';
+import nunjucks from 'nunjucks';
 
 const BEACON_FILE = 'test/beacons.log';
 const app = express();
@@ -42,20 +41,39 @@ app.use((req, res, next) => {
 // Add a "collect" endpoint to simulate analytics beacons.
 app.post('/collect', bodyParser.text(), (req, res) => {
   // Uncomment to log the metric when manually testing.
-  // console.log(JSON.stringify(JSON.parse(req.body), null, 2));
+  console.log(JSON.stringify(JSON.parse(req.body), null, 2));
+  console.log('-'.repeat(80));
 
   fs.appendFileSync(BEACON_FILE, req.body + '\n');
   res.end();
 });
 
-app.get('/test/:view', function(req, res) {
+app.get('/test/:view', function (req, res, next) {
+  let modulePath = `/dist/web-vitals.js`;
+  if (req.query.polyfill) {
+    modulePath = `/dist/web-vitals.base.js`;
+  }
+  if (req.query.attribution) {
+    modulePath = `/dist/web-vitals.attribution.js`;
+  }
+
   const data = {
     ...req.query,
-    modulePath: `/dist/web-vitals${
-        req.query.polyfill ? `.base` : ``}.js`,
+    modulePath: modulePath,
     webVitalsPolyfill: fs.readFileSync('./dist/polyfill.js', 'utf-8'),
+  };
+
+  const content = nunjucks.render(`${req.params.view}.njk`, data);
+  if (req.query.delayResponse) {
+    res.write(content + '\n');
+    setTimeout(() => {
+      res.write(`</body></html>`);
+      res.end();
+      next();
+    }, Number(req.query.delayResponse));
+  } else {
+    res.send(content);
   }
-  res.send(nunjucks.render(`${req.params.view}.njk`, data));
 });
 
 app.use(express.static('./'));

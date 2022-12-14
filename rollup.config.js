@@ -20,11 +20,16 @@ import babel from 'rollup-plugin-babel';
 const configurePlugins = ({module, polyfill = false}) => {
   return [
     babel({
-      presets: [['@babel/preset-env', {
-        targets: {
-          browsers: ['ie 11'],
-        },
-      }]],
+      presets: [
+        [
+          '@babel/preset-env',
+          {
+            targets: {
+              browsers: ['ie 11'],
+            },
+          },
+        ],
+      ],
     }),
     terser({
       module,
@@ -36,9 +41,9 @@ const configurePlugins = ({module, polyfill = false}) => {
         'window.__WEB_VITALS_POLYFILL__': polyfill,
       },
       preventAssignment: true,
-    })
-  ]
-}
+    }),
+  ];
+};
 
 const configs = [
   {
@@ -53,7 +58,7 @@ const configs = [
     input: 'dist/modules/index.js',
     output: {
       format: 'umd',
-      file: `./dist/web-vitals.umd.js`,
+      file: `./dist/web-vitals.umd.cjs`,
       name: 'webVitals',
     },
     plugins: configurePlugins({module: false, polyfill: false}),
@@ -79,7 +84,7 @@ const configs = [
     input: 'dist/modules/index.js',
     output: {
       format: 'umd',
-      file: `./dist/web-vitals.base.umd.js`,
+      file: `./dist/web-vitals.base.umd.cjs`,
       name: 'webVitals',
       extend: true,
     },
@@ -104,6 +109,32 @@ const configs = [
       strict: false,
     },
     plugins: configurePlugins({module: false}),
+  },
+  {
+    input: 'dist/modules/attribution.js',
+    output: {
+      format: 'esm',
+      file: './dist/web-vitals.attribution.js',
+    },
+    plugins: configurePlugins({module: true, polyfill: false}),
+  },
+  {
+    input: 'dist/modules/attribution.js',
+    output: {
+      format: 'umd',
+      file: `./dist/web-vitals.attribution.umd.cjs`,
+      name: 'webVitals',
+    },
+    plugins: configurePlugins({module: false, polyfill: false}),
+  },
+  {
+    input: 'dist/modules/attribution.js',
+    output: {
+      format: 'iife',
+      file: './dist/web-vitals.attribution.iife.js',
+      name: 'webVitals',
+    },
+    plugins: configurePlugins({module: false, polyfill: false}),
   },
 ];
 
