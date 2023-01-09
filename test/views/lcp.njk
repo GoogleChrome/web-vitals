@@ -15,12 +15,12 @@
 {% extends 'layout.njk' %}
 
 {% block content %}
-  <h1>LCP Test</h1>
+  <h1 elementtiming="main-heading">LCP Test</h1>
   <p>
     {% if not imgDelay %}
       {% set imgDelay = 500 %}
     {% endif %}
-    <img {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
+    <img elementtiming="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 
@@ -32,8 +32,6 @@
   <footer>Text below the full-height element.</footer>
 
   <script type="module">
-    import {onLCP} from '{{ modulePath }}';
-
     function jsonifyEntry(entry) {
       return {
         element: entry.element.nodeName.toLowerCase(),
@@ -41,6 +39,8 @@
         startTime: entry.startTime,
       };
     }
+
+    const {onLCP} = await __testImport('{{ modulePath }}');
 
     onLCP((lcp) => {
       // Log for easier manual testing.

@@ -101,6 +101,39 @@ describe('onLCP()', async function () {
     assertFullReportsAreCorrect(await getBeacons());
   });
 
+  it('reports the correct value when loaded late (reportAllChanges === false)', async function () {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp?lazyLoad=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Load a new page to trigger the hidden state.
+    await browser.url('about:blank');
+
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
+  });
+
+  it('reports the correct value when loaded late (reportAllChanges === true)', async function () {
+    if (!browserSupportsLCP) this.skip();
+
+    await browser.url('/test/lcp?lazyLoad=1&reportAllChanges=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Load a new page to trigger the hidden state.
+    await browser.url('about:blank');
+
+    // Even though the test sets `reportAllChanges` to true, since the library
+    // is lazy loaded after all elements have been rendered, only a single
+    // change will be reported.
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
+  });
+
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsLCP) this.skip();
 
@@ -572,7 +605,7 @@ describe('onLCP()', async function () {
       await browser.url('/test/lcp?attribution=1&imgHidden=1');
 
       // Wait until all images are loaded and fully rendered.
-      await imagesPainted();
+      await domReadyState('complete');
 
       const navEntry = await browser.execute(() => {
         return performance.getEntriesByType('navigation')[0].toJSON();

@@ -51,6 +51,23 @@ describe('onFCP()', async function () {
     assert.match(fcp.navigationType, /navigate|reload/);
   });
 
+  it('reports the correct value when loaded late', async function () {
+    if (!browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp?lazyLoad=1');
+
+    await beaconCountIs(1);
+
+    const [fcp] = await getBeacons();
+    assert(fcp.value >= 0);
+    assert(fcp.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(fcp.name, 'FCP');
+    assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'good');
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.match(fcp.navigationType, /navigate|reload/);
+  });
+
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsFCP) this.skip();
 

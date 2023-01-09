@@ -16,7 +16,7 @@
 {% extends 'layout.njk' %}
 
 {% block content %}
-  <h1>FID Test</h1>
+  <h1 elementtiming="main-heading">FID Test</h1>
   <p>
     <button>Click me</button>
   </p>
@@ -24,7 +24,7 @@
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
   <script type="module">
-    import {onFID} from '{{ modulePath }}';
+    const {onFID} = await __testImport('{{ modulePath }}');
 
     onFID((fid) => {
       // Log for easier manual testing.

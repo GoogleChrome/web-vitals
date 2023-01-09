@@ -80,8 +80,8 @@ describe('onTTFB()', async function () {
     assertValidEntry(ttfb.entries[0]);
   });
 
-  it('reports the correct value when run after page load', async function () {
-    await browser.url('/test/ttfb?awaitLoad=1');
+  it('reports the correct value event when loaded late', async function () {
+    await browser.url('/test/ttfb?lazyLoad=1');
 
     const ttfb = await getTTFBBeacon();
 

@@ -16,23 +16,21 @@
 {% extends 'layout.njk' %}
 
 {% block content %}
-  <h1>CLS Test</h1>
+  <h1 elementtiming="main-heading">CLS Test</h1>
   {% if noLayoutShifts %}
     <p id="p1">This text does not shift.</p>
   {% else %}
     <p id="p2">
-      <img id="img1" src="/test/img/square.png?delay=500" alt="Gray square" />
+      <img id="img1" elementtiming="main-image" src="/test/img/square.png?delay=500" alt="Gray square" />
       [text node contents]
     </p>
-    <p id="p3"><img id="img3" src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
+    <p id="p3"><img id="img3" elementtiming="secondary-image"  src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
     <p id="p4">Text below the images that will get pushed down.</p>
   {% endif %}
 
   <p id="p5"><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
   <script type="module">
-    import {onCLS} from '{{ modulePath }}';
-
     function jsonifyNode(node) {
       return node.id ? `#${node.id}` : node.nodeName.toLowerCase();
     }
@@ -47,6 +45,8 @@
       const sources = entry.sources.map(jsonifySource);
       return {entryType, hadRecentInput, sources, startTime, value};
     }
+
+    const {onCLS} = await __testImport('{{ modulePath }}');
 
     onCLS((cls) => {
       // Log for easier manual testing.

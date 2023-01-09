@@ -24,6 +24,7 @@ import {
   firstInputPolyfill,
   resetFirstInputPolyfill,
 } from './lib/polyfills/firstInputPolyfill.js';
+import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
@@ -70,10 +71,12 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
     report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
 
     if (po) {
-      onHidden(() => {
-        handleEntries(po.takeRecords() as FIDMetric['entries']);
-        po.disconnect();
-      }, true);
+      onHidden(
+        runOnce(() => {
+          handleEntries(po.takeRecords() as FIDMetric['entries']);
+          po.disconnect();
+        })
+      );
     }
 
     if (window.__WEB_VITALS_POLYFILL__) {

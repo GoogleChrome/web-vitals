@@ -78,6 +78,54 @@ describe('onCLS()', async function () {
     assert.match(cls.navigationType, /navigate|reload/);
   });
 
+  it('reports the correct value even if loaded late (reportAllChanges === false)', async function () {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url(`/test/cls?lazyLoad=1`);
+
+    await domReadyState('complete');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+    assert(cls.value >= 0);
+    assert(cls.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.match(cls.navigationType, /navigate|reload/);
+  });
+
+  it('reports the correct value even if loaded late (reportAllChanges === true)', async function () {
+    if (!browserSupportsCLS) this.skip();
+
+    await browser.url(`/test/cls?lazyLoad=1&reportAllChanges=1`);
+
+    await domReadyState('complete');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+    // Two shifts should have happened, but since the library loads after
+    // the shifts are done, there should only be a single report.
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+    assert(cls.value >= 0);
+    assert(cls.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.match(cls.navigationType, /navigate|reload/);
+  });
+
   it('resets the session after timeout or gap elapses', async function () {
     if (!browserSupportsCLS) this.skip();
 

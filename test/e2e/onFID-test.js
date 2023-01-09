@@ -55,6 +55,27 @@ describe('onFID()', async function () {
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
 
+  it('reports the correct value after input', async function () {
+    if (!browserSupportsFID) this.skip();
+
+    await browser.url('/test/fid?loadAfterInput=1');
+
+    // Click on the <h1>.
+    const h1 = await $('h1');
+    await h1.click();
+
+    await beaconCountIs(1);
+
+    const [fid] = await getBeacons();
+    assert(fid.value >= 0);
+    assert(fid.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(fid.name, 'FID');
+    assert.strictEqual(fid.value, fid.delta);
+    assert.strictEqual(fid.rating, 'good');
+    assert.match(fid.navigationType, /navigate|reload/);
+    assert.match(fid.entries[0].name, /(mouse|pointer)down/);
+  });
+
   it('does not report if the browser does not support FID and the polyfill is not used', async function () {
     if (browserSupportsFID) this.skip();
 
