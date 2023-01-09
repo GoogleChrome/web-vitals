@@ -149,10 +149,10 @@
         }, true);
       });
 
-            /**
+      /**
        * @return {Promise<void>}
        */
-       self.__afterFirstInput = new Promise((resolve) => {
+      self.__afterFirstInput = new Promise((resolve) => {
         new PerformanceObserver(resolve).observe({type: 'first-input', buffered: true});
       });
 
@@ -201,9 +201,7 @@
       }
 
       // Push to this promise list if you need to wait for some condition in a test.
-      self.__readyPromises = [
-        // new Promise(r => setTimeout(r, 1000))
-      ];
+      self.__readyPromises = [];
 
       // If `__lazyLoad` is set, wait to import until after load and first paint.
       if (self.__lazyLoad) {
