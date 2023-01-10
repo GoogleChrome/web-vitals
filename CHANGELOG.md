@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.1.1 (2023-01-10)
+
+- Defer CLS logic until after `onFCP()` callback ([#297](https://github.com/GoogleChrome/web-vitals/pull/297))
+
 ### v3.1.0 (2022-11-15)
 
 - Add support for `'restore'` as a `navigationType` ([#284](https://github.com/GoogleChrome/web-vitals/pull/284))
