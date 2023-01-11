@@ -51,6 +51,8 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 
 <a name="import-web-vitals-from-npm"><a>
 
+The `web-vitals` library uses the `buffered` flag for [PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver/observe) meaning it receives all performance entries that happened before the library was loaded. This means you do not need to prioritse the loading of the `web-vitals` library. Given that, it is recommended to defer the library load until after the main content of the page is loaded.
+
 ### From npm
 
 You can install this library from npm by running:
