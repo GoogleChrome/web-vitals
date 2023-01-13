@@ -86,6 +86,7 @@ const reportFirstInputDelayIfRecordedAndValid = () => {
       callback(entry);
     });
     callbacks = [];
+    firstInputEvent = null;
   }
 }
 
