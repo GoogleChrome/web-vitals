@@ -34,8 +34,9 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
   let softNavs: SoftNavigationEntry[] = [];
-  let currentURL = window.location.href;
+  let currentURL = '';
   let firstFCPreported = false;
+  const eventsToBeHandled: FCPMetric['entries'] = [];
 
   whenActivated(() => {
     // https://web.dev/fcp/#what-is-a-good-fcp-score
@@ -51,14 +52,19 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
     ) => {
       (entries as PerformancePaintTiming[]).forEach((entry) => {
         if (
+          // Only include FCP as no separate entry for that
           entry.name === 'first-contentful-paint' &&
+          // Only include if not reported yet (for live observing)
+          // Or if the time is before the current soft nav start time
+          // (for processing buffered times).
           (!firstFCPreported ||
             (beforeStartTime && entry.startTime < beforeStartTime))
         ) {
           let value = 0;
           let pageUrl: string = window.location.href;
-          // If not measuring soft navs, then can disconnect the PO now
+          firstFCPreported = true;
           if (!opts!.reportSoftNavs) {
+            // If not measuring soft navs, then can disconnect the PO now
             po!.disconnect();
             // The activationStart reference is used because FCP should be
             // relative to page activation rather than navigation start if the
@@ -66,13 +72,13 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
             // after the FCP, this time should be clamped at 0.
             value = Math.max(entry.startTime - getActivationStart(), 0);
           } else {
-            firstFCPreported = true;
             // Get the navigation id for this entry
             const id = entry.NavigationId;
             // And look up the startTime of that navigation
             // Falling back to getActivationStart() for the initial nav
             const nav = softNavs.filter((entry) => entry.NavigationId == id)[0];
             const navStartTime = nav ? nav.startTime : getActivationStart();
+            // Calculate the actual start time
             value = Math.max(entry.startTime - navStartTime, 0);
             pageUrl = currentURL;
           }
@@ -128,6 +134,9 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         // Process each soft nav, finalizing the previous one, and setting
         // up the next one
         entries.forEach((entry) => {
+          if (!currentURL) {
+            currentURL = entry.name;
+          }
           // We report all FCPs up until just before this startTime
           handleEntries(poEntries, entry.startTime);
 
