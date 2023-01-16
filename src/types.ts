@@ -71,6 +71,11 @@ declare global {
   }
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
+  interface PerformancePaintTiming extends PerformanceEntry {
+    NavigationId?: number;
+  }
+
+  // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
   interface PerformanceObserverInit {
     durationThreshold?: number;
   }

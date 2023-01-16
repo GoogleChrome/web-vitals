@@ -22,7 +22,7 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {FCPMetric, FCPReportCallback, ReportOpts} from './types.js';
+import {FCPMetric, FCPReportCallback, ReportOpts, SoftNavs} from './types.js';
 
 /**
  * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
@@ -33,6 +33,9 @@ import {FCPMetric, FCPReportCallback, ReportOpts} from './types.js';
 export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
+  let softNavs: SoftNavigationEntry[] = [];
+  let currentURL = window.location.href;
+  let firstFCPreported = false;
 
   whenActivated(() => {
     // https://web.dev/fcp/#what-is-a-good-fcp-score
@@ -42,19 +45,43 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
     let metric = initMetric('FCP');
     let report: ReturnType<typeof bindReporter>;
 
-    const handleEntries = (entries: FCPMetric['entries']) => {
+    const handleEntries = (
+      entries: FCPMetric['entries'],
+      beforeStartTime?: number
+    ) => {
       (entries as PerformancePaintTiming[]).forEach((entry) => {
-        if (entry.name === 'first-contentful-paint') {
-          po!.disconnect();
-
-          // Only report if the page wasn't hidden prior to the first paint.
-          if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+        if (
+          entry.name === 'first-contentful-paint' &&
+          (!firstFCPreported ||
+            (beforeStartTime && entry.startTime < beforeStartTime))
+        ) {
+          let value = 0;
+          let pageUrl: string = window.location.href;
+          // If not measuring soft navs, then can disconnect the PO now
+          if (!opts!.reportSoftNavs) {
+            po!.disconnect();
             // The activationStart reference is used because FCP should be
             // relative to page activation rather than navigation start if the
             // page was prerendered. But in cases where `activationStart` occurs
             // after the FCP, this time should be clamped at 0.
-            metric.value = Math.max(entry.startTime - getActivationStart(), 0);
+            value = Math.max(entry.startTime - getActivationStart(), 0);
+          } else {
+            firstFCPreported = true;
+            // Get the navigation id for this entry
+            const id = entry.NavigationId;
+            // And look up the startTime of that navigation
+            // Falling back to getActivationStart() for the initial nav
+            const nav = softNavs.filter((entry) => entry.NavigationId == id)[0];
+            const navStartTime = nav ? nav.startTime : getActivationStart();
+            value = Math.max(entry.startTime - navStartTime, 0);
+            pageUrl = currentURL;
+          }
+
+          // Only report if the page wasn't hidden prior to the first paint.
+          if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+            metric.value = value;
             metric.entries.push(entry);
+            metric.pageUrl = pageUrl;
             report(true);
           }
         }
@@ -87,6 +114,40 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
           report(true);
         });
       });
+
+      const handleSoftNav = (entries: SoftNavs['entries']) => {
+        // store all the new softnavs to allow us to look them up
+        // to get the start time for this navigation
+        softNavs = entries;
+
+        // We clear down the po with takeRecords() but might have multiple
+        // softNavs before web-vitals.js was initialised (unlikely but possible)
+        // so save them to process them over again for each soft nav.
+        const poEntries = po!.takeRecords() as FCPMetric['entries'];
+
+        // Process each soft nav, finalizing the previous one, and setting
+        // up the next one
+        entries.forEach((entry) => {
+          // We report all FCPs up until just before this startTime
+          handleEntries(poEntries, entry.startTime);
+
+          // Set up a new metric for the next soft nav
+          firstFCPreported = false;
+          metric = initMetric('FCP', 0, 'soft-navigation');
+          currentURL = entry.name;
+          report = bindReporter(
+            onReport,
+            metric,
+            thresholds,
+            opts!.reportAllChanges
+          );
+        });
+      };
+
+      // Listen for soft navs
+      if (opts!.reportSoftNavs) {
+        observe('soft-navigation', handleSoftNav);
+      }
     }
   });
 };
