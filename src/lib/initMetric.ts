@@ -20,11 +20,14 @@ import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
 import {Metric} from '../types.js';
 
-export const initMetric = (name: Metric['name'], value?: number): Metric => {
+export const initMetric = (name: Metric['name'], value?: number, navigation?: Metric['navigationType']): Metric => {
   const navEntry = getNavigationEntry();
   let navigationType: Metric['navigationType'] = 'navigate';
 
-  if (getBFCacheRestoreTime() >= 0) {
+  if (navigation) {
+    // If it was passed in, then use that
+    navigationType = navigation;
+  } else if (getBFCacheRestoreTime() >= 0) {
     navigationType = 'back-forward-cache';
   } else if (navEntry) {
     if (document.prerendering || getActivationStart() > 0) {
@@ -47,5 +50,6 @@ export const initMetric = (name: Metric['name'], value?: number): Metric => {
     entries: [],
     id: generateUniqueID(),
     navigationType,
+    pageUrl: window.location.href,
   };
 };

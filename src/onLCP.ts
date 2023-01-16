@@ -22,9 +22,8 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {LCPMetric, ReportCallback, ReportOpts} from './types.js';
+import {LCPMetric, ReportCallback, ReportOpts, SoftNavs} from './types.js';
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
@@ -42,6 +41,8 @@ const reportedMetricIDs: Record<string, boolean> = {};
 export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
+  let softNavs: SoftNavigationEntry[] = [];
+  let currentURL = window.location.href;
 
   whenActivated(() => {
     // https://web.dev/lcp/#what-is-a-good-lcp-score
@@ -51,21 +52,35 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
 
-    const handleEntries = (entries: LCPMetric['entries']) => {
-      const lastEntry = entries[entries.length - 1] as LargestContentfulPaint;
+    const handleEntries = (entries: LCPMetric['entries'], beforeStartTime?: number) => {
+      const lastEntry = beforeStartTime ? entries.filter(entry => entry.startTime < beforeStartTime)[0] : entries[entries.length - 1];
       if (lastEntry) {
-        // The startTime attribute returns the value of the renderTime if it is
-        // not 0, and the value of the loadTime otherwise. The activationStart
-        // reference is used because LCP should be relative to page activation
-        // rather than navigation start if the page was prerendered. But in cases
-        // where `activationStart` occurs after the LCP, this time should be
-        // clamped at 0.
-        const value = Math.max(lastEntry.startTime - getActivationStart(), 0);
+        let value = 0;
+        let pageUrl: string = window.location.href;
+        if (opts!.reportSoftNavs) {
+          // Get the navigation id for this entry
+          const id = lastEntry.NavigationId;
+          // And look up the startTime of that navigation
+          // Falling back to getActivationStart() for the initial nav
+          const nav = softNavs.filter(entry => entry.NavigationId == id)[0]
+          const navStartTime = nav ? nav.startTime : getActivationStart();
+          value = Math.max(lastEntry.startTime - navStartTime, 0);
+          pageUrl = currentURL;
+        } else {
+          // The startTime attribute returns the value of the renderTime if it is
+          // not 0, and the value of the loadTime otherwise. The activationStart
+          // reference is used because LCP should be relative to page activation
+          // rather than navigation start if the page was prerendered. But in cases
+          // where `activationStart` occurs after the LCP, this time should be
+          // clamped at 0.
+          value = Math.max(lastEntry.startTime - getActivationStart(), 0);
+        }
 
         // Only report if the page wasn't hidden prior to LCP.
         if (value < visibilityWatcher.firstHiddenTime) {
           metric.value = value;
           metric.entries = [lastEntry];
+          metric.pageUrl = pageUrl;
           report();
         }
       }
@@ -81,23 +96,33 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
         opts!.reportAllChanges
       );
 
-      const stopListening = runOnce(() => {
+      const finalizeLCPEntries = (poEntries: LCPMetric['entries'], beforeStartTime?: number) => {
         if (!reportedMetricIDs[metric.id]) {
-          handleEntries(po!.takeRecords() as LCPMetric['entries']);
-          po!.disconnect();
+          handleEntries(poEntries, beforeStartTime);
+          // If not measuring soft navs, then can disconnect the PO now
+          if (!opts!.reportSoftNavs) {
+            po!.disconnect();
+          }
           reportedMetricIDs[metric.id] = true;
           report(true);
         }
-      });
+      };
+
+      const finalizeLCP = () => {
+        if (!reportedMetricIDs[metric.id]) {
+          const LCPEntries = po!.takeRecords() as LCPMetric['entries'];
+          finalizeLCPEntries(LCPEntries);
+        }
+      };
 
       // Stop listening after input. Note: while scrolling is an input that
       // stops LCP observation, it's unreliable since it can be programmatically
       // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
       ['keydown', 'click'].forEach((type) => {
-        addEventListener(type, stopListening, true);
+        addEventListener(type, finalizeLCP, true);
       });
 
-      onHidden(stopListening);
+      onHidden(finalizeLCP);
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
@@ -116,6 +141,43 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
           report(true);
         });
       });
+
+      const handleSoftNav = (entries: SoftNavs['entries']) => {
+        // store all the new softnavs to allow us to look them up
+        // to get the start time for this navigation
+        softNavs = entries;
+
+        // We clear down the po with takeRecords() but might have multiple
+        // softNavs before web-vitals.js was initialised (unlikely but possible)
+        // so save them to process them over again for each soft nav.
+        const poEntries = po!.takeRecords() as LCPMetric['entries'];
+
+        // Process each soft nav, finalizing the previous one, and setting
+        // up the next one
+        entries.forEach(entry => {
+          // We report all LCPs up until just before this startTime
+          finalizeLCPEntries(poEntries, entry.startTime);
+
+          // We are about to initialise a new metric so shouldn't need the old one
+          // So clean it up to avoid it growing and growing
+          delete reportedMetricIDs[metric.id];
+
+          // Set up a new metric for the next soft nav
+          metric = initMetric('LCP', 0, "soft-navigation");
+          currentURL = entry.name;
+          report = bindReporter(
+            onReport,
+            metric,
+            thresholds,
+            opts!.reportAllChanges
+          );
+        });
+      }
+
+      // Listen for soft navs and finalise the previous LCP
+      if (opts!.reportSoftNavs) {
+        observe('soft-navigation', handleSoftNav);
+      }
     }
   });
 };

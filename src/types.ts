@@ -80,6 +80,11 @@ declare global {
     activationStart?: number;
   }
 
+  // https://github.com/WICG/soft-navigations
+  interface SoftNavigationEntry extends PerformanceEntry {
+    NavigationId?: number;
+  }
+
   // https://wicg.github.io/event-timing/#sec-performance-event-timing
   interface PerformanceEventTiming extends PerformanceEntry {
     duration: DOMHighResTimeStamp;
@@ -108,5 +113,6 @@ declare global {
     id: string;
     url: string;
     element?: Element;
+    NavigationId?: number;
   }
 }

@@ -299,6 +299,67 @@ _**Note:** the first time the `callback` function is called, its `value` and `de
 
 In addition to using the `id` field to group multiple deltas for the same metric, it can also be used to differentiate different metrics reported on the same page. For example, after a back/forward cache restore, a new metric object is created with a new `id` (since back/forward cache restores are considered separate page visits).
 
+### Report metrics for soft navigations (experimental)
+
+_**Note:** this is experimental and subject to change._
+
+Currently Core Web Vitals are only tracked for full page navigations, which can affect how [Single Page Applications](https://web.dev/vitals-spa-faq/) that use so called "soft navigations" to update the browser URL and history outside of the normal browser's handling of this. The Chrome team are experimenting with being able to [measure these soft navigations](https://github.com/WICG/soft-navigations) separately and report on Core Web Vitals separately for them.
+
+This experimental support allows sites to measure how their Core Web Vitals might be measured differently should this happen.
+
+At present a "soft navigation" is defined as happening after the following three things happen:
+
+- A user interaction occurs
+- The URL changes
+- Content is added to the DOM
+- Something is painted to screen.
+
+For some sites, these heuristics may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not missing the above criteria). We welcome feedback on https://crbug.com.
+
+_**Note:** At this time it is not known if this experiment will be something we want to move forward with. Until such time, this support will likely remain in a separate branch of this project, rather than be included in any production builds. If we decide not to move forward with this, the support of this will likely be removed from this project since this library is intended to mirror the Core Web Vitals as much as possible._
+
+Some important points to note:
+
+- TTFB is reported as , and not the time of the first network call (if any) after the soft navigation.
+- FCP and LCP are the first and largest contentful paints after the soft navigation. Prior reported paint times will not be counted for these metrics, even though these paints may remain between soft navigations, or may be the largest contenful item.
+- FID is reset to measure the first interactions after the soft navigation.
+- INP is reset to measure only interactions after the the soft navigation.
+- CLS is reset to measure again separate to the first.
+
+_**Note:** It is not known at this time whether soft navigations will be weighted the same as full navigations. No weighting is included in this library at present and metrics are reported in the same way as full page load metrics._
+
+The metrics can be reported for Soft Navigations using the `reportSoftNavs: true` reporting option:
+
+```js
+import {
+  onCLS,
+  onFID,
+  onLCP,
+} from 'https://unpkg.com/web-vitals@soft-navs/dist/web-vitals.js?module';
+
+onCLS(console.log, {reportSoftNavs: true});
+onFID(console.log, {reportSoftNavs: true});
+onLCP(console.log, {reportSoftNavs: true});
+```
+
+Note that this will change the way the first page loads are measured as the metrics for the inital URL will be finalized once the first soft nav occurs. To measure both you need to register two callbacks:
+
+```js
+import {
+  onCLS,
+  onFID,
+  onLCP,
+} from 'https://unpkg.com/web-vitals@soft-navs/dist/web-vitals.js?module';
+
+onCLS(doTraditionalProcessing);
+onFID(doTraditionalProcessing);
+onLCP(doTraditionalProcessing);
+
+onCLS(doSoftNavProcessing, {reportSoftNavs: true});
+onFID(doSoftNavProcessing, {reportSoftNavs: true});
+onLCP(doSoftNavProcessing, {reportSoftNavs: true});
+```
+
 ### Send the results to an analytics endpoint
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
@@ -724,7 +785,14 @@ interface Metric {
     | 'back-forward'
     | 'back-forward-cache'
     | 'prerender'
-    | 'restore';
+    | 'restore'
+    | 'soft-navigation';
+
+  /**
+   * The url the metric happened for. This is particularly relevent for soft navigations where
+   * the metric may be reported for the previous soft navigation URL.
+   */
+  pageUrl: string;
 }
 ```
 
@@ -784,6 +852,7 @@ Metric-specific subclasses:
 interface ReportOpts {
   reportAllChanges?: boolean;
   durationThreshold?: number;
+  reportSoftNavs?: boolean;
 }
 ```
 

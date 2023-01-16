@@ -82,7 +82,14 @@ export interface Metric {
     | 'back-forward'
     | 'back-forward-cache'
     | 'prerender'
-    | 'restore';
+    | 'restore'
+    | 'soft-navigation';
+
+  /**
+   * The url the metric happened for. This is particularly relevent for soft navigations where
+   * the metric may be reported for the previous soft navigation URL.
+   */
+  pageUrl: string;
 }
 
 /**
@@ -104,6 +111,7 @@ export interface ReportCallback {
 export interface ReportOpts {
   reportAllChanges?: boolean;
   durationThreshold?: number;
+  reportSoftNavs?: boolean;
 }
 
 /**
@@ -126,3 +134,8 @@ export type LoadState =
   | 'dom-interactive'
   | 'dom-content-loaded'
   | 'complete';
+
+export interface SoftNavs {
+  name: 'SoftNavs';
+  entries: SoftNavigationEntry[];
+}
