@@ -72,7 +72,7 @@ declare global {
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
   interface PerformancePaintTiming extends PerformanceEntry {
-    NavigationId?: number;
+    navigationId?: number;
   }
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
@@ -87,7 +87,7 @@ declare global {
 
   // https://github.com/WICG/soft-navigations
   interface SoftNavigationEntry extends PerformanceEntry {
-    NavigationId?: number;
+    navigationId?: number;
   }
 
   // https://wicg.github.io/event-timing/#sec-performance-event-timing
@@ -118,6 +118,6 @@ declare global {
     id: string;
     url: string;
     element?: Element;
-    NavigationId?: number;
+    navigationId?: number;
   }
 }

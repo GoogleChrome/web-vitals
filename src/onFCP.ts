@@ -36,7 +36,6 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   let softNavs: SoftNavigationEntry[] = [];
   let currentURL = '';
   let firstFCPreported = false;
-  const eventsToBeHandled: FCPMetric['entries'] = [];
 
   whenActivated(() => {
     // https://web.dev/fcp/#what-is-a-good-fcp-score
@@ -73,10 +72,10 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
             value = Math.max(entry.startTime - getActivationStart(), 0);
           } else {
             // Get the navigation id for this entry
-            const id = entry.NavigationId;
+            const id = entry.navigationId;
             // And look up the startTime of that navigation
             // Falling back to getActivationStart() for the initial nav
-            const nav = softNavs.filter((entry) => entry.NavigationId == id)[0];
+            const nav = softNavs.filter((entry) => entry.navigationId == id)[0];
             const navStartTime = nav ? nav.startTime : getActivationStart();
             // Calculate the actual start time
             value = Math.max(entry.startTime - navStartTime, 0);
