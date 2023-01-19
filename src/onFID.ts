@@ -74,31 +74,20 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
           initNewFIDMetric('soft-navigation');
         }
 
-        let value = 0;
         let pageUrl = '';
 
         if (entry.navigationId === 1 || !entry.navigationId) {
-          // Only report if the page wasn't hidden prior to the first paint.
-          // The activationStart reference is used because FCP should be
-          // relative to page activation rather than navigation start if the
-          // page was prerendered. But in cases where `activationStart` occurs
-          // after the FCP, this time should be clamped at 0.
-          value = entry.processingStart - entry.startTime;
           pageUrl = performance.getEntriesByType('navigation')[0].name;
         } else {
-          const navEntry =
+          pageUrl =
             performance.getEntriesByType('soft-navigation')[
               entry.navigationId - 2
-            ];
-          // As a soft nav needs an interaction, it should never be before
-          // getActivationStart so can just cap to 0
-          value = entry.processingStart - entry.startTime;
-          pageUrl = navEntry?.name;
+            ]?.name;
         }
 
         // Only report if the page wasn't hidden prior to the first input.
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-          metric.value = value;
+          metric.value = entry.processingStart - entry.startTime;
           metric.entries.push(entry);
           metric.pageUrl = pageUrl;
           report(true);
