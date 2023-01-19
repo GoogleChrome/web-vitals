@@ -86,14 +86,8 @@ export interface Metric {
     | 'soft-navigation';
 
   /**
-   * The NavigationId for the metric. This is particularly relevent for soft navigations where
-   * the metric may be reported for the previous soft navigation URL.
-   */
-  navigationId?: number;
-
-  /**
-   * The url the metric happened for. This is particularly relevent for soft navigations where
-   * the metric may be reported for the previous soft navigation URL.
+   * The URL the metric happened for. This is particularly relevent for soft navigations where
+   * the metric may be reported for a previous URL.
    */
   pageUrl: string;
 }

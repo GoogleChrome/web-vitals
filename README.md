@@ -789,8 +789,8 @@ interface Metric {
     | 'soft-navigation';
 
   /**
-   * The url the metric happened for. This is particularly relevent for soft navigations where
-   * the metric may be reported for the previous soft navigation URL.
+   * The URL the metric happened for. This is particularly relevent for soft navigations where
+   * the metric may be reported for a previous URL.
    */
   pageUrl: string;
 }
