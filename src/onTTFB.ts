@@ -21,6 +21,8 @@ import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {ReportCallback, ReportOpts} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {whenActivated} from './lib/whenActivated.js';
+import {observe} from './lib/observe.js';
+import {softNavs} from './lib/softNavs.js';
 
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
@@ -100,9 +102,31 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
           thresholds,
           opts!.reportAllChanges
         );
-
         report(true);
       });
+
+      const reportSoftNavTTFBs = (entries: SoftNavigationEntry[]) => {
+        entries.forEach((entry) => {
+          if (entry.navigationId) {
+            metric = initMetric('TTFB', 0, 'soft-navigation');
+            metric.pageUrl =
+              performance.getEntriesByType('soft-navigation')[
+                entry.navigationId - 2
+              ]?.name;
+            report = bindReporter(
+              onReport,
+              metric,
+              thresholds,
+              opts!.reportAllChanges
+            );
+            report(true);
+          }
+        });
+      };
+
+      if (softNavs(opts)) {
+        observe('soft-navigation', reportSoftNavTTFBs);
+      }
     }
   });
 };
