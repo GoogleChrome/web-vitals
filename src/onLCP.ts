@@ -22,10 +22,9 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {Metric} from './types.js';
 import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {LCPMetric, ReportCallback, ReportOpts} from './types.js';
+import {LCPMetric, Metric, ReportCallback, ReportOpts} from './types.js';
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
@@ -64,7 +63,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       );
     };
 
-    const handleLCPEntries = (entries: LCPMetric['entries']) => {
+    const handleEntries = (entries: LCPMetric['entries']) => {
       const uniqueNavigationIds = [
         ...new Set(entries.map((entry) => entry.navigationId)),
       ].filter((n) => n);
@@ -118,14 +117,14 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     const finalizeLCP = () => {
       if (!reportedMetricIDs[metric.id]) {
-        handleLCPEntries(po!.takeRecords() as LCPMetric['entries']);
+        handleEntries(po!.takeRecords() as LCPMetric['entries']);
         if (!softNavsEnabled) po!.disconnect();
         reportedMetricIDs[metric.id] = true;
         report(true);
       }
     };
 
-    const po = observe('largest-contentful-paint', handleLCPEntries);
+    const po = observe('largest-contentful-paint', handleEntries);
 
     if (po) {
       report = bindReporter(

@@ -24,11 +24,12 @@ import {
   firstInputPolyfill,
   resetFirstInputPolyfill,
 } from './lib/polyfills/firstInputPolyfill.js';
-import {runOnce} from './lib/runOnce.js';
+import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
   FirstInputPolyfillCallback,
+  Metric,
   ReportCallback,
   ReportOpts,
 } from './types.js';
@@ -45,6 +46,7 @@ import {
 export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
+  const softNavsEnabled = softNavs(opts);
 
   whenActivated(() => {
     // https://web.dev/fid/#what-is-a-good-fid-score
@@ -54,29 +56,63 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
     let metric = initMetric('FID');
     let report: ReturnType<typeof bindReporter>;
 
-    const handleEntry = (entry: PerformanceEventTiming) => {
-      // Only report if the page wasn't hidden prior to the first input.
-      if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-        metric.value = entry.processingStart - entry.startTime;
-        metric.entries.push(entry);
-        report(true);
-      }
+    const initNewFIDMetric = (navigation?: Metric['navigationType']) => {
+      metric = initMetric('FID', 0, navigation);
+      report = bindReporter(
+        onReport,
+        metric,
+        thresholds,
+        opts!.reportAllChanges
+      );
     };
 
     const handleEntries = (entries: FIDMetric['entries']) => {
-      (entries as PerformanceEventTiming[]).forEach(handleEntry);
-    };
+      entries.forEach((entry) => {
+        if (!softNavsEnabled) {
+          po!.disconnect();
+        } else if (entry.navigationId) {
+          initNewFIDMetric('soft-navigation');
+        }
 
+        let value = 0;
+        let pageUrl = '';
+
+        if (entry.navigationId === 1 || !entry.navigationId) {
+          // Only report if the page wasn't hidden prior to the first paint.
+          // The activationStart reference is used because FCP should be
+          // relative to page activation rather than navigation start if the
+          // page was prerendered. But in cases where `activationStart` occurs
+          // after the FCP, this time should be clamped at 0.
+          value = entry.processingStart - entry.startTime;
+          pageUrl = performance.getEntriesByType('navigation')[0].name;
+        } else {
+          const navEntry =
+            performance.getEntriesByType('soft-navigation')[
+              entry.navigationId - 2
+            ];
+          // As a soft nav needs an interaction, it should never be before
+          // getActivationStart so can just cap to 0
+          value = entry.processingStart - entry.startTime;
+          pageUrl = navEntry?.name;
+        }
+
+        // Only report if the page wasn't hidden prior to the first input.
+        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+          metric.value = value;
+          metric.entries.push(entry);
+          metric.pageUrl = pageUrl;
+          report(true);
+        }
+      });
+    };
     const po = observe('first-input', handleEntries);
     report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
 
     if (po) {
-      onHidden(
-        runOnce(() => {
-          handleEntries(po.takeRecords() as FIDMetric['entries']);
-          po.disconnect();
-        })
-      );
+      onHidden(() => {
+        handleEntries(po!.takeRecords() as FIDMetric['entries']);
+        if (!softNavsEnabled) po.disconnect();
+      });
     }
 
     if (window.__WEB_VITALS_POLYFILL__) {
@@ -87,7 +123,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
       // Prefer the native implementation if available,
       if (!po) {
         window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback
+          handleEntries as FirstInputPolyfillCallback
         );
       }
       onBFCacheRestore(() => {
@@ -101,7 +137,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
 
         window.webVitals.resetFirstInputPolyfill();
         window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback
+          handleEntries as FirstInputPolyfillCallback
         );
       });
     } else {
@@ -117,7 +153,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
           );
 
           resetFirstInputPolyfill();
-          firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
+          firstInputPolyfill(handleEntries as FirstInputPolyfillCallback);
         });
       }
     }

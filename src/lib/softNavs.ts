@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,24 +14,13 @@
  * limitations under the License.
  */
 
-export type FirstInputPolyfillEntry = Omit<
-  PerformanceEventTiming,
-  'processingEnd'
->;
+import {ReportOpts} from '../types.js';
 
-export interface FirstInputPolyfillCallback {
-  (entries: [FirstInputPolyfillEntry]): void;
-}
+let softNavsEnabled: boolean | undefined;
 
-export type NavigationTimingPolyfillEntry = Omit<
-  PerformanceNavigationTiming,
-  | 'initiatorType'
-  | 'nextHopProtocol'
-  | 'redirectCount'
-  | 'transferSize'
-  | 'encodedBodySize'
-  | 'decodedBodySize'
-  | 'type'
-> & {
-  type: PerformanceNavigationTiming['type'];
+export const softNavs = (opts?: ReportOpts) => {
+  if (typeof softNavsEnabled !== 'undefined') return softNavsEnabled;
+  return (softNavsEnabled =
+    PerformanceObserver.supportedEntryTypes.includes('soft-navigation') &&
+    opts?.reportSoftNavs);
 };

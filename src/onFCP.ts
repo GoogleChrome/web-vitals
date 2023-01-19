@@ -21,10 +21,9 @@ import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {Metric} from './types.js';
 import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {FCPMetric, FCPReportCallback, ReportOpts} from './types.js';
+import {FCPMetric, Metric, FCPReportCallback, ReportOpts} from './types.js';
 
 /**
  * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
