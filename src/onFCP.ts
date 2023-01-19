@@ -87,7 +87,10 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
           }
 
           // Only report if the page wasn't hidden prior to FCP.
-          if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+          if (
+            entry.startTime < visibilityWatcher.firstHiddenTime ||
+            (entry.navigationId && entry.navigationId > 1)
+          ) {
             metric.value = value;
             metric.entries.push(entry);
             metric.pageUrl = pageUrl;
