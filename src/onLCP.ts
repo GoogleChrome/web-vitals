@@ -77,15 +77,14 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
           filterEntires.length - 1
         ] as LargestContentfulPaint;
 
-        if ((navigationId || 1) > currentNav) {
-          report(true);
+        if (navigationId && navigationId > currentNav) {
+          if (!reportedMetricIDs[metric.id]) report(true);
           initNewLCPMetric('soft-navigation');
-          currentNav = ++currentNav;
+          currentNav = navigationId;
         }
 
         if (lastEntry) {
           let value = 0;
-          let startTime = 0;
           let pageUrl = '';
           if (navigationId === 1 || !navigationId) {
             // The startTime attribute returns the value of the renderTime if it is
@@ -95,21 +94,19 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
             // where `activationStart` occurs after the LCP, this time should be
             // clamped at 0.
             value = Math.max(lastEntry.startTime - getActivationStart(), 0);
-            startTime = lastEntry.startTime;
             pageUrl = performance.getEntriesByType('navigation')[0].name;
           } else {
             const navEntry =
               performance.getEntriesByType('soft-navigation')[navigationId - 2];
-            value = Math.max(
-              lastEntry.startTime - (navEntry?.startTime || 0),
-              0
-            );
-            startTime = lastEntry.startTime;
+            const navStartTime = navEntry?.startTime || 0;
+            // As a soft nav needs an interaction, it should never be before
+            // getActivationStart so can just cap to 0
+            value = Math.max(lastEntry.startTime - navStartTime, 0);
             pageUrl = navEntry?.name;
           }
 
           // Only report if the page wasn't hidden prior to LCP.
-          if (startTime < visibilityWatcher.firstHiddenTime) {
+          if (lastEntry.startTime < visibilityWatcher.firstHiddenTime) {
             metric.value = value;
             metric.entries = [lastEntry];
             metric.pageUrl = pageUrl;
