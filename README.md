@@ -314,17 +314,17 @@ At present a "soft navigation" is defined as happening after the following three
 - Content is added to the DOM
 - Something is painted to screen.
 
-For some sites, these heuristics may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not missing the above criteria). We welcome feedback on https://crbug.com.
+For some sites, these heuristics may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not missing the above criteria). We welcome feedback at https://github.com/WICG/soft-navigations/issues on the heuristics, at https://crbug.com for bugs in the Chrome implementation, and on [https://github.com/GoogleChrome/web-vitals/pull/308](this pull request) for implementation issues with web-vitals.js.
 
 _**Note:** At this time it is not known if this experiment will be something we want to move forward with. Until such time, this support will likely remain in a separate branch of this project, rather than be included in any production builds. If we decide not to move forward with this, the support of this will likely be removed from this project since this library is intended to mirror the Core Web Vitals as much as possible._
 
 Some important points to note:
 
-- TTFB is reported as , and not the time of the first network call (if any) after the soft navigation.
-- FCP and LCP are the first and largest contentful paints after the soft navigation. Prior reported paint times will not be counted for these metrics, even though these paints may remain between soft navigations, or may be the largest contenful item.
-- FID is reset to measure the first interactions after the soft navigation.
+- TTFB is reported as 0, and not the time of the first network call (if any) after the soft navigation.
+- FCP and LCP are the first and largest contentful paints after the soft navigation. Prior reported paint times will not be counted for these metrics, even though these elements may remain between soft navigations, and may be the first or largest contentful item.
+- FID is reset to measure the first interaction after the soft navigation.
 - INP is reset to measure only interactions after the the soft navigation.
-- CLS is reset to measure again separate to the first.
+- CLS is reset to measure again separate to the first page.
 
 _**Note:** It is not known at this time whether soft navigations will be weighted the same as full navigations. No weighting is included in this library at present and metrics are reported in the same way as full page load metrics._
 
