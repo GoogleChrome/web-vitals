@@ -95,17 +95,21 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
             // where `activationStart` occurs after the LCP, this time should be
             // clamped at 0.
             value = Math.max(lastEntry.startTime - getActivationStart(), 0);
+            startTime = lastEntry.startTime;
             pageUrl = performance.getEntriesByType('navigation')[0].name;
           } else {
             const navEntry =
               performance.getEntriesByType('soft-navigation')[navigationId - 2];
+            value = Math.max(
+              lastEntry.startTime - (navEntry?.startTime || 0),
+              0
+            );
+            startTime = lastEntry.startTime;
             pageUrl = navEntry?.name;
-            startTime = navEntry?.startTime;
-            value = Math.max(lastEntry.startTime - startTime, 0);
           }
 
           // Only report if the page wasn't hidden prior to LCP.
-          if (value < visibilityWatcher.firstHiddenTime) {
+          if (startTime < visibilityWatcher.firstHiddenTime) {
             metric.value = value;
             metric.entries = [lastEntry];
             metric.pageUrl = pageUrl;
