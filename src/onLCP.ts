@@ -26,7 +26,7 @@ import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {LCPMetric, Metric, ReportCallback, ReportOpts} from './types.js';
 
-const reportedMetricIDs: Record<string, boolean> = {};
+let reportedMetric = false;
 
 /**
  * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
@@ -61,6 +61,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
         thresholds,
         opts!.reportAllChanges
       );
+      reportedMetric = false;
     };
 
     const handleEntries = (entries: LCPMetric['entries']) => {
@@ -77,7 +78,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
         ] as LargestContentfulPaint;
 
         if (navigationId && navigationId > currentNav) {
-          if (!reportedMetricIDs[metric.id]) report(true);
+          if (!reportedMetric) report(true);
           initNewLCPMetric('soft-navigation');
           currentNav = navigationId;
         }
@@ -116,10 +117,10 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
     };
 
     const finalizeLCP = () => {
-      if (!reportedMetricIDs[metric.id]) {
+      if (!reportedMetric) {
         handleEntries(po!.takeRecords() as LCPMetric['entries']);
         if (!softNavsEnabled) po!.disconnect();
-        reportedMetricIDs[metric.id] = true;
+        reportedMetric = true;
         report(true);
       }
     };
@@ -150,7 +151,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;
-          reportedMetricIDs[metric.id] = true;
+          reportedMetric = true;
           report(true);
         });
       });

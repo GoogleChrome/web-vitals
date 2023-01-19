@@ -25,6 +25,7 @@ import {softNavs} from './lib/softNavs.js';
 import {onFCP} from './onFCP.js';
 import {CLSMetric, CLSReportCallback, Metric, ReportOpts} from './types.js';
 
+let reportedMetric = false;
 /**
  * Calculates the [CLS](https://web.dev/cls/) value for the current page and
  * calls the `callback` function once the value is ready to be reported, along
@@ -74,7 +75,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           opts!.reportAllChanges
         );
         sessionValue = 0;
-        sessionEntries = [];
+        reportedMetric = false;
       };
 
       // const handleEntries = (entries: Metric['entries']) => {
@@ -86,7 +87,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
             entry.navigationId &&
             entry.navigationId > currentNav
           ) {
-            // If we've a pageUrl, then we've already done some updates  to the values.
+            // If we've a pageUrl, then we've already done some updates to the values.
             // update the Metric.
             if (pageUrl != '') {
               // If the current session value is larger than the current CLS value,
@@ -98,6 +99,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
               }
             }
             report(true);
+            reportedMetric = true;
             initNewCLSMetric('soft-navigation');
             currentNav = entry.navigationId;
           }
@@ -161,23 +163,16 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          sessionValue = 0;
-          metric = initMetric('CLS', 0);
-          report = bindReporter(
-            onReport,
-            metric,
-            thresholds,
-            opts!.reportAllChanges
-          );
+          initNewCLSMetric();
 
           doubleRAF(() => report());
         });
 
         const reportSoftNavCLS = (entries: SoftNavigationEntry[]) => {
           entries.forEach((entry) => {
-            if (entry.navigationId) {
-              report(true);
-              metric = initMetric('CLS', 0, 'soft-navigation');
+            if (entry.navigationId && entry.navigationId > currentNav) {
+              if (!reportedMetric) report(true);
+              initNewCLSMetric('soft-navigation');
               metric.pageUrl =
                 performance.getEntriesByType('soft-navigation')[
                   entry.navigationId - 2
