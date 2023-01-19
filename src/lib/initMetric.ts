@@ -20,7 +20,11 @@ import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
 import {Metric} from '../types.js';
 
-export const initMetric = (name: Metric['name'], value?: number, navigation?: Metric['navigationType']): Metric => {
+export const initMetric = (
+  name: Metric['name'],
+  value?: number,
+  navigation?: Metric['navigationType']
+): Metric => {
   const navEntry = getNavigationEntry();
   let navigationType: Metric['navigationType'] = 'navigate';
 
