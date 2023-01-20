@@ -54,7 +54,10 @@ export interface FCPAttribution {
    * The `navigation` entry of the current page, which is useful for diagnosing
    * general page load issues.
    */
-  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+  navigationEntry?:
+    | PerformanceNavigationTiming
+    | NavigationTimingPolyfillEntry
+    | SoftNavigationEntry;
 }
 
 /**

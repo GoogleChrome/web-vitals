@@ -15,6 +15,7 @@
  */
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
+import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import {
@@ -28,10 +29,23 @@ import {
 
 const attributeLCP = (metric: LCPMetric) => {
   if (metric.entries.length) {
-    const navigationEntry = getNavigationEntry();
+    let navigationEntry;
+    let activationStart = 0;
+    let responseStart = 0;
+
+    if (!metric.navigationId || metric.navigationId === 1) {
+      // TODO - why do I have to re-get this to keep TypeScript happy?
+      // Tried an if (typeof) but that doesn't work.
+      navigationEntry = getNavigationEntry();
+      if (navigationEntry) {
+        activationStart = navigationEntry.activationStart || 0;
+        responseStart = navigationEntry.responseStart || 0;
+      }
+    } else {
+      navigationEntry = getSoftNavigationEntry();
+    }
 
     if (navigationEntry) {
-      const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
       const lcpResourceEntry =
         lcpEntry.url &&
@@ -39,7 +53,7 @@ const attributeLCP = (metric: LCPMetric) => {
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
 
-      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+      const ttfb = Math.max(0, responseStart - activationStart);
 
       const lcpRequestStart = Math.max(
         ttfb,
