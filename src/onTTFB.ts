@@ -57,6 +57,7 @@ const whenReady = (callback: () => void) => {
 export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
+  const softNavsEnabled = softNavs(opts);
 
   // https://web.dev/ttfb/#what-is-a-good-ttfb-score
   const thresholds = [800, 1800];
@@ -130,7 +131,7 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
         });
       };
 
-      if (softNavs(opts)) {
+      if (softNavsEnabled) {
         observe('soft-navigation', reportSoftNavTTFBs);
       }
     }

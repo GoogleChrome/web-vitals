@@ -16,13 +16,11 @@
 
 import {ReportOpts} from '../types.js';
 
-let softNavsEnabled: boolean | undefined;
-
 export const softNavs = (opts?: ReportOpts) => {
-  if (typeof softNavsEnabled !== 'undefined') return softNavsEnabled;
-  return (softNavsEnabled =
+  return (
     PerformanceObserver.supportedEntryTypes.includes('soft-navigation') &&
-    opts?.reportSoftNavs);
+    opts?.reportSoftNavs
+  );
 };
 
 export const getSoftNavigationEntry = (

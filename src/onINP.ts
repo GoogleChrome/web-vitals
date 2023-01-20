@@ -154,7 +154,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     const thresholds = [200, 500];
 
     // TODO(philipwalton): remove once the polyfill is no longer needed.
-    initInteractionCountPolyfill();
+    initInteractionCountPolyfill(softNavsEnabled);
 
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
@@ -166,7 +166,8 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       longestInteractionList = [];
       // Important, we want the count for the full page here,
       // not just for the current navigation.
-      prevInteractionCount = getInteractionCount();
+      prevInteractionCount =
+        navigation === 'soft-navigation' ? 0 : getInteractionCount();
       metric = initMetric('INP', 0, navigation, navigationId);
       report = bindReporter(
         onReport,
@@ -177,6 +178,15 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       reportedMetric = false;
     };
 
+    const updateINPMetric = () => {
+      const inp = estimateP98LongestInteraction();
+
+      if (inp && (inp.latency !== metric.value || opts?.reportAllChanges)) {
+        metric.value = inp.latency;
+        metric.entries = inp.entries;
+      }
+    };
+
     const handleEntries = (entries: INPMetric['entries']) => {
       entries.forEach((entry) => {
         if (
@@ -184,7 +194,10 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
           entry.navigationId &&
           entry.navigationId > metric.navigationId
         ) {
-          if (!reportedMetric) report(true);
+          if (!reportedMetric) {
+            updateINPMetric();
+            if (metric.value > 0) report(true);
+          }
           initNewINPMetric('soft-navigation', entry.navigationId);
         }
         if (entry.interactionId) {
@@ -216,13 +229,8 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
         }
       });
 
-      const inp = estimateP98LongestInteraction();
-
-      if (inp && (inp.latency !== metric.value || opts?.reportAllChanges)) {
-        metric.value = inp.latency;
-        metric.entries = inp.entries;
-        report();
-      }
+      updateINPMetric();
+      report();
     };
 
     const po = observe('event', handleEntries, {
@@ -258,7 +266,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        initNewINPMetric('soft-navigation', metric.navigationId);
+        initNewINPMetric('back-forward-cache', metric.navigationId);
 
         doubleRAF(() => report());
       });
@@ -266,7 +274,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
           if (entry.navigationId && entry.navigationId > metric.navigationId) {
-            if (!reportedMetric) report(true);
+            if (!reportedMetric && metric.value > 0) report(true);
             initNewINPMetric('soft-navigation', entry.navigationId);
             report = bindReporter(
               onReport,
@@ -278,7 +286,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
         });
       };
 
-      if (softNavs(opts)) {
+      if (softNavsEnabled) {
         observe('soft-navigation', handleSoftNavEntries);
       }
     }

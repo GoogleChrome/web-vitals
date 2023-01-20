@@ -26,10 +26,18 @@ declare global {
 let interactionCountEstimate = 0;
 let minKnownInteractionId = Infinity;
 let maxKnownInteractionId = 0;
+let currentNav = 1;
+let softNavsEnabled = false;
 
 const updateEstimate = (entries: Metric['entries']) => {
   (entries as PerformanceEventTiming[]).forEach((e) => {
     if (e.interactionId) {
+      if (softNavsEnabled && e.navigationId && e.navigationId > currentNav) {
+        currentNav = e.navigationId;
+        interactionCountEstimate = 0;
+        minKnownInteractionId = Infinity;
+        maxKnownInteractionId = 0;
+      }
       minKnownInteractionId = Math.min(minKnownInteractionId, e.interactionId);
       maxKnownInteractionId = Math.max(maxKnownInteractionId, e.interactionId);
 
@@ -53,8 +61,10 @@ export const getInteractionCount = () => {
 /**
  * Feature detects native support or initializes the polyfill if needed.
  */
-export const initInteractionCountPolyfill = () => {
+export const initInteractionCountPolyfill = (softNavs?: boolean) => {
   if ('interactionCount' in performance || po) return;
+
+  softNavsEnabled = softNavs || false;
 
   po = observe('event', updateEstimate, {
     type: 'event',

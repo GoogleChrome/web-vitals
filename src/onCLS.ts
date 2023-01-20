@@ -171,7 +171,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           });
         };
 
-        if (softNavs(opts)) {
+        if (softNavsEnabled) {
           observe('soft-navigation', handleSoftNavEntries);
         }
 

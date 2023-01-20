@@ -68,12 +68,11 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     const handleEntries = (entries: LCPMetric['entries']) => {
       entries.forEach((entry) => {
-        if (entry.navigationId && entry.navigationId > metric.navigationId) {
-          if (!reportedMetric) report(true);
-          initNewLCPMetric('soft-navigation', entry.navigationId);
-        }
-
         if (entry) {
+          if (entry.navigationId && entry.navigationId > metric.navigationId) {
+            if (!reportedMetric) report(true);
+            initNewLCPMetric('soft-navigation', entry.navigationId);
+          }
           let value = 0;
           if (entry.navigationId === 1 || !entry.navigationId) {
             // The startTime attribute returns the value of the renderTime if it is
@@ -84,10 +83,13 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
             // clamped at 0.
             value = Math.max(entry.startTime - getActivationStart(), 0);
           } else {
-            const navEntry = getSoftNavigationEntry(entry.navigationId);
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
-            value = Math.max(entry.startTime - (navEntry?.startTime || 0), 0);
+            value = Math.max(
+              entry.startTime -
+                (getSoftNavigationEntry(entry.navigationId)?.startTime || 0),
+              0
+            );
           }
 
           // Only report if the page wasn't hidden prior to LCP.
@@ -150,7 +152,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
         });
       };
 
-      if (softNavs(opts)) {
+      if (softNavsEnabled) {
         observe('soft-navigation', handleSoftNavEntries);
       }
     }
