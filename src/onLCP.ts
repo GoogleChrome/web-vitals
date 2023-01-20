@@ -67,48 +67,34 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
     };
 
     const handleEntries = (entries: LCPMetric['entries']) => {
-      const uniqueNavigationIds = [
-        ...new Set(entries.map((entry) => entry.navigationId)),
-      ].filter((n) => n);
-
-      uniqueNavigationIds.forEach((navigationId) => {
-        const filterEntires = entries.filter(
-          (entry) => entry.navigationId === navigationId
-        );
-        const lastEntry = filterEntires[
-          filterEntires.length - 1
-        ] as LargestContentfulPaint;
-
-        if (navigationId && navigationId > metric.navigationId) {
+      entries.forEach((entry) => {
+        if (entry.navigationId && entry.navigationId > metric.navigationId) {
           if (!reportedMetric) report(true);
-          initNewLCPMetric('soft-navigation', navigationId);
+          initNewLCPMetric('soft-navigation', entry.navigationId);
         }
 
-        if (lastEntry) {
+        if (entry) {
           let value = 0;
-          if (navigationId === 1 || !navigationId) {
+          if (entry.navigationId === 1 || !entry.navigationId) {
             // The startTime attribute returns the value of the renderTime if it is
             // not 0, and the value of the loadTime otherwise. The activationStart
             // reference is used because LCP should be relative to page activation
             // rather than navigation start if the page was prerendered. But in cases
             // where `activationStart` occurs after the LCP, this time should be
             // clamped at 0.
-            value = Math.max(lastEntry.startTime - getActivationStart(), 0);
+            value = Math.max(entry.startTime - getActivationStart(), 0);
           } else {
-            const navEntry = getSoftNavigationEntry(navigationId);
+            const navEntry = getSoftNavigationEntry(entry.navigationId);
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
-            value = Math.max(
-              lastEntry.startTime - (navEntry?.startTime || 0),
-              0
-            );
+            value = Math.max(entry.startTime - (navEntry?.startTime || 0), 0);
           }
 
           // Only report if the page wasn't hidden prior to LCP.
-          if (lastEntry.startTime < visibilityWatcher.firstHiddenTime) {
+          if (entry.startTime < visibilityWatcher.firstHiddenTime) {
             metric.value = value;
-            metric.entries = [lastEntry];
-            metric.navigationId = navigationId || 1;
+            metric.entries = [entry];
+            metric.navigationId = entry.navigationId || 1;
             report();
           }
         }
