@@ -115,7 +115,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       });
     };
 
-    const finalizeLCP = () => {
+    const finalizeAllLCPs = () => {
       if (!reportedMetric) {
         handleEntries(po!.takeRecords() as LCPMetric['entries']);
         if (!softNavsEnabled) po!.disconnect();
@@ -138,10 +138,10 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       // stops LCP observation, it's unreliable since it can be programmatically
       // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
       ['keydown', 'click'].forEach((type) => {
-        addEventListener(type, finalizeLCP, true);
+        addEventListener(type, finalizeAllLCPs, true);
       });
 
-      onHidden(finalizeLCP);
+      onHidden(finalizeAllLCPs);
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
@@ -154,6 +154,19 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
           report(true);
         });
       });
+
+      const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
+        entries.forEach((entry) => {
+          if (entry.navigationId && entry.navigationId > metric.navigationId) {
+            if (!reportedMetric) report(true);
+            initNewLCPMetric('soft-navigation', entry.navigationId);
+          }
+        });
+      };
+
+      if (softNavs(opts)) {
+        observe('soft-navigation', handleSoftNavEntries);
+      }
     }
   });
 };
