@@ -15,14 +15,14 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {initMetric} from './lib/initMetric.js';
-import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {ReportCallback, ReportOpts} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {whenActivated} from './lib/whenActivated.js';
+import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {softNavs} from './lib/softNavs.js';
+import {whenActivated} from './lib/whenActivated.js';
+import {ReportCallback, ReportOpts} from './types.js';
 
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
@@ -60,6 +60,7 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
 
   // https://web.dev/ttfb/#what-is-a-good-ttfb-score
   const thresholds = [800, 1800];
+  let currentNav = 1;
 
   let metric = initMetric('TTFB');
   let report = bindReporter(
@@ -95,7 +96,7 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       // Only report TTFB after bfcache restores if a `navigation` entry
       // was reported for the initial load.
       onBFCacheRestore(() => {
-        metric = initMetric('TTFB', 0);
+        metric = initMetric('TTFB', 0, 'back-forward-cache', currentNav);
         report = bindReporter(
           onReport,
           metric,
@@ -108,11 +109,8 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       const reportSoftNavTTFBs = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
           if (entry.navigationId) {
-            metric = initMetric('TTFB', 0, 'soft-navigation');
-            metric.pageUrl =
-              performance.getEntriesByType('soft-navigation')[
-                entry.navigationId - 2
-              ]?.name;
+            currentNav = metric.navigationId;
+            metric = initMetric('TTFB', 0, 'soft-navigation', currentNav);
             report = bindReporter(
               onReport,
               metric,

@@ -21,7 +21,7 @@ import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {softNavs} from './lib/softNavs.js';
+import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {FCPMetric, Metric, FCPReportCallback, ReportOpts} from './types.js';
 
@@ -44,8 +44,11 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
     let metric = initMetric('FCP');
     let report: ReturnType<typeof bindReporter>;
 
-    const initNewFCPMetric = (navigation?: Metric['navigationType']) => {
-      metric = initMetric('FCP', 0, navigation);
+    const initNewFCPMetric = (
+      navigation?: Metric['navigationType'],
+      navigationId?: number
+    ) => {
+      metric = initMetric('FCP', 0, navigation, navigationId);
       report = bindReporter(
         onReport,
         metric,
@@ -59,31 +62,25 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         if (entry.name === 'first-contentful-paint') {
           if (!softNavsEnabled) {
             po!.disconnect();
-          } else if (entry.navigationId) {
-            initNewFCPMetric('soft-navigation');
+          } else if (entry.navigationId || 1 > 1) {
+            initNewFCPMetric('soft-navigation', entry.navigationId);
           }
 
           let value = 0;
-          let pageUrl = '';
 
-          if (entry.navigationId === 1 || !entry.navigationId) {
+          if (!entry.navigationId || entry.navigationId === 1) {
             // Only report if the page wasn't hidden prior to the first paint.
             // The activationStart reference is used because FCP should be
             // relative to page activation rather than navigation start if the
             // page was prerendered. But in cases where `activationStart` occurs
             // after the FCP, this time should be clamped at 0.
             value = Math.max(entry.startTime - getActivationStart(), 0);
-            pageUrl = performance.getEntriesByType('navigation')[0].name;
           } else {
-            const navEntry =
-              performance.getEntriesByType('soft-navigation')[
-                entry.navigationId - 2
-              ];
+            const navEntry = getSoftNavigationEntry(entry.navigationId);
             const navStartTime = navEntry?.startTime || 0;
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
             value = Math.max(entry.startTime - navStartTime, 0);
-            pageUrl = navEntry?.name;
           }
 
           // Only report if the page wasn't hidden prior to FCP.
@@ -93,7 +90,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
           ) {
             metric.value = value;
             metric.entries.push(entry);
-            metric.pageUrl = pageUrl;
+            metric.navigationId = entry.navigationId || 1;
             // FCP should only be reported once so can report right
             report(true);
           }
@@ -114,7 +111,12 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered or the `paint` entry exists.
       onBFCacheRestore((event) => {
-        metric = initMetric('FCP');
+        metric = initMetric(
+          'FCP',
+          0,
+          'back-forward-cache',
+          metric.navigationId
+        );
         report = bindReporter(
           onReport,
           metric,

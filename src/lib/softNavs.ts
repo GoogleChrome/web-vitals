@@ -24,3 +24,21 @@ export const softNavs = (opts?: ReportOpts) => {
     PerformanceObserver.supportedEntryTypes.includes('soft-navigation') &&
     opts?.reportSoftNavs);
 };
+
+export const getSoftNavigationEntry = (
+  navigationId?: number
+): PerformanceNavigationTiming | SoftNavigationEntry | undefined => {
+  if (!navigationId || navigationId === 1) {
+    return (
+      window.performance &&
+      performance.getEntriesByType &&
+      performance.getEntriesByType('navigation')[0]
+    );
+  } else {
+    return (
+      window.performance &&
+      performance.getEntriesByType &&
+      performance.getEntriesByType('soft-navigation')[navigationId - 2]
+    );
+  }
+};

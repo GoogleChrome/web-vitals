@@ -22,7 +22,7 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {softNavs} from './lib/softNavs.js';
+import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {LCPMetric, Metric, ReportCallback, ReportOpts} from './types.js';
 
@@ -42,7 +42,6 @@ let reportedMetric = false;
 export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
-  let currentNav = 1;
   const softNavsEnabled = softNavs(opts);
 
   whenActivated(() => {
@@ -50,11 +49,15 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
     const thresholds = [2500, 4000];
 
     const visibilityWatcher = getVisibilityWatcher();
+    let currentNav = 1;
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
 
-    const initNewLCPMetric = (navigation?: Metric['navigationType']) => {
-      metric = initMetric('LCP', 0, navigation);
+    const initNewLCPMetric = (
+      navigation?: Metric['navigationType'],
+      navigationId?: number
+    ) => {
+      metric = initMetric('LCP', 0, navigation, navigationId);
       report = bindReporter(
         onReport,
         metric,
@@ -85,7 +88,6 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
         if (lastEntry) {
           let value = 0;
-          let pageUrl = '';
           if (navigationId === 1 || !navigationId) {
             // The startTime attribute returns the value of the renderTime if it is
             // not 0, and the value of the loadTime otherwise. The activationStart
@@ -94,22 +96,21 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
             // where `activationStart` occurs after the LCP, this time should be
             // clamped at 0.
             value = Math.max(lastEntry.startTime - getActivationStart(), 0);
-            pageUrl = performance.getEntriesByType('navigation')[0].name;
           } else {
-            const navEntry =
-              performance.getEntriesByType('soft-navigation')[navigationId - 2];
-            const navStartTime = navEntry?.startTime || 0;
+            const navEntry = getSoftNavigationEntry(navigationId);
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
-            value = Math.max(lastEntry.startTime - navStartTime, 0);
-            pageUrl = navEntry?.name;
+            value = Math.max(
+              lastEntry.startTime - (navEntry?.startTime || 0),
+              0
+            );
           }
 
           // Only report if the page wasn't hidden prior to LCP.
           if (lastEntry.startTime < visibilityWatcher.firstHiddenTime) {
             metric.value = value;
             metric.entries = [lastEntry];
-            metric.pageUrl = pageUrl;
+            metric.navigationId = navigationId || 1;
             report();
           }
         }
@@ -147,7 +148,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore((event) => {
-        initNewLCPMetric();
+        initNewLCPMetric('back-forward-cache', metric.navigationId);
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;

@@ -789,10 +789,14 @@ interface Metric {
     | 'soft-navigation';
 
   /**
-   * The URL the metric happened for. This is particularly relevent for soft navigations where
+   * The navigatonId the metric happened for. This is particularly relevent for soft navigations where
    * the metric may be reported for a previous URL.
+   *
+   * The navigationId can be mapped to the URL with the following:
+   *   1 (or empty) - performance.getEntriesByType('navigation')[0]?.name
+   *   > 1 - performance.getEntriesByType('soft-navigation')[navigationId - 2]?.name
    */
-  pageUrl: string;
+  navigatonId: number;
 }
 ```
 

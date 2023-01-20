@@ -74,22 +74,11 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
           initNewFIDMetric('soft-navigation');
         }
 
-        let pageUrl = '';
-
-        if (entry.navigationId === 1 || !entry.navigationId) {
-          pageUrl = performance.getEntriesByType('navigation')[0].name;
-        } else {
-          pageUrl =
-            performance.getEntriesByType('soft-navigation')[
-              entry.navigationId - 2
-            ]?.name;
-        }
-
         // Only report if the page wasn't hidden prior to the first input.
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
           metric.value = entry.processingStart - entry.startTime;
           metric.entries.push(entry);
-          metric.pageUrl = pageUrl;
+          metric.navigationId = entry.navigationId || 1;
           report(true);
         }
       });
@@ -133,7 +122,12 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
       // Only monitor bfcache restores if the browser supports FID natively.
       if (po) {
         onBFCacheRestore(() => {
-          metric = initMetric('FID');
+          metric = initMetric(
+            'FID',
+            0,
+            'back-forward-cache',
+            metric.navigationId
+          );
           report = bindReporter(
             onReport,
             metric,

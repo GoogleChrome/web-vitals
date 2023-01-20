@@ -66,8 +66,11 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       let sessionValue = 0;
       let sessionEntries: PerformanceEntry[] = [];
 
-      const initNewCLSMetric = (navigation?: Metric['navigationType']) => {
-        metric = initMetric('CLS', 0, navigation);
+      const initNewCLSMetric = (
+        navigation?: Metric['navigationType'],
+        navigationId?: number
+      ) => {
+        metric = initMetric('CLS', 0, navigation, navigationId);
         report = bindReporter(
           onReport,
           metric,
@@ -80,37 +83,22 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
 
       // const handleEntries = (entries: Metric['entries']) => {
       const handleEntries = (entries: LayoutShift[]) => {
-        let pageUrl = '';
         entries.forEach((entry) => {
           if (
             softNavsEnabled &&
             entry.navigationId &&
             entry.navigationId > currentNav
           ) {
-            // If we've a pageUrl, then we've already done some updates to the values.
-            // update the Metric.
-            if (pageUrl != '') {
-              // If the current session value is larger than the current CLS value,
-              // update CLS and the entries contributing to it.
-              if (sessionValue > metric.value) {
-                metric.value = sessionValue;
-                metric.entries = sessionEntries;
-                metric.pageUrl = pageUrl;
-              }
+            // If the current session value is larger than the current CLS value,
+            // update CLS and the entries contributing to it.
+            if (sessionValue > metric.value) {
+              metric.value = sessionValue;
+              metric.entries = sessionEntries;
             }
             report(true);
             reportedMetric = true;
-            initNewCLSMetric('soft-navigation');
+            initNewCLSMetric('soft-navigation', entry.navigationId);
             currentNav = entry.navigationId;
-          }
-
-          if (entry.navigationId === 1 || !entry.navigationId) {
-            pageUrl = performance.getEntriesByType('navigation')[0].name;
-          } else {
-            pageUrl =
-              performance.getEntriesByType('soft-navigation')[
-                entry.navigationId - 2
-              ]?.name;
           }
 
           // Only count layout shifts without recent user input.
@@ -141,7 +129,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         if (sessionValue > metric.value) {
           metric.value = sessionValue;
           metric.entries = sessionEntries;
-          metric.pageUrl = pageUrl;
           report();
         }
       };
@@ -163,7 +150,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          initNewCLSMetric();
+          initNewCLSMetric('back-forward-cache', metric.navigationId);
 
           doubleRAF(() => report());
         });
@@ -172,11 +159,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           entries.forEach((entry) => {
             if (entry.navigationId && entry.navigationId > currentNav) {
               if (!reportedMetric) report(true);
-              initNewCLSMetric('soft-navigation');
-              metric.pageUrl =
-                performance.getEntriesByType('soft-navigation')[
-                  entry.navigationId - 2
-                ]?.name;
+              initNewCLSMetric('soft-navigation', entry.navigationId);
               report = bindReporter(
                 onReport,
                 metric,

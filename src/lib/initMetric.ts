@@ -23,7 +23,8 @@ import {Metric} from '../types.js';
 export const initMetric = (
   name: Metric['name'],
   value?: number,
-  navigation?: Metric['navigationType']
+  navigation?: Metric['navigationType'],
+  navigationId?: number
 ): Metric => {
   const navEntry = getNavigationEntry();
   let navigationType: Metric['navigationType'] = 'navigate';
@@ -54,6 +55,6 @@ export const initMetric = (
     entries: [],
     id: generateUniqueID(),
     navigationType,
-    pageUrl: window.location.href,
+    navigationId: navigationId || 1,
   };
 };
