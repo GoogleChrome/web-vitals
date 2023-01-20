@@ -25,7 +25,6 @@ import {softNavs} from './lib/softNavs.js';
 import {onFCP} from './onFCP.js';
 import {CLSMetric, CLSReportCallback, Metric, ReportOpts} from './types.js';
 
-let reportedMetric = false;
 /**
  * Calculates the [CLS](https://web.dev/cls/) value for the current page and
  * calls the `callback` function once the value is ready to be reported, along
@@ -51,6 +50,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
+  let reportedMetric = false;
 
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
@@ -95,7 +95,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
               metric.entries = sessionEntries;
             }
             report(true);
-            reportedMetric = true;
             initNewCLSMetric('soft-navigation', entry.navigationId);
           }
 
@@ -143,6 +142,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         onHidden(() => {
           handleEntries(po.takeRecords() as CLSMetric['entries']);
           report(true);
+          reportedMetric = true;
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`
@@ -153,7 +153,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           doubleRAF(() => report());
         });
 
-        const reportSoftNavCLS = (entries: SoftNavigationEntry[]) => {
+        const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
           entries.forEach((entry) => {
             if (
               entry.navigationId &&
@@ -172,7 +172,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         };
 
         if (softNavs(opts)) {
-          observe('soft-navigation', reportSoftNavCLS);
+          observe('soft-navigation', handleSoftNavEntries);
         }
 
         // Queue a task to report (if nothing else triggers a report first).

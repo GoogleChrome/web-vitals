@@ -16,6 +16,7 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {doubleRAF} from './lib/doubleRAF.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -23,8 +24,9 @@ import {
   getInteractionCount,
   initInteractionCountPolyfill,
 } from './lib/polyfills/interactionCountPolyfill.js';
+import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {INPMetric, ReportCallback, ReportOpts} from './types.js';
+import {INPMetric, Metric, ReportCallback, ReportOpts} from './types.js';
 
 interface Interaction {
   id: number;
@@ -144,9 +146,11 @@ const estimateP98LongestInteraction = () => {
 export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
+  const softNavsEnabled = softNavs(opts);
+  let reportedMetric = false;
 
   whenActivated(() => {
-    // https://web.dev/inp/#what's-a-%22good%22-inp-value
+    // https://web.dev/inp/#what-is-a-good-inp-score
     const thresholds = [200, 500];
 
     // TODO(philipwalton): remove once the polyfill is no longer needed.
@@ -155,8 +159,34 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
 
+    const initNewINPMetric = (
+      navigation?: Metric['navigationType'],
+      navigationId?: number
+    ) => {
+      longestInteractionList = [];
+      // Important, we want the count for the full page here,
+      // not just for the current navigation.
+      prevInteractionCount = getInteractionCount();
+      metric = initMetric('INP', 0, navigation, navigationId);
+      report = bindReporter(
+        onReport,
+        metric,
+        thresholds,
+        opts!.reportAllChanges
+      );
+      reportedMetric = false;
+    };
+
     const handleEntries = (entries: INPMetric['entries']) => {
       entries.forEach((entry) => {
+        if (
+          softNavsEnabled &&
+          entry.navigationId &&
+          entry.navigationId > metric.navigationId
+        ) {
+          if (!reportedMetric) report(true);
+          initNewINPMetric('soft-navigation', entry.navigationId);
+        }
         if (entry.interactionId) {
           processEntry(entry);
         }
@@ -188,7 +218,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
       const inp = estimateP98LongestInteraction();
 
-      if (inp && inp.latency !== metric.value) {
+      if (inp && (inp.latency !== metric.value || opts?.reportAllChanges)) {
         metric.value = inp.latency;
         metric.entries = inp.entries;
         report();
@@ -228,19 +258,29 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        longestInteractionList = [];
-        // Important, we want the count for the full page here,
-        // not just for the current navigation.
-        prevInteractionCount = getInteractionCount();
+        initNewINPMetric('soft-navigation', metric.navigationId);
 
-        metric = initMetric('INP');
-        report = bindReporter(
-          onReport,
-          metric,
-          thresholds,
-          opts!.reportAllChanges
-        );
+        doubleRAF(() => report());
       });
+
+      const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
+        entries.forEach((entry) => {
+          if (entry.navigationId && entry.navigationId > metric.navigationId) {
+            if (!reportedMetric) report(true);
+            initNewINPMetric('soft-navigation', entry.navigationId);
+            report = bindReporter(
+              onReport,
+              metric,
+              thresholds,
+              opts!.reportAllChanges
+            );
+          }
+        });
+      };
+
+      if (softNavs(opts)) {
+        observe('soft-navigation', handleSoftNavEntries);
+      }
     }
   });
 };

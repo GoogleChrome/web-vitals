@@ -108,7 +108,12 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
         );
       }
       onBFCacheRestore(() => {
-        metric = initMetric('FID');
+        metric = initMetric(
+          'FID',
+          0,
+          'back-forward-cache',
+          metric.navigationId
+        );
         report = bindReporter(
           onReport,
           metric,
