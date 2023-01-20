@@ -49,7 +49,6 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
     const thresholds = [2500, 4000];
 
     const visibilityWatcher = getVisibilityWatcher();
-    let currentNav = 1;
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
 
@@ -80,10 +79,9 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
           filterEntires.length - 1
         ] as LargestContentfulPaint;
 
-        if (navigationId && navigationId > currentNav) {
+        if (navigationId && navigationId > metric.navigationId) {
           if (!reportedMetric) report(true);
-          initNewLCPMetric('soft-navigation');
-          currentNav = navigationId;
+          initNewLCPMetric('soft-navigation', navigationId);
         }
 
         if (lastEntry) {

@@ -56,8 +56,11 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
     let metric = initMetric('FID');
     let report: ReturnType<typeof bindReporter>;
 
-    const initNewFIDMetric = (navigation?: Metric['navigationType']) => {
-      metric = initMetric('FID', 0, navigation);
+    const initNewFIDMetric = (
+      navigation?: Metric['navigationType'],
+      navigationId?: number
+    ) => {
+      metric = initMetric('FID', 0, navigation, navigationId);
       report = bindReporter(
         onReport,
         metric,
@@ -71,7 +74,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
         if (!softNavsEnabled) {
           po!.disconnect();
         } else if (entry.navigationId) {
-          initNewFIDMetric('soft-navigation');
+          initNewFIDMetric('soft-navigation', entry.navigationId);
         }
 
         // Only report if the page wasn't hidden prior to the first input.

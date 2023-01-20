@@ -50,7 +50,6 @@ let reportedMetric = false;
 export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
-  let currentNav = 1;
   const softNavsEnabled = softNavs(opts);
 
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
@@ -87,7 +86,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           if (
             softNavsEnabled &&
             entry.navigationId &&
-            entry.navigationId > currentNav
+            entry.navigationId > metric.navigationId
           ) {
             // If the current session value is larger than the current CLS value,
             // update CLS and the entries contributing to it.
@@ -98,7 +97,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
             report(true);
             reportedMetric = true;
             initNewCLSMetric('soft-navigation', entry.navigationId);
-            currentNav = entry.navigationId;
           }
 
           // Only count layout shifts without recent user input.
@@ -157,7 +155,10 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
 
         const reportSoftNavCLS = (entries: SoftNavigationEntry[]) => {
           entries.forEach((entry) => {
-            if (entry.navigationId && entry.navigationId > currentNav) {
+            if (
+              entry.navigationId &&
+              entry.navigationId > metric.navigationId
+            ) {
               if (!reportedMetric) report(true);
               initNewCLSMetric('soft-navigation', entry.navigationId);
               report = bindReporter(
@@ -166,7 +167,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
                 thresholds,
                 opts!.reportAllChanges
               );
-              currentNav = entry.navigationId;
             }
           });
         };

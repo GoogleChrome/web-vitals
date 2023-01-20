@@ -60,7 +60,6 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
 
   // https://web.dev/ttfb/#what-is-a-good-ttfb-score
   const thresholds = [800, 1800];
-  let currentNav = 1;
 
   let metric = initMetric('TTFB');
   let report = bindReporter(
@@ -96,7 +95,12 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       // Only report TTFB after bfcache restores if a `navigation` entry
       // was reported for the initial load.
       onBFCacheRestore(() => {
-        metric = initMetric('TTFB', 0, 'back-forward-cache', currentNav);
+        metric = initMetric(
+          'TTFB',
+          0,
+          'back-forward-cache',
+          metric.navigationId
+        );
         report = bindReporter(
           onReport,
           metric,
@@ -109,8 +113,12 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       const reportSoftNavTTFBs = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
           if (entry.navigationId) {
-            currentNav = metric.navigationId;
-            metric = initMetric('TTFB', 0, 'soft-navigation', currentNav);
+            metric = initMetric(
+              'TTFB',
+              0,
+              'soft-navigation',
+              entry.navigationId
+            );
             report = bindReporter(
               onReport,
               metric,
