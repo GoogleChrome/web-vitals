@@ -31,7 +31,7 @@ export const getSelector = (node: Node | null | undefined, maxLen?: number) => {
         ? '#' + el.id
         : getName(el) +
           (el.className && el.className.length
-            ? '.' + el.className.replace(/\s+/g, '.')
+            ? '.' + el.className.trim().replace(/\s+/g, '.')
             : '');
       if (sel.length + part.length > (maxLen || 100) - 1) return sel || part;
       sel = sel ? part + '>' + sel : part;

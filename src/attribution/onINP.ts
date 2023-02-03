@@ -25,7 +25,7 @@ import {
   ReportOpts,
 } from '../types.js';
 
-const attributeINP = (metric: INPMetric): void => {
+const attributeINP = (metric: INPMetric, selectorMaxLen?: number): void => {
   if (metric.entries.length) {
     const longestEntry = metric.entries.sort((a, b) => {
       // Sort by: 1) duration (DESC), then 2) processing time (DESC)
@@ -38,7 +38,7 @@ const attributeINP = (metric: INPMetric): void => {
     })[0];
 
     (metric as INPMetricWithAttribution).attribution = {
-      eventTarget: getSelector(longestEntry.target),
+      eventTarget: getSelector(longestEntry.target, selectorMaxLen),
       eventType: longestEntry.name,
       eventTime: longestEntry.startTime,
       eventEntry: longestEntry,
@@ -81,9 +81,10 @@ export const onINP = (
   onReport: INPReportCallbackWithAttribution,
   opts?: ReportOpts
 ) => {
+  const selectorMaxLen = opts ? opts.selectorMaxLen : undefined;
   unattributedOnINP(
     ((metric: INPMetricWithAttribution) => {
-      attributeINP(metric);
+      attributeINP(metric, selectorMaxLen);
       onReport(metric);
     }) as INPReportCallback,
     opts

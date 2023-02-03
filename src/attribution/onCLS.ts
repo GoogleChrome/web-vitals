@@ -33,14 +33,14 @@ const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
   return sources.find((s) => s.node && s.node.nodeType === 1) || sources[0];
 };
 
-const attributeCLS = (metric: CLSMetric): void => {
+const attributeCLS = (metric: CLSMetric, selectorMaxLen?: number): void => {
   if (metric.entries.length) {
     const largestEntry = getLargestLayoutShiftEntry(metric.entries);
     if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
       const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
       if (largestSource) {
         (metric as CLSMetricWithAttribution).attribution = {
-          largestShiftTarget: getSelector(largestSource.node),
+          largestShiftTarget: getSelector(largestSource.node, selectorMaxLen),
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
           largestShiftSource: largestSource,
@@ -80,9 +80,10 @@ export const onCLS = (
   onReport: CLSReportCallbackWithAttribution,
   opts?: ReportOpts
 ) => {
+  const selectorMaxLen = opts ? opts.selectorMaxLen : undefined;
   unattributedOnCLS(
     ((metric: CLSMetric) => {
-      attributeCLS(metric);
+      attributeCLS(metric, selectorMaxLen);
       onReport(metric);
     }) as CLSReportCallback,
     opts

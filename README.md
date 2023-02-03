@@ -102,6 +102,12 @@ To load the "attribution" build, change any `import` statements that reference `
 
 Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [`Metric`](#metric) object will contain an additional [`attribution`](#metricwithattribution) property.
 
+It is also possible to set the option `selectorMaxLen` option (defaults to 100 if not specified) to set the maximum length of the selector returned to identify nodes:
+
+```js
+onCLS(sendToGoogleAnalytics, {selectorMaxLen: 200});
+```
+
 See [Send attribution data](#send-attribution-data) for usage examples, and the [`attribution` reference](#attribution) for details on what values are added for each metric.
 
 <a name="how-to-use-the-polyfill"><a>
@@ -784,6 +790,7 @@ Metric-specific subclasses:
 interface ReportOpts {
   reportAllChanges?: boolean;
   durationThreshold?: number;
+  selectorMaxLen?: number;
 }
 ```
 

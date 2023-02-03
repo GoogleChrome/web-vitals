@@ -25,10 +25,10 @@ import {
   ReportOpts,
 } from '../types.js';
 
-const attributeFID = (metric: FIDMetric): void => {
+const attributeFID = (metric: FIDMetric, selectorMaxLen?: number): void => {
   const fidEntry = metric.entries[0];
   (metric as FIDMetricWithAttribution).attribution = {
-    eventTarget: getSelector(fidEntry.target),
+    eventTarget: getSelector(fidEntry.target, selectorMaxLen),
     eventType: fidEntry.name,
     eventTime: fidEntry.startTime,
     eventEntry: fidEntry,
@@ -49,9 +49,10 @@ export const onFID = (
   onReport: FIDReportCallbackWithAttribution,
   opts?: ReportOpts
 ) => {
+  const selectorMaxLen = opts ? opts.selectorMaxLen : undefined;
   unattributedOnFID(
     ((metric: FIDMetricWithAttribution) => {
-      attributeFID(metric);
+      attributeFID(metric, selectorMaxLen);
       onReport(metric);
     }) as FIDReportCallback,
     opts

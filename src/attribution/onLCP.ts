@@ -26,7 +26,7 @@ import {
   ReportOpts,
 } from '../types.js';
 
-const attributeLCP = (metric: LCPMetric) => {
+const attributeLCP = (metric: LCPMetric, selectorMaxLen?: number) => {
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
 
@@ -59,7 +59,7 @@ const attributeLCP = (metric: LCPMetric) => {
       );
 
       const attribution: LCPAttribution = {
-        element: getSelector(lcpEntry.element),
+        element: getSelector(lcpEntry.element, selectorMaxLen),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
         resourceLoadTime: lcpResponseEnd - lcpRequestStart,
@@ -104,9 +104,10 @@ export const onLCP = (
   onReport: LCPReportCallbackWithAttribution,
   opts?: ReportOpts
 ) => {
+  const selectorMaxLen = opts ? opts.selectorMaxLen : undefined;
   unattributedOnLCP(
     ((metric: LCPMetricWithAttribution) => {
-      attributeLCP(metric);
+      attributeLCP(metric, selectorMaxLen);
       onReport(metric);
     }) as LCPReportCallback,
     opts

@@ -104,6 +104,7 @@ export interface ReportCallback {
 export interface ReportOpts {
   reportAllChanges?: boolean;
   durationThreshold?: number;
+  selectorMaxLen?: number;
 }
 
 /**
