@@ -62,7 +62,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         if (entry.name === 'first-contentful-paint') {
           if (!softNavsEnabled) {
             po!.disconnect();
-          } else if (entry.navigationId || 1 > 1) {
+          } else if ((entry.navigationId || 1) > 1) {
             initNewFCPMetric('soft-navigation', entry.navigationId);
           }
 

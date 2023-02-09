@@ -73,7 +73,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
       entries.forEach((entry) => {
         if (!softNavsEnabled) {
           po!.disconnect();
-        } else if (entry.navigationId) {
+        } else if ((entry.navigationId || 1) > 1) {
           initNewFIDMetric('soft-navigation', entry.navigationId);
         }
 
