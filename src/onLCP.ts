@@ -26,8 +26,6 @@ import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {LCPMetric, Metric, ReportCallback, ReportOpts} from './types.js';
 
-let reportedMetric = false;
-
 /**
  * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
  * calls the `callback` function once the value is ready (along with the
@@ -41,6 +39,7 @@ let reportedMetric = false;
  */
 export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
+  let reportedMetric = false;
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
 
