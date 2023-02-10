@@ -902,7 +902,7 @@ _**Important:** since FID is only reported after the user interacts with the pag
 type onINP = (callback: INPReportCallback, opts?: ReportOpts) => void;
 ```
 
-Calculates the [INP](https://web.dev/responsiveness/) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [INP](https://web.dev/inp/) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
 
 A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/inp/#what-is-a-good-inp-score) threshold).
 
