@@ -70,5 +70,6 @@ export const initInteractionCountPolyfill = (softNavs?: boolean) => {
     type: 'event',
     buffered: true,
     durationThreshold: 0,
+    includeSoftNavigationObservations: softNavs,
   } as PerformanceObserverInit);
 };

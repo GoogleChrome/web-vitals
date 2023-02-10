@@ -18,6 +18,7 @@ import {
   FirstInputPolyfillEntry,
   NavigationTimingPolyfillEntry,
 } from '../types.js';
+import {softNavs} from './softNavs.js';
 
 interface PerformanceEntryMap {
   'event': PerformanceEventTiming[];
@@ -43,6 +44,7 @@ export const observe = <K extends keyof PerformanceEntryMap>(
   callback: (entries: PerformanceEntryMap[K]) => void,
   opts?: PerformanceObserverInit
 ): PerformanceObserver | undefined => {
+  const includeSoftNavigationObservations = softNavs(opts);
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
       const po = new PerformanceObserver((list) => {
@@ -58,6 +60,8 @@ export const observe = <K extends keyof PerformanceEntryMap>(
           {
             type,
             buffered: true,
+            includeSoftNavigationObservations:
+              includeSoftNavigationObservations,
           },
           opts || {}
         ) as PerformanceObserverInit

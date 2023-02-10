@@ -78,6 +78,7 @@ declare global {
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
   interface PerformanceObserverInit {
     durationThreshold?: number;
+    includeSoftNavigationObservations?: boolean;
   }
 
   // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
