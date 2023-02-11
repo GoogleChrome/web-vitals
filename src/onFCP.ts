@@ -98,7 +98,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
       });
     };
 
-    const po = observe('paint', handleEntries);
+    const po = observe('paint', handleEntries, opts);
 
     if (po) {
       report = bindReporter(

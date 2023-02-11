@@ -86,7 +86,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
         }
       });
     };
-    const po = observe('first-input', handleEntries);
+    const po = observe('first-input', handleEntries, opts);
     report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
 
     if (po) {

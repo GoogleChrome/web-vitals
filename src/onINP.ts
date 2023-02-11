@@ -241,6 +241,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       // just one or two frames is likely not worth the insight that could be
       // gained.
       durationThreshold: opts!.durationThreshold || 40,
+      opts,
     } as PerformanceObserverInit);
 
     report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
@@ -248,7 +249,11 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     if (po) {
       // Also observe entries of type `first-input`. This is useful in cases
       // where the first interaction is less than the `durationThreshold`.
-      po.observe({type: 'first-input', buffered: true});
+      po.observe({
+        type: 'first-input',
+        buffered: true,
+        includeSoftNavigationObservations: softNavsEnabled,
+      });
 
       onHidden(() => {
         handleEntries(po.takeRecords() as INPMetric['entries']);
@@ -287,7 +292,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       };
 
       if (softNavsEnabled) {
-        observe('soft-navigation', handleSoftNavEntries);
+        observe('soft-navigation', handleSoftNavEntries, opts);
       }
     }
   });

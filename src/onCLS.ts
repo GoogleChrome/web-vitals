@@ -130,7 +130,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         }
       };
 
-      const po = observe('layout-shift', handleEntries);
+      const po = observe('layout-shift', handleEntries, opts);
       if (po) {
         report = bindReporter(
           onReport,
@@ -172,7 +172,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         };
 
         if (softNavsEnabled) {
-          observe('soft-navigation', handleSoftNavEntries);
+          observe('soft-navigation', handleSoftNavEntries, opts);
         }
 
         // Queue a task to report (if nothing else triggers a report first).

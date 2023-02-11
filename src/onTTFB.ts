@@ -132,7 +132,7 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       };
 
       if (softNavsEnabled) {
-        observe('soft-navigation', reportSoftNavTTFBs);
+        observe('soft-navigation', reportSoftNavTTFBs, opts);
       }
     }
   });

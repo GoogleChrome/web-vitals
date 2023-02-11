@@ -111,7 +111,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       }
     };
 
-    const po = observe('largest-contentful-paint', handleEntries);
+    const po = observe('largest-contentful-paint', handleEntries, opts);
 
     if (po) {
       report = bindReporter(
@@ -152,7 +152,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       };
 
       if (softNavsEnabled) {
-        observe('soft-navigation', handleSoftNavEntries);
+        observe('soft-navigation', handleSoftNavEntries, opts);
       }
     }
   });
