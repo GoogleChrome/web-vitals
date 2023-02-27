@@ -97,6 +97,16 @@ export interface MetricWithAttribution extends Metric {
   attribution: {[key: string]: unknown};
 }
 
+/**
+ * The thresholds of metric's "good", "needs improvement", and "poor"
+ * ratings:
+ *
+ * - Metric values ≦ [0] are "good"
+ * - Metric values > [0] and ≦ [1] are "needs improvement"
+ * - Metric values > [1] are "poor".
+ */
+export type MetricRatingThresholds = [number, number];
+
 export interface ReportCallback {
   (metric: Metric): void;
 }

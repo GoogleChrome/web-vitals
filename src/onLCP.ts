@@ -24,7 +24,15 @@ import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {LCPMetric, ReportCallback, ReportOpts} from './types.js';
+import {
+  LCPMetric,
+  MetricRatingThresholds,
+  ReportCallback,
+  ReportOpts,
+} from './types.js';
+
+/** Thresholds for LCP. See https://web.dev/lcp/#what-is-a-good-lcp-score */
+export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
@@ -44,9 +52,6 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
-    // https://web.dev/lcp/#what-is-a-good-lcp-score
-    const thresholds = [2500, 4000];
-
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
@@ -77,7 +82,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       report = bindReporter(
         onReport,
         metric,
-        thresholds,
+        LCPThresholds,
         opts!.reportAllChanges
       );
 
@@ -106,7 +111,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          thresholds,
+          LCPThresholds,
           opts!.reportAllChanges
         );
 

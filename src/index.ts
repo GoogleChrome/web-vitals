@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-export {onCLS} from './onCLS.js';
-export {onFCP} from './onFCP.js';
-export {onFID} from './onFID.js';
-export {onINP} from './onINP.js';
-export {onLCP} from './onLCP.js';
-export {onTTFB} from './onTTFB.js';
+export {onCLS, CLSThresholds} from './onCLS.js';
+export {onFCP, FCPThresholds} from './onFCP.js';
+export {onFID, FIDThresholds} from './onFID.js';
+export {onINP, INPThresholds} from './onINP.js';
+export {onLCP, LCPThresholds} from './onLCP.js';
+export {onTTFB, TTFBThresholds} from './onTTFB.js';
 
 export * from './deprecated.js';
 export * from './types.js';
