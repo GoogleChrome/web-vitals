@@ -18,12 +18,10 @@ import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {MetricRatingThresholds, ReportCallback, ReportOpts} from './types.js';
+import {ReportCallback, ReportOpts} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {whenActivated} from './lib/whenActivated.js';
-
-/** Thresholds for TTFB. See https://web.dev/ttfb/#what-is-a-good-ttfb-score */
-export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
+import {getMetricRatingThresholds} from './lib/getMetricRatingThresholds.js';
 
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
@@ -59,11 +57,12 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
+  const thresholds = getMetricRatingThresholds('TTFB');
   let metric = initMetric('TTFB');
   let report = bindReporter(
     onReport,
     metric,
-    TTFBThresholds,
+    thresholds,
     opts.reportAllChanges
   );
 
@@ -97,7 +96,7 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          TTFBThresholds,
+          thresholds,
           opts!.reportAllChanges
         );
 

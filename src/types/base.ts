@@ -98,14 +98,23 @@ export interface MetricWithAttribution extends Metric {
 }
 
 /**
- * The thresholds of metric's "good", "needs improvement", and "poor"
- * ratings:
+ * The thresholds of metric's "good", "needs improvement", and "poor" ratings.
  *
- * - Metric values ≦ [0] are "good"
- * - Metric values > [0] and ≦ [1] are "needs improvement"
- * - Metric values > [1] are "poor".
+ * - Metric values up to and including `good` are rated "good"
+ * - Metric values up to and including `needsImprovement` are rated "needs
+ *    improvement"
+ * - Metric values above `needsImprovement` are "poor"
+ *
+ * | Metric value                      | Rating              |
+ * | --------------------------------- | ------------------- |
+ * | ≦ `good`                          | "good"              |
+ * | > `good` and ≦ `needsImprovement` | "needs improvement" |
+ * | > `needsImprovement`              | "poor"              |
  */
-export type MetricRatingThresholds = [number, number];
+export type MetricRatingThresholds = {
+  good: number;
+  needsImprovement: number;
+};
 
 export interface ReportCallback {
   (metric: Metric): void;

@@ -16,6 +16,7 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {getMetricRatingThresholds} from './lib/getMetricRatingThresholds.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -29,13 +30,9 @@ import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
   FirstInputPolyfillCallback,
-  MetricRatingThresholds,
   ReportCallback,
   ReportOpts,
 } from './types.js';
-
-/** Thresholds for FID. See https://web.dev/fid/#what-is-a-good-fid-score */
-export const FIDThresholds: MetricRatingThresholds = [100, 300];
 
 /**
  * Calculates the [FID](https://web.dev/fid/) value for the current page and
@@ -51,6 +48,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
+    const thresholds = getMetricRatingThresholds('FID');
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FID');
     let report: ReturnType<typeof bindReporter>;
@@ -69,12 +67,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
     };
 
     const po = observe('first-input', handleEntries);
-    report = bindReporter(
-      onReport,
-      metric,
-      FIDThresholds,
-      opts!.reportAllChanges
-    );
+    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
 
     if (po) {
       onHidden(
@@ -101,7 +94,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          FIDThresholds,
+          thresholds,
           opts!.reportAllChanges
         );
 
@@ -118,7 +111,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
           report = bindReporter(
             onReport,
             metric,
-            FIDThresholds,
+            thresholds,
             opts!.reportAllChanges
           );
 

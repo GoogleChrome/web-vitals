@@ -16,6 +16,7 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {getMetricRatingThresholds} from './lib/getMetricRatingThresholds.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -24,21 +25,13 @@ import {
   initInteractionCountPolyfill,
 } from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {
-  INPMetric,
-  MetricRatingThresholds,
-  ReportCallback,
-  ReportOpts,
-} from './types.js';
+import {INPMetric, ReportCallback, ReportOpts} from './types.js';
 
 interface Interaction {
   id: number;
   latency: number;
   entries: PerformanceEventTiming[];
 }
-
-/** Thresholds for INP. See https://web.dev/inp/#what-is-a-good-inp-score */
-export const INPThresholds: MetricRatingThresholds = [200, 500];
 
 // Used to store the interaction count after a bfcache restore, since p98
 // interaction latencies should only consider the current navigation.
@@ -157,6 +150,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.
     initInteractionCountPolyfill();
 
+    const thresholds = getMetricRatingThresholds('INP');
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
 
@@ -210,12 +204,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       durationThreshold: opts!.durationThreshold || 40,
     } as PerformanceObserverInit);
 
-    report = bindReporter(
-      onReport,
-      metric,
-      INPThresholds,
-      opts!.reportAllChanges
-    );
+    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
 
     if (po) {
       // Also observe entries of type `first-input`. This is useful in cases
@@ -247,7 +236,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          INPThresholds,
+          thresholds,
           opts!.reportAllChanges
         );
       });

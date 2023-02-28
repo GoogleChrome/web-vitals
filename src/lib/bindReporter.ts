@@ -20,10 +20,10 @@ const getRating = (
   value: number,
   thresholds: MetricRatingThresholds
 ): Metric['rating'] => {
-  if (value > thresholds[1]) {
+  if (value > thresholds.needsImprovement) {
     return 'poor';
   }
-  if (value > thresholds[0]) {
+  if (value > thresholds.good) {
     return 'needs-improvement';
   }
   return 'good';
@@ -32,13 +32,13 @@ const getRating = (
 export const bindReporter = (
   callback: ReportCallback,
   metric: Metric,
-  thresholds: MetricRatingThresholds,
+  thresholds: MetricRatingThresholds | null,
   reportAllChanges?: boolean
 ) => {
   let prevValue: number;
   let delta: number;
   return (forceReport?: boolean) => {
-    if (metric.value >= 0) {
+    if (metric.value >= 0 && thresholds !== null) {
       if (forceReport || reportAllChanges) {
         delta = metric.value - (prevValue || 0);
 
