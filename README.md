@@ -1018,7 +1018,8 @@ interface FCPAttribution {
   fcpEntry?: PerformancePaintTiming;
   /**
    * The `navigation` entry of the current page, which is useful for diagnosing
-   * general page load issues.
+   * general page load issues. This can be used to access `serverTiming` for example:
+   * navigationEntry.serverTiming
    */
   navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
 }
@@ -1129,7 +1130,8 @@ interface LCPAttribution {
   elementRenderDelay: number;
   /**
    * The `navigation` entry of the current page, which is useful for diagnosing
-   * general page load issues.
+   * general page load issues. This can be used to access `serverTiming` for example:
+   * navigationEntry.serverTiming
    */
   navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
   /**
@@ -1169,8 +1171,9 @@ interface TTFBAttribution {
    */
   requestTime: number;
   /**
-   * The `PerformanceNavigationTiming` entry used to determine TTFB (or the
-   * polyfill entry in browsers that don't support Navigation Timing).
+   * The `navigation` entry of the current page, which is useful for diagnosing
+   * general page load issues. This can be used to access `serverTiming` for example:
+   * navigationEntry.serverTiming
    */
   navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
 }
