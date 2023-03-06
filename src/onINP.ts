@@ -146,7 +146,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
-    // https://web.dev/inp/#what's-a-%22good%22-inp-value
+    // https://web.dev/inp/#what-is-a-good-inp-score
     const thresholds = [200, 500];
 
     // TODO(philipwalton): remove once the polyfill is no longer needed.
