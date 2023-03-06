@@ -1194,9 +1194,7 @@ Browser support for each function is as follows:
 
 ## Limitations
 
-The `web-vitals` library is primarily a wrapper around the Web APIs that
-measure the Web Vitals metrics, which means the limitations of those APIs will
-mostly apply to this library as well.
+The `web-vitals` library is primarily a wrapper around the Web APIs that measure the Web Vitals metrics, which means the limitations of those APIs will mostly apply to this library as well. More details on these limitations is available in [this blog post](https://web.dev/crux-and-rum-differences/).
 
 The primary limitation of these APIs is they have no visibility into `<iframe>` content (not even same-origin iframes), which means pages that make use of iframes will likely see a difference between the data measured by this library and the data available in the Chrome User Experience Report (which does include iframe content).
 
