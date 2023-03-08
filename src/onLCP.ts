@@ -18,14 +18,21 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {getMetricRatingThresholds} from './lib/getMetricRatingThresholds.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {LCPMetric, ReportCallback, ReportOpts} from './types.js';
+import {
+  LCPMetric,
+  MetricRatingThresholds,
+  ReportCallback,
+  ReportOpts,
+} from './types.js';
+
+/** Thresholds for LCP. See https://web.dev/lcp/#what-is-a-good-lcp-score */
+export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
@@ -45,7 +52,6 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
-    const thresholds = getMetricRatingThresholds('LCP');
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
@@ -76,7 +82,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       report = bindReporter(
         onReport,
         metric,
-        thresholds,
+        LCPThresholds,
         opts!.reportAllChanges
       );
 
@@ -105,7 +111,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          thresholds,
+          LCPThresholds,
           opts!.reportAllChanges
         );
 

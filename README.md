@@ -20,6 +20,7 @@
   - [Types](#types)
   - [Functions](#functions)
   - [Attribution](#attribution)
+  - [Rating Thresholds](#rating-thresholds)
 - [Browser Support](#browser-support)
 - [Limitations](#limitations)
 - [Development](#development)
@@ -765,24 +766,21 @@ Metric-specific subclasses:
 
 The thresholds of metric's "good", "needs improvement", and "poor" ratings.
 
-- Metric values up to and including `good` are rated "good"
-- Metric values up to and including `needsImprovement` are rated "needs improvement"
-- Metric values above `needsImprovement` are "poor"
+- Metric values up to and including [0] are rated "good"
+- Metric values up to and including [1] are rated "needs improvement"
+- Metric values above [1] are "poor"
 
-| Metric value                      | Rating              |
-| --------------------------------- | ------------------- |
-| ≦ `good`                          | "good"              |
-| > `good` and ≦ `needsImprovement` | "needs improvement" |
-| > `needsImprovement`              | "poor"              |
+| Metric value    | Rating              |
+| --------------- | ------------------- |
+| ≦ [0]           | "good"              |
+| > [0] and ≦ [1] | "needs improvement" |
+| > [1]           | "poor"              |
 
 ```ts
-export type MetricRatingThresholds = {
-  good: number;
-  needsImprovement: number;
-};
+export type MetricRatingThresholds = [number, number];
 ```
 
-_See also [`getMetricRatingThresholds()`](#getmetricratingthresholds)._
+_See also [Rating Thresholds](#rating-thresholds)._
 
 #### `ReportCallback`
 
@@ -968,27 +966,6 @@ onTTFB((metric) => {
 
 _**Note:** browsers that do not support `navigation` entries will fall back to
 using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers._
-
-#### `getMetricRatingThresholds()`
-
-```ts
-type getMetricRatingThresholds = (
-  metricName: Metric['name']
-) => MetricRatingThresholds | null;
-```
-
-Get the thresholds of a metric's "good", "needs improvement", and "poor" ratings, formatted as a [`MetricRatingThresholds`](#metricratingthresholds) object. Returns `null` if `metricName` is invalid.
-
-Example:
-
-```ts
-import {getMetricRatingThresholds} from 'web-vitals';
-
-getMetricRatingThresholds('CLS'); // → {good: 0.1, needsImprovement: 0.25}
-getMetricRatingThresholds('FID'); // → {good: 100, needsImprovement:300}
-getMetricRatingThresholds('LCP'); // → {good: 2500, needsImprovement: 4000}
-getMetricRatingThresholds('XYZ'); // → null
-```
 
 ### Attribution:
 
@@ -1218,6 +1195,20 @@ interface TTFBAttribution {
    */
   navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
 }
+```
+
+### Rating Thresholds:
+
+The thresholds of each metric's "good", "needs improvement", and "poor" ratings are available as [`MetricRatingThresholds`](#metricratingthresholds).
+
+Example:
+
+```ts
+import {CLSThresholds, FIDThresholds, LCPThresholds} from 'web-vitals';
+
+console.log(CLSThresholds); // [ 0.1, 0.25 ]
+console.log(FIDThresholds); // [ 100, 300 ]
+console.log(LCPThresholds); // [ 2500, 4000 ]
 ```
 
 ## Browser Support
