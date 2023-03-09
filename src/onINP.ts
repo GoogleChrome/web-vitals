@@ -24,13 +24,21 @@ import {
   initInteractionCountPolyfill,
 } from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {INPMetric, ReportCallback, ReportOpts} from './types.js';
+import {
+  INPMetric,
+  MetricRatingThresholds,
+  ReportCallback,
+  ReportOpts,
+} from './types.js';
 
 interface Interaction {
   id: number;
   latency: number;
   entries: PerformanceEventTiming[];
 }
+
+/** Thresholds for INP. See https://web.dev/inp/#what-is-a-good-inp-score */
+export const INPThresholds: MetricRatingThresholds = [200, 500];
 
 // Used to store the interaction count after a bfcache restore, since p98
 // interaction latencies should only consider the current navigation.
@@ -146,9 +154,6 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
-    // https://web.dev/inp/#what-is-a-good-inp-score
-    const thresholds = [200, 500];
-
     // TODO(philipwalton): remove once the polyfill is no longer needed.
     initInteractionCountPolyfill();
 
@@ -205,7 +210,12 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       durationThreshold: opts!.durationThreshold || 40,
     } as PerformanceObserverInit);
 
-    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
+    report = bindReporter(
+      onReport,
+      metric,
+      INPThresholds,
+      opts!.reportAllChanges
+    );
 
     if (po) {
       // Also observe entries of type `first-input`. This is useful in cases
@@ -237,7 +247,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          thresholds,
+          INPThresholds,
           opts!.reportAllChanges
         );
       });
