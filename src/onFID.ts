@@ -30,9 +30,13 @@ import {
   FIDMetric,
   FirstInputPolyfillCallback,
   Metric,
+  MetricRatingThresholds,
   ReportCallback,
   ReportOpts,
 } from './types.js';
+
+/** Thresholds for FID. See https://web.dev/fid/#what-is-a-good-fid-score */
+export const FIDThresholds: MetricRatingThresholds = [100, 300];
 
 /**
  * Calculates the [FID](https://web.dev/fid/) value for the current page and
@@ -49,9 +53,6 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
   const softNavsEnabled = softNavs(opts);
 
   whenActivated(() => {
-    // https://web.dev/fid/#what-is-a-good-fid-score
-    const thresholds = [100, 300];
-
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FID');
     let report: ReturnType<typeof bindReporter>;
@@ -64,7 +65,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
       report = bindReporter(
         onReport,
         metric,
-        thresholds,
+        FIDThresholds,
         opts!.reportAllChanges
       );
     };
@@ -87,7 +88,12 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
       });
     };
     const po = observe('first-input', handleEntries, opts);
-    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
+    report = bindReporter(
+      onReport,
+      metric,
+      FIDThresholds,
+      opts!.reportAllChanges
+    );
 
     if (po) {
       onHidden(() => {
@@ -117,7 +123,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          thresholds,
+          FIDThresholds,
           opts!.reportAllChanges
         );
 
@@ -139,7 +145,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
           report = bindReporter(
             onReport,
             metric,
-            thresholds,
+            FIDThresholds,
             opts!.reportAllChanges
           );
 

@@ -23,7 +23,16 @@ import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {softNavs} from './lib/softNavs.js';
 import {onFCP} from './onFCP.js';
-import {CLSMetric, CLSReportCallback, Metric, ReportOpts} from './types.js';
+import {
+  CLSMetric,
+  CLSReportCallback,
+  Metric,
+  MetricRatingThresholds,
+  ReportOpts,
+} from './types.js';
+
+/** Thresholds for CLS. See https://web.dev/cls/#what-is-a-good-cls-score */
+export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
 
 /**
  * Calculates the [CLS](https://web.dev/cls/) value for the current page and
@@ -56,9 +65,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
   // Note: this is done to match the current behavior of CrUX.
   onFCP(
     runOnce(() => {
-      // https://web.dev/cls/#what-is-a-good-cls-score
-      const thresholds = [0.1, 0.25];
-
       let metric = initMetric('CLS', 0);
       let report: ReturnType<typeof bindReporter>;
 
@@ -73,7 +79,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          thresholds,
+          CLSThresholds,
           opts!.reportAllChanges
         );
         sessionValue = 0;
@@ -135,7 +141,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          thresholds,
+          CLSThresholds,
           opts!.reportAllChanges
         );
 
@@ -164,7 +170,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
               report = bindReporter(
                 onReport,
                 metric,
-                thresholds,
+                CLSThresholds,
                 opts!.reportAllChanges
               );
             }

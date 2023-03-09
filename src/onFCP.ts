@@ -23,7 +23,16 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {FCPMetric, Metric, FCPReportCallback, ReportOpts} from './types.js';
+import {
+  FCPMetric,
+  FCPReportCallback,
+  Metric,
+  MetricRatingThresholds,
+  ReportOpts,
+} from './types.js';
+
+/** Thresholds for FCP. See https://web.dev/fcp/#what-is-a-good-fcp-score */
+export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
 
 /**
  * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
@@ -37,9 +46,6 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   const softNavsEnabled = softNavs(opts);
 
   whenActivated(() => {
-    // https://web.dev/fcp/#what-is-a-good-fcp-score
-    const thresholds = [1800, 3000];
-
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FCP');
     let report: ReturnType<typeof bindReporter>;
@@ -52,7 +58,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
       report = bindReporter(
         onReport,
         metric,
-        thresholds,
+        FCPThresholds,
         opts!.reportAllChanges
       );
     };
@@ -104,7 +110,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
       report = bindReporter(
         onReport,
         metric,
-        thresholds,
+        FCPThresholds,
         opts!.reportAllChanges
       );
 
@@ -120,7 +126,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         report = bindReporter(
           onReport,
           metric,
-          thresholds,
+          FCPThresholds,
           opts!.reportAllChanges
         );
 
