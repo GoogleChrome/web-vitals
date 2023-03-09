@@ -19,8 +19,8 @@
 - [API](#api)
   - [Types](#types)
   - [Functions](#functions)
-  - [Attribution](#attribution)
   - [Rating Thresholds](#rating-thresholds)
+  - [Attribution](#attribution)
 - [Browser Support](#browser-support)
 - [Limitations](#limitations)
 - [Development](#development)
@@ -967,6 +967,22 @@ onTTFB((metric) => {
 _**Note:** browsers that do not support `navigation` entries will fall back to
 using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers._
 
+### Rating Thresholds:
+
+The thresholds of each metric's "good", "needs improvement", and "poor" ratings are available as [`MetricRatingThresholds`](#metricratingthresholds).
+
+Example:
+
+```ts
+import {CLSThresholds, FIDThresholds, LCPThresholds} from 'web-vitals';
+
+console.log(CLSThresholds); // [ 0.1, 0.25 ]
+console.log(FIDThresholds); // [ 100, 300 ]
+console.log(LCPThresholds); // [ 2500, 4000 ]
+```
+
+_**Note:** It's typically not necessary (or recommended) to manually calculate metric value ratings using these thresholds. Use the [`Metric['rating']`](#metric) supplied by the [`ReportCallback`](#reportcallback) functions instead._
+
 ### Attribution:
 
 The following objects contain potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
@@ -1195,20 +1211,6 @@ interface TTFBAttribution {
    */
   navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
 }
-```
-
-### Rating Thresholds:
-
-The thresholds of each metric's "good", "needs improvement", and "poor" ratings are available as [`MetricRatingThresholds`](#metricratingthresholds).
-
-Example:
-
-```ts
-import {CLSThresholds, FIDThresholds, LCPThresholds} from 'web-vitals';
-
-console.log(CLSThresholds); // [ 0.1, 0.25 ]
-console.log(FIDThresholds); // [ 100, 300 ]
-console.log(LCPThresholds); // [ 2500, 4000 ]
 ```
 
 ## Browser Support
