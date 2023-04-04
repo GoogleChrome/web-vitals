@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.3.1 (2023-04-04)
+
+- Export metric rating thresholds in attribution build as well.
+
 ### v3.3.0 (2023-03-09)
 
 - Export metric rating thresholds, add explicit `MetricRatingThresholds` type ([#323](https://github.com/GoogleChrome/web-vitals/pull/323))
