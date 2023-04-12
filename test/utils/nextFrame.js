@@ -14,7 +14,6 @@
  * limitations under the License.
  */
 
-
 /**
  * Returns a promise that resolves once the browser window has loaded and
  * all load callbacks have finished executing.

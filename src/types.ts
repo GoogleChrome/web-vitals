@@ -26,7 +26,6 @@ export * from './types/inp.js';
 export * from './types/lcp.js';
 export * from './types/ttfb.js';
 
-
 // --------------------------------------------------------------------------
 // Web Vitals package globals
 // --------------------------------------------------------------------------
@@ -51,9 +50,9 @@ declare global {
 // --------------------------------------------------------------------------
 
 interface PerformanceEntryMap {
-  'navigation': PerformanceNavigationTiming;
-  'resource': PerformanceResourceTiming;
-  'paint': PerformancePaintTiming;
+  navigation: PerformanceNavigationTiming;
+  resource: PerformanceResourceTiming;
+  paint: PerformancePaintTiming;
 }
 
 // Update built-in types to be more accurate.
@@ -66,7 +65,9 @@ declare global {
   }
 
   interface Performance {
-    getEntriesByType<K extends keyof PerformanceEntryMap>(type: K): PerformanceEntryMap[K][]
+    getEntriesByType<K extends keyof PerformanceEntryMap>(
+      type: K
+    ): PerformanceEntryMap[K][];
   }
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline

@@ -22,7 +22,15 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {FCPMetric, FCPReportCallback, ReportOpts} from './types.js';
+import {
+  FCPMetric,
+  FCPReportCallback,
+  MetricRatingThresholds,
+  ReportOpts,
+} from './types.js';
+
+/** Thresholds for FCP. See https://web.dev/fcp/#what-is-a-good-fcp-score */
+export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
 
 /**
  * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
@@ -35,9 +43,6 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
-    // https://web.dev/fcp/#what-is-a-good-fcp-score
-    const thresholds = [1800, 3000];
-
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FCP');
     let report: ReturnType<typeof bindReporter>;
@@ -65,14 +70,22 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
 
     if (po) {
       report = bindReporter(
-          onReport, metric, thresholds, opts!.reportAllChanges);
+        onReport,
+        metric,
+        FCPThresholds,
+        opts!.reportAllChanges
+      );
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered or the `paint` entry exists.
       onBFCacheRestore((event) => {
         metric = initMetric('FCP');
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          FCPThresholds,
+          opts!.reportAllChanges
+        );
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;

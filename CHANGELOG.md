@@ -1,5 +1,28 @@
 # Changelog
 
+### v3.3.1 (2023-04-04)
+
+- Export metric rating thresholds in attribution build as well.
+
+### v3.3.0 (2023-03-09)
+
+- Export metric rating thresholds, add explicit `MetricRatingThresholds` type ([#323](https://github.com/GoogleChrome/web-vitals/pull/323))
+- Trim classname selector ([#328](https://github.com/GoogleChrome/web-vitals/pull/328))
+- Add link to CrUX versus RUM blog post ([#327](https://github.com/GoogleChrome/web-vitals/pull/327))
+- Prevent LCP being reported for hidden prerendered pages ([#326](https://github.com/GoogleChrome/web-vitals/pull/326))
+- Add Server Timing information to docs ([#324](https://github.com/GoogleChrome/web-vitals/pull/324))
+- Fix link in `onINP()` thresholds comment ([#318](https://github.com/GoogleChrome/web-vitals/pull/318))
+- Update web.dev link for `onINP()` ([#307](https://github.com/GoogleChrome/web-vitals/pull/307))
+- Add a note about when to load the library ([#305](https://github.com/GoogleChrome/web-vitals/pull/305))
+
+### v3.2.0
+
+- Version number skipped
+
+### v3.1.1 (2023-01-10)
+
+- Defer CLS logic until after `onFCP()` callback ([#297](https://github.com/GoogleChrome/web-vitals/pull/297))
+
 ### v3.1.0 (2022-11-15)
 
 - Add support for `'restore'` as a `navigationType` ([#284](https://github.com/GoogleChrome/web-vitals/pull/284))

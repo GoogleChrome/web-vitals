@@ -18,10 +18,12 @@ import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {ReportCallback, ReportOpts} from './types.js';
+import {MetricRatingThresholds, ReportCallback, ReportOpts} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {whenActivated} from './lib/whenActivated.js';
 
+/** Thresholds for TTFB. See https://web.dev/ttfb/#what-is-a-good-ttfb-score */
+export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
 
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
@@ -36,7 +38,7 @@ const whenReady = (callback: () => void) => {
     // Queue a task so the callback runs after `loadEventEnd`.
     setTimeout(callback, 0);
   }
-}
+};
 
 /**
  * Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the
@@ -57,12 +59,13 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
-  // https://web.dev/ttfb/#what-is-a-good-ttfb-score
-  const thresholds = [800, 1800];
-
   let metric = initMetric('TTFB');
   let report = bindReporter(
-      onReport, metric, thresholds, opts.reportAllChanges);
+    onReport,
+    metric,
+    TTFBThresholds,
+    opts.reportAllChanges
+  );
 
   whenReady(() => {
     const navEntry = getNavigationEntry();
@@ -92,7 +95,11 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore(() => {
         metric = initMetric('TTFB', 0);
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          TTFBThresholds,
+          opts!.reportAllChanges
+        );
 
         report(true);
       });

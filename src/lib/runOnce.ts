@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2022 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-/**
- * Overrides the document's `visibilityState` property, sets the body's hidden
- * attribute (to prevent painting) and dispatches a `visibilitychange` event.
- * @return {Promise<void>}
- */
-export function stubVisibilityChange(visibilityState) {
-  return browser.execute((visibilityState) => {
-    self.__stubVisibilityChange(visibilityState);
-  }, visibilityState);
+export interface RunOnceCallback {
+  (arg: unknown): void;
 }
+
+export const runOnce = (cb: RunOnceCallback) => {
+  let called = false;
+  return (arg: unknown) => {
+    if (!called) {
+      cb(arg);
+      called = true;
+    }
+  };
+};

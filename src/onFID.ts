@@ -20,9 +20,22 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
+import {
+  firstInputPolyfill,
+  resetFirstInputPolyfill,
+} from './lib/polyfills/firstInputPolyfill.js';
+import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {FIDMetric, FirstInputPolyfillCallback, ReportCallback, ReportOpts} from './types.js';
+import {
+  FIDMetric,
+  FirstInputPolyfillCallback,
+  MetricRatingThresholds,
+  ReportCallback,
+  ReportOpts,
+} from './types.js';
+
+/** Thresholds for FID. See https://web.dev/fid/#what-is-a-good-fid-score */
+export const FIDThresholds: MetricRatingThresholds = [100, 300];
 
 /**
  * Calculates the [FID](https://web.dev/fid/) value for the current page and
@@ -38,9 +51,6 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
-    // https://web.dev/fid/#what-is-a-good-fid-score
-    const thresholds = [100, 300];
-
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FID');
     let report: ReturnType<typeof bindReporter>;
@@ -52,36 +62,53 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
         metric.entries.push(entry);
         report(true);
       }
-    }
+    };
 
     const handleEntries = (entries: FIDMetric['entries']) => {
       (entries as PerformanceEventTiming[]).forEach(handleEntry);
-    }
+    };
 
     const po = observe('first-input', handleEntries);
-    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
+    report = bindReporter(
+      onReport,
+      metric,
+      FIDThresholds,
+      opts!.reportAllChanges
+    );
 
     if (po) {
-      onHidden(() => {
-        handleEntries(po.takeRecords() as FIDMetric['entries']);
-        po.disconnect();
-      }, true);
+      onHidden(
+        runOnce(() => {
+          handleEntries(po.takeRecords() as FIDMetric['entries']);
+          po.disconnect();
+        })
+      );
     }
 
     if (window.__WEB_VITALS_POLYFILL__) {
-      console.warn('The web-vitals "base+polyfill" build is deprecated. See: https://bit.ly/3aqzsGm');
+      console.warn(
+        'The web-vitals "base+polyfill" build is deprecated. See: https://bit.ly/3aqzsGm'
+      );
 
       // Prefer the native implementation if available,
       if (!po) {
-        window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback)
+        window.webVitals.firstInputPolyfill(
+          handleEntry as FirstInputPolyfillCallback
+        );
       }
       onBFCacheRestore(() => {
         metric = initMetric('FID');
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          FIDThresholds,
+          opts!.reportAllChanges
+        );
 
         window.webVitals.resetFirstInputPolyfill();
-        window.webVitals.firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
+        window.webVitals.firstInputPolyfill(
+          handleEntry as FirstInputPolyfillCallback
+        );
       });
     } else {
       // Only monitor bfcache restores if the browser supports FID natively.
@@ -89,7 +116,11 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
         onBFCacheRestore(() => {
           metric = initMetric('FID');
           report = bindReporter(
-              onReport, metric, thresholds, opts!.reportAllChanges);
+            onReport,
+            metric,
+            FIDThresholds,
+            opts!.reportAllChanges
+          );
 
           resetFirstInputPolyfill();
           firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);

@@ -115,6 +115,47 @@
         });
       }
 
+      /**
+       * @return {Promise<void>}
+       */
+      self.__afterLoad = new Promise((resolve) => {
+        if (document.readyState === 'complete') {
+          resolve();
+        } else {
+          addEventListener('load', resolve);
+        }
+      });
+
+      /**
+       * @return {Promise<void>}
+       */
+      self.__afterElementsRendered = new Promise((resolve) => {
+        addEventListener('DOMContentLoaded', () => {
+          const nodes = new Set([...document.querySelectorAll('[elementtiming]:not([hidden])')]);
+          if (nodes.size === 0 || !PerformanceObserver.supportedEntryTypes.includes('element')) {
+            resolve();
+          }
+
+          new PerformanceObserver((list) => {
+            for (const entry of list.getEntries()) {
+              if (nodes.has(entry.element)) {
+                nodes.delete(entry.element);
+              }
+            }
+            if (nodes.size === 0) {
+              resolve();
+            }
+          }).observe({type: 'element', buffered: true});
+        }, true);
+      });
+
+      /**
+       * @return {Promise<void>}
+       */
+      self.__afterFirstInput = new Promise((resolve) => {
+        new PerformanceObserver(resolve).observe({type: 'first-input', buffered: true});
+      });
+
       // Uncomment to stub running in a browser that doesn't support performance APIs
       // (e.g. some version of Opera support this).
       // delete self.performance;
@@ -127,6 +168,14 @@
 
       if (params.has('durationThreshold')) {
         self.__durationThreshold = Number(params.get('durationThreshold'));
+      }
+
+      if (params.has('lazyLoad')) {
+        self.__lazyLoad = Boolean(params.get('lazyLoad'));
+      }
+
+      if (params.has('loadAfterInput')) {
+        self.__loadAfterInput = Boolean(params.get('loadAfterInput'));
       }
 
       if (params.has('hidden')) {
@@ -150,6 +199,28 @@
       if (params.has('wasDiscarded')) {
         self.__stubWasDiscarded();
       }
+
+      // Push to this promise list if you need to wait for some condition in a test.
+      self.__readyPromises = [];
+
+      // If `__lazyLoad` is set, wait to import until after load and first paint.
+      if (self.__lazyLoad) {
+        self.__readyPromises.push(self.__afterLoad, self.__afterElementsRendered);
+      }
+
+      if (self.__loadAfterInput) {
+        self.__readyPromises.push(self.__afterFirstInput);
+      }
+
+      // Import a module and automatically add that to the list of ready promises.
+      self.__testImport = async (modulePath) => {
+        await Promise.all(self.__readyPromises);
+
+        const importPromise = import(modulePath);
+        self.__readyPromises.push(importPromise);
+
+        return await importPromise;
+      };
     }());
   </script>
   {% if polyfill %}

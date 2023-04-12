@@ -21,24 +21,22 @@ import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
-
 const ROUNDING_ERROR = 8;
 
-
-describe('onINP()', async function() {
+describe('onINP()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
   let browserSupportsINP;
-  before(async function() {
+  before(async function () {
     browserSupportsINP = await browserSupportsEntry('event');
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     await clearBeacons();
   });
 
-  it('reports the correct value on visibility hidden after interactions (reportAllChanges === false)', async function() {
+  it('reports the correct value on visibility hidden after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100');
@@ -62,10 +60,32 @@ describe('onINP()', async function() {
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
-  it('reports the correct value on visibility hidden after interactions (reportAllChanges === true)', async function() {
+  it('reports the correct value on visibility hidden after interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100&reportAllChanges=1');
+
+    const h1 = await $('h1');
+    await h1.click();
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(interactionIDsMatch(inp.entries));
+    assert(inp.entries[0].interactionId > 0);
+    assert.match(inp.navigationType, /navigate|reload/);
+  });
+
+  it('reports the correct value when loaded late (reportAllChanges === false)', async function () {
+    if (!browserSupportsINP) this.skip();
+
+    await browser.url('/test/inp?click=100&loadAfterInput=1');
 
     const h1 = await $('h1');
     await h1.click();
@@ -86,7 +106,31 @@ describe('onINP()', async function() {
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
-  it('reports the correct value on page unload after interactions (reportAllChanges === false)', async function() {
+  it('reports the correct value when loaded late (reportAllChanges === true)', async function () {
+    if (!browserSupportsINP) this.skip();
+
+    await browser.url(
+      '/test/inp?click=100&reportAllChanges=1&loadAfterInput=1'
+    );
+
+    const h1 = await $('h1');
+    await h1.click();
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(interactionIDsMatch(inp.entries));
+    assert(inp.entries[0].interactionId > 0);
+    assert.match(inp.navigationType, /navigate|reload/);
+  });
+
+  it('reports the correct value on page unload after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100');
@@ -110,7 +154,7 @@ describe('onINP()', async function() {
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
-  it('reports the correct value on page unload after interactions (reportAllChanges === true)', async function() {
+  it('reports the correct value on page unload after interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100&reportAllChanges=1');
@@ -134,7 +178,7 @@ describe('onINP()', async function() {
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
-  it('reports approx p98 interaction when 50+ interactions (reportAllChanges === false)', async function() {
+  it('reports approx p98 interaction when 50+ interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=60&pointerdown=600');
@@ -191,7 +235,7 @@ describe('onINP()', async function() {
     assert.strictEqual(inp3.rating, 'needs-improvement');
   });
 
-  it('reports approx p98 interaction when 50+ interactions (reportAllChanges === true)', async function() {
+  it('reports approx p98 interaction when 50+ interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=60&pointerdown=600&reportAllChanges=1');
@@ -227,7 +271,7 @@ describe('onINP()', async function() {
     assert.strictEqual(inp3.rating, 'needs-improvement');
   });
 
-  it('reports a new interaction after bfcache restore', async function() {
+  it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp');
@@ -302,7 +346,7 @@ describe('onINP()', async function() {
     assert.strictEqual(inp3.navigationType, 'back-forward-cache');
   });
 
-  it('does not report if there were no interactions', async function() {
+  it('does not report if there were no interactions', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp');
@@ -316,11 +360,10 @@ describe('onINP()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('reports prerender as nav type for prerender', async function() {
+  it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100&prerender=1');
-
 
     const h1 = await $('h1');
     await h1.click();
@@ -341,7 +384,7 @@ describe('onINP()', async function() {
     assert.strictEqual(inp.navigationType, 'prerender');
   });
 
-  it('reports restore as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100&wasDiscarded=1');
@@ -365,8 +408,8 @@ describe('onINP()', async function() {
     assert.strictEqual(inp.navigationType, 'restore');
   });
 
-  describe('attribution', function() {
-    it('includes attribution data on the metric object', async function() {
+  describe('attribution', function () {
+    it('includes attribution data on the metric object', async function () {
       if (!browserSupportsINP) this.skip();
 
       await browser.url('/test/inp?click=100&attribution=1');
@@ -447,11 +490,13 @@ describe('onINP()', async function() {
       assert.equal(eventEntry2.processingStart, pointerupEntry.processingStart);
     });
 
-    it('reports the domReadyState when input occurred', async function() {
+    it('reports the domReadyState when input occurred', async function () {
       if (!browserSupportsINP) this.skip();
 
-      await browser.url('/test/inp?' +
-          'attribution=1&reportAllChanges=1&click=100&delayDCL=1000');
+      await browser.url(
+        '/test/inp?' +
+          'attribution=1&reportAllChanges=1&click=100&delayDCL=1000'
+      );
 
       // Click on the <h1>.
       const h1 = await $('h1');
@@ -465,8 +510,10 @@ describe('onINP()', async function() {
 
       await clearBeacons();
 
-      await browser.url('/test/inp?' +
-          'attribution=1&reportAllChanges=1&click=100&delayResponse=1000');
+      await browser.url(
+        '/test/inp?' +
+          'attribution=1&reportAllChanges=1&click=100&delayResponse=1000'
+      );
 
       // Click on the <button>.
       const reset = await $('#reset');
@@ -480,7 +527,6 @@ describe('onINP()', async function() {
   });
 });
 
-
 const containsEntry = (entries, name, target) => {
   return entries.findIndex((e) => e.name === name && e.target === target) > -1;
 };
@@ -490,7 +536,11 @@ const interactionIDsMatch = (entries) => {
 };
 
 const setBlockingTime = (event, value) => {
-  return browser.execute((event, value) => {
-    document.getElementById(`${event}-blocking-time`).value = value;
-  }, event, value);
+  return browser.execute(
+    (event, value) => {
+      document.getElementById(`${event}-blocking-time`).value = value;
+    },
+    event,
+    value
+  );
 };

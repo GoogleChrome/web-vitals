@@ -19,15 +19,26 @@ import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {getInteractionCount, initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
+import {
+  getInteractionCount,
+  initInteractionCountPolyfill,
+} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {INPMetric, ReportCallback, ReportOpts} from './types.js';
+import {
+  INPMetric,
+  MetricRatingThresholds,
+  ReportCallback,
+  ReportOpts,
+} from './types.js';
 
 interface Interaction {
   id: number;
   latency: number;
   entries: PerformanceEventTiming[];
 }
+
+/** Thresholds for INP. See https://web.dev/inp/#what-is-a-good-inp-score */
+export const INPThresholds: MetricRatingThresholds = [200, 500];
 
 // Used to store the interaction count after a bfcache restore, since p98
 // interaction latencies should only consider the current navigation.
@@ -39,7 +50,7 @@ let prevInteractionCount = 0;
  */
 const getInteractionCountForNavigation = () => {
   return getInteractionCount() - prevInteractionCount;
-}
+};
 
 // To prevent unnecessary memory usage on pages with lots of interactions,
 // store at most 10 of the longest interactions to consider as INP candidates.
@@ -62,26 +73,30 @@ const longestInteractionMap: {[interactionId: string]: Interaction} = {};
 const processEntry = (entry: PerformanceEventTiming) => {
   // The least-long of the 10 longest interactions.
   const minLongestInteraction =
-      longestInteractionList[longestInteractionList.length - 1]
+    longestInteractionList[longestInteractionList.length - 1];
 
   const existingInteraction = longestInteractionMap[entry.interactionId!];
 
   // Only process the entry if it's possibly one of the ten longest,
   // or if it's part of an existing interaction.
-  if (existingInteraction ||
-      longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
-      entry.duration > minLongestInteraction.latency) {
+  if (
+    existingInteraction ||
+    longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
+    entry.duration > minLongestInteraction.latency
+  ) {
     // If the interaction already exists, update it. Otherwise create one.
     if (existingInteraction) {
       existingInteraction.entries.push(entry);
-      existingInteraction.latency =
-          Math.max(existingInteraction.latency, entry.duration);
+      existingInteraction.latency = Math.max(
+        existingInteraction.latency,
+        entry.duration
+      );
     } else {
       const interaction = {
         id: entry.interactionId!,
         latency: entry.duration,
         entries: [entry],
-      }
+      };
       longestInteractionMap[interaction.id] = interaction;
       longestInteractionList.push(interaction);
     }
@@ -92,18 +107,20 @@ const processEntry = (entry: PerformanceEventTiming) => {
       delete longestInteractionMap[i.id];
     });
   }
-}
+};
 
 /**
  * Returns the estimated p98 longest interaction based on the stored
  * interaction candidates and the interaction count for the current page.
  */
 const estimateP98LongestInteraction = () => {
-	const candidateInteractionIndex = Math.min(longestInteractionList.length - 1,
-      Math.floor(getInteractionCountForNavigation() / 50));
+  const candidateInteractionIndex = Math.min(
+    longestInteractionList.length - 1,
+    Math.floor(getInteractionCountForNavigation() / 50)
+  );
 
-	return longestInteractionList[candidateInteractionIndex];
-}
+  return longestInteractionList[candidateInteractionIndex];
+};
 
 /**
  * Calculates the [INP](https://web.dev/responsiveness/) value for the current
@@ -137,9 +154,6 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
-    // https://web.dev/inp/#what's-a-%22good%22-inp-value
-    const thresholds = [200, 500];
-
     // TODO(philipwalton): remove once the polyfill is no longer needed.
     initInteractionCountPolyfill();
 
@@ -161,12 +175,16 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
         // it's not an issue at the moment.
         // TODO(philipwalton): remove once crbug.com/1325826 is fixed.
         if (entry.entryType === 'first-input') {
-          const noMatchingEntry = !longestInteractionList.some((interaction) => {
-            return interaction.entries.some((prevEntry) => {
-              return entry.duration === prevEntry.duration &&
-                  entry.startTime === prevEntry.startTime;
-            });
-          });
+          const noMatchingEntry = !longestInteractionList.some(
+            (interaction) => {
+              return interaction.entries.some((prevEntry) => {
+                return (
+                  entry.duration === prevEntry.duration &&
+                  entry.startTime === prevEntry.startTime
+                );
+              });
+            }
+          );
           if (noMatchingEntry) {
             processEntry(entry);
           }
@@ -192,7 +210,12 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
       durationThreshold: opts!.durationThreshold || 40,
     } as PerformanceObserverInit);
 
-    report = bindReporter(onReport, metric, thresholds, opts!.reportAllChanges);
+    report = bindReporter(
+      onReport,
+      metric,
+      INPThresholds,
+      opts!.reportAllChanges
+    );
 
     if (po) {
       // Also observe entries of type `first-input`. This is useful in cases
@@ -222,7 +245,11 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
         metric = initMetric('INP');
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          INPThresholds,
+          opts!.reportAllChanges
+        );
       });
     }
   });

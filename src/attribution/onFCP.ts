@@ -18,8 +18,13 @@ import {getBFCacheRestoreTime} from '../lib/bfcache.js';
 import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
-import {FCPMetric, FCPMetricWithAttribution, FCPReportCallback, FCPReportCallbackWithAttribution, ReportOpts} from '../types.js';
-
+import {
+  FCPMetric,
+  FCPMetricWithAttribution,
+  FCPReportCallback,
+  FCPReportCallbackWithAttribution,
+  ReportOpts,
+} from '../types.js';
 
 const attributeFCP = (metric: FCPMetric): void => {
   if (metric.entries.length) {
@@ -54,9 +59,15 @@ const attributeFCP = (metric: FCPMetric): void => {
  * relevant `paint` performance entry used to determine the value. The reported
  * value is a `DOMHighResTimeStamp`.
  */
-export const onFCP = (onReport: FCPReportCallbackWithAttribution, opts?: ReportOpts) => {
-  unattributedOnFCP(((metric: FCPMetricWithAttribution) => {
-    attributeFCP(metric);
-    onReport(metric);
-  }) as FCPReportCallback, opts);
+export const onFCP = (
+  onReport: FCPReportCallbackWithAttribution,
+  opts?: ReportOpts
+) => {
+  unattributedOnFCP(
+    ((metric: FCPMetricWithAttribution) => {
+      attributeFCP(metric);
+      onReport(metric);
+    }) as FCPReportCallback,
+    opts
+  );
 };

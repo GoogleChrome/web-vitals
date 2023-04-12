@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
+import {
+  firstInputPolyfill,
+  resetFirstInputPolyfill,
+} from './lib/polyfills/firstInputPolyfill.js';
 import {getFirstHiddenTime} from './lib/polyfills/getFirstHiddenTimePolyfill.js';
 
 resetFirstInputPolyfill();

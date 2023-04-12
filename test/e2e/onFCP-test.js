@@ -21,21 +21,20 @@ import {domReadyState} from '../utils/domReadyState.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
-
-describe('onFCP()', async function() {
+describe('onFCP()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
   let browserSupportsFCP;
-  before(async function() {
+  before(async function () {
     browserSupportsFCP = await browserSupportsEntry('paint');
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     await clearBeacons();
   });
 
-  it('reports the correct value after the first paint', async function() {
+  it('reports the correct value after the first paint', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp');
@@ -52,7 +51,24 @@ describe('onFCP()', async function() {
     assert.match(fcp.navigationType, /navigate|reload/);
   });
 
-  it('accounts for time prerendering the page', async function() {
+  it('reports the correct value when loaded late', async function () {
+    if (!browserSupportsFCP) this.skip();
+
+    await browser.url('/test/fcp?lazyLoad=1');
+
+    await beaconCountIs(1);
+
+    const [fcp] = await getBeacons();
+    assert(fcp.value >= 0);
+    assert(fcp.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(fcp.name, 'FCP');
+    assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'good');
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.match(fcp.navigationType, /navigate|reload/);
+  });
+
+  it('accounts for time prerendering the page', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?prerender=1');
@@ -75,7 +91,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp.navigationType, 'prerender');
   });
 
-  it('does not report if the browser does not support FCP (including bfcache restores)', async function() {
+  it('does not report if the browser does not support FCP (including bfcache restores)', async function () {
     if (browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp');
@@ -96,7 +112,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(bfcacheRestoreBeacons.length, 0);
   });
 
-  it('does not report if the document was hidden at page load time', async function() {
+  it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?hidden=1');
@@ -111,7 +127,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('does not report if the document changes to hidden before the first entry', async function() {
+  it('does not report if the document changes to hidden before the first entry', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?invisible=1');
@@ -126,7 +142,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('reports after a render delay before the page changes to hidden', async function() {
+  it('reports after a render delay before the page changes to hidden', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?renderBlocking=2000');
@@ -145,7 +161,7 @@ describe('onFCP()', async function() {
     assert.match(fcp.navigationType, /navigate|reload/);
   });
 
-  it('reports if the page is restored from bfcache', async function() {
+  it('reports if the page is restored from bfcache', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp');
@@ -192,7 +208,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp3.navigationType, 'back-forward-cache');
   });
 
-  it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function() {
+  it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?hidden=1');
@@ -235,7 +251,7 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp2.navigationType, 'back-forward-cache');
   });
 
-  it('reports restore as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await browser.url('/test/fcp?wasDiscarded=1');
@@ -252,8 +268,8 @@ describe('onFCP()', async function() {
     assert.strictEqual(fcp.navigationType, 'restore');
   });
 
-  describe('attribution', function() {
-    it('includes attribution data on the metric object', async function() {
+  describe('attribution', function () {
+    it('includes attribution data on the metric object', async function () {
       if (!browserSupportsFCP) this.skip();
 
       await browser.url('/test/fcp?attribution=1');
@@ -266,7 +282,8 @@ describe('onFCP()', async function() {
       });
       const fcpEntry = await browser.execute(() => {
         return performance
-            .getEntriesByName('first-contentful-paint')[0].toJSON();
+          .getEntriesByName('first-contentful-paint')[0]
+          .toJSON();
       });
 
       const [fcp] = await getBeacons();
@@ -280,10 +297,14 @@ describe('onFCP()', async function() {
       assert.match(fcp.navigationType, /navigate|reload/);
 
       assert.equal(fcp.attribution.timeToFirstByte, navEntry.responseStart);
-      assert.equal(fcp.attribution.firstByteToFCP,
-          fcp.value - navEntry.responseStart);
-      assert.match(fcp.attribution.loadState,
-          /^(loading|dom-(interactive|content-loaded)|complete)$/);
+      assert.equal(
+        fcp.attribution.firstByteToFCP,
+        fcp.value - navEntry.responseStart
+      );
+      assert.match(
+        fcp.attribution.loadState,
+        /^(loading|dom-(interactive|content-loaded)|complete)$/
+      );
 
       assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
 
@@ -296,7 +317,7 @@ describe('onFCP()', async function() {
       assert.equal(attributionNavEntry.responseStart, navEntry.responseStart);
     });
 
-    it('accounts for time prerendering the page', async function() {
+    it('accounts for time prerendering the page', async function () {
       if (!browserSupportsFCP) this.skip();
 
       await browser.url('/test/fcp?attribution=1&prerender=1');
@@ -309,7 +330,8 @@ describe('onFCP()', async function() {
       });
       const fcpEntry = await browser.execute(() => {
         return performance
-            .getEntriesByName('first-contentful-paint')[0].toJSON();
+          .getEntriesByName('first-contentful-paint')[0]
+          .toJSON();
       });
 
       // Since this value is stubbed in the browser, get it separately.
@@ -326,10 +348,14 @@ describe('onFCP()', async function() {
       assert.strictEqual(fcp.entries.length, 1);
       assert.strictEqual(fcp.navigationType, 'prerender');
 
-      assert.equal(fcp.attribution.timeToFirstByte,
-          Math.max(0, navEntry.responseStart - activationStart));
-      assert.equal(fcp.attribution.firstByteToFCP,
-          fcp.value - Math.max(0, navEntry.responseStart - activationStart));
+      assert.equal(
+        fcp.attribution.timeToFirstByte,
+        Math.max(0, navEntry.responseStart - activationStart)
+      );
+      assert.equal(
+        fcp.attribution.firstByteToFCP,
+        fcp.value - Math.max(0, navEntry.responseStart - activationStart)
+      );
 
       assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
 
@@ -342,7 +368,7 @@ describe('onFCP()', async function() {
       assert.equal(attributionNavEntry.responseStart, navEntry.responseStart);
     });
 
-    it('reports after a bfcache restore', async function() {
+    it('reports after a bfcache restore', async function () {
       if (!browserSupportsFCP) this.skip();
 
       await browser.url('/test/fcp?attribution=1');

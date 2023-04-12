@@ -22,9 +22,17 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
+import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {LCPMetric, ReportCallback, ReportOpts} from './types.js';
+import {
+  LCPMetric,
+  MetricRatingThresholds,
+  ReportCallback,
+  ReportOpts,
+} from './types.js';
 
+/** Thresholds for LCP. See https://web.dev/lcp/#what-is-a-good-lcp-score */
+export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
 
 const reportedMetricIDs: Record<string, boolean> = {};
 
@@ -44,27 +52,25 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
 
   whenActivated(() => {
-    // https://web.dev/lcp/#what-is-a-good-lcp-score
-    const thresholds = [2500, 4000];
-
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: LCPMetric['entries']) => {
-      const lastEntry = (entries[entries.length - 1] as LargestContentfulPaint);
+      const lastEntry = entries[entries.length - 1] as LargestContentfulPaint;
       if (lastEntry) {
-        // The startTime attribute returns the value of the renderTime if it is
-        // not 0, and the value of the loadTime otherwise. The activationStart
-        // reference is used because LCP should be relative to page activation
-        // rather than navigation start if the page was prerendered. But in cases
-        // where `activationStart` occurs after the LCP, this time should be
-        // clamped at 0.
-        const value = Math.max(lastEntry.startTime - getActivationStart(), 0);
-
         // Only report if the page wasn't hidden prior to LCP.
-        if (value < visibilityWatcher.firstHiddenTime) {
-          metric.value = value;
+        if (lastEntry.startTime < visibilityWatcher.firstHiddenTime) {
+          // The startTime attribute returns the value of the renderTime if it is
+          // not 0, and the value of the loadTime otherwise. The activationStart
+          // reference is used because LCP should be relative to page activation
+          // rather than navigation start if the page was prerendered. But in cases
+          // where `activationStart` occurs after the LCP, this time should be
+          // clamped at 0.
+          metric.value = Math.max(
+            lastEntry.startTime - getActivationStart(),
+            0
+          );
           metric.entries = [lastEntry];
           report();
         }
@@ -75,32 +81,40 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     if (po) {
       report = bindReporter(
-          onReport, metric, thresholds, opts!.reportAllChanges);
+        onReport,
+        metric,
+        LCPThresholds,
+        opts!.reportAllChanges
+      );
 
-      const stopListening = () => {
+      const stopListening = runOnce(() => {
         if (!reportedMetricIDs[metric.id]) {
           handleEntries(po!.takeRecords() as LCPMetric['entries']);
           po!.disconnect();
           reportedMetricIDs[metric.id] = true;
           report(true);
         }
-      }
+      });
 
       // Stop listening after input. Note: while scrolling is an input that
       // stops LCP observation, it's unreliable since it can be programmatically
       // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
       ['keydown', 'click'].forEach((type) => {
-        addEventListener(type, stopListening, {once: true, capture: true});
+        addEventListener(type, stopListening, true);
       });
 
-      onHidden(stopListening, true);
+      onHidden(stopListening);
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore((event) => {
         metric = initMetric('LCP');
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          LCPThresholds,
+          opts!.reportAllChanges
+        );
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;

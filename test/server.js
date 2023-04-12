@@ -18,7 +18,6 @@ import express from 'express';
 import fs from 'fs-extra';
 import nunjucks from 'nunjucks';
 
-
 const BEACON_FILE = 'test/beacons.log';
 const app = express();
 
@@ -49,7 +48,7 @@ app.post('/collect', bodyParser.text(), (req, res) => {
   res.end();
 });
 
-app.get('/test/:view', function(req, res, next) {
+app.get('/test/:view', function (req, res, next) {
   let modulePath = `/dist/web-vitals.js`;
   if (req.query.polyfill) {
     modulePath = `/dist/web-vitals.base.js`;
@@ -62,7 +61,7 @@ app.get('/test/:view', function(req, res, next) {
     ...req.query,
     modulePath: modulePath,
     webVitalsPolyfill: fs.readFileSync('./dist/polyfill.js', 'utf-8'),
-  }
+  };
 
   const content = nunjucks.render(`${req.params.view}.njk`, data);
   if (req.query.delayResponse) {

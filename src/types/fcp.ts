@@ -17,7 +17,6 @@
 import {LoadState, Metric, ReportCallback} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
-
 /**
  * An FCP-specific version of the Metric object.
  */
@@ -31,7 +30,7 @@ export interface FCPMetric extends Metric {
  * can be sent along with the FCP value for the current page visit in order
  * to help identify issues happening to real-users in the field.
  */
- export interface FCPAttribution {
+export interface FCPAttribution {
   /**
    * The time from when the user initiates loading the page until when the
    * browser receives the first byte of the response (a.k.a. TTFB).
@@ -46,14 +45,15 @@ export interface FCPMetric extends Metric {
    * `LoadState` for details). Ideally, documents can paint before they finish
    * loading (e.g. the `loading` or `dom-interactive` phases).
    */
-  loadState: LoadState,
+  loadState: LoadState;
   /**
    * The `PerformancePaintTiming` entry corresponding to FCP.
    */
-  fcpEntry?: PerformancePaintTiming,
+  fcpEntry?: PerformancePaintTiming;
   /**
    * The `navigation` entry of the current page, which is useful for diagnosing
-   * general page load issues.
+   * general page load issues. This can be used to access `serverTiming` for example:
+   * navigationEntry?.serverTiming
    */
   navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
 }

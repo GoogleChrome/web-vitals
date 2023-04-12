@@ -21,21 +21,20 @@ import {domReadyState} from '../utils/domReadyState.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
-
-describe('onFID()', async function() {
+describe('onFID()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
   let browserSupportsFID;
-  before(async function() {
+  before(async function () {
     browserSupportsFID = await browserSupportsEntry('first-input');
   });
 
-  beforeEach(async function() {
+  beforeEach(async function () {
     await clearBeacons();
   });
 
-  it('reports the correct value after input', async function() {
+  it('reports the correct value after input', async function () {
     if (!browserSupportsFID) this.skip();
 
     await browser.url('/test/fid');
@@ -56,7 +55,28 @@ describe('onFID()', async function() {
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
 
-  it('does not report if the browser does not support FID and the polyfill is not used', async function() {
+  it('reports the correct value after input', async function () {
+    if (!browserSupportsFID) this.skip();
+
+    await browser.url('/test/fid?loadAfterInput=1');
+
+    // Click on the <h1>.
+    const h1 = await $('h1');
+    await h1.click();
+
+    await beaconCountIs(1);
+
+    const [fid] = await getBeacons();
+    assert(fid.value >= 0);
+    assert(fid.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(fid.name, 'FID');
+    assert.strictEqual(fid.value, fid.delta);
+    assert.strictEqual(fid.rating, 'good');
+    assert.match(fid.navigationType, /navigate|reload/);
+    assert.match(fid.entries[0].name, /(mouse|pointer)down/);
+  });
+
+  it('does not report if the browser does not support FID and the polyfill is not used', async function () {
     if (browserSupportsFID) this.skip();
 
     await browser.url('/test/fid');
@@ -84,7 +104,7 @@ describe('onFID()', async function() {
     assert.strictEqual(bfcacheRestoreBeacons.length, 0);
   });
 
-  it('falls back to the polyfill in non-supporting browsers', async function() {
+  it('falls back to the polyfill in non-supporting browsers', async function () {
     // Ignore Safari until this bug is fixed:
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
@@ -113,7 +133,7 @@ describe('onFID()', async function() {
     }
   });
 
-  it('does not report if the document was hidden at page load time', async function() {
+  it('does not report if the document was hidden at page load time', async function () {
     // Ignore Safari until this bug is fixed:
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
@@ -134,7 +154,7 @@ describe('onFID()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('does not report if the document changes to hidden before the first input', async function() {
+  it('does not report if the document changes to hidden before the first input', async function () {
     // Ignore Safari until this bug is fixed:
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
@@ -155,7 +175,7 @@ describe('onFID()', async function() {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('reports the first input delay after bfcache restores', async function() {
+  it('reports the first input delay after bfcache restores', async function () {
     if (!browserSupportsFID) this.skip();
 
     await browser.url('/test/fid');
@@ -194,7 +214,7 @@ describe('onFID()', async function() {
     assert.match(fid2.entries[0].name, /(mouse|pointer)down/);
   });
 
-  it('reports prerender as nav type for prerender', async function() {
+  it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsFID) this.skip();
 
     await browser.url('/test/fid?prerender=1');
@@ -215,7 +235,7 @@ describe('onFID()', async function() {
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
 
-  it('reports restore as nav type for wasDiscarded', async function() {
+  it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsFID) this.skip();
 
     await browser.url('/test/fid?wasDiscarded=1');
@@ -236,9 +256,8 @@ describe('onFID()', async function() {
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
 
-
-  describe('attribution', function() {
-    it('includes attribution data on the metric object', async function() {
+  describe('attribution', function () {
+    it('includes attribution data on the metric object', async function () {
       if (!browserSupportsFID) this.skip();
 
       await browser.url('/test/fid?attribution=1');
@@ -267,7 +286,7 @@ describe('onFID()', async function() {
       assert.equal(fid.attribution.loadState, 'complete');
     });
 
-    it('reports the domReadyState when input occurred', async function() {
+    it('reports the domReadyState when input occurred', async function () {
       if (!browserSupportsFID) this.skip();
 
       await browser.url('/test/fid?attribution=1&delayDCL=1000');
@@ -296,5 +315,3 @@ describe('onFID()', async function() {
     });
   });
 });
-
-
