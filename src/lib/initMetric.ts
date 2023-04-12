@@ -35,8 +35,6 @@ export const initMetric = (name: Metric['name'], value?: number): Metric => {
     } else if (navEntry.type) {
       navigationType =
           navEntry.type.replace(/_/g, '-') as Metric['navigationType'];
-    } else {
-       navigationType = 'unknown';
     }
   }
 
