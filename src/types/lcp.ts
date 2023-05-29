@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Metric, ReportCallback} from './base.js';
+import {Metric, ReportCallback, ReportCallbackWithAttribution} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
@@ -98,6 +98,7 @@ export interface LCPReportCallback extends ReportCallback {
 /**
  * An LCP-specific version of the ReportCallback function with attribution.
  */
-export interface LCPReportCallbackWithAttribution extends LCPReportCallback {
+export interface LCPReportCallbackWithAttribution
+  extends ReportCallbackWithAttribution {
   (metric: LCPMetricWithAttribution): void;
 }

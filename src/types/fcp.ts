@@ -14,7 +14,12 @@
  * limitations under the License.
  */
 
-import {LoadState, Metric, ReportCallback} from './base.js';
+import {
+  LoadState,
+  Metric,
+  ReportCallback,
+  ReportCallbackWithAttribution,
+} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
@@ -75,6 +80,7 @@ export interface FCPReportCallback extends ReportCallback {
 /**
  * An FCP-specific version of the ReportCallback function with attribution.
  */
-export interface FCPReportCallbackWithAttribution extends FCPReportCallback {
+export interface FCPReportCallbackWithAttribution
+  extends ReportCallbackWithAttribution {
   (metric: FCPMetricWithAttribution): void;
 }
