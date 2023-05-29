@@ -81,7 +81,7 @@ export const onCLS = (
   opts?: ReportOpts
 ) => {
   unattributedOnCLS(
-    ((metric: CLSMetric) => {
+    ((metric: CLSMetricWithAttribution) => {
       attributeCLS(metric);
       onReport(metric);
     }) as CLSReportCallback,

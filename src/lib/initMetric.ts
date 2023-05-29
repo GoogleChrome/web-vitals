@@ -39,7 +39,7 @@ export const initMetric = (
       navigationType = 'prerender';
     } else if (document.wasDiscarded) {
       navigationType = 'restore';
-    } else {
+    } else if (navEntry.type) {
       navigationType = navEntry.type.replace(
         /_/g,
         '-'

@@ -1,5 +1,10 @@
 # Changelog
 
+### v3.3.2 (2023-05-29)
+
+- Fix attribution types ([#348](https://github.com/GoogleChrome/web-vitals/pull/348))
+- Safe access navigation entry type ([#290](https://github.com/GoogleChrome/web-vitals/pull/290))
+
 ### v3.3.1 (2023-04-04)
 
 - Export metric rating thresholds in attribution build as well.

@@ -127,6 +127,10 @@ export interface ReportCallback {
   (metric: Metric): void;
 }
 
+export interface ReportCallbackWithAttribution {
+  (metric: MetricWithAttribution): void;
+}
+
 export interface ReportOpts {
   reportAllChanges?: boolean;
   durationThreshold?: number;
