@@ -69,7 +69,7 @@ export interface TTFBMetricWithAttribution extends TTFBMetric {
 /**
  * A TTFB-specific version of the ReportCallback function.
  */
-export interface TTFBReportCallback extends ReportCallback {
+export interface TTFBReportCallback extends Omit<ReportCallback, 'metric'> {
   (metric: TTFBMetric): void;
 }
 
@@ -77,6 +77,6 @@ export interface TTFBReportCallback extends ReportCallback {
  * A TTFB-specific version of the ReportCallback function with attribution.
  */
 export interface TTFBReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+  extends Omit<ReportCallbackWithAttribution, 'metric'> {
   (metric: TTFBMetricWithAttribution): void;
 }

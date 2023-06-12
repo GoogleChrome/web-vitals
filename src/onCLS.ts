@@ -26,6 +26,7 @@ import {
   CLSMetric,
   CLSReportCallback,
   MetricRatingThresholds,
+  ReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -105,7 +106,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       const po = observe('layout-shift', handleEntries);
       if (po) {
         report = bindReporter(
-          onReport,
+          onReport as ReportCallback,
           metric,
           CLSThresholds,
           opts!.reportAllChanges
@@ -122,7 +123,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           sessionValue = 0;
           metric = initMetric('CLS', 0);
           report = bindReporter(
-            onReport,
+            onReport as ReportCallback,
             metric,
             CLSThresholds,
             opts!.reportAllChanges

@@ -91,7 +91,7 @@ export interface LCPMetricWithAttribution extends LCPMetric {
 /**
  * An LCP-specific version of the ReportCallback function.
  */
-export interface LCPReportCallback extends ReportCallback {
+export interface LCPReportCallback extends Omit<ReportCallback, 'metric'> {
   (metric: LCPMetric): void;
 }
 
@@ -99,6 +99,6 @@ export interface LCPReportCallback extends ReportCallback {
  * An LCP-specific version of the ReportCallback function with attribution.
  */
 export interface LCPReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+  extends Omit<ReportCallbackWithAttribution, 'metric'> {
   (metric: LCPMetricWithAttribution): void;
 }

@@ -73,7 +73,7 @@ export interface FCPMetricWithAttribution extends FCPMetric {
 /**
  * An FCP-specific version of the ReportCallback function.
  */
-export interface FCPReportCallback extends ReportCallback {
+export interface FCPReportCallback extends Omit<ReportCallback, 'metric'> {
   (metric: FCPMetric): void;
 }
 
@@ -81,6 +81,6 @@ export interface FCPReportCallback extends ReportCallback {
  * An FCP-specific version of the ReportCallback function with attribution.
  */
 export interface FCPReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+  extends Omit<ReportCallbackWithAttribution, 'metric'> {
   (metric: FCPMetricWithAttribution): void;
 }

@@ -81,7 +81,7 @@ export interface CLSMetricWithAttribution extends CLSMetric {
 /**
  * A CLS-specific version of the ReportCallback function.
  */
-export interface CLSReportCallback extends ReportCallback {
+export interface CLSReportCallback extends Omit<ReportCallback, 'metric'> {
   (metric: CLSMetric): void;
 }
 
@@ -89,6 +89,6 @@ export interface CLSReportCallback extends ReportCallback {
  * A CLS-specific version of the ReportCallback function with attribution.
  */
 export interface CLSReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+  extends Omit<ReportCallbackWithAttribution, 'metric'> {
   (metric: CLSMetricWithAttribution): void;
 }

@@ -74,7 +74,7 @@ export interface FIDMetricWithAttribution extends FIDMetric {
 /**
  * An FID-specific version of the ReportCallback function.
  */
-export interface FIDReportCallback extends ReportCallback {
+export interface FIDReportCallback extends Omit<ReportCallback, 'metric'> {
   (metric: FIDMetric): void;
 }
 
@@ -82,6 +82,6 @@ export interface FIDReportCallback extends ReportCallback {
  * An FID-specific version of the ReportCallback function with attribution.
  */
 export interface FIDReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+  extends Omit<ReportCallbackWithAttribution, 'metric'> {
   (metric: FIDMetricWithAttribution): void;
 }

@@ -73,7 +73,7 @@ export interface INPMetricWithAttribution extends INPMetric {
 /**
  * An INP-specific version of the ReportCallback function.
  */
-export interface INPReportCallback extends ReportCallback {
+export interface INPReportCallback extends Omit<ReportCallback, 'metric'> {
   (metric: INPMetric): void;
 }
 
@@ -81,6 +81,6 @@ export interface INPReportCallback extends ReportCallback {
  * An INP-specific version of the ReportCallback function with attribution.
  */
 export interface INPReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+  extends Omit<ReportCallbackWithAttribution, 'metric'> {
   (metric: INPMetricWithAttribution): void;
 }
