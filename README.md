@@ -1218,16 +1218,16 @@ interface TTFBAttribution {
 
 ## Browser Support
 
-The `web-vitals` code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9. However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
+The `web-vitals` code has been tested and will run without error in all major browsers. However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
 
 Browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari 14.1+
-- `onFID()`: Chromium, Firefox _(with [polyfill](#how-to-use-the-polyfill): Safari, Internet Explorer)_
+- `onFID()`: Chromium, Firefox _(with [polyfill](#how-to-use-the-polyfill): Safari)_
 - `onINP()`: Chromium
 - `onLCP()`: Chromium
-- `onTTFB()`: Chromium, Firefox, Safari 15+ _(with [polyfill](#how-to-use-the-polyfill): Safari 8+, Internet Explorer)_
+- `onTTFB()`: Chromium, Firefox, Safari 15+ _(with [polyfill](#how-to-use-the-polyfill): Safari 8+)_
 
 ## Limitations
 
