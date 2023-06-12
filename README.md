@@ -530,7 +530,7 @@ addEventListener('visibilitychange', () => {
   }
 });
 
-// NOTE: Safari does not reliably fire the `visibilitychange` event when the
+  // NOTE: Safari does not reliably fire the `visibilitychange` event when the
 // page is being unloaded. If Safari support is needed, you should also flush
 // the queue in the `pagehide` event.
 addEventListener('pagehide', flushQueue);
@@ -1224,10 +1224,10 @@ Browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari 14.1+
-- `onFID()`: Chromium, Firefox _(with [polyfill](#how-to-use-the-polyfill): Safari, Internet Explorer)_
+- `onFID()`: Chromium, Firefox
 - `onINP()`: Chromium
 - `onLCP()`: Chromium
-- `onTTFB()`: Chromium, Firefox, Safari 15+ _(with [polyfill](#how-to-use-the-polyfill): Safari 8+, Internet Explorer)_
+- `onTTFB()`: Chromium, Firefox, Safari 15+
 
 ## Limitations
 
