@@ -20,7 +20,10 @@ import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
 import {Metric} from '../types.js';
 
-export const initMetric = (name: Metric['name'], value?: number): Metric => {
+export const initMetric = <MetricName extends Metric['name']>(
+  name: MetricName,
+  value?: number
+) => {
   const navEntry = getNavigationEntry();
   let navigationType: Metric['navigationType'] = 'navigate';
 
@@ -39,12 +42,15 @@ export const initMetric = (name: Metric['name'], value?: number): Metric => {
     }
   }
 
+  // Use `entries` type specific for the metric.
+  const entries: Extract<Metric, {name: MetricName}>['entries'] = [];
+
   return {
     name,
     value: typeof value === 'undefined' ? -1 : value,
-    rating: 'good', // Will be updated if the value changes.
+    rating: 'good' as const, // If needed, will be updated when reported. `const` to keep the type from widening to `string`.
     delta: 0,
-    entries: [],
+    entries,
     id: generateUniqueID(),
     navigationType,
   };

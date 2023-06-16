@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {LoadState, Metric} from './base.js';
+import type {LoadState, MetricBase} from './base.js';
 import {FirstInputPolyfillEntry} from './polyfills.js';
 
 /**
  * An FID-specific version of the Metric object.
  */
-export interface FIDMetric extends Metric {
+export interface FIDMetric extends MetricBase {
   name: 'FID';
   entries: (PerformanceEventTiming | FirstInputPolyfillEntry)[];
 }

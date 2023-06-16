@@ -26,7 +26,6 @@ import {
   CLSMetric,
   CLSReportCallback,
   MetricRatingThresholds,
-  ReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -66,9 +65,8 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       let report: ReturnType<typeof bindReporter>;
 
       let sessionValue = 0;
-      let sessionEntries: PerformanceEntry[] = [];
+      let sessionEntries: LayoutShift[] = [];
 
-      // const handleEntries = (entries: Metric['entries']) => {
       const handleEntries = (entries: LayoutShift[]) => {
         entries.forEach((entry) => {
           // Only count layout shifts without recent user input.
@@ -106,7 +104,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       const po = observe('layout-shift', handleEntries);
       if (po) {
         report = bindReporter(
-          onReport as ReportCallback,
+          onReport,
           metric,
           CLSThresholds,
           opts!.reportAllChanges
@@ -123,7 +121,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           sessionValue = 0;
           metric = initMetric('CLS', 0);
           report = bindReporter(
-            onReport as ReportCallback,
+            onReport,
             metric,
             CLSThresholds,
             opts!.reportAllChanges

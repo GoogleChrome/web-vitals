@@ -18,8 +18,14 @@ import {
   FirstInputPolyfillEntry,
   NavigationTimingPolyfillEntry,
 } from './polyfills.js';
+import type {CLSMetric} from './cls.js';
+import type {FCPMetric} from './fcp.js';
+import type {FIDMetric} from './fid.js';
+import type {INPMetric} from './inp.js';
+import type {LCPMetric} from './lcp.js';
+import type {TTFBMetric} from './ttfb.js';
 
-export interface Metric {
+export interface MetricBase {
   /**
    * The name of the metric (in acronym form).
    */
@@ -85,17 +91,14 @@ export interface Metric {
     | 'restore';
 }
 
-/**
- * A version of the `Metric` that is used with the attribution build.
- */
-export interface MetricWithAttribution extends Metric {
-  /**
-   * An object containing potentially-helpful debugging information that
-   * can be sent along with the metric value for the current page visit in
-   * order to help identify issues happening to real-users in the field.
-   */
-  attribution: {[key: string]: unknown};
-}
+/** The union of supported metric types. */
+export type Metric =
+  | CLSMetric
+  | FCPMetric
+  | FIDMetric
+  | INPMetric
+  | LCPMetric
+  | TTFBMetric;
 
 /**
  * The thresholds of metric's "good", "needs improvement", and "poor" ratings.

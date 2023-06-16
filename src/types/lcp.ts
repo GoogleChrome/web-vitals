@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import {Metric} from './base.js';
+import type {MetricBase} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
  * An LCP-specific version of the Metric object.
  */
-export interface LCPMetric extends Metric {
+export interface LCPMetric extends MetricBase {
   name: 'LCP';
   entries: LargestContentfulPaint[];
 }

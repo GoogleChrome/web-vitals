@@ -31,7 +31,6 @@ import {
   FIDReportCallback,
   FirstInputPolyfillCallback,
   MetricRatingThresholds,
-  ReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -71,7 +70,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
 
     const po = observe('first-input', handleEntries);
     report = bindReporter(
-      onReport as ReportCallback,
+      onReport,
       metric,
       FIDThresholds,
       opts!.reportAllChanges
@@ -100,7 +99,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore(() => {
         metric = initMetric('FID');
         report = bindReporter(
-          onReport as ReportCallback,
+          onReport,
           metric,
           FIDThresholds,
           opts!.reportAllChanges
@@ -117,7 +116,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
         onBFCacheRestore(() => {
           metric = initMetric('FID');
           report = bindReporter(
-            onReport as ReportCallback,
+            onReport,
             metric,
             FIDThresholds,
             opts!.reportAllChanges

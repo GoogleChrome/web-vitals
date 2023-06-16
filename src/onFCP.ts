@@ -26,7 +26,6 @@ import {
   FCPMetric,
   FCPReportCallback,
   MetricRatingThresholds,
-  ReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -71,7 +70,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
 
     if (po) {
       report = bindReporter(
-        onReport as ReportCallback,
+        onReport,
         metric,
         FCPThresholds,
         opts!.reportAllChanges
@@ -82,7 +81,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore((event) => {
         metric = initMetric('FCP');
         report = bindReporter(
-          onReport as ReportCallback,
+          onReport,
           metric,
           FCPThresholds,
           opts!.reportAllChanges

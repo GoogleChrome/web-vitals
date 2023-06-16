@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Metric, MetricRatingThresholds, ReportCallback} from '../types.js';
+import {Metric, MetricRatingThresholds} from '../types.js';
 
 const getRating = (
   value: number,
@@ -29,9 +29,9 @@ const getRating = (
   return 'good';
 };
 
-export const bindReporter = (
-  callback: ReportCallback,
-  metric: Metric,
+export const bindReporter = <MetricName extends Metric['name']>(
+  callback: (metric: Extract<Metric, {name: MetricName}>) => void,
+  metric: Extract<Metric, {name: MetricName}>,
   thresholds: MetricRatingThresholds,
   reportAllChanges?: boolean
 ) => {
