@@ -28,6 +28,7 @@ import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
+  FIDReportCallback,
   FirstInputPolyfillCallback,
   MetricRatingThresholds,
   ReportCallback,
@@ -46,7 +47,7 @@ export const FIDThresholds: MetricRatingThresholds = [100, 300];
  * _**Important:** since FID is only reported after the user interacts with the
  * page, it's possible that it will not be reported for some page loads._
  */
-export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
@@ -70,7 +71,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     const po = observe('first-input', handleEntries);
     report = bindReporter(
-      onReport,
+      onReport as ReportCallback,
       metric,
       FIDThresholds,
       opts!.reportAllChanges
@@ -99,7 +100,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore(() => {
         metric = initMetric('FID');
         report = bindReporter(
-          onReport,
+          onReport as ReportCallback,
           metric,
           FIDThresholds,
           opts!.reportAllChanges
@@ -116,7 +117,7 @@ export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
         onBFCacheRestore(() => {
           metric = initMetric('FID');
           report = bindReporter(
-            onReport,
+            onReport as ReportCallback,
             metric,
             FIDThresholds,
             opts!.reportAllChanges

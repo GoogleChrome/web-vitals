@@ -27,6 +27,7 @@ import {whenActivated} from './lib/whenActivated.js';
 import {
   LCPMetric,
   MetricRatingThresholds,
+  LCPReportCallback,
   ReportCallback,
   ReportOpts,
 } from './types.js';
@@ -47,7 +48,7 @@ const reportedMetricIDs: Record<string, boolean> = {};
  * performance entry is dispatched, or once the final value of the metric has
  * been determined.
  */
-export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
@@ -81,7 +82,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
     if (po) {
       report = bindReporter(
-        onReport,
+        onReport as ReportCallback,
         metric,
         LCPThresholds,
         opts!.reportAllChanges
@@ -110,7 +111,7 @@ export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore((event) => {
         metric = initMetric('LCP');
         report = bindReporter(
-          onReport,
+          onReport as ReportCallback,
           metric,
           LCPThresholds,
           opts!.reportAllChanges

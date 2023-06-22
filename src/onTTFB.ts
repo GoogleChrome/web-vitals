@@ -18,7 +18,12 @@ import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {MetricRatingThresholds, ReportCallback, ReportOpts} from './types.js';
+import {
+  MetricRatingThresholds,
+  ReportCallback,
+  ReportOpts,
+  TTFBReportCallback,
+} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {whenActivated} from './lib/whenActivated.js';
 
@@ -55,13 +60,13 @@ const whenReady = (callback: () => void) => {
  * includes time spent on DNS lookup, connection negotiation, network latency,
  * and server processing time.
  */
-export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
   let metric = initMetric('TTFB');
   let report = bindReporter(
-    onReport,
+    onReport as ReportCallback,
     metric,
     TTFBThresholds,
     opts.reportAllChanges
@@ -95,7 +100,7 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore(() => {
         metric = initMetric('TTFB', 0);
         report = bindReporter(
-          onReport,
+          onReport as ReportCallback,
           metric,
           TTFBThresholds,
           opts!.reportAllChanges

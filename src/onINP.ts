@@ -26,6 +26,7 @@ import {
 import {whenActivated} from './lib/whenActivated.js';
 import {
   INPMetric,
+  INPReportCallback,
   MetricRatingThresholds,
   ReportCallback,
   ReportOpts,
@@ -149,7 +150,7 @@ const estimateP98LongestInteraction = () => {
  * hidden. As a result, the `callback` function might be called multiple times
  * during the same page load._
  */
-export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
 
@@ -211,7 +212,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
     } as PerformanceObserverInit);
 
     report = bindReporter(
-      onReport,
+      onReport as ReportCallback,
       metric,
       INPThresholds,
       opts!.reportAllChanges
@@ -245,7 +246,7 @@ export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
 
         metric = initMetric('INP');
         report = bindReporter(
-          onReport,
+          onReport as ReportCallback,
           metric,
           INPThresholds,
           opts!.reportAllChanges
