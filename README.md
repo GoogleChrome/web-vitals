@@ -41,7 +41,7 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 
 ### Other metrics
 
-- [Interaction to next Paint (INP)](https://web.dev/inp/) _(experimental)_
+- [Interaction to next Paint (INP)](https://web.dev/inp/)
 - [First Contentful Paint (FCP)](https://web.dev/fcp/)
 - [Time to First Byte (TTFB)](https://web.dev/ttfb/)
 
