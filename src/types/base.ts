@@ -25,7 +25,7 @@ import type {INPMetric} from './inp.js';
 import type {LCPMetric} from './lcp.js';
 import type {TTFBMetric} from './ttfb.js';
 
-export interface MetricBase {
+export interface Metric {
   /**
    * The name of the metric (in acronym form).
    */
@@ -92,13 +92,25 @@ export interface MetricBase {
 }
 
 /** The union of supported metric types. */
-export type Metric =
+export type MetricType =
   | CLSMetric
   | FCPMetric
   | FIDMetric
   | INPMetric
   | LCPMetric
   | TTFBMetric;
+
+/**
+ * A version of the `Metric` that is used with the attribution build.
+ */
+export interface MetricWithAttribution extends Metric {
+  /**
+   * An object containing potentially-helpful debugging information that
+   * can be sent along with the metric value for the current page visit in
+   * order to help identify issues happening to real-users in the field.
+   */
+  attribution: {[key: string]: unknown};
+}
 
 /**
  * The thresholds of metric's "good", "needs improvement", and "poor" ratings.
@@ -116,7 +128,7 @@ export type Metric =
 export type MetricRatingThresholds = [number, number];
 
 export interface ReportCallback {
-  (metric: Metric): void;
+  (metric: MetricType): void;
 }
 
 export interface ReportOpts {

@@ -18,14 +18,14 @@ import {getBFCacheRestoreTime} from './bfcache.js';
 import {generateUniqueID} from './generateUniqueID.js';
 import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
-import {Metric} from '../types.js';
+import {MetricType} from '../types.js';
 
-export const initMetric = <MetricName extends Metric['name']>(
+export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
   value?: number
 ) => {
   const navEntry = getNavigationEntry();
-  let navigationType: Metric['navigationType'] = 'navigate';
+  let navigationType: MetricType['navigationType'] = 'navigate';
 
   if (getBFCacheRestoreTime() >= 0) {
     navigationType = 'back-forward-cache';
@@ -38,12 +38,12 @@ export const initMetric = <MetricName extends Metric['name']>(
       navigationType = navEntry.type.replace(
         /_/g,
         '-'
-      ) as Metric['navigationType'];
+      ) as MetricType['navigationType'];
     }
   }
 
   // Use `entries` type specific for the metric.
-  const entries: Extract<Metric, {name: MetricName}>['entries'] = [];
+  const entries: Extract<MetricType, {name: MetricName}>['entries'] = [];
 
   return {
     name,

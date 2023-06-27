@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import type {LoadState, MetricBase} from './base.js';
+import type {LoadState, Metric} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
  * An FCP-specific version of the Metric object.
  */
-export interface FCPMetric extends MetricBase {
+export interface FCPMetric extends Metric {
   name: 'FCP';
   entries: PerformancePaintTiming[];
 }

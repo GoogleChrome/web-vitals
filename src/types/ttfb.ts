@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-import type {MetricBase} from './base.js';
+import type {Metric} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
  * A TTFB-specific version of the Metric object.
  */
-export interface TTFBMetric extends MetricBase {
+export interface TTFBMetric extends Metric {
   name: 'TTFB';
   entries: PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
 }
