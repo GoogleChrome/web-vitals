@@ -28,7 +28,6 @@ import {
   LCPMetric,
   MetricRatingThresholds,
   LCPReportCallback,
-  ReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -82,7 +81,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
 
     if (po) {
       report = bindReporter(
-        onReport as ReportCallback,
+        onReport,
         metric,
         LCPThresholds,
         opts!.reportAllChanges
@@ -111,7 +110,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore((event) => {
         metric = initMetric('LCP');
         report = bindReporter(
-          onReport as ReportCallback,
+          onReport,
           metric,
           LCPThresholds,
           opts!.reportAllChanges

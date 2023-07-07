@@ -15,7 +15,6 @@
  */
 
 import {observe} from '../observe.js';
-import {Metric} from '../../types.js';
 
 declare global {
   interface Performance {
@@ -27,8 +26,8 @@ let interactionCountEstimate = 0;
 let minKnownInteractionId = Infinity;
 let maxKnownInteractionId = 0;
 
-const updateEstimate = (entries: Metric['entries']) => {
-  (entries as PerformanceEventTiming[]).forEach((e) => {
+const updateEstimate = (entries: PerformanceEventTiming[]) => {
+  entries.forEach((e) => {
     if (e.interactionId) {
       minKnownInteractionId = Math.min(minKnownInteractionId, e.interactionId);
       maxKnownInteractionId = Math.max(maxKnownInteractionId, e.interactionId);

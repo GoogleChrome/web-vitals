@@ -28,7 +28,6 @@ import {
   INPMetric,
   INPReportCallback,
   MetricRatingThresholds,
-  ReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -212,7 +211,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
     } as PerformanceObserverInit);
 
     report = bindReporter(
-      onReport as ReportCallback,
+      onReport,
       metric,
       INPThresholds,
       opts!.reportAllChanges
@@ -246,7 +245,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
 
         metric = initMetric('INP');
         report = bindReporter(
-          onReport as ReportCallback,
+          onReport,
           metric,
           INPThresholds,
           opts!.reportAllChanges

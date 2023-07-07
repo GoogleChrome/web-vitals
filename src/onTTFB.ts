@@ -20,7 +20,6 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {
   MetricRatingThresholds,
-  ReportCallback,
   ReportOpts,
   TTFBReportCallback,
 } from './types.js';
@@ -66,7 +65,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
 
   let metric = initMetric('TTFB');
   let report = bindReporter(
-    onReport as ReportCallback,
+    onReport,
     metric,
     TTFBThresholds,
     opts.reportAllChanges
@@ -100,7 +99,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore(() => {
         metric = initMetric('TTFB', 0);
         report = bindReporter(
-          onReport as ReportCallback,
+          onReport,
           metric,
           TTFBThresholds,
           opts!.reportAllChanges

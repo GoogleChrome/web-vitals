@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Metric} from './base.js';
+import type {Metric} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**

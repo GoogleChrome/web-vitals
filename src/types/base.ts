@@ -18,6 +18,12 @@ import {
   FirstInputPolyfillEntry,
   NavigationTimingPolyfillEntry,
 } from './polyfills.js';
+import type {CLSMetric} from './cls.js';
+import type {FCPMetric} from './fcp.js';
+import type {FIDMetric} from './fid.js';
+import type {INPMetric} from './inp.js';
+import type {LCPMetric} from './lcp.js';
+import type {TTFBMetric} from './ttfb.js';
 
 export interface Metric {
   /**
@@ -85,6 +91,15 @@ export interface Metric {
     | 'restore';
 }
 
+/** The union of supported metric types. */
+export type MetricType =
+  | CLSMetric
+  | FCPMetric
+  | FIDMetric
+  | INPMetric
+  | LCPMetric
+  | TTFBMetric;
+
 /**
  * A version of the `Metric` that is used with the attribution build.
  */
@@ -113,7 +128,7 @@ export interface MetricWithAttribution extends Metric {
 export type MetricRatingThresholds = [number, number];
 
 export interface ReportCallback {
-  (metric: Metric): void;
+  (metric: MetricType): void;
 }
 
 export interface ReportOpts {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LoadState, Metric} from './base.js';
+import type {LoadState, Metric} from './base.js';
 
 /**
  * An INP-specific version of the Metric object.

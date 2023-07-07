@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {LoadState, Metric} from './base.js';
+import type {LoadState, Metric} from './base.js';
 import {FirstInputPolyfillEntry} from './polyfills.js';
 
 /**
