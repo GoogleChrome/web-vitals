@@ -50,7 +50,7 @@ export interface INPAttribution {
    */
   eventEntry?: PerformanceEventTiming;
   /**
-   * The loading state of the document at the time when the even corresponding
+   * The loading state of the document at the time when the event corresponding
    * to INP occurred (see `LoadState` for details). If the interaction occurred
    * while the document was loading and executing script (e.g. usually in the
    * `dom-interactive` phase) it can result in long delays.
