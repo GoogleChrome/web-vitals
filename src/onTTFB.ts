@@ -123,6 +123,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
         report(true);
       });
 
+      // Listen for soft-navigation entries and emit a dummy 0 TTFB entry
       const reportSoftNavTTFBs = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
           if (entry.navigationId) {

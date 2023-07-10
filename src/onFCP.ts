@@ -86,10 +86,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
             // relative to page activation rather than navigation start if the
             // page was prerendered. But in cases where `activationStart` occurs
             // after the FCP, this time should be clamped at 0.
-            value = Math.max(
-              entry.startTime - getActivationStart(getNavigationEntry()),
-              0
-            );
+            value = Math.max(entry.startTime - getActivationStart(), 0);
           } else {
             const navEntry = getSoftNavigationEntry(entry.navigationId);
             const navStartTime = navEntry?.startTime || 0;

@@ -14,13 +14,9 @@
  * limitations under the License.
  */
 
-import {NavigationTimingPolyfillEntry} from '../types.js';
+import {getNavigationEntry} from './getNavigationEntry.js';
 
-export const getActivationStart = (
-  navEntry:
-    | PerformanceNavigationTiming
-    | NavigationTimingPolyfillEntry
-    | undefined
-): number => {
-  return (navEntry && navEntry.activationStart) || 0;
+export const getActivationStart = (): number => {
+  const hardNavEntry = getNavigationEntry();
+  return (hardNavEntry && hardNavEntry.activationStart) || 0;
 };

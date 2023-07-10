@@ -296,6 +296,9 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         doubleRAF(() => report());
       });
 
+      // Soft navs may be detected by navigationId changes in metrics above
+      // But where no metric is issued we need to also listen for soft nav
+      // entries and the final INP for the previous navigation.
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
           if (

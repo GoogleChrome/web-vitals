@@ -39,6 +39,7 @@ const attributeLCP = (metric: LCPMetric) => {
       responseStart = navigationEntry?.responseStart || 0;
     } else {
       navigationEntry = getSoftNavigationEntry();
+      // No need to set activationStart or responseStart as can use default of 0
     }
 
     if (navigationEntry) {

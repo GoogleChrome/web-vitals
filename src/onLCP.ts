@@ -163,6 +163,9 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         });
       });
 
+      // Soft navs may be detected by navigationId changes in metrics above
+      // But where no metric is issued we need to also listen for soft nav
+      // entries and emit the final LCP for the previous navigation.
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
           if (

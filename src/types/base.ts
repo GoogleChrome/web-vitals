@@ -166,8 +166,3 @@ export type LoadState =
   | 'dom-interactive'
   | 'dom-content-loaded'
   | 'complete';
-
-export interface SoftNavs {
-  name: 'SoftNavs';
-  entries: SoftNavigationEntry[];
-}

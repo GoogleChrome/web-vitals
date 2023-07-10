@@ -42,6 +42,7 @@ const attributeFCP = (metric: FCPMetric): void => {
       }
     } else {
       navigationEntry = getSoftNavigationEntry(metric.navigationId);
+      // No need to set activationStart or ttfb as can use default of 0
     }
 
     if (navigationEntry) {

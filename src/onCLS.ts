@@ -16,9 +16,9 @@
 
 import {bindReporter} from './lib/bindReporter.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
+import {doubleRAF} from './lib/doubleRAF.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {doubleRAF} from './lib/doubleRAF.js';
 import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
@@ -167,6 +167,9 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           doubleRAF(() => report());
         });
 
+        // Soft navs may be detected by navigationId changes in metrics above
+        // But where no metric is issued we need to also listen for soft nav
+        // entries and the final CLS for the previous navigation.
         const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
           entries.forEach((entry) => {
             if (
