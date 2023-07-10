@@ -71,7 +71,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         opts!.reportAllChanges
       );
       reportedMetric = false;
-      if ((navigation = 'soft-navigation')) {
+      if (navigation === 'soft-navigation') {
         metricNavStartTime =
           getSoftNavigationEntry(navigationId)?.startTime || 0;
       }

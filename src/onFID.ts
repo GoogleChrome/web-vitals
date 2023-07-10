@@ -70,7 +70,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
         FIDThresholds,
         opts!.reportAllChanges
       );
-      if ((navigation = 'soft-navigation')) {
+      if (navigation === 'soft-navigation') {
         metricNavStartTime =
           getSoftNavigationEntry(navigationId)?.startTime || 0;
       }

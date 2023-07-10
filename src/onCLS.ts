@@ -86,7 +86,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         );
         sessionValue = 0;
         reportedMetric = false;
-        if ((navigation = 'soft-navigation')) {
+        if (navigation === 'soft-navigation') {
           metricNavStartTime =
             getSoftNavigationEntry(navigationId)?.startTime || 0;
         }

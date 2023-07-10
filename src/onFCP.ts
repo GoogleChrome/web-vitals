@@ -63,7 +63,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         FCPThresholds,
         opts!.reportAllChanges
       );
-      if ((navigation = 'soft-navigation')) {
+      if (navigation === 'soft-navigation') {
         metricNavStartTime =
           getSoftNavigationEntry(navigationId)?.startTime || 0;
       }

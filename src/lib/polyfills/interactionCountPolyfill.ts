@@ -15,7 +15,6 @@
  */
 
 import {hardNavId} from '../getNavigationEntry.js';
-import {getSoftNavigationEntry} from '../softNavs.js';
 import {observe} from '../observe.js';
 
 declare global {
@@ -36,9 +35,7 @@ const updateEstimate = (entries: PerformanceEventTiming[]) => {
       if (
         softNavsEnabled &&
         e.navigationId &&
-        e.navigationId !== hardNavId &&
-        (getSoftNavigationEntry(e.navigationId)?.startTime || 0) >
-          (getSoftNavigationEntry(currentNavId)?.startTime || 0)
+        e.navigationId !== currentNavId
       ) {
         currentNavId = e.navigationId;
         interactionCountEstimate = 0;
@@ -77,6 +74,6 @@ export const initInteractionCountPolyfill = (softNavs?: boolean) => {
     type: 'event',
     buffered: true,
     durationThreshold: 0,
-    includeSoftNavigationObservations: softNavs,
+    includeSoftNavigationObservations: softNavsEnabled,
   } as PerformanceObserverInit);
 };

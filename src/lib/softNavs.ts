@@ -26,14 +26,12 @@ export const softNavs = (opts?: ReportOpts) => {
 export const getSoftNavigationEntry = (
   navigationId?: string
 ): SoftNavigationEntry | undefined => {
-  return (
-    window.performance &&
-    performance.getEntriesByType &&
-    performance
-      .getEntriesByType('soft-navigation')
-      .filter((entry) => entry.navigationId === navigationId) &&
-    performance
-      .getEntriesByType('soft-navigation')
-      .filter((entry) => entry.navigationId === navigationId)[0]
-  );
+  if (!navigationId) return;
+
+  const softNavEntry = window?.performance
+    ?.getEntriesByType('soft-navigation')
+    ?.filter((entry) => entry.navigationId === navigationId);
+  if (softNavEntry) return softNavEntry[0];
+
+  return;
 };
