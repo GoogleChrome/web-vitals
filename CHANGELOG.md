@@ -1,5 +1,12 @@
 # Changelog
 
+### v3.4.0 (2023-07-11)
+
+- Make bindReporter generic over metric type ([#359](https://github.com/GoogleChrome/web-vitals/pull/359))
+- Update INP status in README ([#362](https://github.com/GoogleChrome/web-vitals/pull/362))
+- Metric type fixes ([#356](https://github.com/GoogleChrome/web-vitals/pull/356))
+- Fix selector for SVGs ([#354](https://github.com/GoogleChrome/web-vitals/pull/354))
+
 ### v3.3.2 (2023-05-29)
 
 - Fix attribution types ([#348](https://github.com/GoogleChrome/web-vitals/pull/348))
