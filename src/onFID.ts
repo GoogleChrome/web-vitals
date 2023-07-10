@@ -28,10 +28,10 @@ import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
+  FIDReportCallback,
   FirstInputPolyfillCallback,
   Metric,
   MetricRatingThresholds,
-  ReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -47,7 +47,7 @@ export const FIDThresholds: MetricRatingThresholds = [100, 300];
  * _**Important:** since FID is only reported after the user interacts with the
  * page, it's possible that it will not be reported for some page loads._
  */
-export const onFID = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);

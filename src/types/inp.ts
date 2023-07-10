@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  LoadState,
-  Metric,
-  ReportCallback,
-  ReportCallbackWithAttribution,
-} from './base.js';
+import type {LoadState, Metric} from './base.js';
 
 /**
  * An INP-specific version of the Metric object.
@@ -55,7 +50,7 @@ export interface INPAttribution {
    */
   eventEntry?: PerformanceEventTiming;
   /**
-   * The loading state of the document at the time when the even corresponding
+   * The loading state of the document at the time when the event corresponding
    * to INP occurred (see `LoadState` for details). If the interaction occurred
    * while the document was loading and executing script (e.g. usually in the
    * `dom-interactive` phase) it can result in long delays.
@@ -73,14 +68,13 @@ export interface INPMetricWithAttribution extends INPMetric {
 /**
  * An INP-specific version of the ReportCallback function.
  */
-export interface INPReportCallback extends ReportCallback {
+export interface INPReportCallback {
   (metric: INPMetric): void;
 }
 
 /**
  * An INP-specific version of the ReportCallback function with attribution.
  */
-export interface INPReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+export interface INPReportCallbackWithAttribution {
   (metric: INPMetricWithAttribution): void;
 }

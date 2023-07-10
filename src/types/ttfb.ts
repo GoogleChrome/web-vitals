@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {Metric, ReportCallback, ReportCallbackWithAttribution} from './base.js';
+import type {Metric} from './base.js';
 import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
@@ -69,14 +69,13 @@ export interface TTFBMetricWithAttribution extends TTFBMetric {
 /**
  * A TTFB-specific version of the ReportCallback function.
  */
-export interface TTFBReportCallback extends ReportCallback {
+export interface TTFBReportCallback {
   (metric: TTFBMetric): void;
 }
 
 /**
  * A TTFB-specific version of the ReportCallback function with attribution.
  */
-export interface TTFBReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+export interface TTFBReportCallbackWithAttribution {
   (metric: TTFBMetricWithAttribution): void;
 }

@@ -69,7 +69,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       let report: ReturnType<typeof bindReporter>;
 
       let sessionValue = 0;
-      let sessionEntries: PerformanceEntry[] = [];
+      let sessionEntries: LayoutShift[] = [];
 
       const initNewCLSMetric = (
         navigation?: Metric['navigationType'],
@@ -86,7 +86,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         reportedMetric = false;
       };
 
-      // const handleEntries = (entries: Metric['entries']) => {
       const handleEntries = (entries: LayoutShift[]) => {
         entries.forEach((entry) => {
           if (

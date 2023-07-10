@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  LoadState,
-  Metric,
-  ReportCallback,
-  ReportCallbackWithAttribution,
-} from './base.js';
+import type {LoadState, Metric} from './base.js';
 import {FirstInputPolyfillEntry} from './polyfills.js';
 
 /**
@@ -74,14 +69,13 @@ export interface FIDMetricWithAttribution extends FIDMetric {
 /**
  * An FID-specific version of the ReportCallback function.
  */
-export interface FIDReportCallback extends ReportCallback {
+export interface FIDReportCallback {
   (metric: FIDMetric): void;
 }
 
 /**
  * An FID-specific version of the ReportCallback function with attribution.
  */
-export interface FIDReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+export interface FIDReportCallbackWithAttribution {
   (metric: FIDMetricWithAttribution): void;
 }

@@ -16,7 +16,11 @@
 
 import {bindReporter} from './lib/bindReporter.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {MetricRatingThresholds, ReportCallback, ReportOpts} from './types.js';
+import {
+  MetricRatingThresholds,
+  ReportOpts,
+  TTFBReportCallback,
+} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -57,7 +61,7 @@ const whenReady = (callback: () => void) => {
  * includes time spent on DNS lookup, connection negotiation, network latency,
  * and server processing time.
  */
-export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);

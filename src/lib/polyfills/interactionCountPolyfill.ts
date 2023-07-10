@@ -15,7 +15,6 @@
  */
 
 import {observe} from '../observe.js';
-import {Metric} from '../../types.js';
 
 declare global {
   interface Performance {
@@ -29,8 +28,8 @@ let maxKnownInteractionId = 0;
 let currentNav = 1;
 let softNavsEnabled = false;
 
-const updateEstimate = (entries: Metric['entries']) => {
-  (entries as PerformanceEventTiming[]).forEach((e) => {
+const updateEstimate = (entries: PerformanceEventTiming[]) => {
+  entries.forEach((e) => {
     if (e.interactionId) {
       if (softNavsEnabled && e.navigationId && e.navigationId > currentNav) {
         currentNav = e.navigationId;

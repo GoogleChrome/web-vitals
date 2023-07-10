@@ -28,7 +28,7 @@ import {
   LCPMetric,
   Metric,
   MetricRatingThresholds,
-  ReportCallback,
+  LCPReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -46,7 +46,7 @@ export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
  * performance entry is dispatched, or once the final value of the metric has
  * been determined.
  */
-export const onLCP = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   let reportedMetric = false;
   opts = opts || {};

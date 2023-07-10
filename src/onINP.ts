@@ -28,9 +28,9 @@ import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   INPMetric,
+  INPReportCallback,
   Metric,
   MetricRatingThresholds,
-  ReportCallback,
   ReportOpts,
 } from './types.js';
 
@@ -152,7 +152,7 @@ const estimateP98LongestInteraction = () => {
  * hidden. As a result, the `callback` function might be called multiple times
  * during the same page load._
  */
-export const onINP = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);

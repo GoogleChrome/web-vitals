@@ -14,12 +14,7 @@
  * limitations under the License.
  */
 
-import {
-  LoadState,
-  Metric,
-  ReportCallback,
-  ReportCallbackWithAttribution,
-} from './base.js';
+import type {LoadState, Metric} from './base.js';
 
 /**
  * A CLS-specific version of the Metric object.
@@ -81,14 +76,13 @@ export interface CLSMetricWithAttribution extends CLSMetric {
 /**
  * A CLS-specific version of the ReportCallback function.
  */
-export interface CLSReportCallback extends ReportCallback {
+export interface CLSReportCallback {
   (metric: CLSMetric): void;
 }
 
 /**
  * A CLS-specific version of the ReportCallback function with attribution.
  */
-export interface CLSReportCallbackWithAttribution
-  extends ReportCallbackWithAttribution {
+export interface CLSReportCallbackWithAttribution {
   (metric: CLSMetricWithAttribution): void;
 }

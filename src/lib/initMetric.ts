@@ -18,16 +18,16 @@ import {getBFCacheRestoreTime} from './bfcache.js';
 import {generateUniqueID} from './generateUniqueID.js';
 import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
-import {Metric} from '../types.js';
+import {MetricType} from '../types.js';
 
-export const initMetric = (
-  name: Metric['name'],
+export const initMetric = <MetricName extends MetricType['name']>(
+  name: MetricName,
   value?: number,
-  navigation?: Metric['navigationType'],
+  navigation?: MetricType['navigationType'],
   navigationId?: number
-): Metric => {
+) => {
   const navEntry = getNavigationEntry();
-  let navigationType: Metric['navigationType'] = 'navigate';
+  let navigationType: MetricType['navigationType'] = 'navigate';
 
   if (navigation) {
     // If it was passed in, then use that
@@ -43,16 +43,19 @@ export const initMetric = (
       navigationType = navEntry.type.replace(
         /_/g,
         '-'
-      ) as Metric['navigationType'];
+      ) as MetricType['navigationType'];
     }
   }
+
+  // Use `entries` type specific for the metric.
+  const entries: Extract<MetricType, {name: MetricName}>['entries'] = [];
 
   return {
     name,
     value: typeof value === 'undefined' ? -1 : value,
-    rating: 'good', // Will be updated if the value changes.
+    rating: 'good' as const, // If needed, will be updated when reported. `const` to keep the type from widening to `string`.
     delta: 0,
-    entries: [],
+    entries,
     id: generateUniqueID(),
     navigationType,
     navigationId: navigationId || 1,
