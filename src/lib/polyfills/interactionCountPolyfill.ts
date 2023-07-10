@@ -27,7 +27,7 @@ declare global {
 let interactionCountEstimate = 0;
 let minKnownInteractionId = Infinity;
 let maxKnownInteractionId = 0;
-let currentNav = getNavigationEntry()?.navigationId || '1';
+let currentNavId = getNavigationEntry()?.navigationId || '1';
 let softNavsEnabled = false;
 const hardNavEntry = getNavigationEntry();
 
@@ -39,9 +39,9 @@ const updateEstimate = (entries: PerformanceEventTiming[]) => {
         e.navigationId &&
         e.navigationId !== (hardNavEntry?.navigationId || '1') &&
         (getSoftNavigationEntry(e.navigationId)?.startTime || 0) >
-          (getSoftNavigationEntry(currentNav)?.startTime || 0)
+          (getSoftNavigationEntry(currentNavId)?.startTime || 0)
       ) {
-        currentNav = e.navigationId;
+        currentNavId = e.navigationId;
         interactionCountEstimate = 0;
         minKnownInteractionId = Infinity;
         maxKnownInteractionId = 0;

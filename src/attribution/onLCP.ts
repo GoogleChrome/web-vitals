@@ -37,8 +37,7 @@ const attributeLCP = (metric: LCPMetric) => {
 
     if (
       !metric.navigationId ||
-      metric.navigationId === hardNavEntry?.navigationId ||
-      '1'
+      metric.navigationId === (hardNavEntry?.navigationId || '1')
     ) {
       navigationEntry = hardNavEntry;
       activationStart = hardNavEntry?.activationStart || 0;

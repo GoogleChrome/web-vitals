@@ -88,7 +88,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
             initNewLCPMetric('soft-navigation', entry.navigationId);
           }
           let value = 0;
-          if (entry.navigationId === hardNavEntry?.navigationId || '1') {
+          if (entry.navigationId === (hardNavEntry?.navigationId || '1')) {
             // The startTime attribute returns the value of the renderTime if it is
             // not 0, and the value of the loadTime otherwise. The activationStart
             // reference is used because LCP should be relative to page activation

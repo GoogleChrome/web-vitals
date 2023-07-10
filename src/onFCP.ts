@@ -72,7 +72,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
           if (!softNavsEnabled) {
             po!.disconnect();
           } else if (
-            (entry.navigationId || '1') !== hardNavEntry?.navigationId
+            (entry.navigationId || '1') !== (hardNavEntry?.navigationId || '1')
           ) {
             initNewFCPMetric('soft-navigation', entry.navigationId);
           }

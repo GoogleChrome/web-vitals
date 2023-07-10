@@ -38,8 +38,7 @@ const attributeFCP = (metric: FCPMetric): void => {
     let ttfb = 0;
     if (
       !metric.navigationId ||
-      metric.navigationId === hardNavEntry?.navigationId ||
-      '1'
+      metric.navigationId === (hardNavEntry?.navigationId || '1')
     ) {
       navigationEntry = getNavigationEntry();
       if (navigationEntry) {
