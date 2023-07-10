@@ -45,6 +45,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
+  let metricNavStartTime = 0;
 
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
@@ -62,6 +63,10 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         FCPThresholds,
         opts!.reportAllChanges
       );
+      if ((navigation = 'soft-navigation')) {
+        metricNavStartTime =
+          getSoftNavigationEntry(navigationId)?.startTime || 0;
+      }
     };
 
     const handleEntries = (entries: FCPMetric['entries']) => {
@@ -101,7 +106,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
               entry.navigationId !== metric.navigationId &&
               entry.navigationId !== hardNavId &&
               (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-                (getSoftNavigationEntry(metric.navigationId)?.startTime || 0))
+                metricNavStartTime)
           ) {
             metric.value = value;
             metric.entries.push(entry);

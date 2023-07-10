@@ -61,6 +61,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
   let reportedMetric = false;
+  let metricNavStartTime = 0;
 
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
@@ -85,6 +86,10 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         );
         sessionValue = 0;
         reportedMetric = false;
+        if ((navigation = 'soft-navigation')) {
+          metricNavStartTime =
+            getSoftNavigationEntry(navigationId)?.startTime || 0;
+        }
       };
 
       const handleEntries = (entries: LayoutShift[]) => {
@@ -95,7 +100,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
             entry.navigationId !== metric.navigationId &&
             entry.navigationId !== hardNavId &&
             (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-              (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+              metricNavStartTime
           ) {
             // If the current session value is larger than the current CLS value,
             // update CLS and the entries contributing to it.
@@ -166,9 +171,9 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           entries.forEach((entry) => {
             if (
               entry.navigationId &&
-              metric.navigationId &&
+              entry.navigationId !== metric.navigationId &&
               (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-                (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+                metricNavStartTime
             ) {
               if (!reportedMetric) report(true);
               initNewCLSMetric('soft-navigation', entry.navigationId);

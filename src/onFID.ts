@@ -52,6 +52,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
+  let metricNavStartTime = 0;
 
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
@@ -69,6 +70,10 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
         FIDThresholds,
         opts!.reportAllChanges
       );
+      if ((navigation = 'soft-navigation')) {
+        metricNavStartTime =
+          getSoftNavigationEntry(navigationId)?.startTime || 0;
+      }
     };
 
     const handleEntries = (entries: FIDMetric['entries']) => {
@@ -81,7 +86,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           entry.navigationId !== metric.navigationId &&
           entry.navigationId !== hardNavId &&
           (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-            (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+            metricNavStartTime
         ) {
           initNewFIDMetric('soft-navigation', entry.navigationId);
         }

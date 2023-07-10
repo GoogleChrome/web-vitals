@@ -158,6 +158,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
   let reportedMetric = false;
+  let metricNavStartTime = 0;
 
   whenActivated(() => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.
@@ -183,6 +184,10 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         opts!.reportAllChanges
       );
       reportedMetric = false;
+      if ((navigation = 'soft-navigation')) {
+        metricNavStartTime =
+          getSoftNavigationEntry(navigationId)?.startTime || 0;
+      }
     };
 
     const updateINPMetric = () => {
@@ -202,7 +207,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
           entry.navigationId !== metric.navigationId &&
           entry.navigationId !== hardNavId &&
           (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-            (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+            metricNavStartTime
         ) {
           if (!reportedMetric) {
             updateINPMetric();
@@ -295,9 +300,9 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         entries.forEach((entry) => {
           if (
             entry.navigationId &&
-            metric.navigationId &&
+            entry.navigationId !== metric.navigationId &&
             (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-              (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+              metricNavStartTime
           ) {
             if (!reportedMetric && metric.value > 0) report(true);
             initNewINPMetric('soft-navigation', entry.navigationId);

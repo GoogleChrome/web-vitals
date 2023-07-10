@@ -52,6 +52,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
   let reportedMetric = false;
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
+  let metricNavStartTime = 0;
 
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
@@ -70,6 +71,10 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         opts!.reportAllChanges
       );
       reportedMetric = false;
+      if ((navigation = 'soft-navigation')) {
+        metricNavStartTime =
+          getSoftNavigationEntry(navigationId)?.startTime || 0;
+      }
     };
 
     const handleEntries = (entries: LCPMetric['entries']) => {
@@ -80,7 +85,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
             entry.navigationId !== metric.navigationId &&
             entry.navigationId !== hardNavId &&
             (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-              (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+              metricNavStartTime
           ) {
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
@@ -162,9 +167,9 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         entries.forEach((entry) => {
           if (
             entry.navigationId &&
-            metric.navigationId &&
+            entry.navigationId !== metric.navigationId &&
             (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-              (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+              metricNavStartTime
           ) {
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
