@@ -24,19 +24,16 @@ export const softNavs = (opts?: ReportOpts) => {
 };
 
 export const getSoftNavigationEntry = (
-  navigationId?: number
-): PerformanceNavigationTiming | SoftNavigationEntry | undefined => {
-  if (!navigationId || navigationId === 1) {
-    return (
-      window.performance &&
-      performance.getEntriesByType &&
-      performance.getEntriesByType('navigation')[0]
-    );
-  } else {
-    return (
-      window.performance &&
-      performance.getEntriesByType &&
-      performance.getEntriesByType('soft-navigation')[navigationId - 2]
-    );
-  }
+  navigationId?: string
+): SoftNavigationEntry | undefined => {
+  return (
+    window.performance &&
+    performance.getEntriesByType &&
+    performance
+      .getEntriesByType('soft-navigation')
+      .filter((entry) => entry.navigationId === navigationId) &&
+    performance
+      .getEntriesByType('soft-navigation')
+      .filter((entry) => entry.navigationId === navigationId)[0]
+  );
 };

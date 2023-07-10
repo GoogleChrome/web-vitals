@@ -17,7 +17,9 @@
 export type FirstInputPolyfillEntry = Omit<
   PerformanceEventTiming,
   'processingEnd'
->;
+> & {
+  navigationId: PerformanceNavigationTiming['navigationId'];
+};
 
 export interface FirstInputPolyfillCallback {
   (entries: [FirstInputPolyfillEntry]): void;
@@ -34,4 +36,5 @@ export type NavigationTimingPolyfillEntry = Omit<
   | 'type'
 > & {
   type: PerformanceNavigationTiming['type'];
+  navigationId: PerformanceNavigationTiming['navigationId'];
 };

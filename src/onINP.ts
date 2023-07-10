@@ -17,6 +17,7 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
+import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -24,7 +25,7 @@ import {
   getInteractionCount,
   initInteractionCountPolyfill,
 } from './lib/polyfills/interactionCountPolyfill.js';
-import {softNavs} from './lib/softNavs.js';
+import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   INPMetric,
@@ -42,6 +43,8 @@ interface Interaction {
 
 /** Thresholds for INP. See https://web.dev/inp/#what-is-a-good-inp-score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
+
+const hardNavEntry = getNavigationEntry();
 
 // Used to store the interaction count after a bfcache restore, since p98
 // interaction latencies should only consider the current navigation.
@@ -167,7 +170,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
 
     const initNewINPMetric = (
       navigation?: Metric['navigationType'],
-      navigationId?: number
+      navigationId?: string
     ) => {
       longestInteractionList = [];
       // Important, we want the count for the full page here,
@@ -198,7 +201,10 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         if (
           softNavsEnabled &&
           entry.navigationId &&
-          entry.navigationId > metric.navigationId
+          entry.navigationId !== metric.navigationId &&
+          entry.navigationId !== (hardNavEntry?.navigationId || '1') &&
+          (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
+            (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
         ) {
           if (!reportedMetric) {
             updateINPMetric();
@@ -289,7 +295,12 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
 
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
-          if (entry.navigationId && entry.navigationId > metric.navigationId) {
+          if (
+            entry.navigationId &&
+            metric.navigationId &&
+            (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
+              (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+          ) {
             if (!reportedMetric && metric.value > 0) report(true);
             initNewINPMetric('soft-navigation', entry.navigationId);
             report = bindReporter(

@@ -18,6 +18,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
+import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -26,14 +27,16 @@ import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   LCPMetric,
+  LCPReportCallback,
   Metric,
   MetricRatingThresholds,
-  LCPReportCallback,
   ReportOpts,
 } from './types.js';
 
 /** Thresholds for LCP. See https://web.dev/lcp/#what-is-a-good-lcp-score */
 export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
+
+const hardNavEntry = getNavigationEntry();
 
 /**
  * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
@@ -59,7 +62,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
 
     const initNewLCPMetric = (
       navigation?: Metric['navigationType'],
-      navigationId?: number
+      navigationId?: string
     ) => {
       metric = initMetric('LCP', 0, navigation, navigationId);
       report = bindReporter(
@@ -74,19 +77,28 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
     const handleEntries = (entries: LCPMetric['entries']) => {
       entries.forEach((entry) => {
         if (entry) {
-          if (entry.navigationId && entry.navigationId > metric.navigationId) {
+          if (
+            softNavsEnabled &&
+            entry.navigationId !== metric.navigationId &&
+            entry.navigationId !== (hardNavEntry?.navigationId || '1') &&
+            (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
+              (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+          ) {
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
           }
           let value = 0;
-          if (entry.navigationId === 1 || !entry.navigationId) {
+          if (entry.navigationId === hardNavEntry?.navigationId || '1') {
             // The startTime attribute returns the value of the renderTime if it is
             // not 0, and the value of the loadTime otherwise. The activationStart
             // reference is used because LCP should be relative to page activation
             // rather than navigation start if the page was prerendered. But in cases
             // where `activationStart` occurs after the LCP, this time should be
             // clamped at 0.
-            value = Math.max(entry.startTime - getActivationStart(), 0);
+            value = Math.max(
+              entry.startTime - getActivationStart(hardNavEntry),
+              0
+            );
           } else {
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
@@ -101,7 +113,8 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
           if (entry.startTime < visibilityWatcher.firstHiddenTime) {
             metric.value = value;
             metric.entries = [entry];
-            metric.navigationId = entry.navigationId || 1;
+            metric.navigationId =
+              entry.navigationId || hardNavEntry?.navigationId || '1';
             report();
           }
         }
@@ -150,7 +163,12 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
 
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
-          if (entry.navigationId && entry.navigationId > metric.navigationId) {
+          if (
+            entry.navigationId &&
+            metric.navigationId &&
+            (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
+              (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
+          ) {
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
           }

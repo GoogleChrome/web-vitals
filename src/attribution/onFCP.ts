@@ -27,6 +27,8 @@ import {
   ReportOpts,
 } from '../types.js';
 
+const hardNavEntry = getNavigationEntry();
+
 const attributeFCP = (metric: FCPMetric): void => {
   if (metric.entries.length) {
     let navigationEntry;
@@ -34,7 +36,11 @@ const attributeFCP = (metric: FCPMetric): void => {
 
     let activationStart = 0;
     let ttfb = 0;
-    if (!metric.navigationId || metric.navigationId === 1) {
+    if (
+      !metric.navigationId ||
+      metric.navigationId === hardNavEntry?.navigationId ||
+      '1'
+    ) {
       navigationEntry = getNavigationEntry();
       if (navigationEntry) {
         activationStart = navigationEntry.activationStart || 0;

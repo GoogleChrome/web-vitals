@@ -27,20 +27,22 @@ import {
   ReportOpts,
 } from '../types.js';
 
+const hardNavEntry = getNavigationEntry();
+
 const attributeLCP = (metric: LCPMetric) => {
   if (metric.entries.length) {
     let navigationEntry;
     let activationStart = 0;
     let responseStart = 0;
 
-    if (!metric.navigationId || metric.navigationId === 1) {
-      // TODO - why do I have to re-get this to keep TypeScript happy?
-      // Tried an if (typeof) but that doesn't work.
-      navigationEntry = getNavigationEntry();
-      if (navigationEntry) {
-        activationStart = navigationEntry.activationStart || 0;
-        responseStart = navigationEntry.responseStart || 0;
-      }
+    if (
+      !metric.navigationId ||
+      metric.navigationId === hardNavEntry?.navigationId ||
+      '1'
+    ) {
+      navigationEntry = hardNavEntry;
+      activationStart = hardNavEntry?.activationStart || 0;
+      responseStart = hardNavEntry?.responseStart || 0;
     } else {
       navigationEntry = getSoftNavigationEntry();
     }

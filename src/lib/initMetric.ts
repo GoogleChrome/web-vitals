@@ -24,9 +24,9 @@ export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
   value?: number,
   navigation?: MetricType['navigationType'],
-  navigationId?: number
+  navigationId?: string
 ) => {
-  const navEntry = getNavigationEntry();
+  const hardNavEntry = getNavigationEntry();
   let navigationType: MetricType['navigationType'] = 'navigate';
 
   if (navigation) {
@@ -34,13 +34,13 @@ export const initMetric = <MetricName extends MetricType['name']>(
     navigationType = navigation;
   } else if (getBFCacheRestoreTime() >= 0) {
     navigationType = 'back-forward-cache';
-  } else if (navEntry) {
-    if (document.prerendering || getActivationStart() > 0) {
+  } else if (hardNavEntry) {
+    if (document.prerendering || getActivationStart(hardNavEntry) > 0) {
       navigationType = 'prerender';
     } else if (document.wasDiscarded) {
       navigationType = 'restore';
-    } else if (navEntry.type) {
-      navigationType = navEntry.type.replace(
+    } else if (hardNavEntry.type) {
+      navigationType = hardNavEntry.type.replace(
         /_/g,
         '-'
       ) as MetricType['navigationType'];
@@ -58,6 +58,6 @@ export const initMetric = <MetricName extends MetricType['name']>(
     entries,
     id: generateUniqueID(),
     navigationType,
-    navigationId: navigationId || 1,
+    navigationId: navigationId || hardNavEntry?.navigationId || '1',
   };
 };

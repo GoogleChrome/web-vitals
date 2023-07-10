@@ -14,14 +14,14 @@
  * limitations under the License.
  */
 
+import {bindReporter} from './lib/bindReporter.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
-import {softNavs} from './lib/softNavs.js';
+import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {onFCP} from './onFCP.js';
 import {
   CLSMetric,
@@ -30,9 +30,12 @@ import {
   MetricRatingThresholds,
   ReportOpts,
 } from './types.js';
+import {getNavigationEntry} from './lib/getNavigationEntry.js';
 
 /** Thresholds for CLS. See https://web.dev/cls/#what-is-a-good-cls-score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
+
+const hardNavEntry = getNavigationEntry();
 
 /**
  * Calculates the [CLS](https://web.dev/cls/) value for the current page and
@@ -73,7 +76,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
 
       const initNewCLSMetric = (
         navigation?: Metric['navigationType'],
-        navigationId?: number
+        navigationId?: string
       ) => {
         metric = initMetric('CLS', 0, navigation, navigationId);
         report = bindReporter(
@@ -91,7 +94,10 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           if (
             softNavsEnabled &&
             entry.navigationId &&
-            entry.navigationId > metric.navigationId
+            entry.navigationId !== metric.navigationId &&
+            entry.navigationId !== (hardNavEntry?.navigationId || '1') &&
+            (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
+              (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
           ) {
             // If the current session value is larger than the current CLS value,
             // update CLS and the entries contributing to it.
@@ -162,7 +168,9 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           entries.forEach((entry) => {
             if (
               entry.navigationId &&
-              entry.navigationId > metric.navigationId
+              metric.navigationId &&
+              (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
+                (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
             ) {
               if (!reportedMetric) report(true);
               initNewCLSMetric('soft-navigation', entry.navigationId);

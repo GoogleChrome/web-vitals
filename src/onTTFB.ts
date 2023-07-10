@@ -31,6 +31,8 @@ import {whenActivated} from './lib/whenActivated.js';
 /** Thresholds for TTFB. See https://web.dev/ttfb/#what-is-a-good-ttfb-score */
 export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
 
+const hardNavEntry = getNavigationEntry();
+
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
  * @param callback
@@ -75,10 +77,8 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
   );
 
   whenReady(() => {
-    const navEntry = getNavigationEntry();
-
-    if (navEntry) {
-      const responseStart = navEntry.responseStart;
+    if (hardNavEntry) {
+      const responseStart = hardNavEntry.responseStart;
 
       // In some cases no value is reported by the browser (for
       // privacy/security reasons), and in other cases (bugs) the value is
@@ -92,9 +92,17 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
       // relative to page activation rather than navigation start if the
       // page was prerendered. But in cases where `activationStart` occurs
       // after the first byte is received, this time should be clamped at 0.
-      metric.value = Math.max(responseStart - getActivationStart(), 0);
+      metric.value = Math.max(
+        responseStart - getActivationStart(hardNavEntry),
+        0
+      );
 
-      metric.entries = [navEntry];
+      // Type convert navigationEntry to prevent TS complaining about:
+      //   [(PerformanceNavigationTiming || NavigatingTimingPolyfillEntry)]
+      // not being same as:
+      //   (PerformanceNavigationTiming || NavigatingTimingPolyfillEntry)[]
+      // when it is for a single entry, like it is here
+      metric.entries = [<PerformanceNavigationTiming>hardNavEntry];
       report(true);
 
       // Only report TTFB after bfcache restores if a `navigation` entry
