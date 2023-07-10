@@ -18,7 +18,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {getNavigationEntry} from './lib/getNavigationEntry.js';
+import {getNavigationEntry, hardNavId} from './lib/getNavigationEntry.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -35,8 +35,6 @@ import {
 
 /** Thresholds for LCP. See https://web.dev/lcp/#what-is-a-good-lcp-score */
 export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
-
-const hardNavEntry = getNavigationEntry();
 
 /**
  * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
@@ -80,7 +78,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
           if (
             softNavsEnabled &&
             entry.navigationId !== metric.navigationId &&
-            entry.navigationId !== (hardNavEntry?.navigationId || '1') &&
+            entry.navigationId !== hardNavId &&
             (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
               (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
           ) {
@@ -88,7 +86,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
             initNewLCPMetric('soft-navigation', entry.navigationId);
           }
           let value = 0;
-          if (entry.navigationId === (hardNavEntry?.navigationId || '1')) {
+          if (!entry.navigationId || entry.navigationId === hardNavId) {
             // The startTime attribute returns the value of the renderTime if it is
             // not 0, and the value of the loadTime otherwise. The activationStart
             // reference is used because LCP should be relative to page activation
@@ -96,7 +94,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
             // where `activationStart` occurs after the LCP, this time should be
             // clamped at 0.
             value = Math.max(
-              entry.startTime - getActivationStart(hardNavEntry),
+              entry.startTime - getActivationStart(getNavigationEntry()),
               0
             );
           } else {
@@ -113,8 +111,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
           if (entry.startTime < visibilityWatcher.firstHiddenTime) {
             metric.value = value;
             metric.entries = [entry];
-            metric.navigationId =
-              entry.navigationId || hardNavEntry?.navigationId || '1';
+            metric.navigationId = entry.navigationId || hardNavId;
             report();
           }
         }

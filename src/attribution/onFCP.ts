@@ -16,7 +16,7 @@
 
 import {getBFCacheRestoreTime} from '../lib/bfcache.js';
 import {getLoadState} from '../lib/getLoadState.js';
-import {getNavigationEntry} from '../lib/getNavigationEntry.js';
+import {getNavigationEntry, hardNavId} from '../lib/getNavigationEntry.js';
 import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
 import {
@@ -27,8 +27,6 @@ import {
   ReportOpts,
 } from '../types.js';
 
-const hardNavEntry = getNavigationEntry();
-
 const attributeFCP = (metric: FCPMetric): void => {
   if (metric.entries.length) {
     let navigationEntry;
@@ -36,10 +34,7 @@ const attributeFCP = (metric: FCPMetric): void => {
 
     let activationStart = 0;
     let ttfb = 0;
-    if (
-      !metric.navigationId ||
-      metric.navigationId === (hardNavEntry?.navigationId || '1')
-    ) {
+    if (!metric.navigationId || metric.navigationId === hardNavId) {
       navigationEntry = getNavigationEntry();
       if (navigationEntry) {
         activationStart = navigationEntry.activationStart || 0;

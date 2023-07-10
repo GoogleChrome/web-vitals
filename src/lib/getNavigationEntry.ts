@@ -58,3 +58,5 @@ export const getNavigationEntry = ():
     );
   }
 };
+
+export const hardNavId = getNavigationEntry()?.navigationId || '1';

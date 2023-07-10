@@ -17,7 +17,7 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {getNavigationEntry} from './lib/getNavigationEntry.js';
+import {hardNavId} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -43,8 +43,6 @@ interface Interaction {
 
 /** Thresholds for INP. See https://web.dev/inp/#what-is-a-good-inp-score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
-
-const hardNavEntry = getNavigationEntry();
 
 // Used to store the interaction count after a bfcache restore, since p98
 // interaction latencies should only consider the current navigation.
@@ -202,7 +200,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
           softNavsEnabled &&
           entry.navigationId &&
           entry.navigationId !== metric.navigationId &&
-          entry.navigationId !== (hardNavEntry?.navigationId || '1') &&
+          entry.navigationId !== hardNavId &&
           (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
             (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
         ) {

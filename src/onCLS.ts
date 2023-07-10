@@ -30,12 +30,10 @@ import {
   MetricRatingThresholds,
   ReportOpts,
 } from './types.js';
-import {getNavigationEntry} from './lib/getNavigationEntry.js';
+import {hardNavId} from './lib/getNavigationEntry.js';
 
 /** Thresholds for CLS. See https://web.dev/cls/#what-is-a-good-cls-score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
-
-const hardNavEntry = getNavigationEntry();
 
 /**
  * Calculates the [CLS](https://web.dev/cls/) value for the current page and
@@ -95,7 +93,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
             softNavsEnabled &&
             entry.navigationId &&
             entry.navigationId !== metric.navigationId &&
-            entry.navigationId !== (hardNavEntry?.navigationId || '1') &&
+            entry.navigationId !== hardNavId &&
             (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
               (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
           ) {

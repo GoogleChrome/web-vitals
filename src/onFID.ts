@@ -16,7 +16,7 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
-import {getNavigationEntry} from './lib/getNavigationEntry.js';
+import {hardNavId} from './lib/getNavigationEntry.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -38,8 +38,6 @@ import {
 
 /** Thresholds for FID. See https://web.dev/fid/#what-is-a-good-fid-score */
 export const FIDThresholds: MetricRatingThresholds = [100, 300];
-
-const hardNavEntry = getNavigationEntry();
 
 /**
  * Calculates the [FID](https://web.dev/fid/) value for the current page and
@@ -81,7 +79,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           softNavsEnabled &&
           entry.navigationId &&
           entry.navigationId !== metric.navigationId &&
-          entry.navigationId !== (hardNavEntry?.navigationId || '1') &&
+          entry.navigationId !== hardNavId &&
           (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
             (getSoftNavigationEntry(metric.navigationId)?.startTime || 0)
         ) {
@@ -92,8 +90,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
           metric.value = entry.processingStart - entry.startTime;
           metric.entries.push(entry);
-          metric.navigationId =
-            entry.navigationId || hardNavEntry?.navigationId || '1';
+          metric.navigationId = entry.navigationId || hardNavId;
           report(true);
         }
       });

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {getNavigationEntry} from '../lib/getNavigationEntry.js';
+import {getNavigationEntry, hardNavId} from '../lib/getNavigationEntry.js';
 import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
@@ -27,21 +27,16 @@ import {
   ReportOpts,
 } from '../types.js';
 
-const hardNavEntry = getNavigationEntry();
-
 const attributeLCP = (metric: LCPMetric) => {
   if (metric.entries.length) {
     let navigationEntry;
     let activationStart = 0;
     let responseStart = 0;
 
-    if (
-      !metric.navigationId ||
-      metric.navigationId === (hardNavEntry?.navigationId || '1')
-    ) {
-      navigationEntry = hardNavEntry;
-      activationStart = hardNavEntry?.activationStart || 0;
-      responseStart = hardNavEntry?.responseStart || 0;
+    if (!metric.navigationId || metric.navigationId === hardNavId) {
+      navigationEntry = getNavigationEntry();
+      activationStart = navigationEntry?.activationStart || 0;
+      responseStart = navigationEntry?.responseStart || 0;
     } else {
       navigationEntry = getSoftNavigationEntry();
     }

@@ -19,7 +19,7 @@ import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
-import {getNavigationEntry} from './lib/getNavigationEntry.js';
+import {getNavigationEntry, hardNavId} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
@@ -34,8 +34,6 @@ import {
 
 /** Thresholds for FCP. See https://web.dev/fcp/#what-is-a-good-fcp-score */
 export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
-
-const hardNavEntry = getNavigationEntry();
 
 /**
  * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
@@ -71,25 +69,20 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         if (entry.name === 'first-contentful-paint') {
           if (!softNavsEnabled) {
             po!.disconnect();
-          } else if (
-            (entry.navigationId || '1') !== (hardNavEntry?.navigationId || '1')
-          ) {
+          } else if ((entry.navigationId || '1') !== hardNavId) {
             initNewFCPMetric('soft-navigation', entry.navigationId);
           }
 
           let value = 0;
 
-          if (
-            !entry.navigationId ||
-            entry.navigationId === hardNavEntry?.navigationId
-          ) {
+          if (!entry.navigationId || entry.navigationId === hardNavId) {
             // Only report if the page wasn't hidden prior to the first paint.
             // The activationStart reference is used because FCP should be
             // relative to page activation rather than navigation start if the
             // page was prerendered. But in cases where `activationStart` occurs
             // after the FCP, this time should be clamped at 0.
             value = Math.max(
-              entry.startTime - getActivationStart(hardNavEntry),
+              entry.startTime - getActivationStart(getNavigationEntry()),
               0
             );
           } else {
@@ -106,7 +99,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
             (softNavsEnabled &&
               entry.navigationId &&
               entry.navigationId !== metric.navigationId &&
-              entry.navigationId !== (hardNavEntry?.navigationId || '1') &&
+              entry.navigationId !== hardNavId &&
               (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
                 (getSoftNavigationEntry(metric.navigationId)?.startTime || 0))
           ) {
