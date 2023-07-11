@@ -168,11 +168,14 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
 
         // Soft navs may be detected by navigationId changes in metrics above
         // But where no metric is issued we need to also listen for soft nav
-        // entries and the final CLS for the previous navigation.
+        // entries, then emit the final metric for the previous navigation and
+        // reset the metric for the new navigation.
         //
-        // Add a check on startTime as we may be processing many entries that are
-        // already dealt with so just checking navigationId differs from current
-        // metric's navigation id is not sufficient.
+        // As PO is ordered by time, these should not happen before metrics.
+        //
+        // We add a check on startTime as we may be processing many entries that
+        // are already dealt with so just checking navigationId differs from
+        // current metric's navigation id, as we did above, is not sufficient.
         const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
           entries.forEach((entry) => {
             if (
