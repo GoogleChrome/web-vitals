@@ -18,7 +18,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {getNavigationEntry, hardNavId} from './lib/getNavigationEntry.js';
+import {hardNavId} from './lib/getNavigationEntry.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -82,11 +82,12 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         if (entry) {
           if (
             softNavsEnabled &&
-            entry.navigationId !== metric.navigationId &&
-            entry.navigationId !== hardNavId &&
-            (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-              metricNavStartTime
+            entry.navigationId &&
+            entry.navigationId !== metric.navigationId
           ) {
+            // If the entry is for a new navigationId than previous, then we have
+            // entered a new soft nav, so emit the final LCP and reinitialize the
+            // metric.
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
           }
@@ -98,10 +99,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
             // rather than navigation start if the page was prerendered. But in cases
             // where `activationStart` occurs after the LCP, this time should be
             // clamped at 0.
-            value = Math.max(
-              entry.startTime - getActivationStart(getNavigationEntry()),
-              0
-            );
+            value = Math.max(entry.startTime - getActivationStart(), 0);
           } else {
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
@@ -113,6 +111,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
           }
 
           // Only report if the page wasn't hidden prior to LCP.
+          // We do allow soft navs to be reported, even if hard nav was not.
           if (entry.startTime < visibilityWatcher.firstHiddenTime) {
             metric.value = value;
             metric.entries = [entry];
@@ -166,6 +165,10 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
       // Soft navs may be detected by navigationId changes in metrics above
       // But where no metric is issued we need to also listen for soft nav
       // entries and emit the final LCP for the previous navigation.
+      //
+      // Add a check on startTime as we may be processing many entries that are
+      // already dealt with so just checking navigationId differs from current
+      // metric's navigation id is not sufficient.
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
           if (

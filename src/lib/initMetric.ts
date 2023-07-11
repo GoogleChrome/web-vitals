@@ -35,7 +35,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
   } else if (getBFCacheRestoreTime() >= 0) {
     navigationType = 'back-forward-cache';
   } else if (hardNavEntry) {
-    if (document.prerendering || getActivationStart(hardNavEntry) > 0) {
+    if (document.prerendering || getActivationStart() > 0) {
       navigationType = 'prerender';
     } else if (document.wasDiscarded) {
       navigationType = 'restore';

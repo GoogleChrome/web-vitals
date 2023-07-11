@@ -25,7 +25,7 @@ import {
   firstInputPolyfill,
   resetFirstInputPolyfill,
 } from './lib/polyfills/firstInputPolyfill.js';
-import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
@@ -52,7 +52,6 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
-  let metricNavStartTime = 0;
 
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
@@ -70,10 +69,6 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
         FIDThresholds,
         opts!.reportAllChanges
       );
-      if (navigation === 'soft-navigation') {
-        metricNavStartTime =
-          getSoftNavigationEntry(navigationId)?.startTime || 0;
-      }
     };
 
     const handleEntries = (entries: FIDMetric['entries']) => {
@@ -81,13 +76,11 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
         if (!softNavsEnabled) {
           po!.disconnect();
         } else if (
-          softNavsEnabled &&
           entry.navigationId &&
-          entry.navigationId !== metric.navigationId &&
-          entry.navigationId !== hardNavId &&
-          (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-            metricNavStartTime
+          entry.navigationId !== metric.navigationId
         ) {
+          // If the entry is for a new navigationId than previous, then we have
+          // entered a new soft nav, so reinitialize the metric.
           initNewFIDMetric('soft-navigation', entry.navigationId);
         }
 

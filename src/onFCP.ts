@@ -18,8 +18,8 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
+import {hardNavId} from './lib/getNavigationEntry.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
-import {getNavigationEntry, hardNavId} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
@@ -73,8 +73,15 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
       (entries as PerformancePaintTiming[]).forEach((entry) => {
         if (entry.name === 'first-contentful-paint') {
           if (!softNavsEnabled) {
+            // If we're not using soft navs monitoring, we should not see
+            // any more FCPs so can discconnect the performance observer
             po!.disconnect();
-          } else if ((entry.navigationId || '1') !== hardNavId) {
+          } else if (
+            entry.navigationId &&
+            entry.navigationId !== metric.navigationId
+          ) {
+            // If the entry is for a new navigationId than previous, then we have
+            // entered a new soft nav, so reinitialize the metric.
             initNewFCPMetric('soft-navigation', entry.navigationId);
           }
 

@@ -17,7 +17,6 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {hardNavId} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -204,11 +203,11 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         if (
           softNavsEnabled &&
           entry.navigationId &&
-          entry.navigationId !== metric.navigationId &&
-          entry.navigationId !== hardNavId &&
-          (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-            metricNavStartTime
+          entry.navigationId !== metric.navigationId
         ) {
+          // If the entry is for a new navigationId than previous, then we have
+          // entered a new soft nav, so emit the final INP and reinitialize the
+          // metric.
           if (!reportedMetric) {
             updateINPMetric();
             if (metric.value > 0) report(true);
@@ -299,6 +298,10 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       // Soft navs may be detected by navigationId changes in metrics above
       // But where no metric is issued we need to also listen for soft nav
       // entries and the final INP for the previous navigation.
+      //
+      // Add a check on startTime as we may be processing many entries that are
+      // already dealt with so just checking navigationId differs from current
+      // metric's navigation id is not sufficient.
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
           if (

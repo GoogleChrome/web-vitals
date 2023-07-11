@@ -92,10 +92,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
       // relative to page activation rather than navigation start if the
       // page was prerendered. But in cases where `activationStart` occurs
       // after the first byte is received, this time should be clamped at 0.
-      metric.value = Math.max(
-        responseStart - getActivationStart(hardNavEntry),
-        0
-      );
+      metric.value = Math.max(responseStart - getActivationStart(), 0);
 
       // Type convert navigationEntry to prevent TS complaining about:
       //   [(PerformanceNavigationTiming || NavigatingTimingPolyfillEntry)]
