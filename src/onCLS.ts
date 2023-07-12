@@ -86,8 +86,8 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         sessionValue = 0;
         reportedMetric = false;
         if (navigation === 'soft-navigation') {
-          metricNavStartTime =
-            getSoftNavigationEntry(navigationId)?.startTime || 0;
+          const softNavEntry = getSoftNavigationEntry(navigationId);
+          metricNavStartTime = softNavEntry ? softNavEntry.startTime || 0 : 0;
         }
       };
 
@@ -178,11 +178,13 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         // current metric's navigation id, as we did above, is not sufficient.
         const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
           entries.forEach((entry) => {
+            const navId = entry.navigationId;
+            const softNavEntry = navId ? getSoftNavigationEntry(navId) : null;
             if (
-              entry.navigationId &&
-              entry.navigationId !== metric.navigationId &&
-              (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-                metricNavStartTime
+              navId &&
+              navId !== metric.navigationId &&
+              softNavEntry &&
+              (softNavEntry.startTime || 0) > metricNavStartTime
             ) {
               if (!reportedMetric) report(true);
               initNewCLSMetric('soft-navigation', entry.navigationId);

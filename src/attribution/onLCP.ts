@@ -35,8 +35,14 @@ const attributeLCP = (metric: LCPMetric) => {
 
     if (!metric.navigationId || metric.navigationId === hardNavId) {
       navigationEntry = getNavigationEntry();
-      activationStart = navigationEntry?.activationStart || 0;
-      responseStart = navigationEntry?.responseStart || 0;
+      activationStart =
+        navigationEntry && navigationEntry.activationStart
+          ? navigationEntry.activationStart
+          : 0;
+      responseStart =
+        navigationEntry && navigationEntry.responseStart
+          ? navigationEntry.responseStart
+          : 0;
     } else {
       navigationEntry = getSoftNavigationEntry();
       // No need to set activationStart or responseStart as can use default of 0

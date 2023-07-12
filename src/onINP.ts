@@ -184,15 +184,19 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       );
       reportedMetric = false;
       if (navigation === 'soft-navigation') {
+        const softNavEntry = getSoftNavigationEntry(navigationId);
         metricNavStartTime =
-          getSoftNavigationEntry(navigationId)?.startTime || 0;
+          softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
       }
     };
 
     const updateINPMetric = () => {
       const inp = estimateP98LongestInteraction();
 
-      if (inp && (inp.latency !== metric.value || opts?.reportAllChanges)) {
+      if (
+        inp &&
+        (inp.latency !== metric.value || (opts && opts.reportAllChanges))
+      ) {
         metric.value = inp.latency;
         metric.entries = inp.entries;
       }
@@ -309,11 +313,13 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       // current metric's navigation id, as we did above, is not sufficient.
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
+          const softNavEntry = getSoftNavigationEntry(entry.navigationId);
+          const softNavEntryStartTime =
+            softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
           if (
             entry.navigationId &&
             entry.navigationId !== metric.navigationId &&
-            (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-              metricNavStartTime
+            softNavEntryStartTime > metricNavStartTime
           ) {
             if (!reportedMetric && metric.value > 0) report(true);
             initNewINPMetric('soft-navigation', entry.navigationId);

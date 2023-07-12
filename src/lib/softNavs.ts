@@ -19,7 +19,8 @@ import {ReportOpts} from '../types.js';
 export const softNavs = (opts?: ReportOpts) => {
   return (
     PerformanceObserver.supportedEntryTypes.includes('soft-navigation') &&
-    opts?.reportSoftNavs
+    opts &&
+    opts.reportSoftNavs
   );
 };
 
@@ -28,9 +29,9 @@ export const getSoftNavigationEntry = (
 ): SoftNavigationEntry | undefined => {
   if (!navigationId) return;
 
-  const softNavEntry = window?.performance
-    ?.getEntriesByType('soft-navigation')
-    ?.filter((entry) => entry.navigationId === navigationId);
+  const softNavEntry = window.performance
+    .getEntriesByType('soft-navigation')
+    .filter((entry) => entry.navigationId === navigationId);
   if (softNavEntry) return softNavEntry[0];
 
   return;

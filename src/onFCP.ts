@@ -64,8 +64,10 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         opts!.reportAllChanges
       );
       if (navigation === 'soft-navigation') {
-        metricNavStartTime =
-          getSoftNavigationEntry(navigationId)?.startTime || 0;
+        const softNavEntry = navigationId
+          ? getSoftNavigationEntry(navigationId)
+          : null;
+        metricNavStartTime = softNavEntry ? softNavEntry.startTime || 0 : 0;
       }
     };
 
@@ -95,22 +97,31 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
             // after the FCP, this time should be clamped at 0.
             value = Math.max(entry.startTime - getActivationStart(), 0);
           } else {
-            const navEntry = getSoftNavigationEntry(entry.navigationId);
-            const navStartTime = navEntry?.startTime || 0;
+            const softNavEntry = getSoftNavigationEntry(entry.navigationId);
+            const softNavStartTime =
+              softNavEntry && softNavEntry.startTime
+                ? softNavEntry.startTime
+                : 0;
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
-            value = Math.max(entry.startTime - navStartTime, 0);
+            value = Math.max(entry.startTime - softNavStartTime, 0);
           }
 
           // Only report if the page wasn't hidden prior to FCP.
+          // Or it's a soft nav FCP
+          const softNavEntry =
+            softNavsEnabled && entry.navigationId
+              ? getSoftNavigationEntry(entry.navigationId)
+              : null;
+          const softNavEntryStartTime =
+            softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
           if (
             entry.startTime < visibilityWatcher.firstHiddenTime ||
             (softNavsEnabled &&
               entry.navigationId &&
               entry.navigationId !== metric.navigationId &&
               entry.navigationId !== hardNavId &&
-              (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-                metricNavStartTime)
+              softNavEntryStartTime > metricNavStartTime)
           ) {
             metric.value = value;
             metric.entries.push(entry);

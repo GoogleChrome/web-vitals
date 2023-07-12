@@ -72,8 +72,9 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
       );
       reportedMetric = false;
       if (navigation === 'soft-navigation') {
+        const softNavEntry = getSoftNavigationEntry(navigationId);
         metricNavStartTime =
-          getSoftNavigationEntry(navigationId)?.startTime || 0;
+          softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
       }
     };
 
@@ -103,11 +104,12 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
           } else {
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
-            value = Math.max(
-              entry.startTime -
-                (getSoftNavigationEntry(entry.navigationId)?.startTime || 0),
-              0
-            );
+            const softNavEntry = getSoftNavigationEntry(entry.navigationId);
+            const softNavEntryStartTime =
+              softNavEntry && softNavEntry.startTime
+                ? softNavEntry.startTime
+                : 0;
+            value = Math.max(entry.startTime - softNavEntryStartTime, 0);
           }
 
           // Only report if the page wasn't hidden prior to LCP.
@@ -174,11 +176,14 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
       // current metric's navigation id, as we did above, is not sufficient.
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
+          const softNavEntry = entry.navigationId
+            ? getSoftNavigationEntry(entry.navigationId)
+            : null;
           if (
             entry.navigationId &&
             entry.navigationId !== metric.navigationId &&
-            (getSoftNavigationEntry(entry.navigationId)?.startTime || 0) >
-              metricNavStartTime
+            softNavEntry &&
+            (softNavEntry.startTime || 0) > metricNavStartTime
           ) {
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
