@@ -268,7 +268,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       // If browser supports interactionId (and so supports INP), also
       // observe entries of type `first-input`. This is useful in cases
       // where the first interaction is less than the `durationThreshold`.
-      if ('interactionId' in PerformanceEventTiming?.prototype) {
+      if ('interactionId' in PerformanceEventTiming.prototype) {
         po.observe({
           type: 'first-input',
           buffered: true,
