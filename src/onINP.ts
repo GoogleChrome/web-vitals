@@ -170,9 +170,8 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         // so to consider them in INP we have to first check that an existing
         // entry doesn't match the `duration` and `startTime`.
         // Note that this logic assumes that `event` entries are dispatched
-        // before `first-input` entries. This is true in Chrome but it is not
-        // true in Firefox; however, Firefox doesn't support interactionId, so
-        // it's not an issue at the moment.
+        // before `first-input` entries. This is true in Chrome (the only browser
+        // that currently supports INP).
         // TODO(philipwalton): remove once crbug.com/1325826 is fixed.
         if (entry.entryType === 'first-input') {
           const noMatchingEntry = !longestInteractionList.some(
