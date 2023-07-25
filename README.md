@@ -326,11 +326,7 @@ onLCP(sendToAnalytics);
 
 ### Send the results to Google Analytics
 
-Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value (in this case, the `metric_id`, as shown in the examples below) on every metric instance that you send to Google Analytics, you can create a report yourself using the [Google Analytics Reporting API](https://developers.google.com/analytics/devguides/reporting) and any data visualization library you choose.
-
 For details of have to query this data in [BigQuery](https://cloud.google.com/bigquery), or visualise it in [Looker Studio](https://lookerstudio.google.com/), see the [Measure and debug performance with Google Analytics 4 and BigQuery](https://web.dev/vitals-ga4/) post.
-
-#### Using `gtag.js` (Google Analytics 4)
 
 [Google Analytics 4](https://support.google.com/analytics/answer/10089681) introduces a new Event model allowing custom parameters instead of a fixed category, action, and label. It also supports non-integer values, making it easier to measure Web Vitals metrics compared to previous versions.
 
