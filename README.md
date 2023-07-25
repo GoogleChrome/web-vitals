@@ -326,86 +326,9 @@ onLCP(sendToAnalytics);
 
 ### Send the results to Google Analytics
 
-Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value (in this case, the metric `id`, as shown in the examples below) on every metric instance that you send to Google Analytics, you can create a report yourself using the [Google Analytics Reporting API](https://developers.google.com/analytics/devguides/reporting) and any data visualization library you choose.
+Google Analytics does not support reporting metric distributions in any of its built-in reports; however, if you set a unique dimension value (in this case, the `metric_id`, as shown in the examples below) on every metric instance that you send to Google Analytics, you can create a report yourself using the [Google Analytics Reporting API](https://developers.google.com/analytics/devguides/reporting) and any data visualization library you choose.
 
-As an example of this, the [Web Vitals Report](https://github.com/GoogleChromeLabs/web-vitals-report) is a free and open-source tool you can use to create visualizations of the Web Vitals data that you've sent to Google Analytics.
-
-[![web-vitals-report](https://user-images.githubusercontent.com/326742/101584324-3f9a0900-3992-11eb-8f2d-182f302fb67b.png)](https://github.com/GoogleChromeLabs/web-vitals-report)
-
-In order to use the [Web Vitals Report](https://github.com/GoogleChromeLabs/web-vitals-report) (or build your own custom reports using the API) you need to send your data to Google Analytics following one of the examples outlined below:
-
-#### Using `analytics.js`
-
-```js
-import {onCLS, onFID, onLCP} from 'web-vitals';
-
-function sendToGoogleAnalytics({name, delta, id}) {
-  // Assumes the global `ga()` function exists, see:
-  // https://developers.google.com/analytics/devguides/collection/analyticsjs
-  ga('send', 'event', {
-    eventCategory: 'Web Vitals',
-    eventAction: name,
-    // The `id` value will be unique to the current page load. When sending
-    // multiple values from the same page (e.g. for CLS), Google Analytics can
-    // compute a total by grouping on this ID (note: requires `eventLabel` to
-    // be a dimension in your report).
-    eventLabel: id,
-    // Google Analytics metrics must be integers, so the value is rounded.
-    // For CLS the value is first multiplied by 1000 for greater precision
-    // (note: increase the multiplier for greater precision if needed).
-    eventValue: Math.round(name === 'CLS' ? delta * 1000 : delta),
-    // Use a non-interaction event to avoid affecting bounce rate.
-    nonInteraction: true,
-    // Use `sendBeacon()` if the browser supports it.
-    transport: 'beacon',
-
-    // OPTIONAL: any additional attribution params here.
-    // See: https://web.dev/debug-performance-in-the-field/
-    // dimension1: '...',
-    // dimension2: '...',
-    // ...
-  });
-}
-
-onCLS(sendToGoogleAnalytics);
-onFID(sendToGoogleAnalytics);
-onLCP(sendToGoogleAnalytics);
-```
-
-#### Using `gtag.js` (Universal Analytics)
-
-```js
-import {onCLS, onFID, onLCP} from 'web-vitals';
-
-function sendToGoogleAnalytics({name, delta, id}) {
-  // Assumes the global `gtag()` function exists, see:
-  // https://developers.google.com/analytics/devguides/collection/gtagjs
-  gtag('event', name, {
-    event_category: 'Web Vitals',
-    // The `id` value will be unique to the current page load. When sending
-    // multiple values from the same page (e.g. for CLS), Google Analytics can
-    // compute a total by grouping on this ID (note: requires `eventLabel` to
-    // be a dimension in your report).
-    event_label: id,
-    // Google Analytics metrics must be integers, so the value is rounded.
-    // For CLS the value is first multiplied by 1000 for greater precision
-    // (note: increase the multiplier for greater precision if needed).
-    value: Math.round(name === 'CLS' ? delta * 1000 : delta),
-    // Use a non-interaction event to avoid affecting bounce rate.
-    non_interaction: true,
-
-    // OPTIONAL: any additional attribution params here.
-    // See: https://web.dev/debug-performance-in-the-field/
-    // dimension1: '...',
-    // dimension2: '...',
-    // ...
-  });
-}
-
-onCLS(sendToGoogleAnalytics);
-onFID(sendToGoogleAnalytics);
-onLCP(sendToGoogleAnalytics);
-```
+For details of have to query this data in [BigQuery](https://cloud.google.com/bigquery), or visualise it in [Looker Studio](https://lookerstudio.google.com/), see the [Measure and debug performance with Google Analytics 4 and BigQuery](https://web.dev/vitals-ga4/) post.
 
 #### Using `gtag.js` (Google Analytics 4)
 
@@ -485,7 +408,7 @@ onFID(sendToGoogleAnalytics);
 onLCP(sendToGoogleAnalytics);
 ```
 
-_**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4. For Universal Analytics the attribution data should be set using a [custom dimension](https://support.google.com/analytics/answer/2709828) rather than `debug_target` as shown above._
+_**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4._
 
 See [Debug performance in the field](https://web.dev/debug-performance-in-the-field/) for more information and examples.
 
