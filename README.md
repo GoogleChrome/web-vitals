@@ -254,7 +254,7 @@ Note that some of these metrics will not report until the user has interacted wi
 Also, in some cases a metric callback may never be called:
 
 - FID and INP are not reported if the user never interacts with the page.
-- FCP, FID, and LCP are not reported if the page was loaded in the background.
+- CLS, FCP, FID, and LCP are not reported if the page was loaded in the background.
 
 In other cases, a metric callback may be called more than once:
 
