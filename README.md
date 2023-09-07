@@ -253,12 +253,12 @@ Note that some of these metrics will not report until the user has interacted wi
 
 Also, in some cases a metric callback may never be called:
 
-- FID is not reported if the user never interacts with the page.
+- FID and INP are not reported if the user never interacts with the page.
 - CLS, FCP, FID, and LCP are not reported if the page was loaded in the background.
 
 In other cases, a metric callback may be called more than once:
 
-- CLS should be reported any time the [page's `visibilityState` changes to hidden](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden).
+- CLS and INP should be reported any time the [page's `visibilityState` changes to hidden](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden).
 - All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
 
 _**Warning:** do not call any of the Web Vitals functions (e.g. `onCLS()`, `onFID()`, `onLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
