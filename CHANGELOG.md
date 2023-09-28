@@ -1,5 +1,11 @@
 # Changelog
 
+### v3.5.0 (2023-09-28)
+
+- Run onLCP callback in own task ([#386](https://github.com/GoogleChrome/web-vitals/pull/386))
+- Fix INP durationThreshold bug when set to 0 ([#372](https://github.com/GoogleChrome/web-vitals/pull/372))
+- Prevent FID entries being emitted as INP for non-supporting browsers ([#368](https://github.com/GoogleChrome/web-vitals/pull/368))
+
 ### v3.4.0 (2023-07-11)
 
 - Make `bindReporter` generic over metric type ([#359](https://github.com/GoogleChrome/web-vitals/pull/359))
