@@ -147,7 +147,10 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
       // stops LCP observation, it's unreliable since it can be programmatically
       // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
       ['keydown', 'click'].forEach((type) => {
-        addEventListener(type, finalizeAllLCPs, true);
+        // Wrap in a setTimeout so the callback is run in a separate task
+        // to avoid extending the keyboard/click handler to reduce INP impact
+        // https://github.com/GoogleChrome/web-vitals/issues/383
+        addEventListener(type, () => setTimeout(finalizeAllLCPs, 0), true);
       });
 
       onHidden(finalizeAllLCPs);

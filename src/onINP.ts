@@ -257,7 +257,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       // and performance. Running this callback for any interaction that spans
       // just one or two frames is likely not worth the insight that could be
       // gained.
-      durationThreshold: opts!.durationThreshold || 40,
+      durationThreshold: opts!.durationThreshold ?? 40,
       opts,
     } as PerformanceObserverInit);
 
