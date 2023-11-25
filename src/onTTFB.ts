@@ -26,7 +26,7 @@ import {
 import {getActivationStart} from './lib/getActivationStart.js';
 import {whenActivated} from './lib/whenActivated.js';
 
-/** Thresholds for TTFB. See https://web.dev/ttfb/#what-is-a-good-ttfb-score */
+/** Thresholds for TTFB. See https://web.dev/articles/ttfb#what_is_a_good_ttfb_score */
 export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
 
 /**
@@ -45,7 +45,7 @@ const whenReady = (callback: () => void) => {
 };
 
 /**
- * Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the
+ * Calculates the [TTFB](https://web.dev/articles/ttfb) value for the
  * current page and calls the `callback` function once the page has loaded,
  * along with the relevant `navigation` performance entry used to determine the
  * value. The reported value is a `DOMHighResTimeStamp`.

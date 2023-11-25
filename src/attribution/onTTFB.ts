@@ -60,7 +60,7 @@ const attributeTTFB = (metric: TTFBMetric): void => {
 };
 
 /**
- * Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the
+ * Calculates the [TTFB](https://web.dev/articles/ttfb) value for the
  * current page and calls the `callback` function once the page has loaded,
  * along with the relevant `navigation` performance entry used to determine the
  * value. The reported value is a `DOMHighResTimeStamp`.

@@ -37,7 +37,7 @@ const attributeFID = (metric: FIDMetric): void => {
 };
 
 /**
- * Calculates the [FID](https://web.dev/fid/) value for the current page and
+ * Calculates the [FID](https://web.dev/articles/fid) value for the current page and
  * calls the `callback` function once the value is ready, along with the
  * relevant `first-input` performance entry used to determine the value. The
  * reported value is a `DOMHighResTimeStamp`.

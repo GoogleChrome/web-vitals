@@ -90,7 +90,7 @@ const attributeLCP = (metric: LCPMetric) => {
 };
 
 /**
- * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
+ * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and
  * calls the `callback` function once the value is ready (along with the
  * relevant `largest-contentful-paint` performance entry used to determine the
  * value). The reported value is a `DOMHighResTimeStamp`.

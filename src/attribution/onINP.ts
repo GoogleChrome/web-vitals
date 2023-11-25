@@ -51,7 +51,7 @@ const attributeINP = (metric: INPMetric): void => {
 };
 
 /**
- * Calculates the [INP](https://web.dev/responsiveness/) value for the current
+ * Calculates the [INP](https://web.dev/articles/inp) value for the current
  * page and calls the `callback` function once the value is ready, along with
  * the `event` performance entries reported for that interaction. The reported
  * value is a `DOMHighResTimeStamp`.
@@ -61,7 +61,7 @@ const attributeINP = (metric: INPMetric): void => {
  * default threshold is `40`, which means INP scores of less than 40 are
  * reported as 0. Note that this will not affect your 75th percentile INP value
  * unless that value is also less than 40 (well below the recommended
- * [good](https://web.dev/inp/#what-is-a-good-inp-score) threshold).
+ * [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
  * `callback` function will be called as soon as the value is initially

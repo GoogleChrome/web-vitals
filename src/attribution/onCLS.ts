@@ -56,11 +56,11 @@ const attributeCLS = (metric: CLSMetric): void => {
 };
 
 /**
- * Calculates the [CLS](https://web.dev/cls/) value for the current page and
+ * Calculates the [CLS](https://web.dev/articles/cls) value for the current page and
  * calls the `callback` function once the value is ready to be reported, along
  * with all `layout-shift` performance entries that were used in the metric
  * value calculation. The reported value is a `double` (corresponding to a
- * [layout shift score](https://web.dev/cls/#layout-shift-score)).
+ * [layout shift score](https://web.dev/articles/cls#layout_shift_score)).
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
  * `callback` function will be called as soon as the value is initially
