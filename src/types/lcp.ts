@@ -43,25 +43,25 @@ export interface LCPAttribution {
   /**
    * The time from when the user initiates loading the page until when the
    * browser receives the first byte of the response (a.k.a. TTFB). See
-   * [Optimize LCP](https://web.dev/optimize-lcp/) for details.
+   * [Optimize LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   timeToFirstByte: number;
   /**
    * The delta between TTFB and when the browser starts loading the LCP
    * resource (if there is one, otherwise 0). See [Optimize
-   * LCP](https://web.dev/optimize-lcp/) for details.
+   * LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   resourceLoadDelay: number;
   /**
    * The total time it takes to load the LCP resource itself (if there is one,
-   * otherwise 0). See [Optimize LCP](https://web.dev/optimize-lcp/) for
+   * otherwise 0). See [Optimize LCP](https://web.dev/articles/optimize-lcp) for
    * details.
    */
   resourceLoadTime: number;
   /**
    * The delta between when the LCP resource finishes loading until the LCP
    * element is fully rendered. See [Optimize
-   * LCP](https://web.dev/optimize-lcp/) for details.
+   * LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   elementRenderDelay: number;
   /**

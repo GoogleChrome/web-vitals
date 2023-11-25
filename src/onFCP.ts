@@ -29,11 +29,11 @@ import {
   ReportOpts,
 } from './types.js';
 
-/** Thresholds for FCP. See https://web.dev/fcp/#what-is-a-good-fcp-score */
+/** Thresholds for FCP. See https://web.dev/articles/fcp#what_is_a_good_fcp_score */
 export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
 
 /**
- * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
+ * Calculates the [FCP](https://web.dev/articles/fcp) value for the current page and
  * calls the `callback` function once the value is ready, along with the
  * relevant `paint` performance entry used to determine the value. The reported
  * value is a `DOMHighResTimeStamp`.

@@ -29,21 +29,21 @@
 
 ## Overview
 
-The `web-vitals` library is a tiny (~1.5K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/vitals/) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
+The `web-vitals` library is a tiny (~1.5K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/articles/vitals) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
 
-The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-web-vitals) as well as a number of other metrics that are useful in diagnosing [real-user](https://web.dev/user-centric-performance-metrics/) performance issues.
+The library supports all of the [Core Web Vitals](https://web.dev/articles/vitals#core_web_vitals) as well as a number of other metrics that are useful in diagnosing [real-user](https://web.dev/articles/user-centric-performance-metrics) performance issues.
 
 ### Core Web Vitals
 
-- [Cumulative Layout Shift (CLS)](https://web.dev/cls/)
-- [First Input Delay (FID)](https://web.dev/fid/)
-- [Largest Contentful Paint (LCP)](https://web.dev/lcp/)
+- [Cumulative Layout Shift (CLS)](https://web.dev/articles/cls)
+- [First Input Delay (FID)](https://web.dev/articles/fid)
+- [Largest Contentful Paint (LCP)](https://web.dev/articles/lcp)
 
 ### Other metrics
 
-- [Interaction to next Paint (INP)](https://web.dev/inp/)
-- [First Contentful Paint (FCP)](https://web.dev/fcp/)
-- [Time to First Byte (TTFB)](https://web.dev/ttfb/)
+- [Interaction to next Paint (INP)](https://web.dev/articles/inp)
+- [First Contentful Paint (FCP)](https://web.dev/articles/fcp)
+- [Time to First Byte (TTFB)](https://web.dev/articles/ttfb)
 
 <a name="installation"><a>
 <a name="load-the-library"><a>
@@ -52,7 +52,7 @@ The library supports all of the [Core Web Vitals](https://web.dev/vitals/#core-w
 
 <a name="import-web-vitals-from-npm"><a>
 
-The `web-vitals` library uses the `buffered` flag for [PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver/observe), allowing it to access performance entries that occurred before the library was loaded.
+The `web-vitals` library uses the `buffered` flag for [PerformanceObserver](https://developer.mozilla.org/docs/Web/API/PerformanceObserver/observe), allowing it to access performance entries that occurred before the library was loaded.
 
 This means you do not need to load this library early in order to get accurate performance data. In general, this library should be deferred until after other user-impacting code has loaded.
 
@@ -259,7 +259,7 @@ Also, in some cases a metric callback may never be called:
 In other cases, a metric callback may be called more than once:
 
 - CLS and INP should be reported any time the [page's `visibilityState` changes to hidden](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden).
-- All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/bfcache/).
+- All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/articles/bfcache).
 
 _**Warning:** do not call any of the Web Vitals functions (e.g. `onCLS()`, `onFID()`, `onLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
 
@@ -304,7 +304,7 @@ In addition to using the `id` field to group multiple deltas for the same metric
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
 
-The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API) API when not.
+The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/docs/Web/API/Fetch_API) API when not.
 
 ```js
 import {onCLS, onFID, onLCP} from 'web-vitals';
@@ -345,7 +345,7 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
     metric_delta: delta, // Optional.
 
     // OPTIONAL: any additional params or debug info here.
-    // See: https://web.dev/debug-performance-in-the-field/
+    // See: https://web.dev/articles/debug-performance-in-the-field
     // metric_rating: 'good' | 'needs-improvement' | 'poor',
     // debug_info: '...',
     // ...
@@ -357,7 +357,7 @@ onFID(sendToGoogleAnalytics);
 onLCP(sendToGoogleAnalytics);
 ```
 
-For details on how to query this data in [BigQuery](https://cloud.google.com/bigquery), or visualise it in [Looker Studio](https://lookerstudio.google.com/), see [Measure and debug performance with Google Analytics 4 and BigQuery](https://web.dev/vitals-ga4/).
+For details on how to query this data in [BigQuery](https://cloud.google.com/bigquery), or visualise it in [Looker Studio](https://lookerstudio.google.com/), see [Measure and debug performance with Google Analytics 4 and BigQuery](https://web.dev/articles/vitals-ga4).
 
 ### Send the results to Google Tag Manager
 
@@ -408,7 +408,7 @@ onLCP(sendToGoogleAnalytics);
 
 _**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4._
 
-See [Debug performance in the field](https://web.dev/debug-performance-in-the-field/) for more information and examples.
+See [Debug performance in the field](https://web.dev/articles/debug-performance-in-the-field) for more information and examples.
 
 ### Batch multiple reports together
 
@@ -814,7 +814,7 @@ interface WebVitalsGlobal {
 type onCLS = (callback: CLSReportCallback, opts?: ReportOpts) => void;
 ```
 
-Calculates the [CLS](https://web.dev/cls/) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/cls/#layout-shift-score)).
+Calculates the [CLS](https://web.dev/articles/cls) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/articles/cls#layout_shift_score)).
 
 If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
 
@@ -826,7 +826,7 @@ _**Important:** CLS should be continually monitored for changes throughout the e
 type onFCP = (callback: FCPReportCallback, opts?: ReportOpts) => void;
 ```
 
-Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls the `callback` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [FCP](https://web.dev/articles/fcp) value for the current page and calls the `callback` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
 #### `onFID()`
 
@@ -834,7 +834,7 @@ Calculates the [FCP](https://web.dev/fcp/) value for the current page and calls 
 type onFID = (callback: FIDReportCallback, opts?: ReportOpts) => void;
 ```
 
-Calculates the [FID](https://web.dev/fid/) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [FID](https://web.dev/articles/fid) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
 _**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
 
@@ -844,9 +844,9 @@ _**Important:** since FID is only reported after the user interacts with the pag
 type onINP = (callback: INPReportCallback, opts?: ReportOpts) => void;
 ```
 
-Calculates the [INP](https://web.dev/inp/) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [INP](https://web.dev/articles/inp) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/inp/#what-is-a-good-inp-score) threshold).
+A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
 
 If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
 
@@ -858,7 +858,7 @@ _**Important:** INP should be continually monitored for changes throughout the e
 type onLCP = (callback: LCPReportCallback, opts?: ReportOpts) => void;
 ```
 
-Calculates the [LCP](https://web.dev/lcp/) value for the current page and calls the `callback` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and calls the `callback` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
 If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
 
@@ -868,7 +868,7 @@ If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, 
 type onTTFB = (callback: TTFBReportCallback, opts?: ReportOpts) => void;
 ```
 
-Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the current page and calls the `callback` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp).
+Calculates the [TTFB](https://web.dev/articles/ttfb) value for the current page and calls the `callback` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
 Note, this function waits until after the page is loaded to call `callback` in order to ensure all properties of the `navigation` entry are populated. This is useful if you want to report on other metrics exposed by the [Navigation Timing API](https://w3c.github.io/navigation-timing/).
 
@@ -886,7 +886,7 @@ onTTFB((metric) => {
 ```
 
 _**Note:** browsers that do not support `navigation` entries will fall back to
-using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers._
+using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers._
 
 ### Rating Thresholds:
 
@@ -1065,25 +1065,25 @@ interface LCPAttribution {
   /**
    * The time from when the user initiates loading the page until when the
    * browser receives the first byte of the response (a.k.a. TTFB). See
-   * [Optimize LCP](https://web.dev/optimize-lcp/) for details.
+   * [Optimize LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   timeToFirstByte: number;
   /**
    * The delta between TTFB and when the browser starts loading the LCP
    * resource (if there is one, otherwise 0). See [Optimize
-   * LCP](https://web.dev/optimize-lcp/) for details.
+   * LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   resourceLoadDelay: number;
   /**
    * The total time it takes to load the LCP resource itself (if there is one,
-   * otherwise 0). See [Optimize LCP](https://web.dev/optimize-lcp/) for
+   * otherwise 0). See [Optimize LCP](https://web.dev/articles/optimize-lcp) for
    * details.
    */
   resourceLoadTime: number;
   /**
    * The delta between when the LCP resource finishes loading until the LCP
    * element is fully rendered. See [Optimize
-   * LCP](https://web.dev/optimize-lcp/) for details.
+   * LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   elementRenderDelay: number;
   /**
@@ -1152,7 +1152,7 @@ Browser support for each function is as follows:
 
 ## Limitations
 
-The `web-vitals` library is primarily a wrapper around the Web APIs that measure the Web Vitals metrics, which means the limitations of those APIs will mostly apply to this library as well. More details on these limitations is available in [this blog post](https://web.dev/crux-and-rum-differences/).
+The `web-vitals` library is primarily a wrapper around the Web APIs that measure the Web Vitals metrics, which means the limitations of those APIs will mostly apply to this library as well. More details on these limitations is available in [this blog post](https://web.dev/articles/crux-and-rum-differences).
 
 The primary limitation of these APIs is they have no visibility into `<iframe>` content (not even same-origin iframes), which means pages that make use of iframes will likely see a difference between the data measured by this library and the data available in the Chrome User Experience Report (which does include iframe content).
 
@@ -1196,7 +1196,7 @@ You'll likely want to combine this with `npm run watch` to ensure any changes yo
 
 ## Integrations
 
-- [**Web Vitals Connector**](https://goo.gle/web-vitals-connector): Data Studio connector to create dashboards from [Web Vitals data captured in BiqQuery](https://web.dev/vitals-ga4/).
+- [**Web Vitals Connector**](https://goo.gle/web-vitals-connector): Data Studio connector to create dashboards from [Web Vitals data captured in BiqQuery](https://web.dev/articles/vitals-ga4).
 - [**Core Web Vitals Custom Tag template**](https://www.simoahava.com/custom-templates/core-web-vitals/): Custom GTM template tag to [add measurement handlers](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/) for all Core Web Vitals metrics.
 - [**`web-vitals-reporter`**](https://github.com/treosh/web-vitals-reporter): JavaScript library to batch `callback` functions and send data with a single request.
 
