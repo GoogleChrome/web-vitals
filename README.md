@@ -485,7 +485,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
   </tr>
   <tr>
     <td><code>web-vitals.umd.cjs</code></td>
-    <td><code>pgk.main</code></td>
+    <td><code>pkg.main</code></td>
     <td>
       A UMD version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
     </td>
