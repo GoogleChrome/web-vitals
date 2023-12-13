@@ -25,19 +25,22 @@ import {
 
 const attributeTTFB = (metric: TTFBMetric): void => {
   if (metric.entries.length) {
-    const navigationEntry = metric.entries[0];
+    // Is there a better way to check if this is a soft nav entry or not?
+    // Refuses to build without this as soft navs don't have activationStart
+    const navigationEntry = <PerformanceNavigationTiming>metric.entries[0];
+
     const activationStart = navigationEntry.activationStart || 0;
 
     const dnsStart = Math.max(
-      navigationEntry.domainLookupStart - activationStart,
+      navigationEntry.domainLookupStart - activationStart || 0,
       0
     );
     const connectStart = Math.max(
-      navigationEntry.connectStart - activationStart,
+      navigationEntry.connectStart - activationStart || 0,
       0
     );
     const requestStart = Math.max(
-      navigationEntry.requestStart - activationStart,
+      navigationEntry.requestStart - activationStart || 0,
       0
     );
 

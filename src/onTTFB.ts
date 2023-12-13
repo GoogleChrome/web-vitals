@@ -130,6 +130,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
               'soft-navigation',
               entry.navigationId
             );
+            metric.entries = [entry];
             report = bindReporter(
               onReport,
               metric,
