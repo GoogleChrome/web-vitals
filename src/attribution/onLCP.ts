@@ -71,11 +71,13 @@ const attributeLCP = (metric: LCPMetric) => {
       );
       const lcpResponseEnd = Math.max(
         lcpRequestStart - softNavStart,
-        lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0
+        lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
+        0
       );
       const lcpRenderTime = Math.max(
         lcpResponseEnd - softNavStart,
-        lcpEntry ? lcpEntry.startTime - activationStart : 0
+        lcpEntry ? lcpEntry.startTime - activationStart : 0,
+        0
       );
 
       const attribution: LCPAttribution = {
