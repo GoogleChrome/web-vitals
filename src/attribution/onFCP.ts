@@ -32,17 +32,19 @@ const attributeFCP = (metric: FCPMetric): void => {
     let navigationEntry;
     const fcpEntry = metric.entries[metric.entries.length - 1];
 
-    let activationStart = 0;
     let ttfb = 0;
+    let softNavStart = 0;
     if (!metric.navigationId || metric.navigationId === hardNavId) {
       navigationEntry = getNavigationEntry();
       if (navigationEntry) {
-        activationStart = navigationEntry.activationStart || 0;
+        const activationStart = navigationEntry.activationStart || 0;
         ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
       }
     } else {
       navigationEntry = getSoftNavigationEntry(metric.navigationId);
-      // No need to set activationStart or ttfb as can use default of 0
+      // Set ttfb to the SoftNav start time
+      softNavStart = navigationEntry ? navigationEntry.startTime : 0;
+      ttfb = softNavStart;
     }
 
     if (navigationEntry) {

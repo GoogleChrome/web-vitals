@@ -32,6 +32,7 @@ const attributeLCP = (metric: LCPMetric) => {
     let navigationEntry;
     let activationStart = 0;
     let responseStart = 0;
+    let softNavStart = 0;
 
     if (!metric.navigationId || metric.navigationId === hardNavId) {
       navigationEntry = getNavigationEntry();
@@ -45,7 +46,9 @@ const attributeLCP = (metric: LCPMetric) => {
           : 0;
     } else {
       navigationEntry = getSoftNavigationEntry(metric.navigationId);
-      // No need to set activationStart or responseStart as can use default of 0
+      // Set activationStart to the SoftNav start time
+      softNavStart = navigationEntry ? navigationEntry.startTime : 0;
+      activationStart = softNavStart;
     }
 
     if (navigationEntry) {
@@ -67,11 +70,11 @@ const attributeLCP = (metric: LCPMetric) => {
           : 0
       );
       const lcpResponseEnd = Math.max(
-        lcpRequestStart,
+        lcpRequestStart - softNavStart,
         lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0
       );
       const lcpRenderTime = Math.max(
-        lcpResponseEnd,
+        lcpResponseEnd - softNavStart,
         lcpEntry ? lcpEntry.startTime - activationStart : 0
       );
 
