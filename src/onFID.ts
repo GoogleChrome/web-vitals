@@ -54,7 +54,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
   const softNavsEnabled = softNavs(opts);
 
   whenActivated(() => {
-    const visibilityWatcher = getVisibilityWatcher();
+    let visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FID');
     let report: ReturnType<typeof bindReporter>;
 
@@ -62,6 +62,9 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
       navigation?: Metric['navigationType'],
       navigationId?: string
     ) => {
+      if (navigation === 'soft-navigation') {
+        visibilityWatcher = getVisibilityWatcher(true);
+      }
       metric = initMetric('FID', 0, navigation, navigationId);
       report = bindReporter(
         onReport,

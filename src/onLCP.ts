@@ -55,7 +55,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
   let metricNavStartTime = 0;
 
   whenActivated(() => {
-    const visibilityWatcher = getVisibilityWatcher();
+    let visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
 
@@ -72,6 +72,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
       );
       reportedMetric = false;
       if (navigation === 'soft-navigation') {
+        visibilityWatcher = getVisibilityWatcher(true);
         const softNavEntry = getSoftNavigationEntry(navigationId);
         metricNavStartTime =
           softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;

@@ -48,7 +48,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
   let metricNavStartTime = 0;
 
   whenActivated(() => {
-    const visibilityWatcher = getVisibilityWatcher();
+    let visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FCP');
     let report: ReturnType<typeof bindReporter>;
 
@@ -64,6 +64,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         opts!.reportAllChanges
       );
       if (navigation === 'soft-navigation') {
+        visibilityWatcher = getVisibilityWatcher(true);
         const softNavEntry = navigationId
           ? getSoftNavigationEntry(navigationId)
           : null;
