@@ -55,7 +55,7 @@ describe('onFID()', async function () {
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
 
-  it('reports the correct value after input', async function () {
+  it('reports the correct value after input when script is loaded late', async function () {
     if (!browserSupportsFID) this.skip();
 
     await browser.url('/test/fid?loadAfterInput=1');

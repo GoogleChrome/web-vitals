@@ -82,7 +82,7 @@ describe('onINP()', async function () {
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
-  it('reports the correct value when loaded late (reportAllChanges === false)', async function () {
+  it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100&loadAfterInput=1');
