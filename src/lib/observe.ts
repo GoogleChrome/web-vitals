@@ -40,7 +40,7 @@ interface PerformanceEntryMap {
 export const observe = <K extends keyof PerformanceEntryMap>(
   type: K,
   callback: (entries: PerformanceEntryMap[K]) => void,
-  opts?: PerformanceObserverInit
+  opts?: PerformanceObserverInit,
 ): PerformanceObserver | undefined => {
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
@@ -58,8 +58,8 @@ export const observe = <K extends keyof PerformanceEntryMap>(
             type,
             buffered: true,
           },
-          opts || {}
-        ) as PerformanceObserverInit
+          opts || {},
+        ) as PerformanceObserverInit,
       );
       return po;
     }

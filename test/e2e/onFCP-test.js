@@ -299,11 +299,11 @@ describe('onFCP()', async function () {
       assert.equal(fcp.attribution.timeToFirstByte, navEntry.responseStart);
       assert.equal(
         fcp.attribution.firstByteToFCP,
-        fcp.value - navEntry.responseStart
+        fcp.value - navEntry.responseStart,
       );
       assert.match(
         fcp.attribution.loadState,
-        /^(loading|dom-(interactive|content-loaded)|complete)$/
+        /^(loading|dom-(interactive|content-loaded)|complete)$/,
       );
 
       assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
@@ -350,11 +350,11 @@ describe('onFCP()', async function () {
 
       assert.equal(
         fcp.attribution.timeToFirstByte,
-        Math.max(0, navEntry.responseStart - activationStart)
+        Math.max(0, navEntry.responseStart - activationStart),
       );
       assert.equal(
         fcp.attribution.firstByteToFCP,
-        fcp.value - Math.max(0, navEntry.responseStart - activationStart)
+        fcp.value - Math.max(0, navEntry.responseStart - activationStart),
       );
 
       assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);

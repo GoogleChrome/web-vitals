@@ -68,7 +68,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
     onReport,
     metric,
     TTFBThresholds,
-    opts.reportAllChanges
+    opts.reportAllChanges,
   );
 
   whenReady(() => {
@@ -102,7 +102,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
           onReport,
           metric,
           TTFBThresholds,
-          opts!.reportAllChanges
+          opts!.reportAllChanges,
         );
 
         report(true);

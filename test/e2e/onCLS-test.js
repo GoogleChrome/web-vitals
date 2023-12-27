@@ -743,7 +743,7 @@ describe('onCLS()', async function () {
       assert.match(cls.navigationType, /navigate|reload/);
 
       const {largestShiftEntry, largestShiftSource} = getAttribution(
-        cls.entries
+        cls.entries,
       );
 
       assert.deepEqual(cls.attribution.largestShiftEntry, largestShiftEntry);
@@ -753,13 +753,13 @@ describe('onCLS()', async function () {
       assert.equal(cls.attribution.largestShiftTarget, '#p3');
       assert.equal(
         cls.attribution.largestShiftTime,
-        largestShiftEntry.startTime
+        largestShiftEntry.startTime,
       );
 
       // The first shift (before the second image loads) is the largest.
       assert.match(
         cls.attribution.loadState,
-        /^dom-(interactive|content-loaded)$/
+        /^dom-(interactive|content-loaded)$/,
       );
     });
 
@@ -784,7 +784,7 @@ describe('onCLS()', async function () {
       assert.match(cls.navigationType, /navigate|reload/);
 
       const {largestShiftEntry, largestShiftSource} = getAttribution(
-        cls.entries
+        cls.entries,
       );
 
       assert.deepEqual(cls.attribution.largestShiftEntry, largestShiftEntry);
@@ -794,7 +794,7 @@ describe('onCLS()', async function () {
       assert.equal(cls.attribution.largestShiftTarget, 'html>body>main>h1');
       assert.equal(
         cls.attribution.largestShiftTime,
-        largestShiftEntry.startTime
+        largestShiftEntry.startTime,
       );
 
       // The first shift (before the second image loads) is the largest.

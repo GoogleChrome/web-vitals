@@ -73,7 +73,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
       onReport,
       metric,
       FIDThresholds,
-      opts!.reportAllChanges
+      opts!.reportAllChanges,
     );
 
     if (po) {
@@ -81,19 +81,19 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
         runOnce(() => {
           handleEntries(po.takeRecords() as FIDMetric['entries']);
           po.disconnect();
-        })
+        }),
       );
     }
 
     if (window.__WEB_VITALS_POLYFILL__) {
       console.warn(
-        'The web-vitals "base+polyfill" build is deprecated. See: https://bit.ly/3aqzsGm'
+        'The web-vitals "base+polyfill" build is deprecated. See: https://bit.ly/3aqzsGm',
       );
 
       // Prefer the native implementation if available,
       if (!po) {
         window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback
+          handleEntry as FirstInputPolyfillCallback,
         );
       }
       onBFCacheRestore(() => {
@@ -102,12 +102,12 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           onReport,
           metric,
           FIDThresholds,
-          opts!.reportAllChanges
+          opts!.reportAllChanges,
         );
 
         window.webVitals.resetFirstInputPolyfill();
         window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback
+          handleEntry as FirstInputPolyfillCallback,
         );
       });
     } else {
@@ -119,7 +119,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
             onReport,
             metric,
             FIDThresholds,
-            opts!.reportAllChanges
+            opts!.reportAllChanges,
           );
 
           resetFirstInputPolyfill();

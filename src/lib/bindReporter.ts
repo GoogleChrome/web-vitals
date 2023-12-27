@@ -18,7 +18,7 @@ import {MetricType, MetricRatingThresholds} from '../types.js';
 
 const getRating = (
   value: number,
-  thresholds: MetricRatingThresholds
+  thresholds: MetricRatingThresholds,
 ): MetricType['rating'] => {
   if (value > thresholds[1]) {
     return 'poor';
@@ -33,7 +33,7 @@ export const bindReporter = <MetricName extends MetricType['name']>(
   callback: (metric: Extract<MetricType, {name: MetricName}>) => void,
   metric: Extract<MetricType, {name: MetricName}>,
   thresholds: MetricRatingThresholds,
-  reportAllChanges?: boolean
+  reportAllChanges?: boolean,
 ) => {
   let prevValue: number;
   let delta: number;

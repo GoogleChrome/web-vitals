@@ -22,7 +22,7 @@ import {MetricType} from '../types.js';
 
 export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
-  value?: number
+  value?: number,
 ) => {
   const navEntry = getNavigationEntry();
   let navigationType: MetricType['navigationType'] = 'navigate';
@@ -37,7 +37,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
     } else if (navEntry.type) {
       navigationType = navEntry.type.replace(
         /_/g,
-        '-'
+        '-',
       ) as MetricType['navigationType'];
     }
   }

@@ -30,15 +30,15 @@ const attributeTTFB = (metric: TTFBMetric): void => {
 
     const dnsStart = Math.max(
       navigationEntry.domainLookupStart - activationStart,
-      0
+      0,
     );
     const connectStart = Math.max(
       navigationEntry.connectStart - activationStart,
-      0
+      0,
     );
     const requestStart = Math.max(
       navigationEntry.requestStart - activationStart,
-      0
+      0,
     );
 
     (metric as TTFBMetricWithAttribution).attribution = {
@@ -76,13 +76,13 @@ const attributeTTFB = (metric: TTFBMetric): void => {
  */
 export const onTTFB = (
   onReport: TTFBReportCallbackWithAttribution,
-  opts?: ReportOpts
+  opts?: ReportOpts,
 ) => {
   unattributedOnTTFB(
     ((metric: TTFBMetricWithAttribution) => {
       attributeTTFB(metric);
       onReport(metric);
     }) as TTFBReportCallback,
-    opts
+    opts,
   );
 };

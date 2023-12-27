@@ -79,13 +79,13 @@ const attributeINP = (metric: INPMetric): void => {
  */
 export const onINP = (
   onReport: INPReportCallbackWithAttribution,
-  opts?: ReportOpts
+  opts?: ReportOpts,
 ) => {
   unattributedOnINP(
     ((metric: INPMetricWithAttribution) => {
       attributeINP(metric);
       onReport(metric);
     }) as INPReportCallback,
-    opts
+    opts,
   );
 };

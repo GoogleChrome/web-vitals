@@ -31,6 +31,6 @@ export const onBFCacheRestore = (cb: onBFCacheRestoreCallback) => {
         cb(event);
       }
     },
-    true
+    true,
   );
 };

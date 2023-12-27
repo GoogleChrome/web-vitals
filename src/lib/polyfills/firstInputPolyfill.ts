@@ -36,7 +36,7 @@ const startTimeStamp: Date = new Date();
  * are known.
  */
 export const firstInputPolyfill = (
-  onFirstInput: FirstInputPolyfillCallback
+  onFirstInput: FirstInputPolyfillCallback,
 ) => {
   callbacks.push(onFirstInput);
   reportFirstInputDelayIfRecordedAndValid();

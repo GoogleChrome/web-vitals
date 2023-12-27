@@ -47,15 +47,15 @@ const attributeLCP = (metric: LCPMetric) => {
         lcpResourceEntry
           ? (lcpResourceEntry.requestStart || lcpResourceEntry.startTime) -
               activationStart
-          : 0
+          : 0,
       );
       const lcpResponseEnd = Math.max(
         lcpRequestStart,
-        lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0
+        lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
       );
       const lcpRenderTime = Math.max(
         lcpResponseEnd,
-        lcpEntry ? lcpEntry.startTime - activationStart : 0
+        lcpEntry ? lcpEntry.startTime - activationStart : 0,
       );
 
       const attribution: LCPAttribution = {
@@ -102,13 +102,13 @@ const attributeLCP = (metric: LCPMetric) => {
  */
 export const onLCP = (
   onReport: LCPReportCallbackWithAttribution,
-  opts?: ReportOpts
+  opts?: ReportOpts,
 ) => {
   unattributedOnLCP(
     ((metric: LCPMetricWithAttribution) => {
       attributeLCP(metric);
       onReport(metric);
     }) as LCPReportCallback,
-    opts
+    opts,
   );
 };

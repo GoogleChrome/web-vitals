@@ -130,8 +130,8 @@ describe('onTTFB()', async function () {
       ttfb.value,
       Math.max(
         0,
-        ttfb.entries[0].responseStart - ttfb.entries[0].activationStart
-      )
+        ttfb.entries[0].responseStart - ttfb.entries[0].activationStart,
+      ),
     );
 
     assertValidEntry(ttfb.entries[0]);
@@ -156,8 +156,8 @@ describe('onTTFB()', async function () {
       ttfb.value,
       Math.max(
         0,
-        ttfb.entries[0].responseStart - ttfb.entries[0].activationStart
-      )
+        ttfb.entries[0].responseStart - ttfb.entries[0].activationStart,
+      ),
     );
 
     assertValidEntry(ttfb.entries[0]);
@@ -257,19 +257,19 @@ describe('onTTFB()', async function () {
       const navEntry = ttfb.entries[0];
       assert.strictEqual(
         ttfb.attribution.waitingTime,
-        navEntry.domainLookupStart
+        navEntry.domainLookupStart,
       );
       assert.strictEqual(
         ttfb.attribution.dnsTime,
-        navEntry.connectStart - navEntry.domainLookupStart
+        navEntry.connectStart - navEntry.domainLookupStart,
       );
       assert.strictEqual(
         ttfb.attribution.connectionTime,
-        navEntry.requestStart - navEntry.connectStart
+        navEntry.requestStart - navEntry.connectStart,
       );
       assert.strictEqual(
         ttfb.attribution.requestTime,
-        navEntry.responseStart - navEntry.requestStart
+        navEntry.responseStart - navEntry.requestStart,
       );
 
       assert.deepEqual(ttfb.attribution.navigationEntry, navEntry);
@@ -292,7 +292,7 @@ describe('onTTFB()', async function () {
       assert.strictEqual(ttfb.navigationType, 'prerender');
       assert.strictEqual(
         ttfb.value,
-        Math.max(0, ttfb.entries[0].responseStart - activationStart)
+        Math.max(0, ttfb.entries[0].responseStart - activationStart),
       );
 
       assertValidEntry(ttfb.entries[0]);
@@ -300,23 +300,23 @@ describe('onTTFB()', async function () {
       const navEntry = ttfb.entries[0];
       assert.strictEqual(
         ttfb.attribution.waitingTime,
-        Math.max(0, navEntry.domainLookupStart - activationStart)
+        Math.max(0, navEntry.domainLookupStart - activationStart),
       );
       assert.strictEqual(
         ttfb.attribution.dnsTime,
         Math.max(0, navEntry.connectStart - activationStart) -
-          Math.max(0, navEntry.domainLookupStart - activationStart)
+          Math.max(0, navEntry.domainLookupStart - activationStart),
       );
       assert.strictEqual(
         ttfb.attribution.connectionTime,
         Math.max(0, navEntry.requestStart - activationStart) -
-          Math.max(0, navEntry.connectStart - activationStart)
+          Math.max(0, navEntry.connectStart - activationStart),
       );
 
       assert.strictEqual(
         ttfb.attribution.requestTime,
         Math.max(0, navEntry.responseStart - activationStart) -
-          Math.max(0, navEntry.requestStart - activationStart)
+          Math.max(0, navEntry.requestStart - activationStart),
       );
 
       assert.deepEqual(ttfb.attribution.navigationEntry, navEntry);

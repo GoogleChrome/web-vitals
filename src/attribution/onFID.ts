@@ -47,13 +47,13 @@ const attributeFID = (metric: FIDMetric): void => {
  */
 export const onFID = (
   onReport: FIDReportCallbackWithAttribution,
-  opts?: ReportOpts
+  opts?: ReportOpts,
 ) => {
   unattributedOnFID(
     ((metric: FIDMetricWithAttribution) => {
       attributeFID(metric);
       onReport(metric);
     }) as FIDReportCallback,
-    opts
+    opts,
   );
 };

@@ -61,13 +61,13 @@ const attributeFCP = (metric: FCPMetric): void => {
  */
 export const onFCP = (
   onReport: FCPReportCallbackWithAttribution,
-  opts?: ReportOpts
+  opts?: ReportOpts,
 ) => {
   unattributedOnFCP(
     ((metric: FCPMetricWithAttribution) => {
       attributeFCP(metric);
       onReport(metric);
     }) as FCPReportCallback,
-    opts
+    opts,
   );
 };

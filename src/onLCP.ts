@@ -69,7 +69,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
           // clamped at 0.
           metric.value = Math.max(
             lastEntry.startTime - getActivationStart(),
-            0
+            0,
           );
           metric.entries = [lastEntry];
           report();
@@ -84,7 +84,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         onReport,
         metric,
         LCPThresholds,
-        opts!.reportAllChanges
+        opts!.reportAllChanges,
       );
 
       const stopListening = runOnce(() => {
@@ -116,7 +116,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
           onReport,
           metric,
           LCPThresholds,
-          opts!.reportAllChanges
+          opts!.reportAllChanges,
         );
 
         doubleRAF(() => {

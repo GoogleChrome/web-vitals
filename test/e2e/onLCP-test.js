@@ -464,7 +464,7 @@ describe('onLCP()', async function () {
           lcp.attribution.resourceLoadDelay +
           lcp.attribution.resourceLoadTime +
           lcp.attribution.elementRenderDelay,
-        lcp.value
+        lcp.value,
       );
 
       assert.deepEqual(lcp.attribution.navigationEntry, navEntry);
@@ -510,7 +510,7 @@ describe('onLCP()', async function () {
       // Specifically check that resourceLoadDelay falls back to `startTime`.
       assert.equal(
         lcp.attribution.resourceLoadDelay,
-        lcpResEntry.startTime - navEntry.responseStart
+        lcpResEntry.startTime - navEntry.responseStart,
       );
 
       assert.equal(
@@ -518,7 +518,7 @@ describe('onLCP()', async function () {
           lcp.attribution.resourceLoadDelay +
           lcp.attribution.resourceLoadTime +
           lcp.attribution.elementRenderDelay,
-        lcp.value
+        lcp.value,
       );
 
       assert.deepEqual(lcp.attribution.navigationEntry, navEntry);
@@ -564,25 +564,25 @@ describe('onLCP()', async function () {
       // Assert each individual LCP sub-part accounts for `activationStart`
       assert.equal(
         lcp.attribution.timeToFirstByte,
-        Math.max(0, navEntry.responseStart - activationStart)
+        Math.max(0, navEntry.responseStart - activationStart),
       );
 
       assert.equal(
         lcp.attribution.resourceLoadDelay,
         Math.max(0, lcpResEntry.requestStart - activationStart) -
-          Math.max(0, navEntry.responseStart - activationStart)
+          Math.max(0, navEntry.responseStart - activationStart),
       );
 
       assert.equal(
         lcp.attribution.resourceLoadTime,
         Math.max(0, lcpResEntry.responseEnd - activationStart) -
-          Math.max(0, lcpResEntry.requestStart - activationStart)
+          Math.max(0, lcpResEntry.requestStart - activationStart),
       );
 
       assert.equal(
         lcp.attribution.elementRenderDelay,
         Math.max(0, lcp.entries[0].startTime - activationStart) -
-          Math.max(0, lcpResEntry.responseEnd - activationStart)
+          Math.max(0, lcpResEntry.responseEnd - activationStart),
       );
 
       // Assert that they combine to equal LCP.
@@ -591,7 +591,7 @@ describe('onLCP()', async function () {
           lcp.attribution.resourceLoadDelay +
           lcp.attribution.resourceLoadTime +
           lcp.attribution.elementRenderDelay,
-        lcp.value
+        lcp.value,
       );
 
       assert.deepEqual(lcp.attribution.navigationEntry, navEntry);
@@ -627,7 +627,7 @@ describe('onLCP()', async function () {
           lcp.attribution.resourceLoadDelay +
           lcp.attribution.resourceLoadTime +
           lcp.attribution.elementRenderDelay,
-        lcp.value
+        lcp.value,
       );
 
       assert.deepEqual(lcp.attribution.navigationEntry, navEntry);

@@ -107,7 +107,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           onReport,
           metric,
           CLSThresholds,
-          opts!.reportAllChanges
+          opts!.reportAllChanges,
         );
 
         onHidden(() => {
@@ -124,7 +124,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
             onReport,
             metric,
             CLSThresholds,
-            opts!.reportAllChanges
+            opts!.reportAllChanges,
           );
 
           doubleRAF(() => report());
@@ -135,6 +135,6 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
         // `reportAllChanges` is true.
         setTimeout(report, 0);
       }
-    })
+    }),
   );
 };

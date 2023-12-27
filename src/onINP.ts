@@ -89,7 +89,7 @@ const processEntry = (entry: PerformanceEventTiming) => {
       existingInteraction.entries.push(entry);
       existingInteraction.latency = Math.max(
         existingInteraction.latency,
-        entry.duration
+        entry.duration,
       );
     } else {
       const interaction = {
@@ -116,7 +116,7 @@ const processEntry = (entry: PerformanceEventTiming) => {
 const estimateP98LongestInteraction = () => {
   const candidateInteractionIndex = Math.min(
     longestInteractionList.length - 1,
-    Math.floor(getInteractionCountForNavigation() / 50)
+    Math.floor(getInteractionCountForNavigation() / 50),
   );
 
   return longestInteractionList[candidateInteractionIndex];
@@ -182,7 +182,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
                   entry.startTime === prevEntry.startTime
                 );
               });
-            }
+            },
           );
           if (noMatchingEntry) {
             processEntry(entry);
@@ -213,7 +213,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       onReport,
       metric,
       INPThresholds,
-      opts!.reportAllChanges
+      opts!.reportAllChanges,
     );
 
     if (po) {
@@ -253,7 +253,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
           onReport,
           metric,
           INPThresholds,
-          opts!.reportAllChanges
+          opts!.reportAllChanges,
         );
       });
     }
