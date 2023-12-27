@@ -1,5 +1,9 @@
 # Changelog
 
+### v3.5.1 (2023-12-27)
+
+- Add extra guard for `PerformanceEventTiming` not existing ([#403](https://github.com/GoogleChrome/web-vitals/pull/403))
+
 ### v3.5.0 (2023-09-28)
 
 - Run `onLCP` callback in separate task ([#386](https://github.com/GoogleChrome/web-vitals/pull/386))
