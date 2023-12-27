@@ -18,7 +18,7 @@ import {
 describe('index', () => {
   it('exports Web Vitals metrics functions', () => {
     [onCLS, onFCP, onFID, onINP, onLCP, onTTFB].forEach((onFn) =>
-      assert(typeof onFn === 'function')
+      assert(typeof onFn === 'function'),
     );
   });
 

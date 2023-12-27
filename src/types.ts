@@ -66,7 +66,7 @@ declare global {
 
   interface Performance {
     getEntriesByType<K extends keyof PerformanceEntryMap>(
-      type: K
+      type: K,
     ): PerformanceEntryMap[K][];
   }
 

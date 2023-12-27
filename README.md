@@ -123,7 +123,7 @@ First, in your application code, import the "base" build rather than the "standa
 Then, inline the code from `dist/polyfill.js` into the `<head>` of your pages. This step is important since the "base" build will error if the polyfill code has not been added.
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <script>
