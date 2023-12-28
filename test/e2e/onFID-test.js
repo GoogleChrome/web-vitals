@@ -17,7 +17,7 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
-import {domReadyState} from '../utils/domReadyState.js';
+import {navigateWithStrategy} from '../utils/navigateWithStrategy.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
@@ -31,6 +31,7 @@ describe('onFID()', async function () {
   });
 
   beforeEach(async function () {
+    await browser.url('about:blank');
     await clearBeacons();
   });
 
@@ -138,8 +139,7 @@ describe('onFID()', async function () {
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
 
-    await browser.url('/test/fid?hidden=1');
-    await domReadyState('interactive');
+    await navigateWithStrategy('/test/fid?hidden=1', 'complete');
 
     await stubVisibilityChange('visible');
 
@@ -158,6 +158,8 @@ describe('onFID()', async function () {
     // Ignore Safari until this bug is fixed:
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
+
+    await navigateWithStrategy('/test/fid', 'complete');
 
     await stubVisibilityChange('hidden');
 

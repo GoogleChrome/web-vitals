@@ -33,6 +33,7 @@ describe('onINP()', async function () {
   });
 
   beforeEach(async function () {
+    await browser.url('about:blank');
     await clearBeacons();
   });
 

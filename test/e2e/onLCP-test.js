@@ -17,8 +17,8 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
-import {domReadyState} from '../utils/domReadyState.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
+import {navigateWithStrategy} from '../utils/navigateWithStrategy.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
@@ -32,11 +32,8 @@ describe('onLCP()', async function () {
   });
 
   beforeEach(async function () {
-    await clearBeacons();
-
-    // TODO(philipwalton): not sure why this is needed, but it may be related
-    // to: https://bugs.chromium.org/p/chromium/issues/detail?id=1034080
     await browser.url('about:blank');
+    await clearBeacons();
   });
 
   it('reports the correct value on hidden (reportAllChanges === false)', async function () {
@@ -195,8 +192,7 @@ describe('onLCP()', async function () {
   it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?hidden=1');
-    await domReadyState('interactive');
+    await navigateWithStrategy('/test/lcp?hidden=1', 'interactive');
 
     await stubVisibilityChange('visible');
 
@@ -362,8 +358,7 @@ describe('onLCP()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?hidden=1');
-    await domReadyState('interactive');
+    await navigateWithStrategy('/test/lcp?hidden=1', 'interactive');
 
     await stubVisibilityChange('visible');
 
@@ -602,10 +597,10 @@ describe('onLCP()', async function () {
     it('handles cases where there is no LCP resource', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      await browser.url('/test/lcp?attribution=1&imgHidden=1');
-
-      // Wait until all images are loaded and fully rendered.
-      await domReadyState('complete');
+      await navigateWithStrategy(
+        '/test/lcp?attribution=1&imgHidden=1',
+        'complete',
+      );
 
       const navEntry = await browser.execute(() => {
         return performance.getEntriesByType('navigation')[0].toJSON();
