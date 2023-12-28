@@ -25,7 +25,7 @@ export const softNavs = (opts?: ReportOpts) => {
 };
 
 export const getSoftNavigationEntry = (
-  navigationId?: string
+  navigationId?: string,
 ): SoftNavigationEntry | undefined => {
   if (!navigationId) return;
 
