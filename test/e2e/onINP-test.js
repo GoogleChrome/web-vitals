@@ -82,7 +82,7 @@ describe('onINP()', async function () {
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
-  it('reports the correct value when loaded late (reportAllChanges === false)', async function () {
+  it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url('/test/inp?click=100&loadAfterInput=1');
@@ -110,7 +110,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP) this.skip();
 
     await browser.url(
-      '/test/inp?click=100&reportAllChanges=1&loadAfterInput=1'
+      '/test/inp?click=100&reportAllChanges=1&loadAfterInput=1',
     );
 
     const h1 = await $('h1');
@@ -495,7 +495,7 @@ describe('onINP()', async function () {
 
       await browser.url(
         '/test/inp?' +
-          'attribution=1&reportAllChanges=1&click=100&delayDCL=1000'
+          'attribution=1&reportAllChanges=1&click=100&delayDCL=1000',
       );
 
       // Click on the <h1>.
@@ -512,7 +512,7 @@ describe('onINP()', async function () {
 
       await browser.url(
         '/test/inp?' +
-          'attribution=1&reportAllChanges=1&click=100&delayResponse=1000'
+          'attribution=1&reportAllChanges=1&click=100&delayResponse=1000',
       );
 
       // Click on the <button>.
@@ -541,6 +541,6 @@ const setBlockingTime = (event, value) => {
       document.getElementById(`${event}-blocking-time`).value = value;
     },
     event,
-    value
+    value,
   );
 };

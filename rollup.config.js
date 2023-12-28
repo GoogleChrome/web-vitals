@@ -13,13 +13,14 @@
  limitations under the License.
 */
 
+import babel from '@rollup/plugin-babel';
 import replace from '@rollup/plugin-replace';
-import {terser} from 'rollup-plugin-terser';
-import babel from 'rollup-plugin-babel';
+import terser from '@rollup/plugin-terser';
 
 const configurePlugins = ({module, polyfill = false}) => {
   return [
     babel({
+      babelHelpers: 'bundled',
       presets: [
         [
           '@babel/preset-env',

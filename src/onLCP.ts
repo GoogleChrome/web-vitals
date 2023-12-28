@@ -33,11 +33,11 @@ import {
   ReportOpts,
 } from './types.js';
 
-/** Thresholds for LCP. See https://web.dev/lcp/#what-is-a-good-lcp-score */
+/** Thresholds for LCP. See https://web.dev/articles/lcp#what_is_a_good_lcp_score */
 export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
 
 /**
- * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
+ * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and
  * calls the `callback` function once the value is ready (along with the
  * relevant `largest-contentful-paint` performance entry used to determine the
  * value). The reported value is a `DOMHighResTimeStamp`.
@@ -61,14 +61,14 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
 
     const initNewLCPMetric = (
       navigation?: Metric['navigationType'],
-      navigationId?: string
+      navigationId?: string,
     ) => {
       metric = initMetric('LCP', 0, navigation, navigationId);
       report = bindReporter(
         onReport,
         metric,
         LCPThresholds,
-        opts!.reportAllChanges
+        opts!.reportAllChanges,
       );
       reportedMetric = false;
       if (navigation === 'soft-navigation') {
@@ -141,7 +141,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         onReport,
         metric,
         LCPThresholds,
-        opts!.reportAllChanges
+        opts!.reportAllChanges,
       );
 
       // Stop listening after input. Note: while scrolling is an input that

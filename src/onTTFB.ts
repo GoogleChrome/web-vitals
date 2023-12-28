@@ -28,7 +28,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 
-/** Thresholds for TTFB. See https://web.dev/ttfb/#what-is-a-good-ttfb-score */
+/** Thresholds for TTFB. See https://web.dev/articles/ttfb#what_is_a_good_ttfb_score */
 export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
 
 const hardNavEntry = getNavigationEntry();
@@ -49,7 +49,7 @@ const whenReady = (callback: () => void) => {
 };
 
 /**
- * Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the
+ * Calculates the [TTFB](https://web.dev/articles/ttfb) value for the
  * current page and calls the `callback` function once the page has loaded,
  * along with the relevant `navigation` performance entry used to determine the
  * value. The reported value is a `DOMHighResTimeStamp`.
@@ -73,7 +73,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
     onReport,
     metric,
     TTFBThresholds,
-    opts.reportAllChanges
+    opts.reportAllChanges,
   );
 
   whenReady(() => {
@@ -109,13 +109,13 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
           'TTFB',
           0,
           'back-forward-cache',
-          metric.navigationId
+          metric.navigationId,
         );
         report = bindReporter(
           onReport,
           metric,
           TTFBThresholds,
-          opts!.reportAllChanges
+          opts!.reportAllChanges,
         );
         report(true);
       });
@@ -128,14 +128,14 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
               'TTFB',
               0,
               'soft-navigation',
-              entry.navigationId
+              entry.navigationId,
             );
             metric.entries = [entry];
             report = bindReporter(
               onReport,
               metric,
               TTFBThresholds,
-              opts!.reportAllChanges
+              opts!.reportAllChanges,
             );
             report(true);
           }

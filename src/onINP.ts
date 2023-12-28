@@ -40,7 +40,7 @@ interface Interaction {
   entries: PerformanceEventTiming[];
 }
 
-/** Thresholds for INP. See https://web.dev/inp/#what-is-a-good-inp-score */
+/** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
 
 // Used to store the interaction count after a bfcache restore, since p98
@@ -92,7 +92,7 @@ const processEntry = (entry: PerformanceEventTiming) => {
       existingInteraction.entries.push(entry);
       existingInteraction.latency = Math.max(
         existingInteraction.latency,
-        entry.duration
+        entry.duration,
       );
     } else {
       const interaction = {
@@ -119,14 +119,14 @@ const processEntry = (entry: PerformanceEventTiming) => {
 const estimateP98LongestInteraction = () => {
   const candidateInteractionIndex = Math.min(
     longestInteractionList.length - 1,
-    Math.floor(getInteractionCountForNavigation() / 50)
+    Math.floor(getInteractionCountForNavigation() / 50),
   );
 
   return longestInteractionList[candidateInteractionIndex];
 };
 
 /**
- * Calculates the [INP](https://web.dev/responsiveness/) value for the current
+ * Calculates the [INP](https://web.dev/articles/inp) value for the current
  * page and calls the `callback` function once the value is ready, along with
  * the `event` performance entries reported for that interaction. The reported
  * value is a `DOMHighResTimeStamp`.
@@ -136,7 +136,7 @@ const estimateP98LongestInteraction = () => {
  * default threshold is `40`, which means INP scores of less than 40 are
  * reported as 0. Note that this will not affect your 75th percentile INP value
  * unless that value is also less than 40 (well below the recommended
- * [good](https://web.dev/inp/#what-is-a-good-inp-score) threshold).
+ * [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
  * `callback` function will be called as soon as the value is initially
@@ -168,7 +168,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
 
     const initNewINPMetric = (
       navigation?: Metric['navigationType'],
-      navigationId?: string
+      navigationId?: string,
     ) => {
       longestInteractionList = [];
       // Important, we want the count for the full page here,
@@ -180,7 +180,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         onReport,
         metric,
         INPThresholds,
-        opts!.reportAllChanges
+        opts!.reportAllChanges,
       );
       reportedMetric = false;
       if (navigation === 'soft-navigation') {
@@ -238,7 +238,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
                   entry.startTime === prevEntry.startTime
                 );
               });
-            }
+            },
           );
           if (noMatchingEntry) {
             processEntry(entry);
@@ -265,14 +265,17 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       onReport,
       metric,
       INPThresholds,
-      opts!.reportAllChanges
+      opts!.reportAllChanges,
     );
 
     if (po) {
       // If browser supports interactionId (and so supports INP), also
       // observe entries of type `first-input`. This is useful in cases
       // where the first interaction is less than the `durationThreshold`.
-      if ('interactionId' in PerformanceEventTiming.prototype) {
+      if (
+        'PerformanceEventTiming' in window &&
+        'interactionId' in PerformanceEventTiming.prototype
+      ) {
         po.observe({
           type: 'first-input',
           buffered: true,
@@ -327,7 +330,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
               onReport,
               metric,
               INPThresholds,
-              opts!.reportAllChanges
+              opts!.reportAllChanges,
             );
           }
         });

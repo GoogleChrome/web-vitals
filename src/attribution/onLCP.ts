@@ -67,17 +67,17 @@ const attributeLCP = (metric: LCPMetric) => {
         lcpResourceEntry
           ? (lcpResourceEntry.requestStart || lcpResourceEntry.startTime) -
               activationStart
-          : 0
+          : 0,
       );
       const lcpResponseEnd = Math.max(
         lcpRequestStart - softNavStart,
         lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
-        0
+        0,
       );
       const lcpRenderTime = Math.max(
         lcpResponseEnd - softNavStart,
         lcpEntry ? lcpEntry.startTime - activationStart : 0,
-        0
+        0,
       );
 
       const attribution: LCPAttribution = {
@@ -112,7 +112,7 @@ const attributeLCP = (metric: LCPMetric) => {
 };
 
 /**
- * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
+ * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and
  * calls the `callback` function once the value is ready (along with the
  * relevant `largest-contentful-paint` performance entry used to determine the
  * value). The reported value is a `DOMHighResTimeStamp`.
@@ -124,13 +124,13 @@ const attributeLCP = (metric: LCPMetric) => {
  */
 export const onLCP = (
   onReport: LCPReportCallbackWithAttribution,
-  opts?: ReportOpts
+  opts?: ReportOpts,
 ) => {
   unattributedOnLCP(
     ((metric: LCPMetricWithAttribution) => {
       attributeLCP(metric);
       onReport(metric);
     }) as LCPReportCallback,
-    opts
+    opts,
   );
 };

@@ -33,15 +33,15 @@ const attributeTTFB = (metric: TTFBMetric): void => {
 
     const dnsStart = Math.max(
       navigationEntry.domainLookupStart - activationStart || 0,
-      0
+      0,
     );
     const connectStart = Math.max(
       navigationEntry.connectStart - activationStart || 0,
-      0
+      0,
     );
     const requestStart = Math.max(
       navigationEntry.requestStart - activationStart || 0,
-      0
+      0,
     );
 
     (metric as TTFBMetricWithAttribution).attribution = {
@@ -63,7 +63,7 @@ const attributeTTFB = (metric: TTFBMetric): void => {
 };
 
 /**
- * Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the
+ * Calculates the [TTFB](https://web.dev/articles/ttfb) value for the
  * current page and calls the `callback` function once the page has loaded,
  * along with the relevant `navigation` performance entry used to determine the
  * value. The reported value is a `DOMHighResTimeStamp`.
@@ -79,13 +79,13 @@ const attributeTTFB = (metric: TTFBMetric): void => {
  */
 export const onTTFB = (
   onReport: TTFBReportCallbackWithAttribution,
-  opts?: ReportOpts
+  opts?: ReportOpts,
 ) => {
   unattributedOnTTFB(
     ((metric: TTFBMetricWithAttribution) => {
       attributeTTFB(metric);
       onReport(metric);
     }) as TTFBReportCallback,
-    opts
+    opts,
   );
 };

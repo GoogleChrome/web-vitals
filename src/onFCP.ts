@@ -32,11 +32,11 @@ import {
   ReportOpts,
 } from './types.js';
 
-/** Thresholds for FCP. See https://web.dev/fcp/#what-is-a-good-fcp-score */
+/** Thresholds for FCP. See https://web.dev/articles/fcp#what_is_a_good_fcp_score */
 export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
 
 /**
- * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
+ * Calculates the [FCP](https://web.dev/articles/fcp) value for the current page and
  * calls the `callback` function once the value is ready, along with the
  * relevant `paint` performance entry used to determine the value. The reported
  * value is a `DOMHighResTimeStamp`.
@@ -54,14 +54,14 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
 
     const initNewFCPMetric = (
       navigation?: Metric['navigationType'],
-      navigationId?: string
+      navigationId?: string,
     ) => {
       metric = initMetric('FCP', 0, navigation, navigationId);
       report = bindReporter(
         onReport,
         metric,
         FCPThresholds,
-        opts!.reportAllChanges
+        opts!.reportAllChanges,
       );
       if (navigation === 'soft-navigation') {
         visibilityWatcher = getVisibilityWatcher(true);
@@ -141,7 +141,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
         onReport,
         metric,
         FCPThresholds,
-        opts!.reportAllChanges
+        opts!.reportAllChanges,
       );
 
       // Only report after a bfcache restore if the `PerformanceObserver`
@@ -151,13 +151,13 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
           'FCP',
           0,
           'back-forward-cache',
-          metric.navigationId
+          metric.navigationId,
         );
         report = bindReporter(
           onReport,
           metric,
           FCPThresholds,
-          opts!.reportAllChanges
+          opts!.reportAllChanges,
         );
 
         doubleRAF(() => {

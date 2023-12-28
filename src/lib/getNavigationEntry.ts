@@ -32,7 +32,7 @@ const getNavigationEntryFromPerformanceTiming =
         navigationEntry[key] = Math.max(
           (timing[key as keyof PerformanceTiming] as number) -
             timing.navigationStart,
-          0
+          0,
         );
       }
     }

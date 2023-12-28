@@ -67,20 +67,20 @@ const attributeFCP = (metric: FCPMetric): void => {
 };
 
 /**
- * Calculates the [FCP](https://web.dev/fcp/) value for the current page and
+ * Calculates the [FCP](https://web.dev/articles/fcp) value for the current page and
  * calls the `callback` function once the value is ready, along with the
  * relevant `paint` performance entry used to determine the value. The reported
  * value is a `DOMHighResTimeStamp`.
  */
 export const onFCP = (
   onReport: FCPReportCallbackWithAttribution,
-  opts?: ReportOpts
+  opts?: ReportOpts,
 ) => {
   unattributedOnFCP(
     ((metric: FCPMetricWithAttribution) => {
       attributeFCP(metric);
       onReport(metric);
     }) as FCPReportCallback,
-    opts
+    opts,
   );
 };

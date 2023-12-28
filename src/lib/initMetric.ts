@@ -24,7 +24,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
   value?: number,
   navigation?: MetricType['navigationType'],
-  navigationId?: string
+  navigationId?: string,
 ) => {
   const hardNavEntry = getNavigationEntry();
   let navigationType: MetricType['navigationType'] = 'navigate';
@@ -42,7 +42,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
     } else if (hardNavEntry.type) {
       navigationType = hardNavEntry.type.replace(
         /_/g,
-        '-'
+        '-',
       ) as MetricType['navigationType'];
     }
   }
