@@ -38,6 +38,7 @@ interface Interaction {
   id: number;
   latency: number;
   entries: PerformanceEventTiming[];
+  startTime: DOMHighResTimeStamp;
 }
 
 /** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
@@ -56,12 +57,12 @@ const getInteractionCountForNavigation = () => {
 };
 
 // To prevent unnecessary memory usage on pages with lots of interactions,
-// store at most 10 of the longest interactions to consider as INP candidates.
+// store 10 interactions to consider as INP candidates.
 const MAX_INTERACTIONS_TO_CONSIDER = 10;
 
-// A list of longest interactions on the page (by latency) sorted so the
-// longest one is first. The list is as most MAX_INTERACTIONS_TO_CONSIDER long.
-let longestInteractionList: Interaction[] = [];
+// A list of interactions on the page (the list is as most
+// MAX_INTERACTIONS_TO_CONSIDER long).
+let interactionList: Interaction[] = [];
 
 // A mapping of longest interactions by their interaction ID.
 // This is used for faster lookup.
@@ -73,19 +74,23 @@ const longestInteractionMap: {[interactionId: string]: Interaction} = {};
  * entry is part of an existing interaction, it is merged and the latency
  * and entries list is updated as needed.
  */
-const processEntry = (entry: PerformanceEventTiming) => {
+const processEntry = (
+  entry: PerformanceEventTiming,
+  reportAllChanges?: boolean,
+) => {
   // The least-long of the 10 longest interactions.
-  const minLongestInteraction =
-    longestInteractionList[longestInteractionList.length - 1];
+  const minLongestInteraction = interactionList[interactionList.length - 1];
 
   const existingInteraction = longestInteractionMap[entry.interactionId!];
 
   // Only process the entry if it's possibly one of the ten longest,
-  // or if it's part of an existing interaction.
+  // or if it's part of an existing interaction or if all changes
+  // should be reported.
   if (
     existingInteraction ||
-    longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
-    entry.duration > minLongestInteraction.latency
+    interactionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
+    entry.duration > minLongestInteraction.latency ||
+    reportAllChanges
   ) {
     // If the interaction already exists, update it. Otherwise create one.
     if (existingInteraction) {
@@ -98,15 +103,24 @@ const processEntry = (entry: PerformanceEventTiming) => {
       const interaction = {
         id: entry.interactionId!,
         latency: entry.duration,
+        startTime: entry.startTime,
         entries: [entry],
       };
       longestInteractionMap[interaction.id] = interaction;
-      longestInteractionList.push(interaction);
+      interactionList.push(interaction);
     }
 
-    // Sort the entries by latency (descending) and keep only the top ten.
-    longestInteractionList.sort((a, b) => b.latency - a.latency);
-    longestInteractionList.splice(MAX_INTERACTIONS_TO_CONSIDER).forEach((i) => {
+    if (reportAllChanges) {
+      // Sort the entries by startTime
+      interactionList.sort((a, b) => a.startTime - b.startTime);
+    } else {
+      // Sort the entries by latency (descending)
+      interactionList.sort((a, b) => b.latency - a.latency);
+    }
+
+    // To prevent unnecessary memory usage on pages with lots of interactions,
+    // keep the top 10 of the interactions.
+    interactionList.splice(MAX_INTERACTIONS_TO_CONSIDER).forEach((i) => {
       delete longestInteractionMap[i.id];
     });
   }
@@ -118,11 +132,11 @@ const processEntry = (entry: PerformanceEventTiming) => {
  */
 const estimateP98LongestInteraction = () => {
   const candidateInteractionIndex = Math.min(
-    longestInteractionList.length - 1,
+    interactionList.length - 1,
     Math.floor(getInteractionCountForNavigation() / 50),
   );
 
-  return longestInteractionList[candidateInteractionIndex];
+  return interactionList[candidateInteractionIndex];
 };
 
 /**
@@ -170,7 +184,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       navigation?: Metric['navigationType'],
       navigationId?: string,
     ) => {
-      longestInteractionList = [];
+      interactionList = [];
       // Important, we want the count for the full page here,
       // not just for the current navigation.
       prevInteractionCount =
@@ -191,12 +205,19 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
     };
 
     const updateINPMetric = () => {
+      if (opts?.reportAllChanges) {
+        const latestInteraction = interactionList.at(-1);
+
+        if (latestInteraction) {
+          metric.value = latestInteraction.latency;
+          metric.entries = latestInteraction.entries;
+          return;
+        }
+      }
+
       const inp = estimateP98LongestInteraction();
 
-      if (
-        inp &&
-        (inp.latency !== metric.value || (opts && opts.reportAllChanges))
-      ) {
+      if (inp && inp.latency !== metric.value) {
         metric.value = inp.latency;
         metric.entries = inp.entries;
       }
@@ -219,7 +240,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
           initNewINPMetric('soft-navigation', entry.navigationId);
         }
         if (entry.interactionId) {
-          processEntry(entry);
+          processEntry(entry, opts?.reportAllChanges);
         }
 
         // Entries of type `first-input` don't currently have an `interactionId`,
@@ -230,24 +251,22 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         // that currently supports INP).
         // TODO(philipwalton): remove once crbug.com/1325826 is fixed.
         if (entry.entryType === 'first-input') {
-          const noMatchingEntry = !longestInteractionList.some(
-            (interaction) => {
-              return interaction.entries.some((prevEntry) => {
-                return (
-                  entry.duration === prevEntry.duration &&
-                  entry.startTime === prevEntry.startTime
-                );
-              });
-            },
-          );
+          const noMatchingEntry = !interactionList.some((interaction) => {
+            return interaction.entries.some((prevEntry) => {
+              return (
+                entry.duration === prevEntry.duration &&
+                entry.startTime === prevEntry.startTime
+              );
+            });
+          });
           if (noMatchingEntry) {
-            processEntry(entry);
+            processEntry(entry, opts?.reportAllChanges);
           }
         }
       });
 
       updateINPMetric();
-      report();
+      report(true);
     };
 
     const po = observe('event', handleEntries, {
