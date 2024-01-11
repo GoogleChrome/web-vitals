@@ -672,7 +672,13 @@ interface MetricWithAttribution extends Metric {
    * can be sent along with the metric value for the current page visit in
    * order to help identify issues happening to real-users in the field.
    */
-  attribution: {[key: string]: unknown};
+  attribution:
+    | CLSAttribution
+    | FCPAttribution
+    | FIDAttribution
+    | INPAttribution
+    | LCPAttribution
+    | TTFBAttribution;
 }
 ```
 
