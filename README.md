@@ -265,7 +265,9 @@ _**Warning:** do not call any of the Web Vitals functions (e.g. `onCLS()`, `onFI
 
 ### Report the value on every change
 
-In most cases, you only want the `callback` function to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each layout shift as it happens) by setting `reportAllChanges` to `true` in the optional, [configuration object](#reportopts) (second parameter).
+In most cases, you only want the `callback` function to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each larger layout shift as it happens) by setting `reportAllChanges` to `true` in the optional, [configuration object](#reportopts) (second parameter).
+
+_**Important:** `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP._
 
 This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production.
 
@@ -816,7 +818,7 @@ type onCLS = (callback: CLSReportCallback, opts?: ReportOpts) => void;
 
 Calculates the [CLS](https://web.dev/articles/cls) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/articles/cls#layout_shift_score)).
 
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every layout shift](#report-the-value-on-every-change)).
 
 _**Important:** CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
 
@@ -848,7 +850,7 @@ Calculates the [INP](https://web.dev/articles/inp) value for the current page an
 
 A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
 
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan.
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every interaction](#report-the-value-on-every-change)).
 
 _**Important:** INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
 
