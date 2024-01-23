@@ -40,6 +40,10 @@
   <p>
     <button id="reset">Reset blocking time to zero</button>
   </p>
+  <p>
+    <input type="checkbox" id="pointer-checkbox" checked>
+    <label for="pointer-checkbox">Include pointer event listeners</label>
+  </p>
 
   <p>
     <textarea id="textarea" style="width:40em;height:5em"></textarea>
@@ -54,6 +58,7 @@
         el.value = value;
       }
     }
+    document.getElementById('pointer-checkbox').checked = !params.has('noPointerEvents');
 
     function block(event) {
       const blockingTime = Number(document.getElementById(`${event.type}-blocking-time`).value);
@@ -63,12 +68,27 @@
       }
     }
 
-    addEventListener('pointerdown', block, true);
-    addEventListener('pointerup', block, true);
+    function togglePointerListeners() {
+      const includePointers = document.getElementById('pointer-checkbox').checked;
+
+      if (includePointers) {
+        addEventListener('pointerdown', block, true);
+        addEventListener('pointerup', block, true);
+      } else {
+        removeEventListener('pointerdown', block, true);
+        removeEventListener('pointerup', block, true);
+      }
+
+      document.getElementById('pointerdown-blocking-time').disabled = !includePointers;
+      document.getElementById('pointerup-blocking-time').disabled = !includePointers;
+    }
+
     addEventListener('keydown', block, true);
     addEventListener('keyup', block, true);
     addEventListener('click', block, true);
+    togglePointerListeners();
 
+    document.getElementById('pointer-checkbox').addEventListener('change', togglePointerListeners);
     document.getElementById('reset').addEventListener('click', () => {
       [...document.querySelectorAll('label>input')].forEach((n) => n.value = 0);
     });
@@ -80,7 +100,14 @@
 
   <script type="module">
     function jsonifyNode(node) {
-      return node && node.id ? `#${node.id}` : node.nodeName.toLowerCase();
+      return node && node.id ? `#${node.id}` : node?.nodeName?.toLowerCase();
+    }
+    function jsonifyEntry(entry) {
+      return {
+        ...entry.toJSON(),
+        interactionId: entry.interactionId,
+        target: jsonifyNode(entry.target),
+      };
     }
 
     const {onINP} = await __testImport('{{ modulePath }}');
@@ -90,11 +117,10 @@
       console.log(inp);
 
       // Elements can't be serialized, so we convert first.
-      inp.entries = inp.entries.map((e) => ({
-        ...e.toJSON(),
-        interactionId: e.interactionId,
-        target: jsonifyNode(e.target),
-      }));
+      inp.entries = inp.entries.map(jsonifyEntry);
+      if (inp.attribution?.eventEntry) {
+        inp.attribution.eventEntry = jsonifyEntry(inp.attribution.eventEntry);
+      }
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(inp));

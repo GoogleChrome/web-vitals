@@ -525,6 +525,33 @@ describe('onINP()', async function () {
       const [inp2] = await getBeacons();
       assert.equal(inp2.attribution.loadState, 'loading');
     });
+
+    it.only('works around null attribution.eventTarget bug', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await browser.url('/test/inp?noPointerEvents&click=100&attribution=1');
+
+      const h1 = await $('h1');
+      await h1.click();
+
+      await stubVisibilityChange('hidden');
+      await beaconCountIs(1);
+
+      const [inp] = await getBeacons();
+
+      assert(inp.value >= 100 - ROUNDING_ERROR);
+      assert(inp.id.match(/^v3-\d+-\d+$/));
+
+      // Event entry has no target, but `eventTarget` populated by other
+      // interaction entries.
+      assert.equal(inp.attribution.eventTarget, 'html>body>main>h1');
+      // TODO: Should be undefined, but `click` event always selected as
+      // eventEntry because pointerdown/pointerup are never longer.
+      assert.equal(inp.attribution.eventEntry.target, undefined);
+      // The following is true, however:
+      // inp.entries.find(e => e.name === 'pointerup').target === undefined
+      // (same with pointerdown) so repro is mostly working.
+    });
   });
 });
 
