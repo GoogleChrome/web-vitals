@@ -42,7 +42,7 @@ const attributeINP = (metric: INPMetric): void => {
     // for all events in the same interaction, we pick the first non-null one.
     // TODO: remove when 1367329 is resolved
     // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-    const firstTargetEntry = metric.entries.find(entry => entry.target);
+    const firstTargetEntry = metric.entries.find((entry) => entry.target);
 
     (metric as INPMetricWithAttribution).attribution = {
       eventTarget: getSelector(firstTargetEntry?.target),
