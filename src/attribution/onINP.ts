@@ -37,12 +37,15 @@ const attributeINP = (metric: INPMetric): void => {
       );
     })[0];
 
+    // Currently Chrome can return a null target for certain event types
+    // (especially pointer events). As the event target should be the same
+    // for all events in the same interaction, we pick the first non-null one.
     // TODO: remove when 1367329 is resolved
     // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-    const targetEntry = metric.entries.find(entry => entry.target);
+    const firstTargetEntry = metric.entries.find(entry => entry.target);
 
     (metric as INPMetricWithAttribution).attribution = {
-      eventTarget: getSelector(targetEntry?.target),
+      eventTarget: getSelector(firstTargetEntry?.target),
       eventType: longestEntry.name,
       eventTime: longestEntry.startTime,
       eventEntry: longestEntry,
