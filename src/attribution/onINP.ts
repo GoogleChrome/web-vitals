@@ -37,6 +37,8 @@ const attributeINP = (metric: INPMetric): void => {
       );
     })[0];
 
+    // TODO: remove when 1367329 is resolved
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
     const targetEntry = metric.entries.find(entry => entry.target);
 
     (metric as INPMetricWithAttribution).attribution = {
