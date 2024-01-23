@@ -37,8 +37,10 @@ const attributeINP = (metric: INPMetric): void => {
       );
     })[0];
 
+    const targetEntry = metric.entries.find(entry => entry.target);
+
     (metric as INPMetricWithAttribution).attribution = {
-      eventTarget: getSelector(longestEntry.target),
+      eventTarget: getSelector(targetEntry?.target),
       eventType: longestEntry.name,
       eventTime: longestEntry.startTime,
       eventEntry: longestEntry,
