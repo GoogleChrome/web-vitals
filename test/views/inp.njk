@@ -18,6 +18,14 @@
 {% block content %}
   <h1 elementtiming="main-heading">INP Test</h1>
   <p>
+    <label><input type="number" value="0" id="mousedown-blocking-time">
+    <code>mousedown</code> blocking time</label>
+  </p>
+  <p>
+    <label><input type="number" value="0" id="mouseup-blocking-time">
+    <code>mouseup</code> blocking time</label>
+  </p>
+  <p>
     <label><input type="number" value="0" id="pointerdown-blocking-time">
     <code>pointerdown</code> blocking time</label>
   </p>
@@ -63,15 +71,40 @@
       }
     }
 
-    addEventListener('pointerdown', block, true);
-    addEventListener('pointerup', block, true);
-    addEventListener('keydown', block, true);
-    addEventListener('keyup', block, true);
-    addEventListener('click', block, true);
+    function onInput(event) {
+      const input = event.target;
+      const eventName = input.id.slice(0, input.id.indexOf('-'));
+      if (input.value > 0) {
+        addEventListener(eventName, block, true);
+      } else {
+        removeEventListener(eventName, block, true);
+      }
+    }
+
+    function addBlockingListeners() {
+      const eventNames = [
+        'mousedown',
+        'mouseup',
+        'pointerdown',
+        'pointerup',
+        'keydown',
+        'keyup',
+        'click',
+      ];
+      for (const eventName of eventNames) {
+        const input = document.getElementById(`${eventName}-blocking-time`);
+        input.addEventListener('input', onInput, true);
+        if (input.value > 0) {
+          addEventListener(eventName, block, true);
+        }
+      }
+    }
 
     document.getElementById('reset').addEventListener('click', () => {
       [...document.querySelectorAll('label>input')].forEach((n) => n.value = 0);
     });
+
+    addBlockingListeners();
   </script>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
@@ -80,7 +113,7 @@
 
   <script type="module">
     function jsonifyNode(node) {
-      return node && node.id ? `#${node.id}` : node.nodeName.toLowerCase();
+      return node?.id ? `#${node.id}` : node?.nodeName?.toLowerCase();
     }
 
     const {onINP} = await __testImport('{{ modulePath }}');
