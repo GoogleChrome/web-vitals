@@ -282,6 +282,9 @@ describe('onINP()', async function () {
     const h1 = await $('h1');
     await h1.click();
 
+    // Ensure the interaction completes.
+    await nextFrame();
+
     await stubForwardBack();
     await beaconCountIs(1);
 
@@ -452,9 +455,10 @@ describe('onINP()', async function () {
       assert.equal(eventEntry1.processingStart, clickEntry.processingStart);
 
       await clearBeacons();
-      await setBlockingTime('pointerup', 200);
 
       await stubVisibilityChange('visible');
+      await setBlockingTime('pointerup', 200);
+
       const reset = await $('#reset');
       await reset.click();
 
@@ -525,6 +529,37 @@ describe('onINP()', async function () {
       const [inp2] = await getBeacons();
       assert.equal(inp2.attribution.loadState, 'loading');
     });
+
+    // TODO: remove this test once the following bug is fixed:
+    // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
+    it('reports the event target from any entry where target is defined', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await browser.url('/test/inp?attribution=1&mousedown=100&click=50');
+
+      const h1 = await $('h1');
+
+      // Simulate a long click on the h1 to ensure the `click` entry
+      // has a startTime after the `pointerdown` entry.
+      await browser
+        .action('pointer')
+        .move({x: 0, y: 0, origin: h1})
+        .down({button: 0}) // left button
+        .pause(100)
+        .up({button: 0})
+        .perform();
+
+      await stubVisibilityChange('hidden');
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+
+      assert.equal(inp1.attribution.eventType, 'pointerdown');
+      // The event target should match the h1, even if the `pointerdown`
+      // entry doesn't contain a target.
+      // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
+      assert.equal(inp1.attribution.eventTarget, 'html>body>main>h1');
+    });
   });
 });
 
@@ -536,12 +571,7 @@ const interactionIDsMatch = (entries) => {
   return entries.every((e) => e.interactionId === entries[0].interactionId);
 };
 
-const setBlockingTime = (event, value) => {
-  return browser.execute(
-    (event, value) => {
-      document.getElementById(`${event}-blocking-time`).value = value;
-    },
-    event,
-    value,
-  );
+const setBlockingTime = async (event, value) => {
+  const input = await $(`#${event}-blocking-time`);
+  await input.setValue(value);
 };
