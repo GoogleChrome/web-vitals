@@ -2,7 +2,7 @@
 
 ### v3.5.2 (2024-01-25)
 
-- Pick the first non-null `target`` for INP attribution ([#421](https://github.com/GoogleChrome/web-vitals/pull/421))
+- Pick the first non-null `target` for INP attribution ([#421](https://github.com/GoogleChrome/web-vitals/pull/421))
 
 ### v3.5.1 (2023-12-27)
 
