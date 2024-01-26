@@ -16,7 +16,7 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
-import {domReadyState} from '../utils/domReadyState.js';
+import {navigateWithStrategy} from '../utils/navigateWithStrategy.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 
 /**
@@ -59,6 +59,11 @@ describe('onTTFB()', async function () {
   this.retries(2);
 
   beforeEach(async function () {
+    // In Safari when navigating to 'about:blank' between tests the
+    // Navigation Timing data is consistently negative, so the tests fail.
+    if (browser.capabilities.browserName !== 'Safari') {
+      await browser.url('about:blank');
+    }
     await clearBeacons();
   });
 
@@ -196,9 +201,7 @@ describe('onTTFB()', async function () {
 
   it('ignores navigations with invalid responseStart timestamps', async function () {
     for (const rs of [-1, 0, 1e12]) {
-      await browser.url(`/test/ttfb?responseStart=${rs}`);
-
-      await domReadyState('complete');
+      await navigateWithStrategy(`/test/ttfb?responseStart=${rs}`, 'complete');
 
       // Wait a bit to ensure no beacons were sent.
       await browser.pause(1000);

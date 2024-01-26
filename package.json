@@ -1,6 +1,6 @@
 {
   "name": "web-vitals",
-  "version": "3.5.1-soft-navs-15",
+  "version": "3.5.2-soft-navs-16",
   "description": "Easily measure performance metrics in JavaScript",
   "type": "module",
   "typings": "dist/modules/index.d.ts",

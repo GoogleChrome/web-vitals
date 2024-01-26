@@ -17,8 +17,9 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
-import {domReadyState} from '../utils/domReadyState.js';
+import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
+import {navigateWithStrategy} from '../utils/navigateWithStrategy.js';
 import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
@@ -33,6 +34,7 @@ describe('onCLS()', async function () {
   });
 
   beforeEach(async function () {
+    await browser.url('about:blank');
     await clearBeacons();
   });
 
@@ -81,9 +83,7 @@ describe('onCLS()', async function () {
   it('reports the correct value even if loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls?lazyLoad=1`);
-
-    await domReadyState('complete');
+    await navigateWithStrategy(`/test/cls?lazyLoad=1`, 'complete');
 
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();
@@ -104,9 +104,10 @@ describe('onCLS()', async function () {
   it('reports the correct value even if loaded late (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls?lazyLoad=1&reportAllChanges=1`);
-
-    await domReadyState('complete');
+    await navigateWithStrategy(
+      `/test/cls?lazyLoad=1&reportAllChanges=1`,
+      'complete',
+    );
 
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();
@@ -560,13 +561,11 @@ describe('onCLS()', async function () {
   it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls?noLayoutShifts=1`);
+    await navigateWithStrategy(`/test/cls?noLayoutShifts=1`, 'complete');
 
-    // Wait until the page is loaded before hiding.
-    await domReadyState('complete');
+    // Wait until the page is loaded and content is visible before hiding.
+    await firstContentfulPaint();
     await stubVisibilityChange('hidden');
-
-    await beaconCountIs(1);
 
     const [cls] = await getBeacons();
     assert(cls.id.match(/^v3-\d+-\d+$/));
@@ -581,10 +580,13 @@ describe('onCLS()', async function () {
   it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls?reportAllChanges=1&noLayoutShifts=1`);
+    await navigateWithStrategy(
+      `/test/cls?reportAllChanges=1&noLayoutShifts=1`,
+      'complete',
+    );
 
-    // Wait until the page is loaded before hiding.
-    await domReadyState('complete');
+    // Wait until the page is loaded and content is visible before hiding.
+    await firstContentfulPaint();
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
@@ -602,10 +604,9 @@ describe('onCLS()', async function () {
   it('reports zero if no layout shifts occurred on page unload (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls?noLayoutShifts=1`);
-
     // Wait until the page is loaded before navigating away.
-    await domReadyState('complete');
+    await navigateWithStrategy(`/test/cls?noLayoutShifts=1`, 'complete');
+
     await browser.url('about:blank');
 
     await beaconCountIs(1);
@@ -623,10 +624,14 @@ describe('onCLS()', async function () {
   it('reports zero if no layout shifts occurred on page unload (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await browser.url(`/test/cls?noLayoutShifts=1&reportAllChanges=1`);
-
     // Wait until the page is loaded before navigating away.
-    await domReadyState('complete');
+    await navigateWithStrategy(
+      `/test/cls?noLayoutShifts=1&reportAllChanges=1`,
+      'complete',
+    );
+
+    // Wait until the page is loaded and content is visible before leaving.
+    await firstContentfulPaint();
     await browser.url('about:blank');
 
     await beaconCountIs(1);
@@ -766,9 +771,15 @@ describe('onCLS()', async function () {
     it('reports whether the largest shift was before or after load', async function () {
       if (!browserSupportsCLS) this.skip();
 
-      await browser.url('/test/cls?attribution=1&noLayoutShifts=1');
+      await navigateWithStrategy(
+        '/test/cls?attribution=1&noLayoutShifts=1',
+        'complete',
+      );
 
-      await domReadyState('complete');
+      // Wait until the page is loaded and content is visible before triggering
+      // a layout shift.
+      await firstContentfulPaint();
+
       await triggerLayoutShift();
       await stubVisibilityChange('hidden');
 
@@ -804,10 +815,13 @@ describe('onCLS()', async function () {
     it('reports an empty object when no shifts', async function () {
       if (!browserSupportsCLS) this.skip();
 
-      await browser.url('/test/cls?attribution=1&noLayoutShifts=1');
+      await navigateWithStrategy(
+        '/test/cls?attribution=1&noLayoutShifts=1',
+        'complete',
+      );
 
-      // Wait until the page is loaded before navigating away.
-      await domReadyState('complete');
+      // Wait until the page is loaded and content is visible hiding.
+      await firstContentfulPaint();
       await stubVisibilityChange('hidden');
 
       await beaconCountIs(1);
