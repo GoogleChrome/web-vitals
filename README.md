@@ -363,10 +363,10 @@ For details on how to query this data in [BigQuery](https://cloud.google.com/big
 
 ### Send the results to Google Tag Manager
 
-While web-vitals.js can be called directly from Google Tag Manager, using a pre-defined custom-template makes this considerably easier. Some recommended templates include
+While `web-vitals` can be called directly from Google Tag Manager, using a pre-defined custom template makes this considerably easier. Some recommended templates include:
 
 - [Simo Ahava](https://www.simoahava.com/) has created and maintains a [Core Web Vitals](https://www.simoahava.com/custom-templates/core-web-vitals/). For full installation and usage instructions, see Simo's post: [Track Core Web Vitals in GA4 with Google Tag Manager](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/).
-- The Google Marketing Solutions team have created [their GTM own template](https://github.com/google-marketing-solutions/web-vitals-gtm-template), including support for attribution data.
+- The Google Marketing Solutions team have created [their GTM own template](https://github.com/google-marketing-solutions/web-vitals-gtm-template), including support for attribution data, and loading the `web-vitals` library from [unpkg.com](https://unpkg.com) or locally.
 
 ### Send attribution data
 
