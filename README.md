@@ -363,9 +363,10 @@ For details on how to query this data in [BigQuery](https://cloud.google.com/big
 
 ### Send the results to Google Tag Manager
 
-The recommended way to measure Web Vitals metrics with Google Tag Manager is using the [Core Web Vitals](https://www.simoahava.com/custom-templates/core-web-vitals/) custom template tag created and maintained by [Simo Ahava](https://www.simoahava.com/).
+While web-vitals.js can be called directly from Google Tag Manager, using a pre-defined custom-template makes this considerably easier. Some recommended templates include
 
-For full installation and usage instructions, see Simo's post: [Track Core Web Vitals in GA4 with Google Tag Manager](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/).
+- [Simo Ahava](https://www.simoahava.com/) has created and maintains a [Core Web Vitals](https://www.simoahava.com/custom-templates/core-web-vitals/). For full installation and usage instructions, see Simo's post: [Track Core Web Vitals in GA4 with Google Tag Manager](https://www.simoahava.com/analytics/track-core-web-vitals-in-ga4-with-google-tag-manager/).
+- The Google Marketing Solutions team have created [their GTM own template](https://github.com/google-marketing-solutions/web-vitals-gtm-template), including support for attribution data.
 
 ### Send attribution data
 
