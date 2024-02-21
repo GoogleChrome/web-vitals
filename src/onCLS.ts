@@ -115,9 +115,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           report(true);
         });
 
-        // Only report after a bfcache restore if the `PerformanceObserver`
-        // successfully registered.
-        onBFCacheRestore(() => {
+        const resetCLSMetric = () => {
           sessionValue = 0;
           metric = initMetric('CLS', 0);
           report = bindReporter(
@@ -126,8 +124,18 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
             CLSThresholds,
             opts!.reportAllChanges,
           );
+        };
 
+        // Only report after a bfcache restore if the `PerformanceObserver`
+        // successfully registered.
+        onBFCacheRestore(() => {
+          resetCLSMetric();
           doubleRAF(() => report());
+        });
+
+        document.addEventListener('reset-web-vital-metrics', () => {
+          report(true);
+          resetCLSMetric();
         });
 
         // Queue a task to report (if nothing else triggers a report first).
