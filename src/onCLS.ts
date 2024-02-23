@@ -28,6 +28,7 @@ import {
   MetricRatingThresholds,
   ReportOpts,
 } from './types.js';
+import {onManualSoftNavigation} from './lib/manualSoftNavigation.js';
 
 /** Thresholds for CLS. See https://web.dev/articles/cls#what_is_a_good_cls_score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
@@ -133,7 +134,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           doubleRAF(() => report());
         });
 
-        document.addEventListener('reset-web-vital-metrics', () => {
+        onManualSoftNavigation(() => {
           report(true);
           resetCLSMetric();
         });

@@ -17,6 +17,7 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
+import {onManualSoftNavigation} from './lib/manualSoftNavigation.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {
@@ -259,7 +260,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         resetINPMetric();
       });
 
-      document.addEventListener('reset-web-vital-metrics', () => {
+      onManualSoftNavigation(() => {
         report(true);
         resetINPMetric();
       });
