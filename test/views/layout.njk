@@ -223,9 +223,6 @@
       };
     }());
   </script>
-  {% if polyfill %}
-    <script>{{ webVitalsPolyfill | safe }}</script>
-  {% endif %}
   {% block head %}{% endblock %}
   {% if renderBlocking %}
     <link rel="stylesheet" href="/test/css/styles.css?delay={{ renderBlocking }}">

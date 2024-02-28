@@ -15,7 +15,6 @@
  */
 
 import type {Metric} from './base.js';
-import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
  * An LCP-specific version of the Metric object.
@@ -69,7 +68,7 @@ export interface LCPAttribution {
    * general page load issues. This can be used to access `serverTiming` for example:
    * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+  navigationEntry?: PerformanceNavigationTiming;
   /**
    * The `resource` entry for the LCP resource (if applicable), which is useful
    * for diagnosing resource load issues.

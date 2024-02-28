@@ -15,7 +15,6 @@
  */
 
 import type {LoadState, Metric} from './base.js';
-import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
  * An FCP-specific version of the Metric object.
@@ -55,7 +54,7 @@ export interface FCPAttribution {
    * general page load issues. This can be used to access `serverTiming` for example:
    * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+  navigationEntry?: PerformanceNavigationTiming;
 }
 
 /**

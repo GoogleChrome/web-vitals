@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-import {
-  FirstInputPolyfillEntry,
-  NavigationTimingPolyfillEntry,
-} from './polyfills.js';
 import type {CLSMetric} from './cls.js';
 import type {FCPMetric} from './fcp.js';
 import type {FIDMetric} from './fid.js';
@@ -64,12 +60,7 @@ export interface Metric {
    * The array may also be empty if the metric value was not based on any
    * entries (e.g. a CLS value of 0 given no layout shifts).
    */
-  entries: (
-    | PerformanceEntry
-    | LayoutShift
-    | FirstInputPolyfillEntry
-    | NavigationTimingPolyfillEntry
-  )[];
+  entries: (PerformanceEntry | LayoutShift)[];
 
   /**
    * The type of navigation.
