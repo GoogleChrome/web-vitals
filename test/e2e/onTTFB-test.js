@@ -16,7 +16,7 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
-import {navigateWithStrategy} from '../utils/navigateWithStrategy.js';
+import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 
 /**
@@ -62,13 +62,13 @@ describe('onTTFB()', async function () {
     // In Safari when navigating to 'about:blank' between tests the
     // Navigation Timing data is consistently negative, so the tests fail.
     if (browser.capabilities.browserName !== 'Safari') {
-      await browser.url('about:blank');
+      await navigateTo('about:blank');
     }
     await clearBeacons();
   });
 
   it('reports the correct value when run during page load', async function () {
-    await browser.url('/test/ttfb');
+    await navigateTo('/test/ttfb');
 
     const ttfb = await getTTFBBeacon();
 
@@ -86,7 +86,7 @@ describe('onTTFB()', async function () {
   });
 
   it('reports the correct value event when loaded late', async function () {
-    await browser.url('/test/ttfb?lazyLoad=1');
+    await navigateTo('/test/ttfb?lazyLoad=1');
 
     const ttfb = await getTTFBBeacon();
 
@@ -104,7 +104,7 @@ describe('onTTFB()', async function () {
   });
 
   it('reports the correct value when the response is delayed', async function () {
-    await browser.url('/test/ttfb?delay=1000');
+    await navigateTo('/test/ttfb?delay=1000');
 
     const ttfb = await getTTFBBeacon();
 
@@ -122,7 +122,7 @@ describe('onTTFB()', async function () {
   });
 
   it('accounts for time prerendering the page', async function () {
-    await browser.url('/test/ttfb?prerender=1');
+    await navigateTo('/test/ttfb?prerender=1');
 
     const ttfb = await getTTFBBeacon();
 
@@ -144,7 +144,7 @@ describe('onTTFB()', async function () {
 
   it('reports the correct value when run while prerendering', async function () {
     // Use 500 so prerendering finishes before load but after the module runs.
-    await browser.url('/test/ttfb?prerender=500&imgDelay=1000');
+    await navigateTo('/test/ttfb?prerender=500&imgDelay=1000');
 
     const ttfb = await getTTFBBeacon();
 
@@ -169,7 +169,7 @@ describe('onTTFB()', async function () {
   });
 
   it('reports after a bfcache restore', async function () {
-    await browser.url('/test/ttfb');
+    await navigateTo('/test/ttfb');
 
     const ttfb1 = await getTTFBBeacon();
 
@@ -201,7 +201,9 @@ describe('onTTFB()', async function () {
 
   it('ignores navigations with invalid responseStart timestamps', async function () {
     for (const rs of [-1, 0, 1e12]) {
-      await navigateWithStrategy(`/test/ttfb?responseStart=${rs}`, 'complete');
+      await navigateTo(`/test/ttfb?responseStart=${rs}`, {
+        readyState: 'complete',
+      });
 
       // Wait a bit to ensure no beacons were sent.
       await browser.pause(1000);
@@ -222,7 +224,7 @@ describe('onTTFB()', async function () {
   });
 
   it('reports restore as nav type for wasDiscarded', async function () {
-    await browser.url('/test/ttfb?wasDiscarded=1');
+    await navigateTo('/test/ttfb?wasDiscarded=1');
 
     const ttfb = await getTTFBBeacon();
 
@@ -241,7 +243,7 @@ describe('onTTFB()', async function () {
 
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
-      await browser.url('/test/ttfb?attribution=1');
+      await navigateTo('/test/ttfb?attribution=1');
 
       const ttfb = await getTTFBBeacon();
 
@@ -279,7 +281,7 @@ describe('onTTFB()', async function () {
     });
 
     it('accounts for time prerendering the page', async function () {
-      await browser.url('/test/ttfb?attribution=1&prerender=1');
+      await navigateTo('/test/ttfb?attribution=1&prerender=1');
 
       const ttfb = await getTTFBBeacon();
 
@@ -326,7 +328,7 @@ describe('onTTFB()', async function () {
     });
 
     it('reports after a bfcache restore', async function () {
-      await browser.url('/test/ttfb?attribution=1');
+      await navigateTo('/test/ttfb?attribution=1');
 
       await getTTFBBeacon();
 

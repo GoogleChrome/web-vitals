@@ -17,7 +17,7 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
-import {navigateWithStrategy} from '../utils/navigateWithStrategy.js';
+import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
@@ -31,14 +31,14 @@ describe('onFID()', async function () {
   });
 
   beforeEach(async function () {
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
     await clearBeacons();
   });
 
   it('reports the correct value after input', async function () {
     if (!browserSupportsFID) this.skip();
 
-    await browser.url('/test/fid');
+    await navigateTo('/test/fid');
 
     // Click on the <h1>.
     const h1 = await $('h1');
@@ -59,7 +59,7 @@ describe('onFID()', async function () {
   it('reports the correct value after input when script is loaded late', async function () {
     if (!browserSupportsFID) this.skip();
 
-    await browser.url('/test/fid?loadAfterInput=1');
+    await navigateTo('/test/fid?loadAfterInput=1');
 
     // Click on the <h1>.
     const h1 = await $('h1');
@@ -80,7 +80,7 @@ describe('onFID()', async function () {
   it('does not report if the browser does not support FID', async function () {
     if (browserSupportsFID) this.skip();
 
-    await browser.url('/test/fid');
+    await navigateTo('/test/fid');
 
     // Click on the <h1>.
     const h1 = await $('h1');
@@ -109,7 +109,7 @@ describe('onFID()', async function () {
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
 
-    await navigateWithStrategy('/test/fid?hidden=1', 'complete');
+    await navigateTo('/test/fid?hidden=1', {readyState: 'complete'});
 
     await stubVisibilityChange('visible');
 
@@ -129,7 +129,7 @@ describe('onFID()', async function () {
     // https://bugs.webkit.org/show_bug.cgi?id=211101
     if (browser.capabilities.browserName === 'Safari') this.skip();
 
-    await navigateWithStrategy('/test/fid', 'complete');
+    await navigateTo('/test/fid', {readyState: 'complete'});
 
     await stubVisibilityChange('hidden');
 
@@ -150,7 +150,7 @@ describe('onFID()', async function () {
   it('reports the first input delay after bfcache restores', async function () {
     if (!browserSupportsFID) this.skip();
 
-    await browser.url('/test/fid');
+    await navigateTo('/test/fid');
 
     // Click on the <h1>.
     const h1 = await $('h1');
@@ -189,7 +189,7 @@ describe('onFID()', async function () {
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsFID) this.skip();
 
-    await browser.url('/test/fid?prerender=1');
+    await navigateTo('/test/fid?prerender=1');
 
     // Click on the <h1>.
     const h1 = await $('h1');
@@ -210,7 +210,7 @@ describe('onFID()', async function () {
   it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsFID) this.skip();
 
-    await browser.url('/test/fid?wasDiscarded=1');
+    await navigateTo('/test/fid?wasDiscarded=1');
 
     // Click on the <h1>.
     const h1 = await $('h1');
@@ -232,7 +232,7 @@ describe('onFID()', async function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsFID) this.skip();
 
-      await browser.url('/test/fid?attribution=1');
+      await navigateTo('/test/fid?attribution=1');
 
       // Click on the <h1>.
       const h1 = await $('h1');
@@ -261,7 +261,7 @@ describe('onFID()', async function () {
     it('reports the domReadyState when input occurred', async function () {
       if (!browserSupportsFID) this.skip();
 
-      await browser.url('/test/fid?attribution=1&delayDCL=1000');
+      await navigateTo('/test/fid?attribution=1&delayDCL=1000');
 
       // Click on the <h1>.
       const h1 = await $('h1');
@@ -274,7 +274,7 @@ describe('onFID()', async function () {
 
       await clearBeacons();
 
-      await browser.url('/test/fid?attribution=1&delayResponse=1000');
+      await navigateTo('/test/fid?attribution=1&delayResponse=1000');
 
       // Click on the <h1>.
       const p = await $('p');
