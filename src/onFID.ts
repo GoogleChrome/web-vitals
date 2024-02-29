@@ -84,9 +84,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           po.disconnect();
         }),
       );
-    }
 
-    if (po) {
       onBFCacheRestore(() => {
         metric = initMetric('FID');
         report = bindReporter(
