@@ -14,12 +14,12 @@
       "default": "./dist/web-vitals.js"
     },
     "./attribution": {
-      "types": "./dist/modules/attribution.d.ts",
+      "types": "./dist/modules/attribution/index.d.ts",
       "require": "./dist/web-vitals.attribution.umd.cjs",
       "default": "./dist/web-vitals.attribution.js"
     },
     "./attribution.js": {
-      "types": "./dist/modules/attribution.d.ts",
+      "types": "./dist/modules/attribution/index.d.ts",
       "require": "./dist/web-vitals.attribution.umd.cjs",
       "default": "./dist/web-vitals.attribution.js"
     },
