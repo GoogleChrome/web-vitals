@@ -13,16 +13,6 @@
       "require": "./dist/web-vitals.umd.cjs",
       "default": "./dist/web-vitals.js"
     },
-    "./base": {
-      "types": "./base.d.ts",
-      "require": "./dist/web-vitals.base.umd.cjs",
-      "default": "./dist/web-vitals.base.js"
-    },
-    "./base.js": {
-      "types": "./base.d.ts",
-      "require": "./dist/web-vitals.base.umd.cjs",
-      "default": "./dist/web-vitals.base.js"
-    },
     "./attribution": {
       "types": "./dist/modules/attribution.d.ts",
       "require": "./dist/web-vitals.attribution.umd.cjs",
@@ -85,8 +75,6 @@
   "files": [
     "attribution.js",
     "attribution.d.ts",
-    "base.js",
-    "base.d.ts",
     "dist",
     "src"
   ],
