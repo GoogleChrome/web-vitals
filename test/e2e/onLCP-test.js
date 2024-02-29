@@ -18,7 +18,7 @@ import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
-import {navigateWithStrategy} from '../utils/navigateWithStrategy.js';
+import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
@@ -32,20 +32,20 @@ describe('onLCP()', async function () {
   });
 
   beforeEach(async function () {
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
     await clearBeacons();
   });
 
   it('reports the correct value on hidden (reportAllChanges === false)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp');
+    await navigateTo('/test/lcp');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
     // Load a new page to trigger the hidden state.
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
 
     await beaconCountIs(1);
     assertStandardReportsAreCorrect(await getBeacons());
@@ -54,13 +54,13 @@ describe('onLCP()', async function () {
   it('reports the correct value on hidden (reportAllChanges === true)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?reportAllChanges=1');
+    await navigateTo('/test/lcp?reportAllChanges=1');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
     // Load a new page to trigger the hidden state.
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
 
     await beaconCountIs(2);
     assertFullReportsAreCorrect(await getBeacons());
@@ -69,7 +69,7 @@ describe('onLCP()', async function () {
   it('reports the correct value on input (reportAllChanges === false)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp');
+    await navigateTo('/test/lcp');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
@@ -85,7 +85,7 @@ describe('onLCP()', async function () {
   it('reports the correct value on input (reportAllChanges === true)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?reportAllChanges=1');
+    await navigateTo('/test/lcp?reportAllChanges=1');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
@@ -101,13 +101,13 @@ describe('onLCP()', async function () {
   it('reports the correct value when loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?lazyLoad=1');
+    await navigateTo('/test/lcp?lazyLoad=1');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
     // Load a new page to trigger the hidden state.
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
 
     await beaconCountIs(1);
     assertStandardReportsAreCorrect(await getBeacons());
@@ -116,13 +116,13 @@ describe('onLCP()', async function () {
   it('reports the correct value when loaded late (reportAllChanges === true)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?lazyLoad=1&reportAllChanges=1');
+    await navigateTo('/test/lcp?lazyLoad=1&reportAllChanges=1');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
     // Load a new page to trigger the hidden state.
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
 
     // Even though the test sets `reportAllChanges` to true, since the library
     // is lazy loaded after all elements have been rendered, only a single
@@ -134,7 +134,7 @@ describe('onLCP()', async function () {
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?prerender=1');
+    await navigateTo('/test/lcp?prerender=1');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
@@ -144,7 +144,7 @@ describe('onLCP()', async function () {
     });
 
     // Load a new page to trigger the hidden state.
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
 
     await beaconCountIs(1);
 
@@ -157,7 +157,7 @@ describe('onLCP()', async function () {
   it('does not report if the browser does not support LCP (including bfcache restores)', async function () {
     if (browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp');
+    await navigateTo('/test/lcp');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
@@ -192,7 +192,7 @@ describe('onLCP()', async function () {
   it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateWithStrategy('/test/lcp?hidden=1', 'interactive');
+    await navigateTo('/test/lcp?hidden=1', {readyState: 'interactive'});
 
     await stubVisibilityChange('visible');
 
@@ -210,7 +210,7 @@ describe('onLCP()', async function () {
   it('does not report if the document changes to hidden before the first render', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?renderBlocking=1000');
+    await navigateTo('/test/lcp?renderBlocking=1000');
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
@@ -229,7 +229,7 @@ describe('onLCP()', async function () {
   it('reports after a render delay before the page changes to hidden', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?renderBlocking=3000');
+    await navigateTo('/test/lcp?renderBlocking=3000');
 
     // Change to hidden after the first render.
     await browser.pause(3500);
@@ -249,7 +249,7 @@ describe('onLCP()', async function () {
   it('stops reporting after the document changes to hidden (reportAllChanges === false)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?imgDelay=0&imgHidden=1');
+    await navigateTo('/test/lcp?imgDelay=0&imgHidden=1');
 
     // Wait for a frame to be painted.
     await browser.executeAsync((done) => requestAnimationFrame(done));
@@ -284,7 +284,7 @@ describe('onLCP()', async function () {
   it('stops reporting after the document changes to hidden (reportAllChanges === true)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?reportAllChanges=1&imgDelay=0&imgHidden=1');
+    await navigateTo('/test/lcp?reportAllChanges=1&imgDelay=0&imgHidden=1');
 
     await beaconCountIs(1);
     const [lcp] = await getBeacons();
@@ -315,7 +315,7 @@ describe('onLCP()', async function () {
   it('reports if the page is restored from bfcache', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp');
+    await navigateTo('/test/lcp');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
@@ -358,7 +358,7 @@ describe('onLCP()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateWithStrategy('/test/lcp?hidden=1', 'interactive');
+    await navigateTo('/test/lcp?hidden=1', {readyState: 'interactive'});
 
     await stubVisibilityChange('visible');
 
@@ -403,13 +403,13 @@ describe('onLCP()', async function () {
   it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await browser.url('/test/lcp?wasDiscarded=1');
+    await navigateTo('/test/lcp?wasDiscarded=1');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
     // Load a new page to trigger the hidden state.
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
 
     await beaconCountIs(1);
 
@@ -428,7 +428,7 @@ describe('onLCP()', async function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      await browser.url('/test/lcp?attribution=1');
+      await navigateTo('/test/lcp?attribution=1');
 
       // Wait until all images are loaded and fully rendered.
       await imagesPainted();
@@ -445,7 +445,7 @@ describe('onLCP()', async function () {
       });
 
       // Load a new page to trigger the hidden state.
-      await browser.url('about:blank');
+      await navigateTo('about:blank');
 
       await beaconCountIs(1);
 
@@ -470,7 +470,7 @@ describe('onLCP()', async function () {
     it('handles image resources with incomplete timing data', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      await browser.url('/test/lcp?attribution=1');
+      await navigateTo('/test/lcp?attribution=1');
 
       // Wait until all images are loaded and fully rendered.
       await imagesPainted();
@@ -491,7 +491,7 @@ describe('onLCP()', async function () {
       });
 
       // Load a new page to trigger the hidden state.
-      await browser.url('about:blank');
+      await navigateTo('about:blank');
 
       await beaconCountIs(1);
 
@@ -524,7 +524,7 @@ describe('onLCP()', async function () {
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      await browser.url('/test/lcp?attribution=1&prerender=1');
+      await navigateTo('/test/lcp?attribution=1&prerender=1');
 
       // Wait until all images are loaded and fully rendered.
       await imagesPainted();
@@ -546,7 +546,7 @@ describe('onLCP()', async function () {
       });
 
       // Load a new page to trigger the hidden state.
-      await browser.url('about:blank');
+      await navigateTo('about:blank');
 
       await beaconCountIs(1);
 
@@ -597,17 +597,16 @@ describe('onLCP()', async function () {
     it('handles cases where there is no LCP resource', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      await navigateWithStrategy(
-        '/test/lcp?attribution=1&imgHidden=1',
-        'complete',
-      );
+      await navigateTo('/test/lcp?attribution=1&imgHidden=1', {
+        readyState: 'complete',
+      });
 
       const navEntry = await browser.execute(() => {
         return performance.getEntriesByType('navigation')[0].toJSON();
       });
 
       // Load a new page to trigger the hidden state.
-      await browser.url('about:blank');
+      await navigateTo('about:blank');
 
       await beaconCountIs(1);
 
@@ -639,7 +638,7 @@ describe('onLCP()', async function () {
     it('reports after a bfcache restore', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      await browser.url('/test/lcp?attribution=1');
+      await navigateTo('/test/lcp?attribution=1');
 
       // Wait until all images are loaded and fully rendered.
       await imagesPainted();
