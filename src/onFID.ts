@@ -80,11 +80,8 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
     if (po) {
       onHidden(
         runOnce(() => {
-          if (po) {
-            // Just to keep TS happy
-            handleEntries(po.takeRecords() as FIDMetric['entries']);
-            po.disconnect();
-          }
+          handleEntries(po.takeRecords() as FIDMetric['entries']);
+          po.disconnect();
         }),
       );
     }
@@ -101,7 +98,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
 
         // Browsers don't re-emit FID on bfcache restore so fake it until you make it
         resetFirstInputPolyfill();
-        -firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
+        firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
       });
     }
   });

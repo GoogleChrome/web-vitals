@@ -35,7 +35,7 @@ The library supports all of the [Core Web Vitals](https://web.dev/articles/vital
 ### Core Web Vitals
 
 - [Cumulative Layout Shift (CLS)](https://web.dev/articles/cls)
-- [Interaction to next Paint (INP)](https://web.dev/articles/inp)
+- [Interaction to Next Paint (INP)](https://web.dev/articles/inp)
 - [Largest Contentful Paint (LCP)](https://web.dev/articles/lcp)
 
 ### Other metrics
@@ -119,7 +119,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
 ```html
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
-  import {onCLS, onINP, onLCP} from 'https://unpkg.com/web-vitals@3?module';
+  import {onCLS, onINP, onLCP} from 'https://unpkg.com/web-vitals@4?module';
 
   onCLS(console.log);
   onINP(console.log);
@@ -133,7 +133,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
 <script>
   (function () {
     var script = document.createElement('script');
-    script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.iife.js';
+    script.src = 'https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js';
     script.onload = function () {
       // When loading `web-vitals` using a classic script, all the public
       // methods can be found on the `webVitals` global namespace.
@@ -155,7 +155,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
     onCLS,
     onINP,
     onLCP,
-  } from 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.js?module';
+  } from 'https://unpkg.com/web-vitals@4/dist/web-vitals.attribution.js?module';
 
   onCLS(console.log);
   onINP(console.log);
@@ -170,7 +170,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
   (function () {
     var script = document.createElement('script');
     script.src =
-      'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.iife.js';
+      'https://unpkg.com/web-vitals@4/dist/web-vitals.attribution.iife.js';
     script.onload = function () {
       // When loading `web-vitals` using a classic script, all the public
       // methods can be found on the `webVitals` global namespace.
@@ -418,7 +418,7 @@ _**Note:** see [the Page Lifecycle guide](https://developers.google.com/web/upda
 
 ## Build options
 
-The `web-vitals` package includes builds for the "standard" and "attribution" builds, as well as different formats of each to allow developers to choose the format that best meets their needs or integrates with their architecture.
+The `web-vitals` package includes both "standard" and "attribution" builds, as well as different formats of each to allow developers to choose the format that best meets their needs or integrates with their architecture.
 
 The following table lists all the builds distributed with the `web-vitals` package on npm.
 
