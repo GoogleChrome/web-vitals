@@ -27,7 +27,10 @@ export function domReadyState(state) {
         resolve();
       } else {
         document.addEventListener('readystatechange', () => {
-          if (document.readyState === state) {
+          if (
+            document.readyState === state ||
+            document.readyState === 'complete'
+          ) {
             resolve();
           }
         });

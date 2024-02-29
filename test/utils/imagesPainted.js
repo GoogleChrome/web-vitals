@@ -30,6 +30,7 @@ export function imagesPainted() {
       }
     });
 
+    // Use element timing if available, otherwise fall back to load+raf.
     if (PerformanceObserver.supportedEntryTypes.includes('element')) {
       const nodes = new Set([
         ...document.querySelectorAll('[elementtiming]:not([hidden])'),
@@ -47,7 +48,18 @@ export function imagesPainted() {
         }
       }).observe({type: 'element', buffered: true});
     } else {
-      done();
+      await new Promise((resolve) => {
+        if (document.readyState !== 'complete') {
+          addEventListener('load', resolve);
+        } else {
+          resolve();
+        }
+      });
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          done();
+        });
+      });
     }
   });
 }

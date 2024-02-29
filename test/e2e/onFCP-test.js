@@ -17,7 +17,7 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
-import {navigateWithStrategy} from '../utils/navigateWithStrategy.js';
+import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
@@ -31,14 +31,14 @@ describe('onFCP()', async function () {
   });
 
   beforeEach(async function () {
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
     await clearBeacons();
   });
 
   it('reports the correct value after the first paint', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp');
+    await navigateTo('/test/fcp');
 
     await beaconCountIs(1);
 
@@ -55,7 +55,7 @@ describe('onFCP()', async function () {
   it('reports the correct value when loaded late', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp?lazyLoad=1');
+    await navigateTo('/test/fcp?lazyLoad=1');
 
     await beaconCountIs(1);
 
@@ -72,7 +72,7 @@ describe('onFCP()', async function () {
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp?prerender=1');
+    await navigateTo('/test/fcp?prerender=1');
 
     await beaconCountIs(1);
 
@@ -95,7 +95,7 @@ describe('onFCP()', async function () {
   it('does not report if the browser does not support FCP (including bfcache restores)', async function () {
     if (browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp');
+    await navigateTo('/test/fcp');
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
@@ -116,7 +116,7 @@ describe('onFCP()', async function () {
   it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await navigateWithStrategy('/test/fcp?hidden=1', 'interactive');
+    await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'});
 
     await stubVisibilityChange('visible');
 
@@ -130,7 +130,7 @@ describe('onFCP()', async function () {
   it('does not report if the document changes to hidden before the first entry', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await navigateWithStrategy('/test/fcp?invisible=1', 'interactive');
+    await navigateTo('/test/fcp?invisible=1', {readyState: 'interactive'});
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
@@ -145,7 +145,7 @@ describe('onFCP()', async function () {
   it('reports after a render delay before the page changes to hidden', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp?renderBlocking=2000');
+    await navigateTo('/test/fcp?renderBlocking=2000');
 
     // Change to hidden after the first render.
     await browser.pause(2500);
@@ -164,7 +164,7 @@ describe('onFCP()', async function () {
   it('reports if the page is restored from bfcache', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp');
+    await navigateTo('/test/fcp');
 
     await beaconCountIs(1);
 
@@ -211,7 +211,7 @@ describe('onFCP()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await navigateWithStrategy('/test/fcp?hidden=1', 'interactive');
+    await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'});
 
     await stubVisibilityChange('visible');
 
@@ -253,7 +253,7 @@ describe('onFCP()', async function () {
   it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await browser.url('/test/fcp?wasDiscarded=1');
+    await navigateTo('/test/fcp?wasDiscarded=1');
 
     await beaconCountIs(1);
 
@@ -271,7 +271,7 @@ describe('onFCP()', async function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsFCP) this.skip();
 
-      await navigateWithStrategy('/test/fcp?attribution=1', 'complete');
+      await navigateTo('/test/fcp?attribution=1', {readyState: 'complete'});
 
       await beaconCountIs(1);
 
@@ -318,10 +318,9 @@ describe('onFCP()', async function () {
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsFCP) this.skip();
 
-      await navigateWithStrategy(
-        '/test/fcp?attribution=1&prerender=1',
-        'complete',
-      );
+      await navigateTo(`/test/fcp?attribution=1&prerender=1`, {
+        readyState: 'complete',
+      });
 
       await beaconCountIs(1);
 
@@ -371,7 +370,7 @@ describe('onFCP()', async function () {
     it('reports after a bfcache restore', async function () {
       if (!browserSupportsFCP) this.skip();
 
-      await navigateWithStrategy('/test/fcp?attribution=1', 'complete');
+      await navigateTo('/test/fcp?attribution=1', {readyState: 'complete'});
 
       await beaconCountIs(1);
 
