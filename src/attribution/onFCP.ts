@@ -31,9 +31,21 @@ const attributeFCP = (metric: FCPMetric): void => {
     const navigationEntry = getNavigationEntry();
     const fcpEntry = metric.entries[metric.entries.length - 1];
 
+    // Should always have an fcpEntry to be able to attribute
+    if (!fcpEntry) return;
+
     if (navigationEntry) {
       const activationStart = navigationEntry.activationStart || 0;
-      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+      // Cap at 0 and ignore negative responseStart, future responseStart,
+      // or responseStart after LCP
+      const ttfb = Math.max(
+        0,
+        navigationEntry.responseStart <= 0 ||
+          navigationEntry.responseStart > performance.now() ||
+          navigationEntry.responseStart - activationStart > fcpEntry.startTime
+          ? 0
+          : navigationEntry.responseStart - activationStart,
+      );
 
       (metric as FCPMetricWithAttribution).attribution = {
         timeToFirstByte: ttfb,

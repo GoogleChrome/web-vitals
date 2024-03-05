@@ -33,13 +33,26 @@ const attributeLCP = (metric: LCPMetric) => {
     if (navigationEntry) {
       const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
+
+      // Should always have an lcpEntry to be able to attribute
+      if (!lcpEntry) return;
+
       const lcpResourceEntry =
         lcpEntry.url &&
         performance
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
 
-      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+      // Cap at 0 and ignore negative responseStart, future responseStart,
+      // or responseStart after LCP
+      const ttfb = Math.max(
+        0,
+        navigationEntry.responseStart <= 0 ||
+          navigationEntry.responseStart > performance.now() ||
+          navigationEntry.responseStart - activationStart > lcpEntry.startTime
+          ? 0
+          : navigationEntry.responseStart - activationStart,
+      );
 
       const lcpRequestStart = Math.max(
         ttfb,
@@ -55,7 +68,7 @@ const attributeLCP = (metric: LCPMetric) => {
       );
       const lcpRenderTime = Math.max(
         lcpResponseEnd,
-        lcpEntry ? lcpEntry.startTime - activationStart : 0,
+        lcpEntry.startTime - activationStart,
       );
 
       const attribution: LCPAttribution = {
