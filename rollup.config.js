@@ -17,7 +17,7 @@ import babel from '@rollup/plugin-babel';
 import replace from '@rollup/plugin-replace';
 import terser from '@rollup/plugin-terser';
 
-const configurePlugins = ({module, polyfill = false}) => {
+const configurePlugins = ({module}) => {
   return [
     babel({
       babelHelpers: 'bundled',
@@ -37,12 +37,6 @@ const configurePlugins = ({module, polyfill = false}) => {
       mangle: true,
       compress: true,
     }),
-    replace({
-      values: {
-        'window.__WEB_VITALS_POLYFILL__': polyfill,
-      },
-      preventAssignment: true,
-    }),
   ];
 };
 
@@ -53,7 +47,7 @@ const configs = [
       format: 'esm',
       file: './dist/web-vitals.js',
     },
-    plugins: configurePlugins({module: true, polyfill: false}),
+    plugins: configurePlugins({module: true}),
   },
   {
     input: 'dist/modules/index.js',
@@ -62,7 +56,7 @@ const configs = [
       file: `./dist/web-vitals.umd.cjs`,
       name: 'webVitals',
     },
-    plugins: configurePlugins({module: false, polyfill: false}),
+    plugins: configurePlugins({module: false}),
   },
   {
     input: 'dist/modules/index.js',
@@ -71,71 +65,33 @@ const configs = [
       file: './dist/web-vitals.iife.js',
       name: 'webVitals',
     },
-    plugins: configurePlugins({module: false, polyfill: false}),
-  },
-  {
-    input: 'dist/modules/index.js',
-    output: {
-      format: 'esm',
-      file: './dist/web-vitals.base.js',
-    },
-    plugins: configurePlugins({module: true, polyfill: true}),
-  },
-  {
-    input: 'dist/modules/index.js',
-    output: {
-      format: 'umd',
-      file: `./dist/web-vitals.base.umd.cjs`,
-      name: 'webVitals',
-      extend: true,
-    },
-    plugins: configurePlugins({module: false, polyfill: true}),
-  },
-  {
-    input: 'dist/modules/index.js',
-    output: {
-      format: 'iife',
-      file: `./dist/web-vitals.base.iife.js`,
-      name: 'webVitals',
-      extend: true,
-    },
-    plugins: configurePlugins({module: false, polyfill: true}),
-  },
-  {
-    input: 'dist/modules/polyfill.js',
-    output: {
-      format: 'iife',
-      file: './dist/polyfill.js',
-      name: 'webVitals',
-      strict: false,
-    },
     plugins: configurePlugins({module: false}),
   },
   {
-    input: 'dist/modules/attribution.js',
+    input: 'dist/modules/attribution/index.js',
     output: {
       format: 'esm',
       file: './dist/web-vitals.attribution.js',
     },
-    plugins: configurePlugins({module: true, polyfill: false}),
+    plugins: configurePlugins({module: true}),
   },
   {
-    input: 'dist/modules/attribution.js',
+    input: 'dist/modules/attribution/index.js',
     output: {
       format: 'umd',
       file: `./dist/web-vitals.attribution.umd.cjs`,
       name: 'webVitals',
     },
-    plugins: configurePlugins({module: false, polyfill: false}),
+    plugins: configurePlugins({module: false}),
   },
   {
-    input: 'dist/modules/attribution.js',
+    input: 'dist/modules/attribution/index.js',
     output: {
       format: 'iife',
       file: './dist/web-vitals.attribution.iife.js',
       name: 'webVitals',
     },
-    plugins: configurePlugins({module: false, polyfill: false}),
+    plugins: configurePlugins({module: false}),
   },
 ];
 

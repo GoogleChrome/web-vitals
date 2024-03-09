@@ -15,14 +15,13 @@
  */
 
 import type {Metric} from './base.js';
-import {NavigationTimingPolyfillEntry} from './polyfills.js';
 
 /**
  * A TTFB-specific version of the Metric object.
  */
 export interface TTFBMetric extends Metric {
   name: 'TTFB';
-  entries: PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
+  entries: PerformanceNavigationTiming[];
 }
 
 /**
@@ -56,7 +55,7 @@ export interface TTFBAttribution {
    * general page load issues. This can be used to access `serverTiming` for example:
    * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+  navigationEntry?: PerformanceNavigationTiming;
 }
 
 /**

@@ -13,4 +13,4 @@
  limitations under the License.
 */
 
-export * from './dist/modules/attribution.js';
+export * from './dist/modules/attribution/index.js';

@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,13 @@
  * limitations under the License.
  */
 
-export type FirstInputPolyfillEntry = Omit<
-  PerformanceEventTiming,
-  'processingEnd'
->;
+export {
+  /**
+   * @deprecated Use `onINP()` instead.
+   */
+  onFID,
+} from './onFID.js';
 
-export interface FirstInputPolyfillCallback {
-  (entry: FirstInputPolyfillEntry): void;
-}
+export {FIDThresholds} from '../onFID.js';
+
+export * from '../types.js';

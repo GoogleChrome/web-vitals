@@ -69,6 +69,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
     };
 
     const po = observe('first-input', handleEntries);
+
     report = bindReporter(
       onReport,
       metric,
@@ -83,19 +84,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           po.disconnect();
         }),
       );
-    }
 
-    if (window.__WEB_VITALS_POLYFILL__) {
-      console.warn(
-        'The web-vitals "base+polyfill" build is deprecated. See: https://bit.ly/3aqzsGm',
-      );
-
-      // Prefer the native implementation if available,
-      if (!po) {
-        window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback,
-        );
-      }
       onBFCacheRestore(() => {
         metric = initMetric('FID');
         report = bindReporter(
@@ -105,27 +94,10 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           opts!.reportAllChanges,
         );
 
-        window.webVitals.resetFirstInputPolyfill();
-        window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback,
-        );
+        // Browsers don't re-emit FID on bfcache restore so fake it until you make it
+        resetFirstInputPolyfill();
+        firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
       });
-    } else {
-      // Only monitor bfcache restores if the browser supports FID natively.
-      if (po) {
-        onBFCacheRestore(() => {
-          metric = initMetric('FID');
-          report = bindReporter(
-            onReport,
-            metric,
-            FIDThresholds,
-            opts!.reportAllChanges,
-          );
-
-          resetFirstInputPolyfill();
-          firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
-        });
-      }
     }
   });
 };

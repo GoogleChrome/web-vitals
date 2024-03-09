@@ -14,47 +14,12 @@
  * limitations under the License.
  */
 
-import {NavigationTimingPolyfillEntry} from '../types.js';
-
-const getNavigationEntryFromPerformanceTiming =
-  (): NavigationTimingPolyfillEntry => {
-    const timing = performance.timing;
-    const type = performance.navigation.type;
-
-    const navigationEntry: {[key: string]: number | string} = {
-      entryType: 'navigation',
-      startTime: 0,
-      type: type == 2 ? 'back_forward' : type === 1 ? 'reload' : 'navigate',
-    };
-
-    for (const key in timing) {
-      if (key !== 'navigationStart' && key !== 'toJSON') {
-        navigationEntry[key] = Math.max(
-          (timing[key as keyof PerformanceTiming] as number) -
-            timing.navigationStart,
-          0,
-        );
-      }
-    }
-    return navigationEntry as unknown as NavigationTimingPolyfillEntry;
-  };
-
 export const getNavigationEntry = ():
   | PerformanceNavigationTiming
-  | NavigationTimingPolyfillEntry
   | undefined => {
-  if (window.__WEB_VITALS_POLYFILL__) {
-    return (
-      window.performance &&
-      ((performance.getEntriesByType &&
-        performance.getEntriesByType('navigation')[0]) ||
-        getNavigationEntryFromPerformanceTiming())
-    );
-  } else {
-    return (
-      window.performance &&
-      performance.getEntriesByType &&
-      performance.getEntriesByType('navigation')[0]
-    );
-  }
+  return (
+    window.performance &&
+    performance.getEntriesByType &&
+    performance.getEntriesByType('navigation')[0]
+  );
 };
