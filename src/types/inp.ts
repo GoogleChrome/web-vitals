@@ -31,31 +31,86 @@ export interface INPMetric extends Metric {
  */
 export interface INPAttribution {
   /**
-   * A selector identifying the element that the user interacted with for
-   * the event corresponding to INP. This element will be the `target` of the
-   * `event` dispatched.
+   * A selector identifying the element that the user first interacted with
+   * as part of the frame where the INP candidate interaction occurred.
+   * If `interactionTarget` is an empty string, that generally means the
+   * element was removed from the DOM as part of the interaction.
    */
-  eventTarget?: string;
+  interactionTarget: string;
   /**
-   * The time when the user interacted for the event corresponding to INP.
-   * This time will match the `timeStamp` value of the `event` dispatched.
+   * The time when the user first interacted during the frame where the INP
+   * candidate interaction occurred (if more than one interaction occurred
+   * within the frame, only the first time is reported).
    */
-  eventTime?: number;
+  interactionTime: number;
   /**
-   * The `type` of the `event` dispatched corresponding to INP.
+   * The type of interaction. This will be either 'pointer' or 'keyboard'
+   * since those are the only types of interactions considered for INP.
    */
-  eventType?: string;
+  interactionType: 'pointer' | 'keyboard';
+
   /**
-   * The `PerformanceEventTiming` entry corresponding to INP.
+   * If the browser supports the Long Animation Frame API and a
+   * `long-animation-frame` entry is detected that corresponds to the INP
+   * frame, it will be reported here.
    */
-  eventEntry?: PerformanceEventTiming;
+  longAnimationFrameEntry?: PerformanceLongAnimationFrameTiming;
+
   /**
-   * The loading state of the document at the time when the event corresponding
-   * to INP occurred (see `LoadState` for details). If the interaction occurred
-   * while the document was loading and executing script (e.g. usually in the
-   * `dom-interactive` phase) it can result in long delays.
+   * The time from when the user interacted with the page until when the
+   * browser was first able to start processing event listeners for that
+   * interaction. This time captures the delay in processing an interaction
+   * due to the main thread being busy with other work.
    */
-  loadState?: LoadState;
+  inputDelay: number;
+
+  /**
+   * The time from when the first event listener started running in response to
+   * a user interaction until when all processing code has finished running,
+   * and the browser is able to start rendering the next frame. If the user
+   * interacts again before processing has finished (which is common if event
+   * processing takes a long time), then any event processing time from
+   * subsequent interactions could get included in this processing time value
+   * since that delays the next paint for this interaction. If multiple
+   * interactions occur within the same frame, only the first interaction is
+   * considered for INP since it will be the longest.
+   *
+   * Note: if a `long-animation-frame` entry was detected for this frame
+   * its `renderStart` property will be used to mark the `processingTime`
+   * end, otherwise the `processingEnd` time of the last `event` entry in the
+   * frame before the next paint will be used. Usually, these times are the
+   * same. However, the `long-animation-frame` time provides a more accurate
+   * measurement in rare cases where an event entry is missed or a
+   * `setTimeout()` or other task is prioritized before rendering starts.
+   */
+  processingTime: number;
+
+  /**
+   * The time from when the browser finished processing all event listeners
+   * and started rendering the next frame until when that frame is actually
+   * presented on the screen and visible to the user. This time includes
+   * work on the main thread (such as `requestAnimationFrame()` callbacks,
+   * `ResizeObserver` and `IntersectionObserver` callbacks, and style/layout
+   * calculation) as well as off-main-thread work (such as compositor, GPU, and
+   * raster work).
+   *
+   * Note: if a `long-animation-frame` entry was detected for this frame
+   * its `renderStart` property will be used to mark the `presentationDelay`
+   * start, otherwise the `processingEnd` time of the last `event` entry in the
+   * frame before the next paint will be used. Usually, these times are the
+   * same. However, the `long-animation-frame` time provides a more accurate
+   * measurement in rare cases where an event entry is missed or a
+   * `setTimeout()` or other task is prioritized before rendering starts.
+   */
+  presentationDelay: number;
+
+  /**
+   * The loading state of the document at the time when the interaction
+   * corresponding to INP occurred (see `LoadState` for details). If the
+   * interaction occurred while the document was loading and executing script
+   * (e.g. usually in the `dom-interactive` phase) it can result in long delays.
+   */
+  loadState: LoadState;
 }
 
 /**

@@ -41,10 +41,10 @@ describe('onINP()', async function () {
   it('reports the correct value on visibility hidden after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100');
+    await navigateTo('/test/inp?click=100', {readyState: 'interactive'});
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await stubVisibilityChange('hidden');
 
@@ -57,18 +57,19 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp.entries));
-    assert(inp.entries[0].interactionId > 0);
+    assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
   it('reports the correct value on visibility hidden after interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100&reportAllChanges=1');
+    await navigateTo('/test/inp?click=100&reportAllChanges=1', {
+      readyState: 'interactive',
+    });
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await beaconCountIs(1);
 
@@ -79,18 +80,22 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp.entries));
-    assert(inp.entries[0].interactionId > 0);
+    assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
   it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
+    // Don't await the `interactive` ready state because DCL is delayed until
+    // after user input.
     await navigateTo('/test/inp?click=100&loadAfterInput=1');
 
+    // Wait until
+    await nextFrame();
+
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await stubVisibilityChange('hidden');
 
@@ -103,18 +108,22 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp.entries));
-    assert(inp.entries[0].interactionId > 0);
+    assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
   it('reports the correct value when loaded late (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
+    // Don't await the `interactive` ready state because DCL is delayed until
+    // after user input.
     await navigateTo('/test/inp?click=100&reportAllChanges=1&loadAfterInput=1');
 
+    // Wait until
+    await nextFrame();
+
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await beaconCountIs(1);
 
@@ -125,20 +134,19 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp.entries));
-    assert(inp.entries[0].interactionId > 0);
+    assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
   it('reports the correct value on page unload after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100');
+    await navigateTo('/test/inp?click=100', {readyState: 'interactive'});
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
-    await navigateTo('about:blank');
+    await navigateTo('about:blank', {readyState: 'interactive'});
 
     await beaconCountIs(1);
 
@@ -149,18 +157,19 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp.entries));
-    assert(inp.entries[0].interactionId > 0);
+    assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
   it('reports the correct value on page unload after interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100&reportAllChanges=1');
+    await navigateTo('/test/inp?click=100&reportAllChanges=1', {
+      readyState: 'interactive',
+    });
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await navigateTo('about:blank');
 
@@ -173,24 +182,25 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp.entries));
-    assert(inp.entries[0].interactionId > 0);
+    assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
 
   it('reports approx p98 interaction when 50+ interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=60&pointerdown=600');
+    await navigateTo('/test/inp?click=60&pointerdown=600', {
+      readyState: 'interactive',
+    });
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await setBlockingTime('pointerdown', 400);
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await setBlockingTime('pointerdown', 200);
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await setBlockingTime('pointerdown', 0);
 
@@ -199,6 +209,7 @@ describe('onINP()', async function () {
 
     const [inp1] = await getBeacons();
     assert(inp1.value >= 600); // Initial pointerdown blocking time.
+    assert(allEntriesPresentTogether(inp1.entries));
     assert.strictEqual(inp1.rating, 'poor');
 
     await clearBeacons();
@@ -206,7 +217,7 @@ describe('onINP()', async function () {
 
     let count = 3;
     while (count < 50) {
-      await h1.click();
+      await simulateUserLikeClick(h1);
       count++;
     }
 
@@ -216,13 +227,14 @@ describe('onINP()', async function () {
     const [inp2] = await getBeacons();
     assert(inp2.value >= 400); // Initial pointerdown blocking time.
     assert(inp2.value < inp1.value); // Should have gone down.
+    assert(allEntriesPresentTogether(inp2.entries));
     assert.strictEqual(inp2.rating, 'needs-improvement');
 
     await clearBeacons();
     await stubVisibilityChange('visible');
 
     while (count < 100) {
-      await h1.click();
+      await simulateUserLikeClick(h1);
       count++;
     }
 
@@ -232,28 +244,31 @@ describe('onINP()', async function () {
     const [inp3] = await getBeacons();
     assert(inp3.value >= 200); // 2nd-highest pointerdown blocking time.
     assert(inp3.value < inp2.value); // Should have gone down.
+    assert(allEntriesPresentTogether(inp3.entries));
     assert.strictEqual(inp3.rating, 'needs-improvement');
   });
 
   it('reports approx p98 interaction when 50+ interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=60&pointerdown=600&reportAllChanges=1');
+    await navigateTo('/test/inp?click=60&pointerdown=600&reportAllChanges=1', {
+      readyState: 'interactive',
+    });
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await setBlockingTime('pointerdown', 400);
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await setBlockingTime('pointerdown', 200);
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await setBlockingTime('pointerdown', 0);
 
     let count = 3;
     while (count < 100) {
-      await h1.click();
+      await simulateUserLikeClick(h1);
       count++;
     }
 
@@ -265,7 +280,9 @@ describe('onINP()', async function () {
     assert(inp2.value < inp1.value); // Should have gone down.
     assert(inp3.value >= 200); // 2nd-highest pointerdown blocking time.
     assert(inp3.value < inp2.value); // Should have gone down.
-
+    assert(allEntriesPresentTogether(inp1.entries));
+    assert(allEntriesPresentTogether(inp2.entries));
+    assert(allEntriesPresentTogether(inp3.entries));
     assert.strictEqual(inp1.rating, 'poor');
     assert.strictEqual(inp2.rating, 'needs-improvement');
     assert.strictEqual(inp3.rating, 'needs-improvement');
@@ -274,12 +291,12 @@ describe('onINP()', async function () {
   it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp');
+    await navigateTo('/test/inp', {readyState: 'interactive'});
 
     await setBlockingTime('click', 100);
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
     await nextFrame();
@@ -294,7 +311,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp1.value, inp1.delta);
     assert.strictEqual(inp1.rating, 'good');
     assert(containsEntry(inp1.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp1.entries));
+    assert(allEntriesPresentTogether(inp1.entries));
     assert.match(inp1.navigationType, /navigate|reload/);
 
     await clearBeacons();
@@ -311,6 +328,7 @@ describe('onINP()', async function () {
     await beaconCountIs(1);
 
     const [inp2] = await getBeacons();
+
     assert(inp2.value >= 0);
     assert(inp2.id.match(/^v3-\d+-\d+$/));
     assert(inp1.id !== inp2.id);
@@ -318,8 +336,8 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2.value, inp2.delta);
     assert.strictEqual(inp2.rating, 'good');
     assert(containsEntry(inp2.entries, 'keydown', '#textarea'));
-    assert(interactionIDsMatch(inp2.entries));
-    assert(inp2.entries[0].interactionId > inp1.entries[0].interactionId);
+    assert(allEntriesPresentTogether(inp1.entries));
+    assert(inp2.entries[0].startTime > inp1.entries[0].startTime);
     assert.strictEqual(inp2.navigationType, 'back-forward-cache');
 
     await stubForwardBack();
@@ -344,15 +362,15 @@ describe('onINP()', async function () {
     assert.strictEqual(inp3.value, inp3.delta);
     assert.strictEqual(inp3.rating, 'needs-improvement');
     assert(containsEntry(inp3.entries, 'pointerdown', '#reset'));
-    assert(interactionIDsMatch(inp3.entries));
-    assert(inp3.entries[0].interactionId > inp2.entries[0].interactionId);
+    assert(allEntriesPresentTogether(inp3.entries));
+    assert(inp3.entries[0].startTime > inp2.entries[0].startTime);
     assert.strictEqual(inp3.navigationType, 'back-forward-cache');
   });
 
   it('does not report if there were no interactions', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp');
+    await navigateTo('/test/inp', {readyState: 'interactive'});
 
     await stubVisibilityChange('hidden');
 
@@ -366,10 +384,12 @@ describe('onINP()', async function () {
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100&prerender=1');
+    await navigateTo('/test/inp?click=100&prerender=1', {
+      readyState: 'interactive',
+    });
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await stubVisibilityChange('hidden');
 
@@ -382,18 +402,19 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp.entries));
-    assert(inp.entries[0].interactionId > 0);
+    assert(allEntriesPresentTogether(inp.entries));
     assert.strictEqual(inp.navigationType, 'prerender');
   });
 
   it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100&wasDiscarded=1');
+    await navigateTo('/test/inp?click=100&wasDiscarded=1', {
+      readyState: 'interactive',
+    });
 
     const h1 = await $('h1');
-    await h1.click();
+    await simulateUserLikeClick(h1);
 
     await stubVisibilityChange('hidden');
 
@@ -406,8 +427,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', 'h1'));
-    assert(interactionIDsMatch(inp.entries));
-    assert(inp.entries[0].interactionId > 0);
+    assert(allEntriesPresentTogether(inp.entries));
     assert.strictEqual(inp.navigationType, 'restore');
   });
 
@@ -415,13 +435,12 @@ describe('onINP()', async function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsINP) this.skip();
 
-      await navigateTo('/test/inp?click=100&attribution=1');
+      await navigateTo('/test/inp?click=100&attribution=1', {
+        readyState: 'complete',
+      });
 
       const h1 = await $('h1');
-      await h1.click();
-
-      // Ensure the interaction completes.
-      await nextFrame();
+      await simulateUserLikeClick(h1);
 
       await stubVisibilityChange('hidden');
 
@@ -435,34 +454,21 @@ describe('onINP()', async function () {
       assert.strictEqual(inp1.value, inp1.delta);
       assert.strictEqual(inp1.rating, 'good');
       assert(containsEntry(inp1.entries, 'click', 'h1'));
-      assert(interactionIDsMatch(inp1.entries));
-      assert(inp1.entries[0].interactionId > 0);
+      assert(allEntriesPresentTogether(inp1.entries));
       assert.match(inp1.navigationType, /navigate|reload/);
 
-      const clickEntry = inp1.entries.find((e) => e.name === 'click');
-      assert.equal(inp1.attribution.eventTarget, 'html>body>main>h1');
-      assert.equal(inp1.attribution.eventType, clickEntry.name);
-      assert.equal(inp1.attribution.eventTime, clickEntry.startTime);
+      assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
+      assert.equal(inp1.attribution.interactionType, 'pointer');
+      assert.equal(inp1.attribution.interactionTime, inp1.entries[0].startTime);
       assert.equal(inp1.attribution.loadState, 'complete');
-
-      // Deep equal won't work since some of the properties are removed before
-      // sending to /collect, so just compare some.
-      const eventEntry1 = inp1.attribution.eventEntry;
-      assert.equal(eventEntry1.startTime, clickEntry.startTime);
-      assert.equal(eventEntry1.duration, clickEntry.duration);
-      assert.equal(eventEntry1.name, clickEntry.name);
-      assert.equal(eventEntry1.processingStart, clickEntry.processingStart);
 
       await clearBeacons();
 
       await stubVisibilityChange('visible');
-      await setBlockingTime('pointerup', 200);
+      await setBlockingTime('mouseup', 200);
 
       const reset = await $('#reset');
-      await reset.click();
-
-      // Ensure the interaction completes.
-      await nextFrame();
+      await simulateUserLikeClick(reset);
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
@@ -474,32 +480,21 @@ describe('onINP()', async function () {
       assert.strictEqual(inp2.name, 'INP');
       assert.strictEqual(inp2.value, inp1.value + inp2.delta);
       assert.strictEqual(inp2.rating, 'needs-improvement');
-      assert(containsEntry(inp2.entries, 'pointerup', '#reset'));
-      assert(interactionIDsMatch(inp2.entries));
-      assert(inp2.entries[0].interactionId > 0);
+      assert(containsEntry(inp2.entries, 'mouseup', '#reset'));
+      assert(allEntriesPresentTogether(inp2.entries));
       assert.match(inp2.navigationType, /navigate|reload/);
 
-      const pointerupEntry = inp2.entries.find((e) => e.name === 'pointerup');
-      assert.equal(inp2.attribution.eventTarget, '#reset');
-      assert.equal(inp2.attribution.eventType, pointerupEntry.name);
-      assert.equal(inp2.attribution.eventTime, pointerupEntry.startTime);
+      assert.equal(inp2.attribution.interactionTarget, '#reset');
+      assert.equal(inp2.attribution.interactionType, 'pointer');
+      assert.equal(inp2.attribution.interactionTime, inp2.entries[0].startTime);
       assert.equal(inp2.attribution.loadState, 'complete');
-
-      // Deep equal won't work since some of the properties are removed before
-      // sending to /collect, so just compare some.
-      const eventEntry2 = inp2.attribution.eventEntry;
-      assert.equal(eventEntry2.startTime, pointerupEntry.startTime);
-      assert.equal(eventEntry2.duration, pointerupEntry.duration);
-      assert.equal(eventEntry2.name, pointerupEntry.name);
-      assert.equal(eventEntry2.processingStart, pointerupEntry.processingStart);
     });
 
     it('reports the domReadyState when input occurred', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo(
-        '/test/inp?' +
-          'attribution=1&reportAllChanges=1&click=100&delayDCL=1000',
+        '/test/inp?attribution=1&reportAllChanges=1&click=100&delayDCL=1000',
       );
 
       // Click on the <h1>.
@@ -515,8 +510,8 @@ describe('onINP()', async function () {
       await clearBeacons();
 
       await navigateTo(
-        '/test/inp?' +
-          'attribution=1&reportAllChanges=1&click=100&delayResponse=1000',
+        '/test/inp' +
+          '?attribution=1&reportAllChanges=1&click=100&delayResponse=1000',
       );
 
       // Click on the <button>.
@@ -534,30 +529,23 @@ describe('onINP()', async function () {
     it('reports the event target from any entry where target is defined', async function () {
       if (!browserSupportsINP) this.skip();
 
-      await navigateTo('/test/inp?attribution=1&mousedown=100&click=50');
+      await navigateTo('/test/inp?attribution=1&mousedown=100&click=50', {
+        readyState: 'interactive',
+      });
 
       const h1 = await $('h1');
-
-      // Simulate a long click on the h1 to ensure the `click` entry
-      // has a startTime after the `pointerdown` entry.
-      await browser
-        .action('pointer')
-        .move({x: 0, y: 0, origin: h1})
-        .down({button: 0}) // left button
-        .pause(100)
-        .up({button: 0})
-        .perform();
+      await simulateUserLikeClick(h1);
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
 
       const [inp1] = await getBeacons();
 
-      assert.equal(inp1.attribution.eventType, 'pointerdown');
+      assert.equal(inp1.attribution.interactionType, 'pointer');
       // The event target should match the h1, even if the `pointerdown`
       // entry doesn't contain a target.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-      assert.equal(inp1.attribution.eventTarget, 'html>body>main>h1');
+      assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
     });
   });
 });
@@ -566,11 +554,25 @@ const containsEntry = (entries, name, target) => {
   return entries.findIndex((e) => e.name === name && e.target === target) > -1;
 };
 
-const interactionIDsMatch = (entries) => {
-  return entries.every((e) => e.interactionId === entries[0].interactionId);
+const allEntriesPresentTogether = (entries) => {
+  const renderTimes = entries
+    .map((e) => Math.max(e.startTime + e.duration, e.processingEnd))
+    .sort((a, b) => a - b);
+
+  return renderTimes.at(-1) - renderTimes.at(0) <= 8;
 };
 
 const setBlockingTime = async (event, value) => {
   const input = await $(`#${event}-blocking-time`);
   await input.setValue(value);
+};
+
+const simulateUserLikeClick = async (element) => {
+  await browser
+    .action('pointer')
+    .move({x: 0, y: 0, origin: element})
+    .down({button: 0}) // left button
+    .pause(50)
+    .up({button: 0})
+    .perform();
 };

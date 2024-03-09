@@ -16,6 +16,7 @@
 
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
+import {observe} from '../lib/observe.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
 import {
   INPMetric,
@@ -25,38 +26,102 @@ import {
   ReportOpts,
 } from '../types.js';
 
+// The maximum number of LoAF entries with interactions to keep in memory.
+// 10 is chosen here because it corresponds to the maximum number of
+// long interactions needed to compute INP, so no matter which one of those
+// interactions ends up being the INP candidate, it should correspond to one
+// of the 10 longest LoAF entries containing an interaction.
+const MAX_LOAFS_TO_CONSIDER = 10;
+
+// A list of longest LoAFs with interactions on the page sorted so the
+// longest one is first. The list is at most MAX_LOAFS_TO_CONSIDER long.
+const longestLoAFsList: PerformanceLongAnimationFrameTiming[] = [];
+
+// A PerformanceObserver, observing new `long-animation-frame` entries.
+// If this variable is defined it means the browser supports LoAF.
+let loafObserver: PerformanceObserver | undefined;
+
+const handleEntries = (entries: PerformanceLongAnimationFrameTiming[]) => {
+  entries.forEach((entry) => {
+    if (entry.firstUIEventTimestamp > 0) {
+      const minLongestLoAF = longestLoAFsList[longestLoAFsList.length - 1];
+
+      if (!longestLoAFsList.length) {
+        longestLoAFsList.push(entry);
+        return;
+      }
+
+      // If the entry is possibly one of the 10 longest, insert it into the
+      // list of pending LoAFs at the correct spot (sorted), ensuring the list
+      // is not longer than `MAX_LOAFS_TO_CONSIDER`.
+      if (
+        longestLoAFsList.length < MAX_LOAFS_TO_CONSIDER ||
+        entry.duration > minLongestLoAF.duration
+      ) {
+        for (let i = 0; i < longestLoAFsList.length; i++) {
+          if (entry.duration > longestLoAFsList[i].duration) {
+            longestLoAFsList.splice(i, 0, entry);
+            break;
+          }
+        }
+        if (longestLoAFsList.length > MAX_LOAFS_TO_CONSIDER) {
+          longestLoAFsList.splice(MAX_LOAFS_TO_CONSIDER);
+        }
+      }
+    }
+  });
+};
+
 const attributeINP = (metric: INPMetric): void => {
-  if (metric.entries.length) {
-    const longestEntry = metric.entries.sort((a, b) => {
-      // Sort by: 1) duration (DESC), then 2) processing time (DESC)
-      return (
-        b.duration - a.duration ||
-        b.processingEnd -
-          b.processingStart -
-          (a.processingEnd - a.processingStart)
-      );
-    })[0];
+  const sortedEntries = metric.entries.sort((a, b) => {
+    return a.processingStart - b.processingStart;
+  });
 
-    // Currently Chrome can return a null target for certain event types
-    // (especially pointer events). As the event target should be the same
-    // for all events in the same interaction, we pick the first non-null one.
-    // TODO: remove when 1367329 is resolved
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-    const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
+  const firstEntry = sortedEntries[0];
+  const lastEntry = sortedEntries[sortedEntries.length - 1];
+  const renderTime = firstEntry.startTime + firstEntry.duration;
 
-    (metric as INPMetricWithAttribution).attribution = {
-      eventTarget: getSelector(
-        firstEntryWithTarget && firstEntryWithTarget.target,
-      ),
-      eventType: longestEntry.name,
-      eventTime: longestEntry.startTime,
-      eventEntry: longestEntry,
-      loadState: getLoadState(longestEntry.startTime),
-    };
-    return;
+  let longAnimationFrameEntry;
+  for (const loaf of longestLoAFsList) {
+    const loafEnd = loaf.startTime + loaf.duration;
+    if (
+      firstEntry.startTime === loaf.firstUIEventTimestamp ||
+      (loafEnd <= renderTime && loafEnd >= firstEntry.processingStart)
+    ) {
+      longAnimationFrameEntry = loaf;
+      break;
+    }
   }
-  // Set an empty object if no other attribution has been set.
-  (metric as INPMetricWithAttribution).attribution = {};
+
+  const renderStart = longAnimationFrameEntry
+    ? longAnimationFrameEntry.renderStart
+    : lastEntry.processingEnd;
+
+  // The first entry may not have a target defined, so use the first
+  // one found in the entry list.
+  const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
+
+  // Determine the type of interaction based on the first entry with
+  // a matching keydown/keyup or pointerdown/pointerup entry name.
+  const firstEntryWithType = metric.entries.find((entry) =>
+    entry.name.match(/^(key|pointer)(down|up)$/),
+  );
+
+  (metric as INPMetricWithAttribution).attribution = {
+    interactionTarget: getSelector(
+      firstEntryWithTarget && firstEntryWithTarget.target,
+    ),
+    interactionType:
+      firstEntryWithType && firstEntryWithType.name.startsWith('key')
+        ? 'keyboard'
+        : 'pointer',
+    interactionTime: sortedEntries[0].startTime,
+    longAnimationFrameEntry: longAnimationFrameEntry,
+    inputDelay: firstEntry.processingStart - firstEntry.startTime,
+    processingTime: renderStart - firstEntry.processingStart,
+    presentationDelay: Math.max(renderTime - renderStart, 0),
+    loadState: getLoadState(sortedEntries[0].startTime),
+  };
 };
 
 /**
@@ -90,6 +155,10 @@ export const onINP = (
   onReport: INPReportCallbackWithAttribution,
   opts?: ReportOpts,
 ) => {
+  if (!loafObserver) {
+    loafObserver = observe('long-animation-frame', handleEntries);
+  }
+
   unattributedOnINP(
     ((metric: INPMetricWithAttribution) => {
       attributeINP(metric);

@@ -15,8 +15,8 @@
  */
 
 /**
- * Returns a promise that resolves once the browser window has loaded and
- * all load callbacks have finished executing.
+ * Returns a promise that resolves once the browser has run the next
+ * animation frame.
  * @return {Promise<void>}
  */
 export function nextFrame(state) {

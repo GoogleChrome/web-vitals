@@ -35,6 +35,12 @@ interface Interaction {
   id: number;
   latency: number;
   entries: PerformanceEventTiming[];
+  renderTime: number;
+}
+
+interface PendingEntriesGroup {
+  interactionId?: number;
+  entries: PerformanceEventTiming[];
 }
 
 /** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
@@ -57,12 +63,80 @@ const getInteractionCountForNavigation = () => {
 const MAX_INTERACTIONS_TO_CONSIDER = 10;
 
 // A list of longest interactions on the page (by latency) sorted so the
-// longest one is first. The list is as most MAX_INTERACTIONS_TO_CONSIDER long.
+// longest one is first. The list is at most MAX_INTERACTIONS_TO_CONSIDER long.
 let longestInteractionList: Interaction[] = [];
 
 // A mapping of longest interactions by their interaction ID.
 // This is used for faster lookup.
-const longestInteractionMap: {[interactionId: string]: Interaction} = {};
+const longestInteractionMap: {[interactionId: string]: Interaction} =
+  Object.create(null);
+
+// A mapping between a particular frame's render time and all of the
+// event timing entries that occurred within that frame. Since event timing
+// entries round their duration to the nearest 8sm, this ends up being
+// a best-effort guess, but but debugging and attribution practices it's
+// useful to see all events the occurred within the same frame as a particular
+// interaction, so it's worth doing the best-effort guess.
+// const pendingEntriesGroupMap: Map<number, PendingEntriesGroup> = new Map();
+const pendingEntriesGroupMap: {[renderTime: string]: PendingEntriesGroup} =
+  Object.create(null);
+
+/**
+ * Gets the "frame-normalized" render time for the given entry.
+ * In other words, all entries passed to this function that were processed
+ * within the same frame should return the same render time. This allows you
+ * to group by this render time value.
+ * This function works by referencing `pendingEntriesGroupMap` and using
+ * an existing render time if one is found (otherwise creating a new one).
+ */
+const groupEntryByRenderTime = (entry: PerformanceEventTiming) => {
+  // Since event timing entry `duration` values are rounded to the nearest
+  // 8ms, it's possible that `startTime + duration` could be less than the
+  // `processingEnd` time, so we cap the render time there since render times
+  // must be after processing.
+  const renderTime = Math.max(
+    entry.startTime + entry.duration,
+    entry.processingEnd,
+  );
+
+  let matchingRenderTime;
+
+  for (const key in pendingEntriesGroupMap) {
+    const prevRenderTime = Number(key);
+    const entriesGroup = pendingEntriesGroupMap[prevRenderTime];
+
+    // If a previous render time is within 8ms of the current render time,
+    // assume they were part of the same frame and re-use the previous time.
+    // Also break out of the loop because all subsequent times will be newer.
+    if (Math.abs(renderTime - prevRenderTime) <= 8) {
+      matchingRenderTime = prevRenderTime;
+      entriesGroup.entries.push(entry);
+      break;
+    }
+
+    // If a previous render time is more than 2 seconds before the current
+    // render time, assume all entries within that frame have been fully
+    // processed and remove it from the pending frames map (to free up space).
+    // NOTE: this is not a perfect heuristic, but if it's wrong, the worst
+    // thing that will happen is some entries may not get reported along
+    // with INP (but that is extremely unlikely). It will not impact
+    // the accuracy of the INP value that is reported.
+    if (prevRenderTime + 2000 < renderTime) {
+      delete pendingEntriesGroupMap[key];
+    }
+  }
+
+  // If there was no matching render time, assume this is a new frame
+  // and add the render time to the pending list.
+  if (!matchingRenderTime) {
+    pendingEntriesGroupMap[renderTime] = {
+      interactionId: entry.interactionId,
+      entries: [entry],
+    };
+  }
+
+  return matchingRenderTime || renderTime;
+};
 
 /**
  * Takes a performance entry and adds it to the list of worst interactions
@@ -70,8 +144,7 @@ const longestInteractionMap: {[interactionId: string]: Interaction} = {};
  * entry is part of an existing interaction, it is merged and the latency
  * and entries list is updated as needed.
  */
-const processEntry = (entry: PerformanceEventTiming) => {
-  // The least-long of the 10 longest interactions.
+const processEntry = (entry: PerformanceEventTiming, renderTime: number) => {
   const minLongestInteraction =
     longestInteractionList[longestInteractionList.length - 1];
 
@@ -84,18 +157,23 @@ const processEntry = (entry: PerformanceEventTiming) => {
     longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
     entry.duration > minLongestInteraction.latency
   ) {
+    const entriesGroup = pendingEntriesGroupMap[renderTime];
+
     // If the interaction already exists, update it. Otherwise create one.
     if (existingInteraction) {
-      existingInteraction.entries.push(entry);
-      existingInteraction.latency = Math.max(
-        existingInteraction.latency,
-        entry.duration,
-      );
+      if (entry.duration > existingInteraction.latency) {
+        existingInteraction.latency = entry.duration;
+        if (existingInteraction.renderTime !== renderTime) {
+          existingInteraction.renderTime = renderTime;
+          existingInteraction.entries = entriesGroup!.entries;
+        }
+      }
     } else {
       const interaction = {
         id: entry.interactionId!,
         latency: entry.duration,
-        entries: [entry],
+        entries: entriesGroup!.entries,
+        renderTime,
       };
       longestInteractionMap[interaction.id] = interaction;
       longestInteractionList.push(interaction);
@@ -103,9 +181,13 @@ const processEntry = (entry: PerformanceEventTiming) => {
 
     // Sort the entries by latency (descending) and keep only the top ten.
     longestInteractionList.sort((a, b) => b.latency - a.latency);
-    longestInteractionList.splice(MAX_INTERACTIONS_TO_CONSIDER).forEach((i) => {
-      delete longestInteractionMap[i.id];
-    });
+    if (longestInteractionList.length > MAX_INTERACTIONS_TO_CONSIDER) {
+      longestInteractionList
+        .splice(MAX_INTERACTIONS_TO_CONSIDER)
+        .forEach((i) => {
+          delete longestInteractionMap[i.id];
+        });
+    }
   }
 };
 
@@ -162,31 +244,21 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
 
     const handleEntries = (entries: INPMetric['entries']) => {
       entries.forEach((entry) => {
-        if (entry.interactionId) {
-          processEntry(entry);
+        // Skip `first-input` entries if any `event` entries have already
+        // been processed.
+        if (
+          entry.entryType === 'first-input' &&
+          longestInteractionList.length
+        ) {
+          return;
         }
 
-        // Entries of type `first-input` don't currently have an `interactionId`,
-        // so to consider them in INP we have to first check that an existing
-        // entry doesn't match the `duration` and `startTime`.
-        // Note that this logic assumes that `event` entries are dispatched
-        // before `first-input` entries. This is true in Chrome (the only browser
-        // that currently supports INP).
-        // TODO(philipwalton): remove once crbug.com/1325826 is fixed.
-        if (entry.entryType === 'first-input') {
-          const noMatchingEntry = !longestInteractionList.some(
-            (interaction) => {
-              return interaction.entries.some((prevEntry) => {
-                return (
-                  entry.duration === prevEntry.duration &&
-                  entry.startTime === prevEntry.startTime
-                );
-              });
-            },
-          );
-          if (noMatchingEntry) {
-            processEntry(entry);
-          }
+        // Group this entry with other entries in the same frame,
+        // and get the render time.
+        const renderTime = groupEntryByRenderTime(entry);
+
+        if (entry.interactionId || entry.entryType === 'first-input') {
+          processEntry(entry, renderTime);
         }
       });
 
