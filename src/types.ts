@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {FirstInputPolyfillCallback} from './types/polyfills.js';
-
 export * from './types/base.js';
 export * from './types/polyfills.js';
 
@@ -25,25 +23,6 @@ export * from './types/fid.js';
 export * from './types/inp.js';
 export * from './types/lcp.js';
 export * from './types/ttfb.js';
-
-// --------------------------------------------------------------------------
-// Web Vitals package globals
-// --------------------------------------------------------------------------
-
-export interface WebVitalsGlobal {
-  firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;
-  resetFirstInputPolyfill: () => void;
-  firstHiddenTime: number;
-}
-
-declare global {
-  interface Window {
-    webVitals: WebVitalsGlobal;
-
-    // Build flags:
-    __WEB_VITALS_POLYFILL__: boolean;
-  }
-}
 
 // --------------------------------------------------------------------------
 // Everything below is modifications to built-in modules.

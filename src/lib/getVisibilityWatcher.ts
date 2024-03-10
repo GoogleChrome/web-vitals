@@ -67,15 +67,8 @@ export const getVisibilityWatcher = () => {
     // since navigation start. This isn't a perfect heuristic, but it's the
     // best we can do until an API is available to support querying past
     // visibilityState.
-    if (window.__WEB_VITALS_POLYFILL__) {
-      firstHiddenTime = window.webVitals.firstHiddenTime;
-      if (firstHiddenTime === Infinity) {
-        addChangeListeners();
-      }
-    } else {
-      firstHiddenTime = initHiddenTime();
-      addChangeListeners();
-    }
+    firstHiddenTime = initHiddenTime();
+    addChangeListeners();
 
     // Reset the time on bfcache restores.
     onBFCacheRestore(() => {
