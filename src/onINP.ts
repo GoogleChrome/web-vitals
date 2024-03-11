@@ -74,7 +74,7 @@ const longestInteractionMap: {[interactionId: string]: Interaction} =
 // A mapping between a particular frame's render time and all of the
 // event timing entries that occurred within that frame. Since event timing
 // entries round their duration to the nearest 8sm, this ends up being
-// a best-effort guess, but but debugging and attribution practices it's
+// a best-effort guess, but for debugging and attribution practices it's
 // useful to see all events the occurred within the same frame as a particular
 // interaction, so it's worth doing the best-effort guess.
 // const pendingEntriesGroupMap: Map<number, PendingEntriesGroup> = new Map();
