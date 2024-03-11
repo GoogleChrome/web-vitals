@@ -145,6 +145,7 @@ const groupEntryByRenderTime = (entry: PerformanceEventTiming) => {
  * and entries list is updated as needed.
  */
 const processEntry = (entry: PerformanceEventTiming, renderTime: number) => {
+  // The least-long of the 10 longest interactions.
   const minLongestInteraction =
     longestInteractionList[longestInteractionList.length - 1];
 

@@ -93,6 +93,13 @@ const attributeINP = (metric: INPMetric): void => {
     }
   }
 
+  // If the browser supports the Long Animation Frame API and a
+  // `long-animation-frame` entry was found matching this interaction,
+  // use that entry's `renderTime` since it could be more accurate (and
+  // it accounts for non-event listener work such as timers or other
+  // pending tasks that could get run before rendering starts). If not,
+  // use the `processingEnd` value of the last entry in the list, which
+  // should match the `renderTime` value in most cases.
   const renderStart = longAnimationFrameEntry
     ? longAnimationFrameEntry.renderStart
     : lastEntry.processingEnd;
