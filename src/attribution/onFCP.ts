@@ -17,6 +17,7 @@
 import {getBFCacheRestoreTime} from '../lib/bfcache.js';
 import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
+import {invalidTiming} from '../lib/invalidTiming.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
 import {
   FCPMetric,
@@ -29,23 +30,15 @@ import {
 const attributeFCP = (metric: FCPMetric): void => {
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
+
     const fcpEntry = metric.entries[metric.entries.length - 1];
 
-    // Should always have an fcpEntry to be able to attribute
-    if (!fcpEntry) return;
-
     if (navigationEntry) {
+      const responseStart = navigationEntry.responseStart;
+      if (invalidTiming(responseStart)) return;
+
       const activationStart = navigationEntry.activationStart || 0;
-      // Cap at 0 and ignore negative responseStart, future responseStart,
-      // or responseStart after LCP
-      const ttfb = Math.max(
-        0,
-        navigationEntry.responseStart <= 0 ||
-          navigationEntry.responseStart > performance.now() ||
-          navigationEntry.responseStart - activationStart > fcpEntry.startTime
-          ? 0
-          : navigationEntry.responseStart - activationStart,
-      );
+      const ttfb = Math.max(0, responseStart - activationStart);
 
       (metric as FCPMetricWithAttribution).attribution = {
         timeToFirstByte: ttfb,

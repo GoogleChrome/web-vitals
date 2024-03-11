@@ -16,6 +16,7 @@
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
+import {invalidTiming} from '../lib/invalidTiming.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import {
   LCPAttribution,
@@ -31,28 +32,18 @@ const attributeLCP = (metric: LCPMetric) => {
     const navigationEntry = getNavigationEntry();
 
     if (navigationEntry) {
-      const activationStart = navigationEntry.activationStart || 0;
-      const lcpEntry = metric.entries[metric.entries.length - 1];
+      const responseStart = navigationEntry.responseStart;
+      if (invalidTiming(responseStart)) return;
 
-      // Should always have an lcpEntry to be able to attribute
-      if (!lcpEntry) return;
+      const activationStart = navigationEntry.activationStart || 0;
+      const ttfb = Math.max(0, responseStart - activationStart);
+      const lcpEntry = metric.entries[metric.entries.length - 1];
 
       const lcpResourceEntry =
         lcpEntry.url &&
         performance
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
-
-      // Cap at 0 and ignore negative responseStart, future responseStart,
-      // or responseStart after LCP
-      const ttfb = Math.max(
-        0,
-        navigationEntry.responseStart <= 0 ||
-          navigationEntry.responseStart > performance.now() ||
-          navigationEntry.responseStart - activationStart > lcpEntry.startTime
-          ? 0
-          : navigationEntry.responseStart - activationStart,
-      );
 
       const lcpRequestStart = Math.max(
         ttfb,
