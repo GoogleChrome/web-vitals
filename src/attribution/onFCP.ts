@@ -30,7 +30,6 @@ import {
 const attributeFCP = (metric: FCPMetric): void => {
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
-
     const fcpEntry = metric.entries[metric.entries.length - 1];
 
     if (navigationEntry) {

@@ -36,14 +36,14 @@ const attributeLCP = (metric: LCPMetric) => {
       if (invalidTiming(responseStart)) return;
 
       const activationStart = navigationEntry.activationStart || 0;
-      const ttfb = Math.max(0, responseStart - activationStart);
       const lcpEntry = metric.entries[metric.entries.length - 1];
-
       const lcpResourceEntry =
         lcpEntry.url &&
         performance
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
+
+      const ttfb = Math.max(0, responseStart - activationStart);
 
       const lcpRequestStart = Math.max(
         ttfb,
