@@ -89,7 +89,7 @@ declare global {
     element?: Element;
   }
 
-  // https://w3c.github.io/longtasks/#performancelonganimationframetiming
+  // https://w3c.github.io/long-animation-frames/#performancelonganimationframetiming
   interface PerformanceLongAnimationFrameTiming extends PerformanceEntry {
     renderStart: DOMHighResTimeStamp;
     firstUIEventTimestamp: DOMHighResTimeStamp;
