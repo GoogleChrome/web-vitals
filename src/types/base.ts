@@ -77,6 +77,7 @@ export interface Metric {
    * This will be the value returned by the Navigation Timing API (or
    * `undefined` if the browser doesn't support that API), with the following
    * exceptions:
+   * - all entries are converted to hypens (e,.g. `back_forward` is returned as `back-forward`)
    * - 'back-forward-cache': for pages that are restored from the bfcache.
    * - 'prerender': for pages that were prerendered.
    * - 'restore': for pages that were discarded by the browser and then
