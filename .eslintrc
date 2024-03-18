@@ -63,6 +63,7 @@
         "node/no-missing-require": "off",
         "node/shebang": "off",
         "no-dupe-class-members": "off",
+        "prefer-spread": "off",
         "space-before-function-paren": [
           "error",
           {

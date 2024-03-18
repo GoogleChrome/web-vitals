@@ -14,12 +14,20 @@
  * limitations under the License.
  */
 
-export const runOnce = (cb: () => void) => {
-  let called = false;
-  return () => {
-    if (!called) {
+import {onHidden} from './onHidden.js';
+
+/**
+ * Runs the passed callback during the next idle period, or immediately
+ * if the browser's visibility state is (or becomes) hidden.
+ */
+export const whenIdle = (cb: () => void) => {
+  if (document.visibilityState === 'hidden') {
+    cb();
+  } else {
+    const handle = requestIdleCallback(cb);
+    onHidden(() => {
+      cancelIdleCallback(handle);
       cb();
-      called = true;
-    }
-  };
+    });
+  }
 };

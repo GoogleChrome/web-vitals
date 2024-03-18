@@ -129,6 +129,14 @@
         target: jsonifyNode(e.target),
       }));
 
+      if (inp.attribution) {
+        inp.attribution.processedEventEntries = inp.attribution.processedEventEntries.map((e) => ({
+          ...e.toJSON(),
+          interactionId: e.interactionId,
+          target: jsonifyNode(e.target),
+        }));
+      }
+
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(inp));
     }, {

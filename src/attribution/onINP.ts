@@ -16,7 +16,9 @@
 
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
+import {longestInteractionList} from '../lib/interactions.js';
 import {observe} from '../lib/observe.js';
+import {whenIdle} from '../lib/whenIdle.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
 import {
   INPMetric,
@@ -26,108 +28,223 @@ import {
   ReportOpts,
 } from '../types.js';
 
-// The maximum number of LoAF entries with interactions to keep in memory.
-// 10 is chosen here because it corresponds to the maximum number of
-// long interactions needed to compute INP, so no matter which one of those
-// interactions ends up being the INP candidate, it should correspond to one
-// of the 10 longest LoAF entries containing an interaction.
-const MAX_LOAFS_TO_CONSIDER = 10;
-
-// A list of longest LoAFs with interactions on the page sorted so the
-// longest one is first. The list is at most MAX_LOAFS_TO_CONSIDER long.
-const longestLoAFsList: PerformanceLongAnimationFrameTiming[] = [];
+interface pendingEntriesGroup {
+  startTime: DOMHighResTimeStamp;
+  processingStart: DOMHighResTimeStamp;
+  processingEnd: DOMHighResTimeStamp;
+  entries: PerformanceEventTiming[];
+}
 
 // A PerformanceObserver, observing new `long-animation-frame` entries.
 // If this variable is defined it means the browser supports LoAF.
 let loafObserver: PerformanceObserver | undefined;
 
-const handleEntries = (entries: PerformanceLongAnimationFrameTiming[]) => {
+// A list of LoAF entries that have been dispatched and could potentially
+// intersect with the INP candidate interaction. Note that periodically this
+// list is cleaned up and entries that are known to not match INP are removed.
+let pendingLoAFs: PerformanceLongAnimationFrameTiming[] = [];
+
+// A PerformanceObserver, observing new `event` entries.
+let eventObserver: PerformanceObserver | undefined;
+
+// A mapping between a particular frame's render time and all of the
+// event timing entries that occurred within that frame. Note that periodically
+// this map is cleaned up and entries that are known to not match INP are
+// removed.
+const pendingEntriesGroupMap: Map<number, pendingEntriesGroup> = new Map();
+
+// A list of recent render times. This corresponds to the keys in
+// `pendingEntriesGroupMap` but as an array so it can be iterated on in
+// reverse. Note that this list is periodically clean up and old render times
+// are removed.
+let previousRenderTimes: number[] = [];
+
+// A WeakMap so you can look up the `renderTime` of a given entry and the
+// value returned will be the same value used by `pendingEntriesGroupMap`.
+const entryToRenderTimeMap: WeakMap<
+  PerformanceEventTiming,
+  DOMHighResTimeStamp
+> = new WeakMap();
+
+// A reference to the idle task used to clean up entries from the above
+// variables. If the value is -1 it means no task is queue, and if it's
+// greater than -1 the value corresponds to the idle callback handle.
+let idleCallback: number = -1;
+
+/**
+ * Adds new LoAF entries to the `pendingLoAFs` list.
+ */
+const handleLoAFEntries = (entries: PerformanceLongAnimationFrameTiming[]) => {
+  entries.forEach((entry) => pendingLoAFs.push(entry));
+};
+
+/**
+ * Groups entries that were presented within the same animation frame by
+ * a common `renderTime`. This function works by referencing
+ * `pendingEntriesGroupMap` and using an existing render time if one is found
+ * (otherwise creating a new one). This function also adds all interaction
+ * entries to an `entryToRenderTimeMap` WeakMap so that the "grouped" render
+ * times can be looked up later.
+ */
+const groupEntriesByRenderTime = (entries: PerformanceEventTiming[]) => {
   entries.forEach((entry) => {
-    if (entry.firstUIEventTimestamp > 0) {
-      const minLongestLoAF = longestLoAFsList[longestLoAFsList.length - 1];
+    let renderTime = entry.startTime + entry.duration;
+    let previousRenderTime;
 
-      if (!longestLoAFsList.length) {
-        longestLoAFsList.push(entry);
-        return;
-      }
+    // Iterate of all previous render times in reverse order to find a match.
+    // Go in reverse since the most likely match will be at the end.
+    for (let i = previousRenderTimes.length - 1; i >= 0; i--) {
+      previousRenderTime = previousRenderTimes[i];
 
-      // If the entry is possibly one of the 10 longest, insert it into the
-      // list of pending LoAFs at the correct spot (sorted), ensuring the list
-      // is not longer than `MAX_LOAFS_TO_CONSIDER`.
-      if (
-        longestLoAFsList.length < MAX_LOAFS_TO_CONSIDER ||
-        entry.duration > minLongestLoAF.duration
-      ) {
-        for (let i = 0; i < longestLoAFsList.length; i++) {
-          if (entry.duration > longestLoAFsList[i].duration) {
-            longestLoAFsList.splice(i, 0, entry);
-            break;
-          }
-        }
-        if (longestLoAFsList.length > MAX_LOAFS_TO_CONSIDER) {
-          longestLoAFsList.splice(MAX_LOAFS_TO_CONSIDER);
-        }
+      // If a previous render time is within 8ms of the current render time,
+      // assume they were part of the same frame and re-use the previous time.
+      // Also break out of the loop because all subsequent times will be newer.
+      if (Math.abs(renderTime - previousRenderTime) <= 8) {
+        const group = pendingEntriesGroupMap.get(previousRenderTime)!;
+        group.startTime = Math.min(entry.startTime, group.startTime);
+        group.processingStart = Math.min(
+          entry.processingStart,
+          group.processingStart,
+        );
+        group.processingEnd = Math.max(
+          entry.processingEnd,
+          group.processingEnd,
+        );
+        group.entries.push(entry);
+
+        renderTime = previousRenderTime;
+        break;
       }
     }
+
+    // If there was no matching render time, assume this is a new frame.
+    if (renderTime !== previousRenderTime) {
+      previousRenderTimes.push(renderTime);
+      pendingEntriesGroupMap.set(renderTime, {
+        startTime: entry.startTime,
+        processingStart: entry.processingStart,
+        processingEnd: entry.processingEnd,
+        entries: [entry],
+      });
+    }
+
+    // Store the grouped render time for this entry for reference later.
+    if (entry.interactionId || entry.entryType === 'first-input') {
+      entryToRenderTimeMap.set(entry, renderTime);
+    }
   });
+
+  // Queue cleanup of entries that are not part of any INP candidates.
+  if (idleCallback < 0) {
+    idleCallback = requestIdleCallback(cleanupEntries);
+  }
+};
+
+const cleanupEntries = () => {
+  // The list of previous render times is used to handle cases where
+  // events are dispatched out of order. When this happens they're generally
+  // only off by a frame or two, so keeping the most recent 10 should be
+  // more than sufficient.
+  previousRenderTimes = previousRenderTimes.slice(-10);
+
+  // Keep all render times that are part of a pending INP candidate or
+  // that occurred within 2 seconds of the most recent render time.
+  const renderTimesToKeep = new Set(
+    (previousRenderTimes as (number | undefined)[]).concat(
+      longestInteractionList.map((i) => entryToRenderTimeMap.get(i.entries[0])),
+    ),
+  );
+
+  pendingEntriesGroupMap.forEach((_, key) => {
+    renderTimesToKeep.has(key) || pendingEntriesGroupMap.delete(key);
+  });
+
+  // Remove all pending LoAF entries that don't intersect with entries in
+  // the newly cleaned up `pendingEntriesGroupMap`.
+  const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
+  pendingEntriesGroupMap.forEach((group) => {
+    getIntersectingLoAFs(group.startTime, group.processingEnd).forEach(
+      (loaf) => {
+        loafsToKeep.add(loaf);
+      },
+    );
+  });
+  pendingLoAFs = Array.from(loafsToKeep);
+
+  // Reset the idle callback so it can be queued again.
+  idleCallback = -1;
+};
+
+const getIntersectingLoAFs = (
+  start: DOMHighResTimeStamp,
+  end: DOMHighResTimeStamp,
+) => {
+  const intersectingLoAFs = [];
+
+  for (let i = 0, loaf; (loaf = pendingLoAFs[i]); i++) {
+    // If the LoAF ends before the given start time, ignore it.
+    if (loaf.startTime + loaf.duration < start) continue;
+
+    // If the LoAF starts after the given end time, ignore it and all
+    // subsequent pending LoAFs (because they're in time order).
+    if (loaf.startTime > end) break;
+
+    // Still here? If so this LoAF intersects with the interaction.
+    intersectingLoAFs.push(loaf);
+  }
+  return intersectingLoAFs;
 };
 
 const attributeINP = (metric: INPMetric): void => {
-  const sortedEntries = metric.entries.sort((a, b) => {
-    return a.processingStart - b.processingStart;
-  });
+  const firstEntry = metric.entries[0];
+  const renderTime = entryToRenderTimeMap.get(firstEntry)!;
+  const group = pendingEntriesGroupMap.get(renderTime)!;
 
-  const firstEntry = sortedEntries[0];
-  const lastEntry = sortedEntries[sortedEntries.length - 1];
-  const renderTime = firstEntry.startTime + firstEntry.duration;
+  const processedEventEntries = group.entries;
+  const processingStart = firstEntry.processingStart;
+  const processingEnd = group.processingEnd;
 
-  let longAnimationFrameEntry;
-  for (const loaf of longestLoAFsList) {
-    const loafEnd = loaf.startTime + loaf.duration;
-    if (
-      firstEntry.startTime === loaf.firstUIEventTimestamp ||
-      (loafEnd <= renderTime && loafEnd >= firstEntry.processingStart)
-    ) {
-      longAnimationFrameEntry = loaf;
-      break;
-    }
-  }
+  const longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[] =
+    getIntersectingLoAFs(firstEntry.startTime, processingEnd);
 
-  // If the browser supports the Long Animation Frame API and a
-  // `long-animation-frame` entry was found matching this interaction,
-  // use that entry's `renderTime` since it could be more accurate (and
-  // it accounts for non-event listener work such as timers or other
-  // pending tasks that could get run before rendering starts). If not,
-  // use the `processingEnd` value of the last entry in the list, which
-  // should match the `renderTime` value in most cases.
-  const renderStart = longAnimationFrameEntry
-    ? longAnimationFrameEntry.renderStart
-    : lastEntry.processingEnd;
-
-  // The first entry may not have a target defined, so use the first
-  // one found in the entry list.
+  // The first interaction entry may not have a target defined, so use the
+  // first one found in the entry list.
+  // TODO: when the following bug is fixed just use `firstInteractionEntry`.
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
 
-  // Determine the type of interaction based on the first entry with
-  // a matching keydown/keyup or pointerdown/pointerup entry name.
-  const firstEntryWithType = metric.entries.find((entry) =>
-    entry.name.match(/^(key|pointer)(down|up)$/),
+  // Since entry durations are rounded to the nearest 8ms, taking the average
+  // of a group of entries that we know were rendered in the same animation
+  // frame should give a better estimate of the "true" render time.
+  const AveragePresentationTime =
+    processedEventEntries.reduce((acc, entry) => {
+      return acc + (entry.startTime + entry.duration);
+    }, 0) / processedEventEntries.length;
+
+  const nextPaintTimeCandidates = [
+    AveragePresentationTime,
+    processingEnd,
+  ].concat(
+    longAnimationFrameEntries.map((loaf) => loaf.startTime + loaf.duration),
   );
+
+  // To get the most accurate next paint time, use signals from the
+  // Event Timing API and LoAF to make the best possible guess.
+  const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
 
   (metric as INPMetricWithAttribution).attribution = {
     interactionTarget: getSelector(
       firstEntryWithTarget && firstEntryWithTarget.target,
     ),
-    interactionType:
-      firstEntryWithType && firstEntryWithType.name.startsWith('key')
-        ? 'keyboard'
-        : 'pointer',
-    interactionTime: sortedEntries[0].startTime,
-    longAnimationFrameEntry: longAnimationFrameEntry,
-    inputDelay: firstEntry.processingStart - firstEntry.startTime,
-    processingTime: renderStart - firstEntry.processingStart,
-    presentationDelay: Math.max(renderTime - renderStart, 0),
-    loadState: getLoadState(sortedEntries[0].startTime),
+    interactionType: firstEntry.name,
+    interactionTime: firstEntry.startTime,
+    nextPaintTime: nextPaintTime,
+    processedEventEntries: processedEventEntries,
+    longAnimationFrameEntries: longAnimationFrameEntries,
+    inputDelay: processingStart - firstEntry.startTime,
+    processingTime: processingEnd - processingStart,
+    presentationDelay: Math.max(nextPaintTime - processingEnd, 0),
+    loadState: getLoadState(firstEntry.startTime),
   };
 };
 
@@ -163,13 +280,25 @@ export const onINP = (
   opts?: ReportOpts,
 ) => {
   if (!loafObserver) {
-    loafObserver = observe('long-animation-frame', handleEntries);
+    loafObserver = observe('long-animation-frame', handleLoAFEntries);
   }
-
+  if (!eventObserver) {
+    eventObserver = observe('event', groupEntriesByRenderTime, {
+      durationThreshold: opts!.durationThreshold ?? 40,
+    });
+  }
   unattributedOnINP(
     ((metric: INPMetricWithAttribution) => {
-      attributeINP(metric);
-      onReport(metric);
+      // Queue attribution and reporting in the next idle task.
+      // This is needed to increase the chances that all event entries that
+      // occurred between the user interaction and the next paint
+      // have been dispatched. Note: there is currently an experiment
+      // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
+      // 123+ that if rolled out fully would make this no longer necessary.
+      whenIdle(() => {
+        attributeINP(metric);
+        onReport(metric);
+      });
     }) as INPReportCallback,
     opts,
   );

@@ -458,9 +458,53 @@ describe('onINP()', async function () {
       assert.match(inp1.navigationType, /navigate|reload/);
 
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
-      assert.equal(inp1.attribution.interactionType, 'pointer');
+      assert.equal(inp1.attribution.interactionType, 'pointerup');
       assert.equal(inp1.attribution.interactionTime, inp1.entries[0].startTime);
       assert.equal(inp1.attribution.loadState, 'complete');
+      assert(allEntriesPresentTogether(inp1.attribution.processedEventEntries));
+
+      // Assert that the reported `nextPaintTime` estimate is not more than 8ms
+      // different from `startTime+duration` in the Event Timing API.
+      assert(
+        inp1.attribution.nextPaintTime -
+          (inp1.entries[0].startTime + inp1.entries[0].duration) <=
+          8,
+      );
+      // Assert that `nextPaintTime` is after processing ends.
+      assert(
+        inp1.attribution.nextPaintTime >=
+          inp1.attribution.interactionTime +
+            (inp1.attribution.inputDelay + inp1.attribution.processingTime),
+      );
+      // Assert that the INP phase durations adds up to the total duration.
+      assert.equal(
+        inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
+        inp1.attribution.inputDelay +
+          inp1.attribution.processingTime +
+          inp1.attribution.presentationDelay,
+      );
+
+      // Assert that the INP phases timestamps match the values in
+      // the `processedEventEntries` array.
+      const sortedEntries1 = inp1.attribution.processedEventEntries.sort(
+        (a, b) => {
+          return a.processingStart - b.processingStart;
+        },
+      );
+      assert.equal(
+        inp1.attribution.interactionTime + inp1.attribution.inputDelay,
+        sortedEntries1[0].processingStart,
+      );
+      assert.equal(
+        inp1.attribution.interactionTime +
+          inp1.attribution.inputDelay +
+          inp1.attribution.processingTime,
+        sortedEntries1.at(-1).processingEnd,
+      );
+      assert.equal(
+        inp1.attribution.nextPaintTime - inp1.attribution.presentationDelay,
+        sortedEntries1.at(-1).processingEnd,
+      );
 
       await clearBeacons();
 
@@ -469,6 +513,9 @@ describe('onINP()', async function () {
 
       const reset = await $('#reset');
       await simulateUserLikeClick(reset);
+
+      // Wait a bit to ensure the click event has time to dispatch.
+      await nextFrame();
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
@@ -480,14 +527,64 @@ describe('onINP()', async function () {
       assert.strictEqual(inp2.name, 'INP');
       assert.strictEqual(inp2.value, inp1.value + inp2.delta);
       assert.strictEqual(inp2.rating, 'needs-improvement');
-      assert(containsEntry(inp2.entries, 'mouseup', '#reset'));
       assert(allEntriesPresentTogether(inp2.entries));
       assert.match(inp2.navigationType, /navigate|reload/);
 
       assert.equal(inp2.attribution.interactionTarget, '#reset');
-      assert.equal(inp2.attribution.interactionType, 'pointer');
+      assert.equal(inp2.attribution.interactionType, 'pointerup');
       assert.equal(inp2.attribution.interactionTime, inp2.entries[0].startTime);
       assert.equal(inp2.attribution.loadState, 'complete');
+      assert(allEntriesPresentTogether(inp2.attribution.processedEventEntries));
+      assert(
+        containsEntry(
+          inp2.attribution.processedEventEntries,
+          'mouseup',
+          '#reset',
+        ),
+      );
+
+      // Assert that the reported `nextPaintTime` estimate is not more than 8ms
+      // different from `startTime+duration` in the Event Timing API.
+      assert(
+        inp2.attribution.nextPaintTime -
+          (inp2.entries[0].startTime + inp2.entries[0].duration) <=
+          8,
+      );
+      // Assert that `nextPaintTime` is after processing ends.
+      assert(
+        inp2.attribution.nextPaintTime >=
+          inp2.attribution.interactionTime +
+            (inp2.attribution.inputDelay + inp2.attribution.processingTime),
+      );
+      // Assert that the INP phase durations adds up to the total duration.
+      assert.equal(
+        inp2.attribution.nextPaintTime - inp2.attribution.interactionTime,
+        inp2.attribution.inputDelay +
+          inp2.attribution.processingTime +
+          inp2.attribution.presentationDelay,
+      );
+
+      // Assert that the INP phases timestamps match the values in
+      // the `processedEventEntries` array.
+      const sortedEntries2 = inp2.attribution.processedEventEntries.sort(
+        (a, b) => {
+          return a.processingStart - b.processingStart;
+        },
+      );
+      assert.equal(
+        inp2.attribution.interactionTime + inp2.attribution.inputDelay,
+        sortedEntries2[0].processingStart,
+      );
+      assert.equal(
+        inp2.attribution.interactionTime +
+          inp2.attribution.inputDelay +
+          inp2.attribution.processingTime,
+        sortedEntries2.at(-1).processingEnd,
+      );
+      assert.equal(
+        inp2.attribution.nextPaintTime - inp2.attribution.presentationDelay,
+        sortedEntries2.at(-1).processingEnd,
+      );
     });
 
     it('reports the domReadyState when input occurred', async function () {
@@ -526,10 +623,10 @@ describe('onINP()', async function () {
 
     // TODO: remove this test once the following bug is fixed:
     // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-    it('reports the event target from any entry where target is defined', async function () {
+    it('reports the interaction target from any entry where target is defined', async function () {
       if (!browserSupportsINP) this.skip();
 
-      await navigateTo('/test/inp?attribution=1&mousedown=100&click=50', {
+      await navigateTo('/test/inp?attribution=1&mouseup=100&click=50', {
         readyState: 'interactive',
       });
 
@@ -541,8 +638,8 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
 
-      assert.equal(inp1.attribution.interactionType, 'pointer');
-      // The event target should match the h1, even if the `pointerdown`
+      assert.equal(inp1.attribution.interactionType, 'pointerup');
+      // The event target should match the h1, even if the `pointerup`
       // entry doesn't contain a target.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
