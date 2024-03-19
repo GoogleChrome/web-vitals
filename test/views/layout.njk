@@ -52,7 +52,7 @@
        */
       self.__stubForwardBack = (visibilityStateAfterRestore) => {
         return new Promise((resolve) => {
-          window.dispatchEvent(new PageTransitionEvent('pagehide', {
+          self.dispatchEvent(new PageTransitionEvent('pagehide', {
             persisted: true,
           }));
           self.__stubVisibilityChange('hidden');
@@ -61,7 +61,7 @@
               if (visibilityStateAfterRestore !== 'hidden') {
                 self.__stubVisibilityChange('visible');
               }
-              window.dispatchEvent(new PageTransitionEvent('pageshow', {
+              self.dispatchEvent(new PageTransitionEvent('pageshow', {
                 persisted: true,
               }));
               resolve();

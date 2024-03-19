@@ -16,18 +16,23 @@
 
 import {onHidden} from './onHidden.js';
 
+const rIC = self.requestIdleCallback || self.setTimeout;
+const cIC = self.cancelIdleCallback || self.clearTimeout;
+
 /**
  * Runs the passed callback during the next idle period, or immediately
  * if the browser's visibility state is (or becomes) hidden.
  */
-export const whenIdle = (cb: () => void) => {
+export const whenIdle = (cb: () => void): number => {
+  let handle = -1;
   if (document.visibilityState === 'hidden') {
     cb();
   } else {
-    const handle = requestIdleCallback(cb);
+    handle = rIC(cb);
     onHidden(() => {
-      cancelIdleCallback(handle);
+      cIC(handle);
       cb();
     });
   }
+  return handle;
 };

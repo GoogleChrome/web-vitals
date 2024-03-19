@@ -442,14 +442,14 @@ The following table lists all the builds distributed with the `web-vitals` packa
     <td><code>web-vitals.umd.cjs</code></td>
     <td><code>pkg.main</code></td>
     <td>
-      A UMD version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
+      A UMD version of the <code>web-vitals.js</code> bundle (exposed on the <code>self.webVitals.*</code> namespace).
     </td>
   </tr>
   <tr>
     <td><code>web-vitals.iife.js</code></td>
     <td>--</td>
     <td>
-      An IIFE version of the <code>web-vitals.js</code> bundle (exposed on the <code>window.webVitals.*</code> namespace).
+      An IIFE version of the <code>web-vitals.js</code> bundle (exposed on the <code>self.webVitals.*</code> namespace).
     </td>
   </tr>
   <tr>
@@ -463,7 +463,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     <td><code>web-vitals.attribution.umd.cjs</code></td>
     <td>--</td>
     <td>
-      A UMD version of the <code>web-vitals.attribution.js</code> build (exposed on the <code>window.webVitals.*</code> namespace).
+      A UMD version of the <code>web-vitals.attribution.js</code> build (exposed on the <code>self.webVitals.*</code> namespace).
     </td>
   </tr>
   </tr>
@@ -471,7 +471,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
     <td><code>web-vitals.attribution.iife.js</code></td>
     <td>--</td>
     <td>
-      An IIFE version of the <code>web-vitals.attribution.js</code> build (exposed on the <code>window.webVitals.*</code> namespace).
+      An IIFE version of the <code>web-vitals.attribution.js</code> build (exposed on the <code>self.webVitals.*</code> namespace).
     </td>
   </tr>
 </table>

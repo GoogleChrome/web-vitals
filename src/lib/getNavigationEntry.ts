@@ -18,7 +18,7 @@ export const getNavigationEntry = ():
   | PerformanceNavigationTiming
   | undefined => {
   return (
-    window.performance &&
+    self.performance &&
     performance.getEntriesByType &&
     performance.getEntriesByType('navigation')[0]
   );

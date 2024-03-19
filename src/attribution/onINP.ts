@@ -72,7 +72,7 @@ const entryToRenderTimeMap: WeakMap<
 // A reference to the idle task used to clean up entries from the above
 // variables. If the value is -1 it means no task is queue, and if it's
 // greater than -1 the value corresponds to the idle callback handle.
-let idleCallback: number = -1;
+let idleHandle: number = -1;
 
 /**
  * Adds new LoAF entries to the `pendingLoAFs` list.
@@ -138,8 +138,8 @@ const groupEntriesByRenderTime = (entries: PerformanceEventTiming[]) => {
   });
 
   // Queue cleanup of entries that are not part of any INP candidates.
-  if (idleCallback < 0) {
-    idleCallback = requestIdleCallback(cleanupEntries);
+  if (idleHandle < 0) {
+    idleHandle = whenIdle(cleanupEntries);
   }
 };
 
@@ -174,8 +174,8 @@ const cleanupEntries = () => {
   });
   pendingLoAFs = Array.from(loafsToKeep);
 
-  // Reset the idle callback so it can be queued again.
-  idleCallback = -1;
+  // Reset the idle callback handle so it can be queued again.
+  idleHandle = -1;
 };
 
 const getIntersectingLoAFs = (

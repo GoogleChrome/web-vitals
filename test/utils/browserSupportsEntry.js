@@ -24,7 +24,7 @@ export function browserSupportsEntry(type) {
   return browser.execute((type) => {
     // More extensive feature detect needed for Firefox due to:
     // https://github.com/GoogleChrome/web-vitals/issues/142
-    if (type === 'first-input' && !('PerformanceEventTiming' in window)) {
+    if (type === 'first-input' && !('PerformanceEventTiming' in self)) {
       return false;
     }
 
@@ -38,9 +38,9 @@ export function browserSupportsEntry(type) {
     }
 
     return (
-      window.PerformanceObserver &&
-      window.PerformanceObserver.supportedEntryTypes &&
-      window.PerformanceObserver.supportedEntryTypes.includes(type)
+      self.PerformanceObserver &&
+      self.PerformanceObserver.supportedEntryTypes &&
+      self.PerformanceObserver.supportedEntryTypes.includes(type)
     );
   }, type);
 }
