@@ -19,7 +19,7 @@
  * animation frame.
  * @return {Promise<void>}
  */
-export function nextFrame(state) {
+export function nextFrame() {
   return browser.executeAsync((done) => {
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {

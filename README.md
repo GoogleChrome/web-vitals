@@ -936,12 +936,12 @@ interface INPAttribution {
 
   /**
    * The time from when the first event listener started running in response to
-   * the user interaction until when all event processing has finished.
+   * the user interaction until when all event listener processing has finished.
    */
   processingTime: number;
 
   /**
-   * The time from when the browser finished processing all events for the
+   * The time from when the browser finished processing all event listeners for the
    * user interaction until the next frame is presented on the screen and
    * visible to the user. This time includes work on the main thread (such as
    * `requestAnimationFrame()` callbacks, `ResizeObserver` and
