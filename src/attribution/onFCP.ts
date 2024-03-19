@@ -15,6 +15,7 @@
  */
 
 import {getBFCacheRestoreTime} from '../lib/bfcache.js';
+import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry, hardNavId} from '../lib/getNavigationEntry.js';
 import {getSoftNavigationEntry} from '../lib/softNavs.js';
@@ -37,8 +38,11 @@ const attributeFCP = (metric: FCPMetric): void => {
     if (!metric.navigationId || metric.navigationId === hardNavId) {
       navigationEntry = getNavigationEntry();
       if (navigationEntry) {
+        const responseStart = navigationEntry.responseStart;
+        if (isInvalidTimestamp(responseStart)) return;
+
         const activationStart = navigationEntry.activationStart || 0;
-        ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+        ttfb = Math.max(0, responseStart - activationStart);
       }
     } else {
       navigationEntry = getSoftNavigationEntry(metric.navigationId);

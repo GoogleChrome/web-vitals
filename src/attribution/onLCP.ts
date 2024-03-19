@@ -17,6 +17,7 @@
 import {getNavigationEntry, hardNavId} from '../lib/getNavigationEntry.js';
 import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
+import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import {
   LCPAttribution,
@@ -44,11 +45,14 @@ const attributeLCP = (metric: LCPMetric) => {
         navigationEntry && navigationEntry.responseStart
           ? navigationEntry.responseStart
           : 0;
+
+      if (isInvalidTimestamp(responseStart)) return;
     } else {
       navigationEntry = getSoftNavigationEntry(metric.navigationId);
       // Set activationStart to the SoftNav start time
       softNavStart = navigationEntry ? navigationEntry.startTime : 0;
       activationStart = softNavStart;
+      if (isInvalidTimestamp(softNavStart)) return;
     }
 
     if (navigationEntry) {

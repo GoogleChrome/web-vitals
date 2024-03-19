@@ -17,12 +17,11 @@
 import {domReadyState} from './domReadyState.js';
 
 /**
- * Returns a promise that resolves once the browser window has loaded, all
- * load callbacks have finished executing, and any pending `__readyPromises`
- * have settled.
+ * Returns a promise that resolves once the browser has navigated to the
+ * passed URL path, optionally waiting until a specific DOM ready state.
  * @return {Promise<void>}
  */
-export async function navigateWithStrategy(urlPath, readyState) {
+export async function navigateTo(urlPath, opts) {
   await browser.url(urlPath);
 
   // In Firefox, if the global PageLoadStrategy is set to "none", then
@@ -36,5 +35,7 @@ export async function navigateWithStrategy(urlPath, readyState) {
     });
   }
 
-  await domReadyState(readyState);
+  if (opts?.readyState) {
+    await domReadyState(opts.readyState);
+  }
 }

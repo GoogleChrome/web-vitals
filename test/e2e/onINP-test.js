@@ -17,6 +17,7 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {navigateTo} from '../utils/navigateTo.js';
 import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
@@ -33,14 +34,14 @@ describe('onINP()', async function () {
   });
 
   beforeEach(async function () {
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
     await clearBeacons();
   });
 
   it('reports the correct value on visibility hidden after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=100');
+    await navigateTo('/test/inp?click=100');
 
     const h1 = await $('h1');
     await h1.click();
@@ -64,7 +65,7 @@ describe('onINP()', async function () {
   it('reports the correct value on visibility hidden after interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=100&reportAllChanges=1');
+    await navigateTo('/test/inp?click=100&reportAllChanges=1');
 
     const h1 = await $('h1');
     await h1.click();
@@ -86,7 +87,7 @@ describe('onINP()', async function () {
   it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=100&loadAfterInput=1');
+    await navigateTo('/test/inp?click=100&loadAfterInput=1');
 
     const h1 = await $('h1');
     await h1.click();
@@ -110,9 +111,7 @@ describe('onINP()', async function () {
   it('reports the correct value when loaded late (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url(
-      '/test/inp?click=100&reportAllChanges=1&loadAfterInput=1',
-    );
+    await navigateTo('/test/inp?click=100&reportAllChanges=1&loadAfterInput=1');
 
     const h1 = await $('h1');
     await h1.click();
@@ -134,12 +133,12 @@ describe('onINP()', async function () {
   it('reports the correct value on page unload after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=100');
+    await navigateTo('/test/inp?click=100');
 
     const h1 = await $('h1');
     await h1.click();
 
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
 
     await beaconCountIs(1);
 
@@ -158,12 +157,12 @@ describe('onINP()', async function () {
   it('reports the correct value on page unload after interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=100&reportAllChanges=1');
+    await navigateTo('/test/inp?click=100&reportAllChanges=1');
 
     const h1 = await $('h1');
     await h1.click();
 
-    await browser.url('about:blank');
+    await navigateTo('about:blank');
 
     await beaconCountIs(1);
 
@@ -182,7 +181,7 @@ describe('onINP()', async function () {
   it('reports approx p98 interaction when 50+ interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=60&pointerdown=600');
+    await navigateTo('/test/inp?click=60&pointerdown=600');
 
     const h1 = await $('h1');
     await h1.click();
@@ -239,7 +238,7 @@ describe('onINP()', async function () {
   it('reports approx p98 interaction when 50+ interactions (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=60&pointerdown=600&reportAllChanges=1');
+    await navigateTo('/test/inp?click=60&pointerdown=600&reportAllChanges=1');
 
     const h1 = await $('h1');
     await h1.click();
@@ -275,7 +274,7 @@ describe('onINP()', async function () {
   it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp');
+    await navigateTo('/test/inp');
 
     await setBlockingTime('click', 100);
 
@@ -353,7 +352,7 @@ describe('onINP()', async function () {
   it('does not report if there were no interactions', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp');
+    await navigateTo('/test/inp');
 
     await stubVisibilityChange('hidden');
 
@@ -367,7 +366,7 @@ describe('onINP()', async function () {
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=100&prerender=1');
+    await navigateTo('/test/inp?click=100&prerender=1');
 
     const h1 = await $('h1');
     await h1.click();
@@ -391,7 +390,7 @@ describe('onINP()', async function () {
   it('reports restore as nav type for wasDiscarded', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await browser.url('/test/inp?click=100&wasDiscarded=1');
+    await navigateTo('/test/inp?click=100&wasDiscarded=1');
 
     const h1 = await $('h1');
     await h1.click();
@@ -416,7 +415,7 @@ describe('onINP()', async function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsINP) this.skip();
 
-      await browser.url('/test/inp?click=100&attribution=1');
+      await navigateTo('/test/inp?click=100&attribution=1');
 
       const h1 = await $('h1');
       await h1.click();
@@ -498,7 +497,7 @@ describe('onINP()', async function () {
     it('reports the domReadyState when input occurred', async function () {
       if (!browserSupportsINP) this.skip();
 
-      await browser.url(
+      await navigateTo(
         '/test/inp?' +
           'attribution=1&reportAllChanges=1&click=100&delayDCL=1000',
       );
@@ -515,7 +514,7 @@ describe('onINP()', async function () {
 
       await clearBeacons();
 
-      await browser.url(
+      await navigateTo(
         '/test/inp?' +
           'attribution=1&reportAllChanges=1&click=100&delayResponse=1000',
       );
@@ -535,7 +534,7 @@ describe('onINP()', async function () {
     it('reports the event target from any entry where target is defined', async function () {
       if (!browserSupportsINP) this.skip();
 
-      await browser.url('/test/inp?attribution=1&mousedown=100&click=50');
+      await navigateTo('/test/inp?attribution=1&mousedown=100&click=50');
 
       const h1 = await $('h1');
 

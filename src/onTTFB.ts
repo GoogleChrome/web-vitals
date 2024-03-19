@@ -23,6 +23,7 @@ import {
 } from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {initMetric} from './lib/initMetric.js';
+import {isInvalidTimestamp} from './lib/isInvalidTimestamp.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {softNavs} from './lib/softNavs.js';
@@ -80,13 +81,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
     if (hardNavEntry) {
       const responseStart = hardNavEntry.responseStart;
 
-      // In some cases no value is reported by the browser (for
-      // privacy/security reasons), and in other cases (bugs) the value is
-      // negative or is larger than the current page time. Ignore these cases:
-      // https://github.com/GoogleChrome/web-vitals/issues/137
-      // https://github.com/GoogleChrome/web-vitals/issues/162
-      // https://github.com/GoogleChrome/web-vitals/issues/275
-      if (responseStart <= 0 || responseStart > performance.now()) return;
+      if (isInvalidTimestamp(responseStart)) return;
 
       // The activationStart reference is used because TTFB should be
       // relative to page activation rather than navigation start if the
