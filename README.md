@@ -941,8 +941,8 @@ interface INPAttribution {
   processingTime: number;
 
   /**
-   * The time from when the browser finished processing all event listeners for the
-   * user interaction until the next frame is presented on the screen and
+   * The time from when the browser finished processing all event listeners for
+   * the user interaction until the next frame is presented on the screen and
    * visible to the user. This time includes work on the main thread (such as
    * `requestAnimationFrame()` callbacks, `ResizeObserver` and
    * `IntersectionObserver` callbacks, and style/layout calculation) as well

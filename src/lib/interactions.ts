@@ -30,6 +30,10 @@ export const longestInteractionList: Interaction[] = [];
 // This is used for faster lookup.
 export const longestInteractionMap: Map<number, Interaction> = new Map();
 
+// The default `durationThreshold` used across this library for observing
+// `event` entries via PerformanceObserver.
+export const DEFAULT_DURATION_THRESHOLD = 40;
+
 // Used to store the interaction count after a bfcache restore, since p98
 // interaction latencies should only consider the current navigation.
 let prevInteractionCount = 0;

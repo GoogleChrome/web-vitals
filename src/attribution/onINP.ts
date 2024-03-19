@@ -16,7 +16,10 @@
 
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
-import {longestInteractionList} from '../lib/interactions.js';
+import {
+  DEFAULT_DURATION_THRESHOLD,
+  longestInteractionList,
+} from '../lib/interactions.js';
 import {observe} from '../lib/observe.js';
 import {whenIdle} from '../lib/whenIdle.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
@@ -148,7 +151,7 @@ const cleanupEntries = () => {
   previousRenderTimes = previousRenderTimes.slice(-10);
 
   // Keep all render times that are part of a pending INP candidate or
-  // that occurred within 2 seconds of the most recent render time.
+  // that occurred within the 10 most recently-dispatched animation frames.
   const renderTimesToKeep = new Set(
     (previousRenderTimes as (number | undefined)[]).concat(
       longestInteractionList.map((i) => entryToRenderTimeMap.get(i.entries[0])),
@@ -284,7 +287,7 @@ export const onINP = (
   }
   if (!eventObserver) {
     eventObserver = observe('event', groupEntriesByRenderTime, {
-      durationThreshold: opts!.durationThreshold ?? 40,
+      durationThreshold: opts!.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
     });
   }
   unattributedOnINP(
