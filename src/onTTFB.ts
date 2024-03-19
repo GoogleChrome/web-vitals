@@ -16,7 +16,7 @@
 
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
-import {invalidTiming} from './lib/invalidTiming.js';
+import {isInvalidTimestamp} from './lib/isInvalidTimestamp.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {
@@ -78,7 +78,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
     if (navEntry) {
       const responseStart = navEntry.responseStart;
 
-      if (invalidTiming(responseStart)) return;
+      if (isInvalidTimestamp(responseStart)) return;
 
       // The activationStart reference is used because TTFB should be
       // relative to page activation rather than navigation start if the

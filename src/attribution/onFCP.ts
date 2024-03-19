@@ -17,7 +17,7 @@
 import {getBFCacheRestoreTime} from '../lib/bfcache.js';
 import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
-import {invalidTiming} from '../lib/invalidTiming.js';
+import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
 import {
   FCPMetric,
@@ -34,7 +34,7 @@ const attributeFCP = (metric: FCPMetric): void => {
 
     if (navigationEntry) {
       const responseStart = navigationEntry.responseStart;
-      if (invalidTiming(responseStart)) return;
+      if (isInvalidTimestamp(responseStart)) return;
 
       const activationStart = navigationEntry.activationStart || 0;
       const ttfb = Math.max(0, responseStart - activationStart);

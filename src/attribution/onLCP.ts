@@ -16,7 +16,7 @@
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
-import {invalidTiming} from '../lib/invalidTiming.js';
+import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import {
   LCPAttribution,
@@ -33,7 +33,7 @@ const attributeLCP = (metric: LCPMetric) => {
 
     if (navigationEntry) {
       const responseStart = navigationEntry.responseStart;
-      if (invalidTiming(responseStart)) return;
+      if (isInvalidTimestamp(responseStart)) return;
 
       const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
