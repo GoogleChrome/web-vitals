@@ -474,13 +474,13 @@ describe('onINP()', async function () {
       assert(
         inp1.attribution.nextPaintTime >=
           inp1.attribution.interactionTime +
-            (inp1.attribution.inputDelay + inp1.attribution.processingTime),
+            (inp1.attribution.inputDelay + inp1.attribution.processingDuration),
       );
       // Assert that the INP phase durations adds up to the total duration.
       assert.equal(
         inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
         inp1.attribution.inputDelay +
-          inp1.attribution.processingTime +
+          inp1.attribution.processingDuration +
           inp1.attribution.presentationDelay,
       );
 
@@ -498,7 +498,7 @@ describe('onINP()', async function () {
       assert.equal(
         inp1.attribution.interactionTime +
           inp1.attribution.inputDelay +
-          inp1.attribution.processingTime,
+          inp1.attribution.processingDuration,
         sortedEntries1.at(-1).processingEnd,
       );
       assert.equal(
@@ -554,13 +554,13 @@ describe('onINP()', async function () {
       assert(
         inp2.attribution.nextPaintTime >=
           inp2.attribution.interactionTime +
-            (inp2.attribution.inputDelay + inp2.attribution.processingTime),
+            (inp2.attribution.inputDelay + inp2.attribution.processingDuration),
       );
       // Assert that the INP phase durations adds up to the total duration.
       assert.equal(
         inp2.attribution.nextPaintTime - inp2.attribution.interactionTime,
         inp2.attribution.inputDelay +
-          inp2.attribution.processingTime +
+          inp2.attribution.processingDuration +
           inp2.attribution.presentationDelay,
       );
 
@@ -578,7 +578,7 @@ describe('onINP()', async function () {
       assert.equal(
         inp2.attribution.interactionTime +
           inp2.attribution.inputDelay +
-          inp2.attribution.processingTime,
+          inp2.attribution.processingDuration,
         sortedEntries2.at(-1).processingEnd,
       );
       assert.equal(

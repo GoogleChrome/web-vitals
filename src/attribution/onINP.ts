@@ -203,9 +203,13 @@ const attributeINP = (metric: INPMetric): void => {
   const renderTime = entryToRenderTimeMap.get(firstEntry)!;
   const group = pendingEntriesGroupMap.get(renderTime)!;
 
-  const processedEventEntries = group.entries;
   const processingStart = firstEntry.processingStart;
   const processingEnd = group.processingEnd;
+
+  // Sort the entries in processing time order.
+  const processedEventEntries = group.entries.sort((a, b) => {
+    return a.processingStart - b.processingStart;
+  });
 
   const longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[] =
     getIntersectingLoAFs(firstEntry.startTime, processingEnd);
@@ -245,7 +249,7 @@ const attributeINP = (metric: INPMetric): void => {
     processedEventEntries: processedEventEntries,
     longAnimationFrameEntries: longAnimationFrameEntries,
     inputDelay: processingStart - firstEntry.startTime,
-    processingTime: processingEnd - processingStart,
+    processingDuration: processingEnd - processingStart,
     presentationDelay: Math.max(nextPaintTime - processingEnd, 0),
     loadState: getLoadState(firstEntry.startTime),
   };

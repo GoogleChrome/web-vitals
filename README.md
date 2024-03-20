@@ -938,7 +938,7 @@ interface INPAttribution {
    * The time from when the first event listener started running in response to
    * the user interaction until when all event listener processing has finished.
    */
-  processingTime: number;
+  processingDuration: number;
 
   /**
    * The time from when the browser finished processing all event listeners for
