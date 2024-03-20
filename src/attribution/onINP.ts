@@ -287,7 +287,8 @@ export const onINP = (
   }
   if (!eventObserver) {
     eventObserver = observe('event', groupEntriesByRenderTime, {
-      durationThreshold: opts!.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
+      durationThreshold:
+        (opts && opts.durationThreshold) ?? DEFAULT_DURATION_THRESHOLD,
     });
   }
   unattributedOnINP(
