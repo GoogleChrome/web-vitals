@@ -221,6 +221,27 @@
 
         return await importPromise;
       };
+
+      self.__toSafeObject = (oldObj) =>  {
+        if (typeof oldObj !== 'object') {
+          return oldObj;
+        } else if (oldObj instanceof Node) {
+          return oldObj?.id ? `#${oldObj.id}` : oldObj?.nodeName?.toLowerCase();
+        } else if (oldObj instanceof Window) {
+          return '#window';
+        }
+        const newObj = {};
+        for (let key in oldObj) {
+          const value = oldObj[key];
+          if (typeof value === 'function') continue;
+
+          newObj[key] = Array.isArray(value)
+            ? value.map(__toSafeObject)
+            : __toSafeObject(value);
+        }
+        return newObj;
+      };
+
     }());
   </script>
   {% block head %}{% endblock %}

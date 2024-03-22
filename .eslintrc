@@ -21,7 +21,8 @@
       "files": ["test/e2e/*.js"],
       "globals": {
         "$": false,
-        "browser": false
+        "browser": false,
+        "__toSafeObject": false
       },
       "extends": ["eslint:recommended"],
       "rules": {

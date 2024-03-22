@@ -325,17 +325,12 @@ describe('onFCP()', async function () {
       await beaconCountIs(1);
 
       const navEntry = await browser.execute(() => {
-        return performance.getEntriesByType('navigation')[0].toJSON();
+        return __toSafeObject(performance.getEntriesByType('navigation')[0]);
       });
       const fcpEntry = await browser.execute(() => {
-        return performance
-          .getEntriesByName('first-contentful-paint')[0]
-          .toJSON();
-      });
-
-      // Since this value is stubbed in the browser, get it separately.
-      const activationStart = await browser.execute(() => {
-        return performance.getEntriesByType('navigation')[0].activationStart;
+        return __toSafeObject(
+          performance.getEntriesByName('first-contentful-paint')[0],
+        );
       });
 
       const [fcp] = await getBeacons();
@@ -349,11 +344,12 @@ describe('onFCP()', async function () {
 
       assert.equal(
         fcp.attribution.timeToFirstByte,
-        Math.max(0, navEntry.responseStart - activationStart),
+        Math.max(0, navEntry.responseStart - navEntry.activationStart),
       );
       assert.equal(
         fcp.attribution.firstByteToFCP,
-        fcp.value - Math.max(0, navEntry.responseStart - activationStart),
+        fcp.value -
+          Math.max(0, navEntry.responseStart - navEntry.activationStart),
       );
 
       assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);

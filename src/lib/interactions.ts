@@ -22,6 +22,10 @@ interface Interaction {
   entries: PerformanceEventTiming[];
 }
 
+interface EntryPreProcessingHook {
+  (entry: PerformanceEventTiming): void;
+}
+
 // A list of longest interactions on the page (by latency) sorted so the
 // longest one is first. The list is at most MAX_INTERACTIONS_TO_CONSIDER long.
 export const longestInteractionList: Interaction[] = [];
@@ -70,12 +74,21 @@ export const estimateP98LongestInteraction = () => {
 const MAX_INTERACTIONS_TO_CONSIDER = 10;
 
 /**
+ * A list of callback functions to run before each entry is processed.
+ * Exposing this list allows the attribution build to hook into the
+ * entry processing pipeline.
+ */
+export const entryPreProcessingCallbacks: EntryPreProcessingHook[] = [];
+
+/**
  * Takes a performance entry and adds it to the list of worst interactions
  * if its duration is long enough to make it among the worst. If the
  * entry is part of an existing interaction, it is merged and the latency
  * and entries list is updated as needed.
  */
 export const processInteractionEntry = (entry: PerformanceEventTiming) => {
+  entryPreProcessingCallbacks.forEach((cb) => cb(entry));
+
   // Skip further processing for entries that cannot be INP candidates.
   if (!(entry.interactionId || entry.entryType === 'first-input')) return;
 

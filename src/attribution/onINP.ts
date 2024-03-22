@@ -17,8 +17,8 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {
-  DEFAULT_DURATION_THRESHOLD,
   longestInteractionList,
+  entryPreProcessingCallbacks,
 } from '../lib/interactions.js';
 import {observe} from '../lib/observe.js';
 import {whenIdle} from '../lib/whenIdle.js';
@@ -46,9 +46,6 @@ let loafObserver: PerformanceObserver | undefined;
 // intersect with the INP candidate interaction. Note that periodically this
 // list is cleaned up and entries that are known to not match INP are removed.
 let pendingLoAFs: PerformanceLongAnimationFrameTiming[] = [];
-
-// A PerformanceObserver, observing new `event` entries.
-let eventObserver: PerformanceObserver | undefined;
 
 // A mapping between a particular frame's render time and all of the
 // event timing entries that occurred within that frame. Note that periodically
@@ -89,53 +86,48 @@ const handleLoAFEntries = (entries: PerformanceLongAnimationFrameTiming[]) => {
  * entries to an `entryToRenderTimeMap` WeakMap so that the "grouped" render
  * times can be looked up later.
  */
-const groupEntriesByRenderTime = (entries: PerformanceEventTiming[]) => {
-  entries.forEach((entry) => {
-    let renderTime = entry.startTime + entry.duration;
-    let previousRenderTime;
+const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
+  let renderTime = entry.startTime + entry.duration;
+  let previousRenderTime;
 
-    // Iterate of all previous render times in reverse order to find a match.
-    // Go in reverse since the most likely match will be at the end.
-    for (let i = previousRenderTimes.length - 1; i >= 0; i--) {
-      previousRenderTime = previousRenderTimes[i];
+  // Iterate of all previous render times in reverse order to find a match.
+  // Go in reverse since the most likely match will be at the end.
+  for (let i = previousRenderTimes.length - 1; i >= 0; i--) {
+    previousRenderTime = previousRenderTimes[i];
 
-      // If a previous render time is within 8ms of the current render time,
-      // assume they were part of the same frame and re-use the previous time.
-      // Also break out of the loop because all subsequent times will be newer.
-      if (Math.abs(renderTime - previousRenderTime) <= 8) {
-        const group = pendingEntriesGroupMap.get(previousRenderTime)!;
-        group.startTime = Math.min(entry.startTime, group.startTime);
-        group.processingStart = Math.min(
-          entry.processingStart,
-          group.processingStart,
-        );
-        group.processingEnd = Math.max(
-          entry.processingEnd,
-          group.processingEnd,
-        );
-        group.entries.push(entry);
+    // If a previous render time is within 8ms of the current render time,
+    // assume they were part of the same frame and re-use the previous time.
+    // Also break out of the loop because all subsequent times will be newer.
+    if (Math.abs(renderTime - previousRenderTime) <= 8) {
+      const group = pendingEntriesGroupMap.get(previousRenderTime)!;
+      group.startTime = Math.min(entry.startTime, group.startTime);
+      group.processingStart = Math.min(
+        entry.processingStart,
+        group.processingStart,
+      );
+      group.processingEnd = Math.max(entry.processingEnd, group.processingEnd);
+      group.entries.push(entry);
 
-        renderTime = previousRenderTime;
-        break;
-      }
+      renderTime = previousRenderTime;
+      break;
     }
+  }
 
-    // If there was no matching render time, assume this is a new frame.
-    if (renderTime !== previousRenderTime) {
-      previousRenderTimes.push(renderTime);
-      pendingEntriesGroupMap.set(renderTime, {
-        startTime: entry.startTime,
-        processingStart: entry.processingStart,
-        processingEnd: entry.processingEnd,
-        entries: [entry],
-      });
-    }
+  // If there was no matching render time, assume this is a new frame.
+  if (renderTime !== previousRenderTime) {
+    previousRenderTimes.push(renderTime);
+    pendingEntriesGroupMap.set(renderTime, {
+      startTime: entry.startTime,
+      processingStart: entry.processingStart,
+      processingEnd: entry.processingEnd,
+      entries: [entry],
+    });
+  }
 
-    // Store the grouped render time for this entry for reference later.
-    if (entry.interactionId || entry.entryType === 'first-input') {
-      entryToRenderTimeMap.set(entry, renderTime);
-    }
-  });
+  // Store the grouped render time for this entry for reference later.
+  if (entry.interactionId || entry.entryType === 'first-input') {
+    entryToRenderTimeMap.set(entry, renderTime);
+  }
 
   // Queue cleanup of entries that are not part of any INP candidates.
   if (idleHandle < 0) {
@@ -177,6 +169,8 @@ const cleanupEntries = () => {
   // Reset the idle callback handle so it can be queued again.
   idleHandle = -1;
 };
+
+entryPreProcessingCallbacks.push(groupEntriesByRenderTime);
 
 const getIntersectingLoAFs = (
   start: DOMHighResTimeStamp,
@@ -288,12 +282,6 @@ export const onINP = (
 ) => {
   if (!loafObserver) {
     loafObserver = observe('long-animation-frame', handleLoAFEntries);
-  }
-  if (!eventObserver) {
-    eventObserver = observe('event', groupEntriesByRenderTime, {
-      durationThreshold:
-        (opts && opts.durationThreshold) ?? DEFAULT_DURATION_THRESHOLD,
-    });
   }
   unattributedOnINP(
     ((metric: INPMetricWithAttribution) => {

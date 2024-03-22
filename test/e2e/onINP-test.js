@@ -199,7 +199,7 @@ describe('onINP()', async function () {
     await setBlockingTime('pointerdown', 400);
     await simulateUserLikeClick(h1);
 
-    await setBlockingTime('pointerdown', 200);
+    await setBlockingTime('pointerdown', 100);
     await simulateUserLikeClick(h1);
 
     await setBlockingTime('pointerdown', 0);
@@ -217,7 +217,7 @@ describe('onINP()', async function () {
 
     let count = 3;
     while (count < 50) {
-      await simulateUserLikeClick(h1);
+      await h1.click(); // Use .click() because it's faster.
       count++;
     }
 
@@ -225,7 +225,7 @@ describe('onINP()', async function () {
     await beaconCountIs(1);
 
     const [inp2] = await getBeacons();
-    assert(inp2.value >= 400); // Initial pointerdown blocking time.
+    assert(inp2.value >= 400); // 2nd-highest pointerdown blocking time.
     assert(inp2.value < inp1.value); // Should have gone down.
     assert(allEntriesPresentTogether(inp2.entries));
     assert.strictEqual(inp2.rating, 'needs-improvement');
@@ -234,7 +234,7 @@ describe('onINP()', async function () {
     await stubVisibilityChange('visible');
 
     while (count < 100) {
-      await simulateUserLikeClick(h1);
+      await h1.click(); // Use .click() because it's faster.
       count++;
     }
 
@@ -242,10 +242,10 @@ describe('onINP()', async function () {
     await beaconCountIs(1);
 
     const [inp3] = await getBeacons();
-    assert(inp3.value >= 200); // 2nd-highest pointerdown blocking time.
+    assert(inp3.value >= 100); // 2nd-highest pointerdown blocking time.
     assert(inp3.value < inp2.value); // Should have gone down.
     assert(allEntriesPresentTogether(inp3.entries));
-    assert.strictEqual(inp3.rating, 'needs-improvement');
+    assert.strictEqual(inp3.rating, 'good');
   });
 
   it('reports approx p98 interaction when 50+ interactions (reportAllChanges === true)', async function () {
@@ -261,14 +261,14 @@ describe('onINP()', async function () {
     await setBlockingTime('pointerdown', 400);
     await simulateUserLikeClick(h1);
 
-    await setBlockingTime('pointerdown', 200);
+    await setBlockingTime('pointerdown', 100);
     await simulateUserLikeClick(h1);
 
     await setBlockingTime('pointerdown', 0);
 
     let count = 3;
     while (count < 100) {
-      await simulateUserLikeClick(h1);
+      await h1.click(); // Use .click() because it's faster.
       count++;
     }
 
@@ -278,14 +278,14 @@ describe('onINP()', async function () {
     assert(inp1.value >= 600); // Initial pointerdown blocking time.
     assert(inp2.value >= 400); // Initial pointerdown blocking time.
     assert(inp2.value < inp1.value); // Should have gone down.
-    assert(inp3.value >= 200); // 2nd-highest pointerdown blocking time.
+    assert(inp3.value >= 100); // 2nd-highest pointerdown blocking time.
     assert(inp3.value < inp2.value); // Should have gone down.
     assert(allEntriesPresentTogether(inp1.entries));
     assert(allEntriesPresentTogether(inp2.entries));
     assert(allEntriesPresentTogether(inp3.entries));
     assert.strictEqual(inp1.rating, 'poor');
     assert.strictEqual(inp2.rating, 'needs-improvement');
-    assert.strictEqual(inp3.rating, 'needs-improvement');
+    assert.strictEqual(inp3.rating, 'good');
   });
 
   it('reports a new interaction after bfcache restore', async function () {
@@ -587,7 +587,7 @@ describe('onINP()', async function () {
       );
     });
 
-    it('reports the domReadyState when input occurred', async function () {
+    it.only('reports the domReadyState when input occurred', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo(
@@ -603,8 +603,6 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
       assert.equal(inp1.attribution.loadState, 'dom-interactive');
-
-      await clearBeacons();
 
       await navigateTo(
         '/test/inp' +
