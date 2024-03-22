@@ -88,7 +88,16 @@ export interface Metric {
     | 'back-forward'
     | 'back-forward-cache'
     | 'prerender'
-    | 'restore';
+    | 'restore'
+    | 'soft-navigation';
+
+  /**
+   * The navigationId the metric happened for. This is particularly relevent for soft navigations where
+   * the metric may be reported for a previous URL.
+   *
+   * navigationIds are UUID strings.
+   */
+  navigationId: string;
 }
 
 /** The union of supported metric types. */
@@ -134,6 +143,7 @@ export interface ReportCallback {
 export interface ReportOpts {
   reportAllChanges?: boolean;
   durationThreshold?: number;
+  reportSoftNavs?: boolean;
 }
 
 /**

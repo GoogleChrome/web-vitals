@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {getNavigationEntry} from '../lib/getNavigationEntry.js';
+import {getNavigationEntry, hardNavId} from '../lib/getNavigationEntry.js';
+import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
 import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
@@ -29,13 +30,32 @@ import {
 
 const attributeLCP = (metric: LCPMetric) => {
   if (metric.entries.length) {
-    const navigationEntry = getNavigationEntry();
+    let navigationEntry;
+    let activationStart = 0;
+    let responseStart = 0;
+    let softNavStart = 0;
+
+    if (!metric.navigationId || metric.navigationId === hardNavId) {
+      navigationEntry = getNavigationEntry();
+      activationStart =
+        navigationEntry && navigationEntry.activationStart
+          ? navigationEntry.activationStart
+          : 0;
+      responseStart =
+        navigationEntry && navigationEntry.responseStart
+          ? navigationEntry.responseStart
+          : 0;
+
+      if (isInvalidTimestamp(responseStart)) return;
+    } else {
+      navigationEntry = getSoftNavigationEntry(metric.navigationId);
+      // Set activationStart to the SoftNav start time
+      softNavStart = navigationEntry ? navigationEntry.startTime : 0;
+      activationStart = softNavStart;
+      if (isInvalidTimestamp(softNavStart)) return;
+    }
 
     if (navigationEntry) {
-      const responseStart = navigationEntry.responseStart;
-      if (isInvalidTimestamp(responseStart)) return;
-
-      const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
       const lcpResourceEntry =
         lcpEntry.url &&
@@ -54,12 +74,14 @@ const attributeLCP = (metric: LCPMetric) => {
           : 0,
       );
       const lcpResponseEnd = Math.max(
-        lcpRequestStart,
+        lcpRequestStart - softNavStart,
         lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
+        0,
       );
       const lcpRenderTime = Math.max(
-        lcpResponseEnd,
-        lcpEntry.startTime - activationStart,
+        lcpResponseEnd - softNavStart,
+        lcpEntry ? lcpEntry.startTime - activationStart : 0,
+        0,
       );
 
       const attribution: LCPAttribution = {
