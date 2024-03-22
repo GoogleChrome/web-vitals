@@ -587,7 +587,7 @@ describe('onINP()', async function () {
       );
     });
 
-    it.only('reports the domReadyState when input occurred', async function () {
+    it('reports the domReadyState when input occurred', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo(

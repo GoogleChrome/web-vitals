@@ -214,23 +214,16 @@ const attributeINP = (metric: INPMetric): void => {
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
 
-  // Since entry durations are rounded to the nearest 8ms, taking the average
-  // of a group of entries that we know were rendered in the same animation
-  // frame should give a better estimate of the "true" render time.
-  const AveragePresentationTime =
-    processedEventEntries.reduce((acc, entry) => {
-      return acc + (entry.startTime + entry.duration);
-    }, 0) / processedEventEntries.length;
-
+  // Since entry durations are rounded to the nearest 8ms, we need to clamp
+  // the `nextPaintTime` value to be higher than the `processingEnd` or
+  // end time of any LoAF entry.
   const nextPaintTimeCandidates = [
-    AveragePresentationTime,
+    firstEntry.startTime + firstEntry.duration,
     processingEnd,
   ].concat(
     longAnimationFrameEntries.map((loaf) => loaf.startTime + loaf.duration),
   );
 
-  // To get the most accurate next paint time, use signals from the
-  // Event Timing API and LoAF to make the best possible guess.
   const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
 
   (metric as INPMetricWithAttribution).attribution = {
