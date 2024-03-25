@@ -18,12 +18,12 @@ import {
   FirstInputPolyfillEntry,
   NavigationTimingPolyfillEntry,
 } from './polyfills.js';
-import type {CLSMetric} from './cls.js';
-import type {FCPMetric} from './fcp.js';
-import type {FIDMetric} from './fid.js';
-import type {INPMetric} from './inp.js';
-import type {LCPMetric} from './lcp.js';
-import type {TTFBMetric} from './ttfb.js';
+import type {CLSMetric, CLSAttribution} from './cls.js';
+import type {FCPMetric, FCPAttribution} from './fcp.js';
+import type {FIDMetric, FIDAttribution} from './fid.js';
+import type {INPMetric, INPAttribution} from './inp.js';
+import type {LCPMetric, LCPAttribution} from './lcp.js';
+import type {TTFBMetric, TTFBAttribution} from './ttfb.js';
 
 export interface Metric {
   /**
@@ -109,7 +109,13 @@ export interface MetricWithAttribution extends Metric {
    * can be sent along with the metric value for the current page visit in
    * order to help identify issues happening to real-users in the field.
    */
-  attribution: {[key: string]: unknown};
+  attribution:
+    | CLSAttribution
+    | FCPAttribution
+    | FIDAttribution
+    | INPAttribution
+    | LCPAttribution
+    | TTFBAttribution;
 }
 
 /**
