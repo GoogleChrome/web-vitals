@@ -77,7 +77,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
 
-    const durationThreshold = opts!.durationThreshold ?? 40;
+    const durationThreshold = opts!.durationThreshold ?? DEFAULT_DURATION_THRESHOLD;
 
     const handleEntries = (entries: INPMetric['entries']) => {
       entries.forEach((entry) => {
