@@ -905,11 +905,13 @@ interface INPAttribution {
   nextPaintTime: DOMHighResTimeStamp;
 
   /**
-   * The type of interaction, which corresponds to the event type of the first
-   * entry with an `interactionId` set, within the same animation frame as
-   * the interaction.
+   * The type of interaction, based on the event type of the `event` entry
+   * that corresponds to the interaction (i.e. the first `event` entry
+   * containing an `interactionId` dispatched in a given animation frame).
+   * For "pointerdown", "pointerup", or "click" events this will be "pointer",
+   * and for "keydown" or "keyup" events this will be "keyboard".
    */
-  interactionType: 'pointerdown' | 'pointerup' | 'keydown' | 'keyup' | 'click';
+  interactionType: 'pointer' | 'keyboard';
 
   /**
    * An array of Event Timing entries that were processed within the same

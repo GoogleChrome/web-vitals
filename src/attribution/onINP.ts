@@ -230,7 +230,7 @@ const attributeINP = (metric: INPMetric): void => {
     interactionTarget: getSelector(
       firstEntryWithTarget && firstEntryWithTarget.target,
     ),
-    interactionType: firstEntry.name,
+    interactionType: firstEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
     interactionTime: firstEntry.startTime,
     nextPaintTime: nextPaintTime,
     processedEventEntries: processedEventEntries,

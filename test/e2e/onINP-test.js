@@ -458,7 +458,7 @@ describe('onINP()', async function () {
       assert.match(inp1.navigationType, /navigate|reload/);
 
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
-      assert.equal(inp1.attribution.interactionType, 'pointerup');
+      assert.equal(inp1.attribution.interactionType, 'pointer');
       assert.equal(inp1.attribution.interactionTime, inp1.entries[0].startTime);
       assert.equal(inp1.attribution.loadState, 'complete');
       assert(allEntriesPresentTogether(inp1.attribution.processedEventEntries));
@@ -509,10 +509,11 @@ describe('onINP()', async function () {
       await clearBeacons();
 
       await stubVisibilityChange('visible');
-      await setBlockingTime('mouseup', 200);
+      await setBlockingTime('keydown', 300);
 
-      const reset = await $('#reset');
-      await simulateUserLikeClick(reset);
+      const textarea = await $('#textarea');
+      await textarea.click();
+      await browser.keys(['x']);
 
       // Wait a bit to ensure the click event has time to dispatch.
       await nextFrame();
@@ -530,16 +531,16 @@ describe('onINP()', async function () {
       assert(allEntriesPresentTogether(inp2.entries));
       assert.match(inp2.navigationType, /navigate|reload/);
 
-      assert.equal(inp2.attribution.interactionTarget, '#reset');
-      assert.equal(inp2.attribution.interactionType, 'pointerup');
+      assert.equal(inp2.attribution.interactionTarget, '#textarea');
+      assert.equal(inp2.attribution.interactionType, 'keyboard');
       assert.equal(inp2.attribution.interactionTime, inp2.entries[0].startTime);
       assert.equal(inp2.attribution.loadState, 'complete');
       assert(allEntriesPresentTogether(inp2.attribution.processedEventEntries));
       assert(
         containsEntry(
           inp2.attribution.processedEventEntries,
-          'mouseup',
-          '#reset',
+          'keydown',
+          '#textarea',
         ),
       );
 
@@ -636,7 +637,7 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
 
-      assert.equal(inp1.attribution.interactionType, 'pointerup');
+      assert.equal(inp1.attribution.interactionType, 'pointer');
       // The event target should match the h1, even if the `pointerup`
       // entry doesn't contain a target.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
