@@ -26,6 +26,7 @@ nunjucks.configure('./test/views/', {noCache: true});
 // Turn off all caching for tests.
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-cache');
+  res.set('Access-Control-Allow-Origin', '*');
   next();
 });
 

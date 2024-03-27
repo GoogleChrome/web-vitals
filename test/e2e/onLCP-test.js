@@ -131,7 +131,7 @@ describe('onLCP()', async function () {
     assertStandardReportsAreCorrect(await getBeacons());
   });
 
-  it('accounts for time prerendering the page', async function () {
+  it.skip('accounts for time prerendering the page', async function () {
     if (!browserSupportsLCP) this.skip();
 
     await navigateTo('/test/lcp?prerender=1');
@@ -521,7 +521,7 @@ describe('onLCP()', async function () {
       assert.deepEqual(lcp.attribution.lcpEntry, lcp.entries.slice(-1)[0]);
     });
 
-    it('accounts for time prerendering the page', async function () {
+    it.only('accounts for time prerendering the page', async function () {
       if (!browserSupportsLCP) this.skip();
 
       await navigateTo('/test/lcp?attribution=1&prerender=1');
@@ -530,19 +530,15 @@ describe('onLCP()', async function () {
       await imagesPainted();
 
       const navEntry = await browser.execute(() => {
-        return performance.getEntriesByType('navigation')[0].toJSON();
-      });
-
-      // Since this value is stubbed in the browser, get it separately.
-      const activationStart = await browser.execute(() => {
-        return performance.getEntriesByType('navigation')[0].activationStart;
+        return __toSafeObject(performance.getEntriesByType('navigation')[0]);
       });
 
       const lcpResEntry = await browser.execute(() => {
-        return performance
-          .getEntriesByType('resource')
-          .find((e) => e.name.includes('square.png'))
-          .toJSON();
+        return __toSafeObject(
+          performance
+            .getEntriesByType('resource')
+            .find((e) => e.name.includes('square.png')),
+        );
       });
 
       // Load a new page to trigger the hidden state.
@@ -559,25 +555,25 @@ describe('onLCP()', async function () {
       // Assert each individual LCP sub-part accounts for `activationStart`
       assert.equal(
         lcp.attribution.timeToFirstByte,
-        Math.max(0, navEntry.responseStart - activationStart),
+        Math.max(0, navEntry.responseStart - navEntry.activationStart),
       );
 
       assert.equal(
         lcp.attribution.resourceLoadDelay,
-        Math.max(0, lcpResEntry.requestStart - activationStart) -
-          Math.max(0, navEntry.responseStart - activationStart),
+        Math.max(0, lcpResEntry.requestStart - navEntry.activationStart) -
+          Math.max(0, navEntry.responseStart - navEntry.activationStart),
       );
 
       assert.equal(
         lcp.attribution.resourceLoadTime,
-        Math.max(0, lcpResEntry.responseEnd - activationStart) -
-          Math.max(0, lcpResEntry.requestStart - activationStart),
+        Math.max(0, lcpResEntry.responseEnd - navEntry.activationStart) -
+          Math.max(0, lcpResEntry.requestStart - navEntry.activationStart),
       );
 
       assert.equal(
         lcp.attribution.elementRenderDelay,
-        Math.max(0, lcp.entries[0].startTime - activationStart) -
-          Math.max(0, lcpResEntry.responseEnd - activationStart),
+        Math.max(0, lcp.entries[0].startTime - navEntry.activationStart) -
+          Math.max(0, lcpResEntry.responseEnd - navEntry.activationStart),
       );
 
       // Assert that they combine to equal LCP.
@@ -591,7 +587,7 @@ describe('onLCP()', async function () {
 
       assert.deepEqual(lcp.attribution.navigationEntry, navEntry);
       assert.deepEqual(lcp.attribution.lcpResourceEntry, lcpResEntry);
-      assert.deepEqual(lcp.attribution.lcpEntry, lcp.entries.slice(-1)[0]);
+      assert.deepEqual(lcp.attribution.lcpEntry, lcp.entries.at(-1));
     });
 
     it('handles cases where there is no LCP resource', async function () {

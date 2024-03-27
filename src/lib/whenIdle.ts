@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
+import {onHidden} from './onHidden.js';
+
+const rIC = self.requestIdleCallback || self.setTimeout;
+const cIC = self.cancelIdleCallback || self.clearTimeout;
+
 /**
- * Returns a promise that resolves once the browser has run the next
- * animation frame.
- * @return {Promise<void>}
+ * Runs the passed callback during the next idle period, or immediately
+ * if the browser's visibility state is (or becomes) hidden.
  */
-export function nextFrame() {
-  return browser.executeAsync((done) => {
-    requestAnimationFrame(() => {
-      requestAnimationFrame(() => {
-        done();
-      });
+export const whenIdle = (cb: () => void): number => {
+  let handle = -1;
+  if (document.visibilityState === 'hidden') {
+    cb();
+  } else {
+    handle = rIC(cb);
+    onHidden(() => {
+      cIC(handle);
+      cb();
     });
-  });
-}
+  }
+  return handle;
+};

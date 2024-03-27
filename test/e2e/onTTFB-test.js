@@ -285,7 +285,6 @@ describe('onTTFB()', async function () {
 
       const ttfb = await getTTFBBeacon();
 
-      // Since this value is stubbed in the browser, get it separately.
       const activationStart = await browser.execute(() => {
         return performance.getEntriesByType('navigation')[0].activationStart;
       });

@@ -24,6 +24,7 @@ import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
+import {whenIdle} from './lib/whenIdle.js';
 import {
   LCPMetric,
   MetricRatingThresholds,
@@ -103,7 +104,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         // Wrap in a setTimeout so the callback is run in a separate task
         // to avoid extending the keyboard/click handler to reduce INP impact
         // https://github.com/GoogleChrome/web-vitals/issues/383
-        addEventListener(type, () => setTimeout(stopListening, 0), true);
+        addEventListener(type, () => whenIdle(stopListening), true);
       });
 
       onHidden(stopListening);

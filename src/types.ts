@@ -62,7 +62,7 @@ declare global {
   // https://wicg.github.io/event-timing/#sec-performance-event-timing
   interface PerformanceEventTiming extends PerformanceEntry {
     duration: DOMHighResTimeStamp;
-    interactionId?: number;
+    interactionId: number;
   }
 
   // https://wicg.github.io/layout-instability/#sec-layout-shift-attribution
@@ -87,5 +87,11 @@ declare global {
     id: string;
     url: string;
     element?: Element;
+  }
+
+  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
+  interface PerformanceLongAnimationFrameTiming extends PerformanceEntry {
+    renderStart: DOMHighResTimeStamp;
+    duration: DOMHighResTimeStamp;
   }
 }
