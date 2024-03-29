@@ -138,12 +138,12 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
 const cleanupEntries = () => {
   // The list of previous render times is used to handle cases where
   // events are dispatched out of order. When this happens they're generally
-  // only off by a frame or two, so keeping the most recent 10 should be
+  // only off by a frame or two, so keeping the most recent 50 should be
   // more than sufficient.
-  previousRenderTimes = previousRenderTimes.slice(-10);
+  previousRenderTimes = previousRenderTimes.slice(-50);
 
   // Keep all render times that are part of a pending INP candidate or
-  // that occurred within the 10 most recently-dispatched animation frames.
+  // that occurred within the 50 most recently-dispatched animation frames.
   const renderTimesToKeep = new Set(
     (previousRenderTimes as (number | undefined)[]).concat(
       longestInteractionList.map((i) => entryToRenderTimeMap.get(i.entries[0])),
@@ -151,7 +151,7 @@ const cleanupEntries = () => {
   );
 
   pendingEntriesGroupMap.forEach((_, key) => {
-    renderTimesToKeep.has(key) || pendingEntriesGroupMap.delete(key);
+    if (!renderTimesToKeep.has(key)) pendingEntriesGroupMap.delete(key);
   });
 
   // Remove all pending LoAF entries that don't intersect with entries in
