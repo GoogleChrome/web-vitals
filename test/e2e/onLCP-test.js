@@ -131,7 +131,7 @@ describe('onLCP()', async function () {
     assertStandardReportsAreCorrect(await getBeacons());
   });
 
-  it.skip('accounts for time prerendering the page', async function () {
+  it('accounts for time prerendering the page', async function () {
     if (!browserSupportsLCP) this.skip();
 
     await navigateTo('/test/lcp?prerender=1');
@@ -476,7 +476,7 @@ describe('onLCP()', async function () {
       await imagesPainted();
 
       const navEntry = await browser.execute(() => {
-        return performance.getEntriesByType('navigation')[0].toJSON();
+        return __toSafeObject(performance.getEntriesByType('navigation')[0]);
       });
 
       const lcpResEntry = await browser.execute(() => {
@@ -485,9 +485,12 @@ describe('onLCP()', async function () {
           .find((e) => e.name.includes('square.png'));
 
         // Stub an entry with no `requestStart` data.
-        Object.defineProperty(entry, 'requestStart', {value: 0});
+        Object.defineProperty(entry, 'requestStart', {
+          value: 0,
+          enumerable: true,
+        });
 
-        return entry.toJSON();
+        return __toSafeObject(entry);
       });
 
       // Load a new page to trigger the hidden state.
@@ -521,7 +524,7 @@ describe('onLCP()', async function () {
       assert.deepEqual(lcp.attribution.lcpEntry, lcp.entries.slice(-1)[0]);
     });
 
-    it.only('accounts for time prerendering the page', async function () {
+    it('accounts for time prerendering the page', async function () {
       if (!browserSupportsLCP) this.skip();
 
       await navigateTo('/test/lcp?attribution=1&prerender=1');
