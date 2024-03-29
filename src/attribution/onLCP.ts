@@ -62,7 +62,7 @@ const attributeLCP = (metric: LCPMetric) => {
         element: getSelector(lcpEntry.element),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
-        resourceLoadTime: lcpResponseEnd - lcpRequestStart,
+        resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
         elementRenderDelay: lcpRenderTime - lcpResponseEnd,
         navigationEntry,
         lcpEntry,
@@ -84,7 +84,7 @@ const attributeLCP = (metric: LCPMetric) => {
   (metric as LCPMetricWithAttribution).attribution = {
     timeToFirstByte: 0,
     resourceLoadDelay: 0,
-    resourceLoadTime: 0,
+    resourceLoadDuration: 0,
     elementRenderDelay: metric.value,
   };
 };

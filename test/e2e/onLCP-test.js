@@ -457,7 +457,7 @@ describe('onLCP()', async function () {
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
-          lcp.attribution.resourceLoadTime +
+          lcp.attribution.resourceLoadDuration +
           lcp.attribution.elementRenderDelay,
         lcp.value,
       );
@@ -514,7 +514,7 @@ describe('onLCP()', async function () {
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
-          lcp.attribution.resourceLoadTime +
+          lcp.attribution.resourceLoadDuration +
           lcp.attribution.elementRenderDelay,
         lcp.value,
       );
@@ -568,7 +568,7 @@ describe('onLCP()', async function () {
       );
 
       assert.equal(
-        lcp.attribution.resourceLoadTime,
+        lcp.attribution.resourceLoadDuration,
         Math.max(0, lcpResEntry.responseEnd - navEntry.activationStart) -
           Math.max(0, lcpResEntry.requestStart - navEntry.activationStart),
       );
@@ -583,7 +583,7 @@ describe('onLCP()', async function () {
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
-          lcp.attribution.resourceLoadTime +
+          lcp.attribution.resourceLoadDuration +
           lcp.attribution.elementRenderDelay,
         lcp.value,
       );
@@ -614,11 +614,11 @@ describe('onLCP()', async function () {
       assert.equal(lcp.attribution.url, undefined);
       assert.equal(lcp.attribution.element, 'html>body>main>h1');
       assert.equal(lcp.attribution.resourceLoadDelay, 0);
-      assert.equal(lcp.attribution.resourceLoadTime, 0);
+      assert.equal(lcp.attribution.resourceLoadDuration, 0);
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
-          lcp.attribution.resourceLoadTime +
+          lcp.attribution.resourceLoadDuration +
           lcp.attribution.elementRenderDelay,
         lcp.value,
       );
@@ -664,7 +664,7 @@ describe('onLCP()', async function () {
       assert.equal(lcp2.attribution.element, undefined);
       assert.equal(lcp2.attribution.timeToFirstByte, 0);
       assert.equal(lcp2.attribution.resourceLoadDelay, 0);
-      assert.equal(lcp2.attribution.resourceLoadTime, 0);
+      assert.equal(lcp2.attribution.resourceLoadDuration, 0);
       assert.equal(lcp2.attribution.elementRenderDelay, lcp2.value);
       assert.equal(lcp2.attribution.navigationEntry, undefined);
       assert.equal(lcp2.attribution.lcpResourceEntry, undefined);

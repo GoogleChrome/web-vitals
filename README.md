@@ -993,7 +993,7 @@ interface LCPAttribution {
    * otherwise 0). See [Optimize LCP](https://web.dev/articles/optimize-lcp) for
    * details.
    */
-  resourceLoadTime: number;
+  resourceLoadDuration: number;
   /**
    * The delta between when the LCP resource finishes loading until the LCP
    * element is fully rendered. See [Optimize
