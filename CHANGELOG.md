@@ -1,5 +1,11 @@
 # Changelog
 
+### v4.0.0-beta.0 (2024-03-29)
+
+- **[BREAKING]** Rename `resourceLoadTime` to `resourceLoadDuration` in LCP attribution ([#450](https://github.com/GoogleChrome/web-vitals/pull/450))
+- **[BREAKING]** Add INP breakdown timings and LoAF attribution ([#442](https://github.com/GoogleChrome/web-vitals/pull/442))
+- **[BREAKING]** Deprecate `onFID()` and remove previously deprecated APIs ([#435](https://github.com/GoogleChrome/web-vitals/pull/435))
+
 ### v3.5.2 (2024-01-25)
 
 - Pick the first non-null `target` for INP attribution ([#421](https://github.com/GoogleChrome/web-vitals/pull/421))
