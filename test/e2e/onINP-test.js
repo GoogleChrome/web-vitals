@@ -29,8 +29,10 @@ describe('onINP()', async function () {
   this.retries(2);
 
   let browserSupportsINP;
+  let browserSupportsLoAF;
   before(async function () {
     browserSupportsINP = await browserSupportsEntry('event');
+    browserSupportsLoAF = await browserSupportsEntry('long-animation-frame');
   });
 
   beforeEach(async function () {
@@ -642,6 +644,22 @@ describe('onINP()', async function () {
       // entry doesn't contain a target.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
+    });
+
+    it('includes LoAF entries if the browser supports it', async function () {
+      if (!browserSupportsLoAF) this.skip();
+
+      await navigateTo('/test/inp?attribution=1&pointerdown=100');
+
+      // Click on the <textarea>.
+      const textarea = await $('#textarea');
+      await textarea.click();
+
+      await stubVisibilityChange('hidden');
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+      assert(inp1.attribution.longAnimationFrameEntries.length > 0);
     });
   });
 });
