@@ -880,7 +880,7 @@ interface INPAttribution {
    * A selector identifying the element that the user first interacted with
    * as part of the frame where the INP candidate interaction occurred.
    * If `interactionTarget` is an empty string, that generally means the
-   * element was removed from the DOM as part of or since the interaction.
+   * element was removed from the DOM after the interaction.
    */
   interactionTarget: string;
 
