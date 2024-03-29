@@ -16,6 +16,7 @@
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
+import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import {
   LCPAttribution,
@@ -31,6 +32,9 @@ const attributeLCP = (metric: LCPMetric) => {
     const navigationEntry = getNavigationEntry();
 
     if (navigationEntry) {
+      const responseStart = navigationEntry.responseStart;
+      if (isInvalidTimestamp(responseStart)) return;
+
       const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
       const lcpResourceEntry =
@@ -39,7 +43,7 @@ const attributeLCP = (metric: LCPMetric) => {
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
 
-      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+      const ttfb = Math.max(0, responseStart - activationStart);
 
       const lcpRequestStart = Math.max(
         ttfb,
@@ -55,7 +59,7 @@ const attributeLCP = (metric: LCPMetric) => {
       );
       const lcpRenderTime = Math.max(
         lcpResponseEnd,
-        lcpEntry ? lcpEntry.startTime - activationStart : 0,
+        lcpEntry.startTime - activationStart,
       );
 
       const attribution: LCPAttribution = {

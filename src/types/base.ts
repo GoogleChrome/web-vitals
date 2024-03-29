@@ -69,6 +69,7 @@ export interface Metric {
    * `undefined` if the browser doesn't support that API), with the following
    * exceptions:
    * - 'back-forward-cache': for pages that are restored from the bfcache.
+   * - 'back_forward' is renamed to 'back-forward' for consistency.
    * - 'prerender': for pages that were prerendered.
    * - 'restore': for pages that were discarded by the browser and then
    * restored by the user.
