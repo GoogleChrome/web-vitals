@@ -607,10 +607,15 @@ describe('onINP()', async function () {
       const [inp1] = await getBeacons();
       assert.equal(inp1.attribution.loadState, 'dom-interactive');
 
+      await clearBeacons();
+
       await navigateTo(
         '/test/inp' +
-          '?attribution=1&reportAllChanges=1&click=100&delayResponse=1000',
+          '?attribution=1&reportAllChanges=1&click=100&delayResponse=2000',
       );
+
+      // Wait a bit to ensure the page elements are available.
+      await browser.pause(1000);
 
       // Click on the <button>.
       const reset = await $('#reset');
