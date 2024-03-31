@@ -35,21 +35,21 @@ export interface TTFBAttribution {
    * DNS lookup begins. This includes redirects, service worker startup, and
    * HTTP cache lookup times.
    */
-  waitingTime: number;
+  waitingDuration: number;
   /**
    * The total time to resolve the DNS for the current request.
    */
-  dnsTime: number;
+  dnsDuration: number;
   /**
    * The total time to create the connection to the requested domain.
    */
-  connectionTime: number;
+  connectionDuration: number;
   /**
    * The time time from when the request was sent until the first byte of the
    * response was received. This includes network time as well as server
    * processing time.
    */
-  requestTime: number;
+  requestDuration: number;
   /**
    * The `navigation` entry of the current page, which is useful for diagnosing
    * general page load issues. This can be used to access `serverTiming` for example:
