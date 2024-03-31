@@ -21,7 +21,6 @@ import {
   DEFAULT_DURATION_THRESHOLD,
   processInteractionEntry,
   estimateP98LongestInteraction,
-  getInteractionCountForNavigation,
   resetInteractions,
 } from './lib/interactions.js';
 import {observe} from './lib/observe.js';
@@ -77,22 +76,8 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
 
-    const durationThreshold =
-      opts!.durationThreshold ?? DEFAULT_DURATION_THRESHOLD;
-
     const handleEntries = (entries: INPMetric['entries']) => {
-      entries.forEach((entry) => {
-        // Ignore `first-input` entries if the duration value is greater
-        // than the threshold (since that means an `event` entry should
-        // have been dispatched).
-        if (
-          entry.entryType === 'first-input' &&
-          entry.duration >= durationThreshold
-        ) {
-          return;
-        }
-        processInteractionEntry(entry);
-      });
+      entries.forEach(processInteractionEntry);
 
       const inp = estimateP98LongestInteraction();
 
@@ -133,14 +118,6 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
 
       onHidden(() => {
         handleEntries(po.takeRecords() as INPMetric['entries']);
-
-        // If the interaction count shows that there were interactions but
-        // none were captured by the PerformanceObserver, report a latency of 0.
-        if (metric.value < 0 && getInteractionCountForNavigation() > 0) {
-          metric.value = 0;
-          metric.entries = [];
-        }
-
         report(true);
       });
 
