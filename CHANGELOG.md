@@ -1,5 +1,10 @@
 # Changelog
 
+### v4.0.0-beta.1 (2024-04-01)
+
+- **[BREAKING]** Rename `TTFBAttribution` fields from `*Time` to `*Duration` ([#453](https://github.com/GoogleChrome/web-vitals/pull/453))
+- Fix onINP() attribution error due to empty entries ([#452](https://github.com/GoogleChrome/web-vitals/pull/452))
+
 ### v4.0.0-beta.0 (2024-03-29)
 
 - **[BREAKING]** Rename `resourceLoadTime` to `resourceLoadDuration` in LCP attribution ([#450](https://github.com/GoogleChrome/web-vitals/pull/450))
