@@ -46,7 +46,7 @@ let prevInteractionCount = 0;
  * Returns the interaction count since the last bfcache restore (or for the
  * full page lifecycle if there were no bfcache restores).
  */
-export const getInteractionCountForNavigation = () => {
+const getInteractionCountForNavigation = () => {
   return getInteractionCount() - prevInteractionCount;
 };
 

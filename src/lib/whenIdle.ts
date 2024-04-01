@@ -15,9 +15,9 @@
  */
 
 import {onHidden} from './onHidden.js';
+import {runOnce} from './runOnce.js';
 
 const rIC = self.requestIdleCallback || self.setTimeout;
-const cIC = self.cancelIdleCallback || self.clearTimeout;
 
 /**
  * Runs the passed callback during the next idle period, or immediately
@@ -25,14 +25,14 @@ const cIC = self.cancelIdleCallback || self.clearTimeout;
  */
 export const whenIdle = (cb: () => void): number => {
   let handle = -1;
+  cb = runOnce(cb);
+  // If the document is hidden, run the callback immediately, otherwise
+  // race an idle callback with the next `visibilitychange` event.
   if (document.visibilityState === 'hidden') {
     cb();
   } else {
     handle = rIC(cb);
-    onHidden(() => {
-      cIC(handle);
-      cb();
-    });
+    onHidden(cb);
   }
   return handle;
 };
