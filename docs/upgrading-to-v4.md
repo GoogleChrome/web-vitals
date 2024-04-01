@@ -1,8 +1,12 @@
 # Upgrading to v4
 
-This document lists the full set of breaking changes that need to be addressed when upgrading from version 3.x to 4.x, across both the "standard" and "attribution" builds (see [build options](/#build-options) for details).
+This document lists the full set of breaking changes that need to be addressed when upgrading from version 3.x to 4.x, across both the "standard" and "attribution" builds (see [build options](/#build-options) for details). For a list of all changes see the [CHANGELOG](/CHANGELOG.md).
 
-For a list of all changes see the [CHANGELOG](/CHANGELOG.md).
+Version 4 is currently in beta, you can install it via the `next` tag on npm:
+
+```sh
+npm install web-vitals@next
+```
 
 ## Standard build
 
