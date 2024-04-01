@@ -131,21 +131,30 @@
        */
       self.__afterElementsRendered = new Promise((resolve) => {
         addEventListener('DOMContentLoaded', () => {
-          const nodes = new Set([...document.querySelectorAll('[elementtiming]:not([hidden])')]);
-          if (nodes.size === 0 || !PerformanceObserver.supportedEntryTypes.includes('element')) {
-            resolve();
-          }
-
-          new PerformanceObserver((list) => {
-            for (const entry of list.getEntries()) {
-              if (nodes.has(entry.element)) {
-                nodes.delete(entry.element);
-              }
-            }
-            if (nodes.size === 0) {
+          if (PerformanceObserver.supportedEntryTypes.includes('element')) {
+            const nodes = new Set([...document.querySelectorAll('[elementtiming]:not([hidden])')]);
+            if (nodes.size === 0 || !PerformanceObserver.supportedEntryTypes.includes('element')) {
               resolve();
             }
-          }).observe({type: 'element', buffered: true});
+            new PerformanceObserver((list) => {
+              for (const entry of list.getEntries()) {
+                if (nodes.has(entry.element)) {
+                  nodes.delete(entry.element);
+                }
+              }
+              if (nodes.size === 0) {
+                resolve();
+              }
+            }).observe({type: 'element', buffered: true});
+          } else {
+            self.__afterLoad.then(() => {
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  resolve();
+                });
+              });
+            });
+          }
         }, true);
       });
 
