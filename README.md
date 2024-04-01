@@ -1038,7 +1038,7 @@ interface TTFBAttribution {
    */
   connectionDuration: number;
   /**
-   * The time time from when the request was sent until the first byte of the
+   * The total time from when the request was sent until the first byte of the
    * response was received. This includes network time as well as server
    * processing time.
    */
