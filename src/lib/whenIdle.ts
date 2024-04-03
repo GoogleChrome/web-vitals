@@ -18,8 +18,9 @@ import {onHidden} from './onHidden.js';
 import {runOnce} from './runOnce.js';
 
 // Used by unit test so expose via globalThis with fallback for unsupporting browsers
-const rIC =
-  globalThis.requestIdleCallback || globalThis.setTimeout || self.setTimeout;
+const rIC = globalThis
+  ? globalThis.requestIdleCallback || globalThis.setTimeout
+  : self.setTimeout;
 
 /**
  * Runs the passed callback during the next idle period, or immediately
