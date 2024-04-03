@@ -33,7 +33,7 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       0,
     );
     const cacheStart = Math.max(
-      (navigationEntry.fetchStart || navigationEntry.workerStart) -
+      (navigationEntry.workerStart || navigationEntry.fetchStart) -
         activationStart,
       0,
     );
