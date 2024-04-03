@@ -56,7 +56,7 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       // Note this may change in future. See
       // https://github.com/w3c/navigation-timing/issues/160
       redirectDuration: redirectEnd || cacheStart,
-      cacheDuration: dnsStart - cacheStart,
+      cacheDuration: dnsStart - (redirectEnd || cacheStart),
       dnsDuration: connectStart - dnsStart,
       connectionDuration: requestStart - connectStart,
       requestDuration: metric.value - requestStart,
