@@ -28,6 +28,15 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
+    const redirectEnd = Math.max(
+      navigationEntry.redirectEnd - activationStart,
+      0,
+    );
+    const cacheStart = Math.max(
+      (navigationEntry.fetchStart || navigationEntry.workerStart) -
+        activationStart,
+      0,
+    );
     const dnsStart = Math.max(
       navigationEntry.domainLookupStart - activationStart,
       0,
@@ -42,7 +51,12 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     );
 
     (metric as TTFBMetricWithAttribution).attribution = {
-      waitingDuration: dnsStart,
+      // Set redirectend to be based on fetchStart and workerStart to get most
+      // accurate redirect time available now.
+      // Note this may change in future. See
+      // https://github.com/w3c/navigation-timing/issues/160
+      redirectDuration: redirectEnd || cacheStart,
+      cacheDuration: dnsStart - cacheStart,
       dnsDuration: connectStart - dnsStart,
       connectionDuration: requestStart - connectStart,
       requestDuration: metric.value - requestStart,
@@ -52,7 +66,8 @@ const attributeTTFB = (metric: TTFBMetric): void => {
   }
   // Set an empty object if no other attribution has been set.
   (metric as TTFBMetricWithAttribution).attribution = {
-    waitingDuration: 0,
+    redirectDuration: 0,
+    cacheDuration: 0,
     dnsDuration: 0,
     connectionDuration: 0,
     requestDuration: 0,

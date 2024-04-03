@@ -1,5 +1,6 @@
 import {describe, it} from 'node:test';
 import assert from 'assert';
+const self = global;
 import {
   onCLS,
   onFCP,
@@ -17,12 +18,14 @@ import {
 
 describe('index', () => {
   it('exports Web Vitals metrics functions', () => {
+    const self = global;
     [onCLS, onFCP, onFID, onINP, onLCP, onTTFB].forEach((onFn) =>
       assert(typeof onFn === 'function'),
     );
   });
 
   it('exports Web Vitals metric thresholds', () => {
+    const self = global;
     assert.deepEqual(CLSThresholds, [0.1, 0.25]);
     assert.deepEqual(FCPThresholds, [1800, 3000]);
     assert.deepEqual(FIDThresholds, [100, 300]);

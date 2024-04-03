@@ -1024,11 +1024,16 @@ interface LCPAttribution {
 ```ts
 interface TTFBAttribution {
   /**
-   * The total time from when the user initiates loading the page to when the
-   * DNS lookup begins. This includes redirects, service worker startup, and
+   * The total time spent in redirects before the current page processes the
+   * request. Npote in future this may only include same-origin redirects.
+   */
+  redirectDuration: number;
+  /**
+   * The total time spent looking up local caches for the navigation request.
+   * This includes service worker startup, service worker fetch processing, and
    * HTTP cache lookup times.
    */
-  waitingDuration: number;
+  cacheDuration: number;
   /**
    * The total time to resolve the DNS for the current request.
    */

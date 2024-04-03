@@ -1,5 +1,9 @@
 # Changelog
 
+### v4.0.0-beta.2 (???)
+
+- **[BREAKING]** Split `waitingDuration` in `TTFBAttribution` into `redirectDuration` and `cacheDuration` ([#??](https://github.com/GoogleChrome/web-vitals/pull/??))
+
 ### v4.0.0-beta.1 (2024-04-01)
 
 - **[BREAKING]** Rename `TTFBAttribution` fields from `*Time` to `*Duration` ([#453](https://github.com/GoogleChrome/web-vitals/pull/453))
