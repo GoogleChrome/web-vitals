@@ -22,7 +22,6 @@ import {runOnce} from './runOnce.js';
  * if the browser's visibility state is (or becomes) hidden.
  */
 export const whenIdle = (cb: () => void): number => {
-  // Used by unit test so expose via globalThis with fallback for unsupporting browsers
   const rIC = self.requestIdleCallback || self.setTimeout;
 
   let handle = -1;
