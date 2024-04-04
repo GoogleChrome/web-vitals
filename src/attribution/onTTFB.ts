@@ -28,14 +28,13 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
-    // Set cacheStart to be based on redirectEnd or workerStart or fetchStart
+    // Set cacheStart to be based on workerStart or fetchStart
     // (whichever is set first) to get even when redirectEnd is not set in
     // cross-origin instances and when a service worker is not present.
     // fetchStart should always be set so it's the last fall back.
     const cacheStart = Math.max(
-      (navigationEntry.redirectEnd ||
-        navigationEntry.workerStart ||
-        navigationEntry.fetchStart) - activationStart,
+      (navigationEntry.workerStart || navigationEntry.fetchStart) -
+        activationStart,
       0,
     );
     const dnsStart = Math.max(

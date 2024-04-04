@@ -262,13 +262,12 @@ describe('onTTFB()', async function () {
       const navEntry = ttfb.entries[0];
       assert.strictEqual(
         ttfb.attribution.redirectDuration,
-        navEntry.redirectEnd || navEntry.workerStart || navEntry.fetchStart,
+        navEntry.workerStart || navEntry.fetchStart,
       );
       assert.strictEqual(
         ttfb.attribution.cacheDuration,
-        navEntry.domainLookupStart - navEntry.redirectEnd ||
-          navEntry.workerStart ||
-          navEntry.fetchStart,
+        navEntry.domainLookupStart -
+          (navEntry.workerStart || navEntry.fetchStart),
       );
       assert.strictEqual(
         ttfb.attribution.dnsDuration,
@@ -312,9 +311,7 @@ describe('onTTFB()', async function () {
         ttfb.attribution.redirectDuration,
         Math.max(
           0,
-          (navEntry.redirectEnd ||
-            navEntry.workerStart ||
-            navEntry.fetchStart) - activationStart,
+          (navEntry.workerStart || navEntry.fetchStart) - activationStart,
         ),
       );
       assert.strictEqual(
@@ -322,9 +319,7 @@ describe('onTTFB()', async function () {
         Math.max(0, navEntry.domainLookupStart - activationStart) -
           Math.max(
             0,
-            (navEntry.redirectEnd ||
-              navEntry.workerStart ||
-              navEntry.fetchStart) - activationStart,
+            (navEntry.workerStart || navEntry.fetchStart) - activationStart,
           ),
       );
       assert.strictEqual(
