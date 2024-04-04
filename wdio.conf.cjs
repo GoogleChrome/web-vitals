@@ -15,6 +15,7 @@
 
 const argv = require('yargs').argv;
 
+// Check if a metric has been provided as an argument and if so, limit tests to that metric
 const specs = argv.metric
   ? `test/e2e/on${argv.metric}-test.js`
   : 'test/e2e/*-test.js';
@@ -338,7 +339,7 @@ module.exports.config = {
   // }
 };
 
-// Check if a browser name is provided via the BROWSER environment variable
+// Check if a browser has been provided as an argument and, if so, remove the other browsers
 if (argv.browser) {
   console.log('Limiting to browser:', argv.browser);
   const capabilities = exports.config.capabilities;
