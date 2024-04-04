@@ -28,12 +28,11 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
-    // Set redirectEnd to be based on redirectEnd or fetchStart or workerStart
-    // to get even when redirectEnd is not set in cross-origin instances
-    // Note this can result in small "redirect times" even when there are no
-    // redirects. Also this may change in future. See
-    // https://github.com/w3c/navigation-timing/issues/160
-    const redirectEnd = Math.max(
+    // Set cacheStart to be based on redirectEnd or workerStart or fetchStart
+    // (whichever is set first) to get even when redirectEnd is not set in
+    // cross-origin instances and when a service worker is not present.
+    // fetchStart should always be set so it's the last fall back.
+    const cacheStart = Math.max(
       (navigationEntry.redirectEnd ||
         navigationEntry.workerStart ||
         navigationEntry.fetchStart) - activationStart,
@@ -53,8 +52,12 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     );
 
     (metric as TTFBMetricWithAttribution).attribution = {
-      redirectDuration: redirectEnd,
-      cacheDuration: dnsStart - redirectEnd,
+      // Set redirectDuration to the time before cacheStart.
+      // See https://github.com/w3c/navigation-timing/issues/160
+      // Note this can result in small "redirect times" even when there are no
+      // redirects
+      redirectDuration: cacheStart,
+      cacheDuration: dnsStart - cacheStart,
       dnsDuration: connectStart - dnsStart,
       connectionDuration: requestStart - connectStart,
       requestDuration: metric.value - requestStart,

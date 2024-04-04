@@ -31,8 +31,9 @@ export interface TTFBMetric extends Metric {
  */
 export interface TTFBAttribution {
   /**
-   * The total time spent in redirects before the current page processes the
-   * request. Note in future this may only include same-origin redirects.
+   * The total time spent before checking local caches for the navigation. This
+   * is most likely redirects (hence the name) but can include small amount
+   * of browser processing time so may be non-zero even with no redirects.
    */
   redirectDuration: number;
   /**
