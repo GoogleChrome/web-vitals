@@ -36,7 +36,9 @@ npm install web-vitals@next
 
 #### `TTFBAttribution`
 
-- **Split** `waitingTime` into `redirectDuration` and `cacheDuration` ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
+- **Removed** `waitingTime` as split into into `redirectDuration` and `cacheDuration` now (see [#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
+- **Added** `redirectDuration` (see [#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
+- **Added** `cacheDuration` (see [#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
 - **Renamed** `dnsTime` to `dnsDuration` (see [#453](https://github.com/GoogleChrome/web-vitals/pull/453)).
 - **Renamed** `connectionTime` to `connectionDuration` (see [#453](https://github.com/GoogleChrome/web-vitals/pull/453)).
 - **Renamed** `requestTime` to `requestDuration` (see [#453](https://github.com/GoogleChrome/web-vitals/pull/453)).

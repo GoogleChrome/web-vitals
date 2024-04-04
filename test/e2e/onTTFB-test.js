@@ -262,18 +262,13 @@ describe('onTTFB()', async function () {
       const navEntry = ttfb.entries[0];
       assert.strictEqual(
         ttfb.attribution.redirectDuration,
-        Math.max(
-          0,
-          navEntry.redirectEnd || navEntry.workerStart || navEntry.fetchStart,
-        ),
+        navEntry.redirectEnd || navEntry.workerStart || navEntry.fetchStart,
       );
       assert.strictEqual(
         ttfb.attribution.cacheDuration,
-        Math.max(0, navEntry.domainLookupStart) -
-          Math.max(
-            0,
-            navEntry.redirectEnd || navEntry.workerStart || navEntry.fetchStart,
-          ),
+        navEntry.domainLookupStart - navEntry.redirectEnd ||
+          navEntry.workerStart ||
+          navEntry.fetchStart,
       );
       assert.strictEqual(
         ttfb.attribution.dnsDuration,

@@ -1025,7 +1025,7 @@ interface LCPAttribution {
 interface TTFBAttribution {
   /**
    * The total time spent in redirects before the current page processes the
-   * request. Npote in future this may only include same-origin redirects.
+   * request. Note in future this may only include same-origin redirects.
    */
   redirectDuration: number;
   /**
