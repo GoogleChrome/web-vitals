@@ -36,6 +36,8 @@ To run an individual test, change `it('test name')` to `it.only('test name')`.
 
 You can also add `await browser.debug()` lines to the individual test files to pause execution, and press `CTRL+C` in the command line to continue the tests.
 
+See the https://webdriver.io/ for more information.
+
 ## Community Guidelines
 
 This project follows [Google's Open Source Community

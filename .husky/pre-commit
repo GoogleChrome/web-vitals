@@ -6,6 +6,9 @@ npm exec lint-staged
 echo "Checking for leftover it.only's..."
 grep it.only test/*/* && exit 1
 
+echo "Checking for leftover describe.only's..."
+grep decribe.only test/*/* && exit 1
+
 echo "Checking for leftover browser.debug's..."
 grep browser.debug test/*/* && exit 1
 
