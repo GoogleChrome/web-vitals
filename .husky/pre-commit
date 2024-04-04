@@ -2,3 +2,11 @@
 . "$(dirname -- "$0")/_/husky.sh"
 
 npm exec lint-staged
+
+echo "Checking for leftover it.only's..."
+grep it.only test/*/* && exit 1
+
+echo "Checking for leftover browser.debug's..."
+grep browser.debug test/*/* && exit 1
+
+exit 0

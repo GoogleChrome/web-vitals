@@ -13,6 +13,13 @@
  limitations under the License.
 */
 
+const argv = require('yargs').argv;
+
+// Check if a metric has been provided as an argument and if so, limit tests to that metric
+const specs = argv.metric
+  ? `test/e2e/on${argv.metric}-test.js`
+  : 'test/e2e/*-test.js';
+
 module.exports.config = {
   //
   // ====================
@@ -36,7 +43,7 @@ module.exports.config = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  specs: ['test/e2e/*-test.js'],
+  specs: [specs],
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -331,3 +338,15 @@ module.exports.config = {
   // afterAssertion: function(params) {
   // }
 };
+
+// Check if a browser has been provided as an argument and, if so, remove the other browsers
+if (argv.browser) {
+  console.log('Limiting to browser:', argv.browser);
+  const capabilities = exports.config.capabilities;
+  Object.keys(exports.config.capabilities).forEach((key) => {
+    if (capabilities[key].browserName != argv.browser) {
+      console.log('Skipping', capabilities[key].browserName);
+      delete capabilities[key];
+    }
+  });
+}

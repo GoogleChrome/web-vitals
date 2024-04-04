@@ -22,6 +22,20 @@ use GitHub pull requests for this purpose. Consult
 [GitHub Help](https://help.github.com/articles/about-pull-requests/) for more
 information on using pull requests.
 
+## Testing
+
+To test the full suite run `npm run test`.
+
+To test an individual browser or metric, run the following in separate terminals:
+
+- `npm run watch`
+- `npm run test:server`
+- `npm run test:e2e -- --browser=chrome --metric=TTFB`
+
+To run an individual test, change `it('test name')` to `it.only('test name')`.
+
+You can also add `await browser.debug()` lines to the individual test files to pause execution, and press `CTRL+C` in the command line to continue the tests.
+
 ## Community Guidelines
 
 This project follows [Google's Open Source Community

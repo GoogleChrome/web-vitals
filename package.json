@@ -164,7 +164,8 @@
     "rollup": "^4.9.1",
     "selenium-standalone": "^9.3.1",
     "typescript": "^5.3.3",
-    "wdio-chromedriver-service": "^8.1.1"
+    "wdio-chromedriver-service": "^8.1.1",
+    "yargs": "^17.7.2"
   },
   "lint-staged": {
     "**/*.{js,ts}": "eslint --fix --ignore-path .gitignore",
