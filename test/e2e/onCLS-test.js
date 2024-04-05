@@ -464,9 +464,12 @@ describe('onCLS()', async function () {
 
     await clearBeacons();
     await triggerLayoutShift();
-    await stubForwardBack();
+    // Wait for a frame to be painted to ensure shifts are for this page.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
 
+    await stubForwardBack();
     await beaconCountIs(1);
+
     const [cls2] = await getBeacons();
 
     assert(cls2.value >= 0);
