@@ -22,3 +22,7 @@ jobs:
         run: npm run test:server &
       - name: Run e2e tests for chrome
         run: npm run test:e2e -- --browsers=chrome
+      - name: Run e2e tests for firefox
+        run: npm run test:e2e -- --browsers=firefox
+      - name: Run e2e tests for safari
+        run: npm run test:e2e -- --browsers=safari
