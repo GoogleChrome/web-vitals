@@ -465,9 +465,9 @@ describe('onCLS()', async function () {
     await clearBeacons();
     await stubForwardBack();
 
-    await stubVisibilityChange('hidden');
+    // Get the beacons for the "forward" which should have beaconed
+    // when the page navigated back. It should have 0 CLS.
     await beaconCountIs(1);
-
     const [cls2] = await getBeacons();
 
     assert(cls2.value == 0);
@@ -480,6 +480,8 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls2.entries.length, 0);
     assert.strictEqual(cls2.navigationType, 'back-forward-cache');
 
+    // This back view is also 0 CLS and will be emitted on a visibility change
+    // Let's do a layout shift and check a non-zero CLS is reported.
     await clearBeacons();
     await triggerLayoutShift();
 
