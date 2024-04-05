@@ -668,6 +668,9 @@ describe('onCLS()', async function () {
     // Wait for a frame to be painted.
     await nextFrame();
 
+    // clear any beacons from page load that overran past forwardback
+    await clearBeacons();
+
     await triggerLayoutShift();
 
     await stubVisibilityChange('hidden');
