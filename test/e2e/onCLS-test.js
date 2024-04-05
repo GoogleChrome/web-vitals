@@ -31,6 +31,9 @@ describe('onCLS()', async function () {
   let browserSupportsCLS;
   before(async function () {
     browserSupportsCLS = await browserSupportsEntry('layout-shift');
+
+    // Set a standard screen size so thresholds are the same
+    browser.setWindowSize(1280, 1024);
   });
 
   beforeEach(async function () {
@@ -50,7 +53,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -71,7 +74,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -92,7 +95,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -117,7 +120,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -140,7 +143,7 @@ describe('onCLS()', async function () {
 
     const [cls1] = await getBeacons();
 
-    assert(cls1.value >= 0);
+    assert(cls1.value > 0);
     assert(cls1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
@@ -268,7 +271,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
@@ -312,7 +315,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
@@ -352,8 +355,8 @@ describe('onCLS()', async function () {
 
     const [cls1] = await getBeacons();
 
-    assert(cls1.value >= 0);
-    assert(cls1.delta >= 0);
+    assert(cls1.value > 0);
+    assert(cls1.delta > 0);
     assert(cls1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
@@ -399,7 +402,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
@@ -450,7 +453,7 @@ describe('onCLS()', async function () {
 
     const [cls1] = await getBeacons();
 
-    assert(cls1.value >= 0);
+    assert(cls1.value > 0);
     assert(cls1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls1.delta, cls1.value);
     assert.strictEqual(cls1.name, 'CLS');
@@ -467,7 +470,7 @@ describe('onCLS()', async function () {
 
     const [cls2] = await getBeacons();
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert(cls2.id.match(/^v4-\d+-\d+$/));
     assert(cls2.id !== cls1.id);
 
@@ -485,7 +488,7 @@ describe('onCLS()', async function () {
 
     const [cls3] = await getBeacons();
 
-    assert(cls3.value >= 0);
+    assert(cls3.value > 0);
     assert(cls3.id.match(/^v4-\d+-\d+$/));
     assert(cls3.id !== cls2.id);
 
@@ -512,7 +515,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
@@ -658,12 +661,12 @@ describe('onCLS()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await navigateTo('/test/cls?hidden=1');
+    await navigateTo('/test/cls?hidden=1', {readyState: 'complete'});
 
     await stubForwardBack();
 
-    // Wait for a frame to be painted.
-    await nextFrame();
+    // clear any beacons from page load.
+    await clearBeacons();
 
     await triggerLayoutShift();
 
@@ -672,7 +675,7 @@ describe('onCLS()', async function () {
 
     const [cls] = await getBeacons();
 
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.delta, cls.value);
@@ -693,7 +696,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
     const [cls] = await getBeacons();
 
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -714,7 +717,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
     const [cls] = await getBeacons();
 
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -736,7 +739,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
 
       const [cls] = await getBeacons();
-      assert(cls.value >= 0);
+      assert(cls.value > 0);
       assert(cls.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
@@ -782,7 +785,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
       const [cls] = await getBeacons();
 
-      assert(cls.value >= 0);
+      assert(cls.value > 0);
       assert(cls.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
@@ -822,7 +825,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
       const [cls] = await getBeacons();
 
-      assert(cls.value >= 0);
+      assert.strictEqual(cls.value, 0);
       assert(cls.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
@@ -838,14 +841,15 @@ describe('onCLS()', async function () {
 let marginTop = 0;
 
 /**
- * Returns a promise that resolves once the browser window has loaded and all
- * the images in the document have decoded and rendered.
- * @return {Promise<void>}
+ * Adds
+ * @return {void}
  */
-function triggerLayoutShift() {
-  return browser.execute((marginTop) => {
+async function triggerLayoutShift() {
+  await browser.execute((marginTop) => {
     document.querySelector('h1').style.marginTop = marginTop + 'em';
   }, ++marginTop);
+  // Wait for a frame to be painted to ensure shifts are finished painting.
+  await nextFrame();
 }
 
 /**
