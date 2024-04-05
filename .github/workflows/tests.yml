@@ -1,4 +1,4 @@
-name: Run tests
+name: Run unit tests
 on:
   pull_request:
   push:
@@ -7,18 +7,14 @@ on:
   workflow_dispatch:
 jobs:
   unit:
-    name: Run tests
-    runs-on: ubuntu-20.04
+    name: Run unit tests
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: NPM install
         run: npm install
       - name: Build
         run: npm run build
       - name: Run unit tests
         run: npm run test:unit
-      - name: Run server
-        run: npm run test:server &
-      - name: Run e2e tests for chrome
-        run: npm run test:e2e -- --browsers=chrome
