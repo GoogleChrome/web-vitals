@@ -16,7 +16,6 @@
 
 import {onHidden} from './onHidden.js';
 import {runOnce} from './runOnce.js';
-const rIC = self.requestIdleCallback || self.setTimeout;
 
 /**
  * Runs the passed callback during the next idle period, or immediately
