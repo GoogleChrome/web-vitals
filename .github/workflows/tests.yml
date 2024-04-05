@@ -1,4 +1,4 @@
-name: Run unit tests
+name: Run tests
 on:
   pull_request:
   push:
@@ -7,8 +7,8 @@ on:
   workflow_dispatch:
 jobs:
   tests:
-    name: Run unit tests
-    runs-on: ubuntu-latest
+    name: Run tests
+    runs-on: macos-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -18,3 +18,7 @@ jobs:
         run: npm run build
       - name: Run unit tests
         run: npm run test:unit
+      - name: Run server
+        run: npm run test:server &
+      - name: Run e2e tests for chrome
+        run: npm run test:e2e -- --browsers=chrome
