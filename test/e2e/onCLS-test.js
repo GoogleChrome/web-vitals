@@ -463,8 +463,9 @@ describe('onCLS()', async function () {
     assert.match(cls1.navigationType, /navigate|reload/);
 
     await clearBeacons();
-
     await stubForwardBack();
+
+    await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
     const [cls2] = await getBeacons();
