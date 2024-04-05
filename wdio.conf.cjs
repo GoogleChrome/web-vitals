@@ -16,11 +16,11 @@
 const argv = require('yargs').argv;
 
 // Allow running tests for a comma-delimited set of metrics via `--metrics=TTFB,LCP`.
-const metrics = argv.metrics ? argv.metrics.split(',') : ['*'];
+const metrics = argv.metrics ? argv.metrics.toUpperCase().split(',') : ['*'];
 
 // Allow running tests for a comma-delimited set of browsers via `--browsers=chrome,safari`.
 const browsers = argv.browsers
-  ? argv.browsers.split(',')
+  ? argv.browsers.toLowerCase().split(',')
   : ['chrome', 'firefox', 'safari'];
 
 module.exports.config = {
