@@ -82,7 +82,7 @@ module.exports.config = {
     if (browserName === 'chrome') {
       capability['goog:chromeOptions'] = {
         excludeSwitches: ['enable-automation'],
-        args: ['start-maximized', 'disable-gpu', 'remote-debugging-pipe'], // Need for GitHub Actions
+        args: ['headless', 'disable-gpu', 'remote-debugging-pipe'], // Need for GitHub Actions
         // Uncomment to test on Chrome Canary.
         // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'
       };
