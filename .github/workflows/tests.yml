@@ -36,8 +36,8 @@ jobs:
         run: npm run test:e2e -- --browsers=chrome
   firefox-tests:
     name: Run Firefox e2e tests
-    # Let's use ubuntu as more available
-    runs-on: ubuntu-latest
+    # Runs best on macos for CI as linux requires extra setup
+    runs-on: macos-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
