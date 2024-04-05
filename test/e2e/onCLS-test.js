@@ -31,6 +31,9 @@ describe('onCLS()', async function () {
   let browserSupportsCLS;
   before(async function () {
     browserSupportsCLS = await browserSupportsEntry('layout-shift');
+
+    // Set a standard screen size so thresholds are the same
+    browser.setWindowSize(1280, 1024);
   });
 
   beforeEach(async function () {
@@ -440,8 +443,6 @@ describe('onCLS()', async function () {
   it('continues reporting after bfcache restore (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    browser.setWindowSize(1024, 768);
-
     await navigateTo(`/test/cls`);
 
     // Wait until all images are loaded and rendered, then go forward & back.
@@ -500,8 +501,6 @@ describe('onCLS()', async function () {
 
   it('continues reporting after bfcache restore (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
-
-    browser.setWindowSize(1024, 768);
 
     await navigateTo(`/test/cls?reportAllChanges=1`);
     await beaconCountIs(3);
