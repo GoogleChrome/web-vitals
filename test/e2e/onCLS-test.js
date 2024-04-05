@@ -488,7 +488,7 @@ describe('onCLS()', async function () {
 
     const [cls3] = await getBeacons();
 
-    assert(cls3.value >= 0);
+    assert(cls3.value > 0);
     assert(cls3.id.match(/^v4-\d+-\d+$/));
     assert(cls3.id !== cls2.id);
 
@@ -845,7 +845,7 @@ let marginTop = 0;
  * @return {void}
  */
 async function triggerLayoutShift() {
-  browser.execute((marginTop) => {
+  await browser.execute((marginTop) => {
     document.querySelector('h1').style.marginTop = marginTop + 'em';
   }, ++marginTop);
   // Wait for a frame to be painted to ensure shifts are finished painting.
