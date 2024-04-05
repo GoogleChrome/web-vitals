@@ -15,12 +15,12 @@
 
 const argv = require('yargs').argv;
 
-// Allow running tests for just a single metric via `--metric=*`.
-const metric = argv.metric ?? '*';
+// Allow running tests for a comma-delimited set of metrics via `--metrics=TTFB,LCP`.
+const metrics = argv.metrics ? argv.metrics.split(',') : ['*'];
 
-// Allow running tests on just a single browser via `--browser=*`
-const browsers = argv.browser
-  ? [argv.browser]
+// Allow running tests for a comma-delimited set of browsers via `--browsers=chrome,safari`.
+const browsers = argv.browsers
+  ? argv.browsers.split(',')
   : ['chrome', 'firefox', 'safari'];
 
 module.exports.config = {
@@ -46,7 +46,7 @@ module.exports.config = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  specs: [`test/e2e/on${metric}-test.js`],
+  specs: metrics.map((metric) => `test/e2e/on${metric}-test.js`),
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'

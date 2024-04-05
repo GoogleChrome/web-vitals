@@ -26,11 +26,15 @@ information on using pull requests.
 
 To test the full suite run `npm run test`.
 
-To test an individual browser or metric, run the following in separate terminals:
+To test a subset of browsers or metrics, run the following in separate terminals:
 
 - `npm run watch`
 - `npm run test:server`
-- `npm run test:e2e -- --browser=chrome --metric=TTFB`
+- `npm run test:e2e -- --browsesr=chrome --metrics=TTFB`
+
+The last command can be replaced as you see fit and include comma, separated values. For example:
+
+- `npm run test:e2e -- --browsesr=chrome,firefox --metrics=TTFB,LCP`
 
 To run an individual test, change `it('test name')` to `it.only('test name')`.
 
