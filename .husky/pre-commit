@@ -3,13 +3,10 @@
 
 npm exec lint-staged
 
-echo "Checking for leftover it.only's..."
-grep it.only test/*/* && exit 1
+grep -r "\.only(" test/e2e \
+  && echo "ERROR: found .only() use in test" && exit 1
 
-echo "Checking for leftover describe.only's..."
-grep describe.only test/*/* && exit 1
-
-echo "Checking for leftover browser.debug's..."
-grep browser.debug test/*/* && exit 1
+grep -r "browser\.debug(" test/e2e \
+  && echo "ERROR: found browser.debug() use in test" && exit 1
 
 exit 0

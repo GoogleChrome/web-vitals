@@ -15,10 +15,13 @@
 
 const argv = require('yargs').argv;
 
-// Check if a metric has been provided as an argument and if so, limit tests to that metric
-const specs = argv.metric
-  ? `test/e2e/on${argv.metric}-test.js`
-  : 'test/e2e/*-test.js';
+// Allow running tests for just a single metric via `--metric=*`.
+const metric = argv.metric ?? '*';
+
+// Allow running tests on just a single browser via `--browser=*`
+const browsers = argv.browser
+  ? [argv.browser]
+  : ['chrome', 'firefox', 'safari'];
 
 module.exports.config = {
   //
@@ -43,7 +46,7 @@ module.exports.config = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  specs: [specs],
+  specs: [`test/e2e/on${metric}-test.js`],
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -70,36 +73,21 @@ module.exports.config = {
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://saucelabs.com/platform/platform-configurator
   //
-  capabilities: [
-    {
-      'pageLoadStrategy': 'none',
-      // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-      // grid with only 5 firefox instances available you can make sure that not more than
-      // 5 instances get started at a time.
-      'maxInstances': 1,
-      //
-      'browserName': 'chrome',
-      // If outputDir is provided WebdriverIO can capture driver session logs
-      // it is possible to configure which logTypes to include/exclude.
-      // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
-      // excludeDriverLogs: ['bugreport', 'server'],
-      'goog:chromeOptions': {
+  capabilities: browsers.map((browserName) => {
+    const capability = {
+      browserName: browserName,
+      maxInstances: 1,
+      pageLoadStrategy: 'none',
+    };
+    if (browserName === 'chrome') {
+      capability['goog:chromeOptions'] = {
         excludeSwitches: ['enable-automation'],
         // Uncomment to test on Chrome Canary.
         // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'
-      },
-    },
-    {
-      browserName: 'firefox',
-      maxInstances: 1,
-      pageLoadStrategy: 'none',
-    },
-    {
-      browserName: 'safari',
-      maxInstances: 1,
-      pageLoadStrategy: 'none',
-    },
-  ],
+      };
+    }
+    return capability;
+  }),
   //
   // ===================
   // Test Configurations
@@ -338,15 +326,3 @@ module.exports.config = {
   // afterAssertion: function(params) {
   // }
 };
-
-// Check if a browser has been provided as an argument and, if so, remove the other browsers
-if (argv.browser) {
-  console.log('Limiting to browser:', argv.browser);
-  const capabilities = exports.config.capabilities;
-  Object.keys(exports.config.capabilities).forEach((key) => {
-    if (capabilities[key].browserName != argv.browser) {
-      console.log('Skipping', capabilities[key].browserName);
-      delete capabilities[key];
-    }
-  });
-}
