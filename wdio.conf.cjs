@@ -82,6 +82,7 @@ module.exports.config = {
     if (browserName === 'chrome') {
       capability['goog:chromeOptions'] = {
         excludeSwitches: ['enable-automation'],
+        args: ['remote-debugging-pipe'],
         // Uncomment to test on Chrome Canary.
         // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'
       };
