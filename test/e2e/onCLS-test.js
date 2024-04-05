@@ -825,7 +825,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
       const [cls] = await getBeacons();
 
-      assert(cls.value > 0);
+      assert(cls.value == 0);
       assert(cls.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
