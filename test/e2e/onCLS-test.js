@@ -53,7 +53,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -74,7 +74,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -95,7 +95,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -120,7 +120,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -464,8 +464,6 @@ describe('onCLS()', async function () {
 
     await clearBeacons();
     await triggerLayoutShift();
-    // Wait for a frame to be painted to ensure shifts are for this page.
-    await browser.executeAsync((done) => requestAnimationFrame(done));
 
     await stubForwardBack();
     await beaconCountIs(1);
@@ -677,7 +675,7 @@ describe('onCLS()', async function () {
 
     const [cls] = await getBeacons();
 
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.delta, cls.value);
@@ -698,7 +696,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
     const [cls] = await getBeacons();
 
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -719,7 +717,7 @@ describe('onCLS()', async function () {
     await beaconCountIs(1);
     const [cls] = await getBeacons();
 
-    assert(cls.value >= 0);
+    assert(cls.value > 0);
     assert(cls.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
@@ -741,7 +739,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
 
       const [cls] = await getBeacons();
-      assert(cls.value >= 0);
+      assert(cls.value > 0);
       assert(cls.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
@@ -787,7 +785,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
       const [cls] = await getBeacons();
 
-      assert(cls.value >= 0);
+      assert(cls.value > 0);
       assert(cls.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
@@ -827,7 +825,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
       const [cls] = await getBeacons();
 
-      assert(cls.value >= 0);
+      assert(cls.value > 0);
       assert(cls.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
@@ -843,14 +841,15 @@ describe('onCLS()', async function () {
 let marginTop = 0;
 
 /**
- * Returns a promise that resolves once the browser window has loaded and all
- * the images in the document have decoded and rendered.
- * @return {Promise<void>}
+ * Adds
+ * @return {void}
  */
-function triggerLayoutShift() {
-  return browser.execute((marginTop) => {
+async function triggerLayoutShift() {
+  browser.execute((marginTop) => {
     document.querySelector('h1').style.marginTop = marginTop + 'em';
   }, ++marginTop);
+  // Wait for a frame to be painted to ensure shifts are finished painting.
+  await nextFrame();
 }
 
 /**
