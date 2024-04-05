@@ -680,7 +680,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.delta, cls.value);
     assert.strictEqual(cls.rating, 'good');
-    assert(cls.entries.length >= 1);
+    assert.strictEqual(cls.entries.length, 1);
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
   });
 
