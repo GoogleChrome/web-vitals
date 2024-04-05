@@ -662,13 +662,15 @@ describe('onCLS()', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await navigateTo('/test/cls?hidden=1');
+    // Wait for a frame to be painted.
+    await nextFrame();
 
     await stubForwardBack();
 
     // Wait for a frame to be painted.
     await nextFrame();
 
-    // clear any beacons from page load that overran past forwardback
+    // clear any beacons from page load.
     await clearBeacons();
 
     await triggerLayoutShift();
