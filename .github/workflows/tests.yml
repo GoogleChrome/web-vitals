@@ -6,7 +6,7 @@ on:
       - main
   workflow_dispatch:
 jobs:
-  lint:
+  unit:
     name: Run tests
     runs-on: ubuntu-20.04
     steps:
@@ -16,5 +16,9 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
-      - name: Run E2E tests
+      - name: Run unit tests
         run: npm run test:unit
+      - name: Run server
+        run: npm run test:server &
+      - name: Run e2e tests for chrome
+        run: npm run test:e2e -- --browsers=chrome
