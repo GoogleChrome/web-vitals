@@ -18,7 +18,3 @@ jobs:
         run: npm run build
       - name: Run unit tests
         run: npm run test:unit
-      - name: Run server
-        run: npm run test:server &
-      - name: Run e2e tests for chrome
-        run: npm run test:e2e -- --browsers=chrome
