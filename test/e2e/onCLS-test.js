@@ -463,21 +463,20 @@ describe('onCLS()', async function () {
     assert.match(cls1.navigationType, /navigate|reload/);
 
     await clearBeacons();
-    await triggerLayoutShift();
 
     await stubForwardBack();
     await beaconCountIs(1);
 
     const [cls2] = await getBeacons();
 
-    assert(cls2.value >= 0);
+    assert(cls2.value == 0);
     assert(cls2.id.match(/^v4-\d+-\d+$/));
     assert(cls2.id !== cls1.id);
 
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.value, cls2.delta);
     assert.strictEqual(cls2.rating, 'good');
-    assert.strictEqual(cls2.entries.length, 1);
+    assert.strictEqual(cls2.entries.length, 0);
     assert.strictEqual(cls2.navigationType, 'back-forward-cache');
 
     await clearBeacons();
