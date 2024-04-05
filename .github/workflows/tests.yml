@@ -8,7 +8,8 @@ on:
 jobs:
   unit-tests:
     name: Run unit tests
-    runs-on: macos-latest
+    # Doesn't require anything special so let's use ubuntu as more available
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -20,6 +21,7 @@ jobs:
         run: npm run test:unit
   chrome-tests:
     name: Run Chrome e2e tests
+    # Runs best on macos for CI as linux requires extra chrome flags
     runs-on: macos-latest
     steps:
       - name: Checkout Code
@@ -34,7 +36,8 @@ jobs:
         run: npm run test:e2e -- --browsers=chrome
   firefox-tests:
     name: Run Firefox e2e tests
-    runs-on: macos-latest
+    # Let's use ubuntu as more available
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -48,6 +51,7 @@ jobs:
         run: npm run test:e2e -- --browsers=firefox
   safari-tests:
     name: Run Safari e2e tests
+    # Requires macos
     runs-on: macos-latest
     steps:
       - name: Checkout Code
