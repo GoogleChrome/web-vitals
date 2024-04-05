@@ -143,7 +143,7 @@ describe('onCLS()', async function () {
 
     const [cls1] = await getBeacons();
 
-    assert(cls1.value >= 0);
+    assert(cls1.value > 0);
     assert(cls1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
@@ -271,7 +271,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
@@ -315,7 +315,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
@@ -355,8 +355,8 @@ describe('onCLS()', async function () {
 
     const [cls1] = await getBeacons();
 
-    assert(cls1.value >= 0);
-    assert(cls1.delta >= 0);
+    assert(cls1.value > 0);
+    assert(cls1.delta > 0);
     assert(cls1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
@@ -402,7 +402,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
@@ -453,7 +453,7 @@ describe('onCLS()', async function () {
 
     const [cls1] = await getBeacons();
 
-    assert(cls1.value >= 0);
+    assert(cls1.value > 0);
     assert(cls1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(cls1.delta, cls1.value);
     assert.strictEqual(cls1.name, 'CLS');
@@ -470,7 +470,7 @@ describe('onCLS()', async function () {
 
     const [cls2] = await getBeacons();
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert(cls2.id.match(/^v4-\d+-\d+$/));
     assert(cls2.id !== cls1.id);
 
@@ -515,7 +515,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1.entries.length, 0);
     assert.match(cls1.navigationType, /navigate|reload/);
 
-    assert(cls2.value >= 0);
+    assert(cls2.value > 0);
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.id, cls1.id);
     assert.strictEqual(cls2.value, cls1.delta + cls2.delta);
