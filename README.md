@@ -1024,15 +1024,18 @@ interface LCPAttribution {
 ```ts
 interface TTFBAttribution {
   /**
-   * The total time spent before checking local caches for the navigation. This
-   * is most likely redirects (hence the name) but can include small amount
-   * of browser processing time so may be non-zero even with no redirects.
+   * The total time spent resolving redirects before starting the next phase
+   * of the request (checking the cache or service worker). If there were no
+   * redirects, this duration will generally be close to zero (though it's
+   * usually not actually zero because some browser processing is required
+   * before the next request phase can begin).
    */
   redirectDuration: number;
   /**
-   * The total time spent looking up local caches for the navigation request.
-   * This includes service worker startup, service worker fetch processing, and
-   * HTTP cache lookup times.
+   * The total time spent checking the HTTP cache for a match. If the page
+   * is controlled by a service worker, this duration will include service
+   * worker start up time as well as time processing the `fetch` event in the
+   * worker.
    */
   cacheDuration: number;
   /**
@@ -1051,8 +1054,8 @@ interface TTFBAttribution {
   requestDuration: number;
   /**
    * The `navigation` entry of the current page, which is useful for diagnosing
-   * general page load issues. This can be used to access `serverTiming` for example:
-   * navigationEntry?.serverTiming
+   * general page load issues. This can be used to access `serverTiming` for
+   * example: navigationEntry?.serverTiming
    */
   navigationEntry?: PerformanceNavigationTiming;
 }
