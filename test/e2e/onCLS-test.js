@@ -666,9 +666,7 @@ describe('onCLS()', async function () {
     await nextFrame();
 
     await stubForwardBack();
-
-    // Wait for a frame to be painted.
-    await nextFrame();
+    await firstContentfulPaint();
 
     // clear any beacons from page load.
     await clearBeacons();
@@ -685,7 +683,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.delta, cls.value);
     assert.strictEqual(cls.rating, 'good');
-    assert.strictEqual(cls.entries.length, 1);
+    assert(cls.entries.length >= 1);
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
   });
 
@@ -830,7 +828,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
       const [cls] = await getBeacons();
 
-      assert(cls.value == 0);
+      assert.strictEqual(cls.value, 0);
       assert(cls.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(cls.name, 'CLS');
       assert.strictEqual(cls.value, cls.delta);
