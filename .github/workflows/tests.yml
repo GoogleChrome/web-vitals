@@ -1,0 +1,20 @@
+name: Run tests
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  lint:
+    name: Run tests
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+      - name: NPM install
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Run E2E tests
+        run: npm run test:unit
