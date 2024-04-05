@@ -22,6 +22,8 @@ import {runOnce} from './runOnce.js';
  * if the browser's visibility state is (or becomes) hidden.
  */
 export const whenIdle = (cb: () => void): number => {
+  const rIC = self.requestIdleCallback || self.setTimeout;
+
   let handle = -1;
   cb = runOnce(cb);
   // If the document is hidden, run the callback immediately, otherwise
