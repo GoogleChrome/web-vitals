@@ -27,31 +27,81 @@ const attributeTTFB = (metric: TTFBMetric): void => {
   if (metric.entries.length) {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
+    let redirectDuration = 0;
+    let swStartupDuration = 0;
+    let swFetchEventDuration = 0;
+    let cacheDuration = 0;
+    const dnsDuration = 0;
+    let connectionDuration = 0;
+    let waitingDuration = 0;
 
-    const cacheStart = Math.max(
-      (navigationEntry.workerStart || navigationEntry.fetchStart) -
+    const requestDuration =
+      metric.value -
+      Math.max(navigationEntry.requestStart - activationStart, 0);
+
+    if (navigationEntry.workerStart) {
+      // Service worker-based timings
+      redirectDuration = navigationEntry.workerStart - activationStart;
+
+      swStartupDuration = Math.max(
+        navigationEntry.fetchStart -
+          activationStart -
+          navigationEntry.workerStart -
+          activationStart,
+        0,
+      );
+
+      swFetchEventDuration =
+        Math.max(
+          navigationEntry.connectEnd -
+            activationStart -
+            navigationEntry.workerStart -
+            activationStart,
+          0,
+        ) - swStartupDuration;
+    } else {
+      // HTTP Cache-based timings
+      redirectDuration = Math.max(
+        navigationEntry.fetchStart - activationStart,
+        0,
+      );
+      cacheDuration =
+        Math.max(navigationEntry.domainLookupStart - activationStart, 0) -
+        redirectDuration;
+    }
+
+    connectionDuration = Math.max(
+      navigationEntry.connectEnd -
+        activationStart -
+        navigationEntry.connectStart -
         activationStart,
       0,
     );
-    const dnsStart = Math.max(
-      navigationEntry.domainLookupStart - activationStart,
-      0,
-    );
-    const connectStart = Math.max(
-      navigationEntry.connectStart - activationStart,
-      0,
-    );
-    const requestStart = Math.max(
-      navigationEntry.requestStart - activationStart,
+
+    waitingDuration = Math.max(
+      navigationEntry.requestStart -
+        activationStart -
+        navigationEntry.connectEnd -
+        activationStart,
       0,
     );
 
+    // If the redirect time is less than 20ms then it can't really redirect time and is a misreporting
+    // Attribute it to the waitingDuration to avoid confusion
+    if (redirectDuration < 20) {
+      waitingDuration = waitingDuration + redirectDuration;
+      redirectDuration = 0;
+    }
+
     (metric as TTFBMetricWithAttribution).attribution = {
-      redirectDuration: cacheStart,
-      cacheDuration: dnsStart - cacheStart,
-      dnsDuration: connectStart - dnsStart,
-      connectionDuration: requestStart - connectStart,
-      requestDuration: metric.value - requestStart,
+      redirectDuration: redirectDuration,
+      swStartupDuration: swStartupDuration,
+      swFetchEventDuration: swFetchEventDuration,
+      cacheDuration: cacheDuration,
+      dnsDuration: dnsDuration,
+      connectionDuration: connectionDuration,
+      waitingDuration: waitingDuration,
+      requestDuration: requestDuration,
       navigationEntry: navigationEntry,
     };
     return;
@@ -59,10 +109,13 @@ const attributeTTFB = (metric: TTFBMetric): void => {
   // Set an empty object if no other attribution has been set.
   (metric as TTFBMetricWithAttribution).attribution = {
     redirectDuration: 0,
+    swStartupDuration: 0,
+    swFetchEventDuration: 0,
     cacheDuration: 0,
     dnsDuration: 0,
     connectionDuration: 0,
     requestDuration: 0,
+    waitingDuration: 0,
   };
 };
 

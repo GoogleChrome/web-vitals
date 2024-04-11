@@ -1032,6 +1032,15 @@ interface TTFBAttribution {
    */
   redirectDuration: number;
   /**
+   * The total time sent starting up the service worker (if present).
+   */
+  swStartupDuration: number;
+  /**
+   * The total time the service worker (if present) spent handling the
+   * fetch event before dispatching it.
+   */
+  swFetchEventDuration: number;
+  /**
    * The total time spent checking the HTTP cache for a match. If the page
    * is controlled by a service worker, this duration will include service
    * worker start up time as well as time processing the `fetch` event in the
@@ -1046,6 +1055,10 @@ interface TTFBAttribution {
    * The total time to create the connection to the requested domain.
    */
   connectionDuration: number;
+  /**
+   * The total unattributed time spent on browser processing.
+   */
+  waitingDuration: number;
   /**
    * The total time from when the request was sent until the first byte of the
    * response was received. This includes network time as well as server
