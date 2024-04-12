@@ -262,7 +262,12 @@ describe('onTTFB()', async function () {
       const navEntry = ttfb.entries[0];
       assert.strictEqual(
         ttfb.attribution.waitingDuration,
-        navEntry.domainLookupStart,
+        navEntry.workerStart || navEntry.fetchStart,
+      );
+      assert.strictEqual(
+        ttfb.attribution.cacheDuration,
+        navEntry.domainLookupStart -
+          (navEntry.workerStart || navEntry.fetchStart),
       );
       assert.strictEqual(
         ttfb.attribution.dnsDuration,
@@ -270,11 +275,11 @@ describe('onTTFB()', async function () {
       );
       assert.strictEqual(
         ttfb.attribution.connectionDuration,
-        navEntry.requestStart - navEntry.connectStart,
+        navEntry.connectEnd - navEntry.connectStart,
       );
       assert.strictEqual(
         ttfb.attribution.requestDuration,
-        navEntry.responseStart - navEntry.requestStart,
+        navEntry.responseStart - navEntry.connectEnd,
       );
 
       assert.deepEqual(ttfb.attribution.navigationEntry, navEntry);
@@ -304,7 +309,18 @@ describe('onTTFB()', async function () {
       const navEntry = ttfb.entries[0];
       assert.strictEqual(
         ttfb.attribution.waitingDuration,
-        Math.max(0, navEntry.domainLookupStart - activationStart),
+        Math.max(
+          0,
+          (navEntry.workerStart || navEntry.fetchStart) - activationStart,
+        ),
+      );
+      assert.strictEqual(
+        ttfb.attribution.cacheDuration,
+        Math.max(0, navEntry.domainLookupStart - activationStart) -
+          Math.max(
+            0,
+            (navEntry.workerStart || navEntry.fetchStart) - activationStart,
+          ),
       );
       assert.strictEqual(
         ttfb.attribution.dnsDuration,
@@ -313,14 +329,13 @@ describe('onTTFB()', async function () {
       );
       assert.strictEqual(
         ttfb.attribution.connectionDuration,
-        Math.max(0, navEntry.requestStart - activationStart) -
+        Math.max(0, navEntry.connectEnd - activationStart) -
           Math.max(0, navEntry.connectStart - activationStart),
       );
-
       assert.strictEqual(
         ttfb.attribution.requestDuration,
         Math.max(0, navEntry.responseStart - activationStart) -
-          Math.max(0, navEntry.requestStart - activationStart),
+          Math.max(0, navEntry.connectEnd - activationStart),
       );
 
       assert.deepEqual(ttfb.attribution.navigationEntry, navEntry);
@@ -347,6 +362,7 @@ describe('onTTFB()', async function () {
       assert.strictEqual(ttfb.entries.length, 0);
 
       assert.strictEqual(ttfb.attribution.waitingDuration, 0);
+      assert.strictEqual(ttfb.attribution.cacheDuration, 0);
       assert.strictEqual(ttfb.attribution.dnsDuration, 0);
       assert.strictEqual(ttfb.attribution.connectionDuration, 0);
       assert.strictEqual(ttfb.attribution.requestDuration, 0);

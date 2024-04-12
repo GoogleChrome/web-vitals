@@ -1022,15 +1022,23 @@ interface LCPAttribution {
 #### TTFB `attribution`:
 
 ```ts
-interface TTFBAttribution {
+export interface TTFBAttribution {
   /**
    * The total time from when the user initiates loading the page to when the
-   * DNS lookup begins. This includes redirects, service worker startup, and
-   * HTTP cache lookup times.
+   * page starts to handle the request. Large values here are typically due
+   * to HTTP redirects, though other browser processing contributes to this
+   * duration as well (so even without redirect it's generally not zero).
    */
   waitingDuration: number;
   /**
-   * The total time to resolve the DNS for the current request.
+   * The total time spent checking the HTTP cache for a match. For navigations
+   * handled via service worker, this duration usually includes service worker
+   * start-up time as well as time processing `fetch` event listeners, with
+   * some exceptions, see: https://github.com/w3c/navigation-timing/issues/199
+   */
+  cacheDuration: number;
+  /**
+   * The total time to resolve the DNS for the requested domain.
    */
   dnsDuration: number;
   /**
@@ -1045,8 +1053,8 @@ interface TTFBAttribution {
   requestDuration: number;
   /**
    * The `navigation` entry of the current page, which is useful for diagnosing
-   * general page load issues. This can be used to access `serverTiming` for example:
-   * navigationEntry?.serverTiming
+   * general page load issues. This can be used to access `serverTiming` for
+   * example: navigationEntry?.serverTiming
    */
   navigationEntry?: PerformanceNavigationTiming;
 }

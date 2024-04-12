@@ -28,6 +28,14 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
+    // Measure from workerStart or fetchStart so any service worker startup
+    // time is included in cacheDuration (which also includes other sw time
+    // anyway, that cannot be accurately split out cross-browser).
+    const waitEnd = Math.max(
+      (navigationEntry.workerStart || navigationEntry.fetchStart) -
+        activationStart,
+      0,
+    );
     const dnsStart = Math.max(
       navigationEntry.domainLookupStart - activationStart,
       0,
@@ -36,16 +44,23 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       navigationEntry.connectStart - activationStart,
       0,
     );
-    const requestStart = Math.max(
-      navigationEntry.requestStart - activationStart,
+    const connectEnd = Math.max(
+      navigationEntry.connectEnd - activationStart,
       0,
     );
 
     (metric as TTFBMetricWithAttribution).attribution = {
-      waitingDuration: dnsStart,
+      waitingDuration: waitEnd,
+      cacheDuration: dnsStart - waitEnd,
+      // dnsEnd usually equals connectStart but use connectStart over dnsEnd
+      // for dnsDuration in case there ever is a gap.
       dnsDuration: connectStart - dnsStart,
-      connectionDuration: requestStart - connectStart,
-      requestDuration: metric.value - requestStart,
+      connectionDuration: connectEnd - connectStart,
+      // There is often a gap between connectEnd and requestStart. Attribute
+      // that to requestDuration so connectionDuration remains 0 for
+      // service worker controlled requests were connectStart and connectEnd
+      // are the same.
+      requestDuration: metric.value - connectEnd,
       navigationEntry: navigationEntry,
     };
     return;
@@ -53,6 +68,7 @@ const attributeTTFB = (metric: TTFBMetric): void => {
   // Set an empty object if no other attribution has been set.
   (metric as TTFBMetricWithAttribution).attribution = {
     waitingDuration: 0,
+    cacheDuration: 0,
     dnsDuration: 0,
     connectionDuration: 0,
     requestDuration: 0,
