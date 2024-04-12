@@ -24,10 +24,16 @@ import {
 } from '../types.js';
 
 const attributeTTFB = (metric: TTFBMetric): void => {
-  if (metric.entries.length) {
+  // Only attribute if you have a non-zero value and a navigationEntry entry
+  // E.g. For cross-origin redirects, Safari has a workerStart time but no
+  // TTFB time, so do not provide attribute for that.
+  if (metric.value && metric.entries.length) {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
+    // Measure from workerStart or fetchStart so any service worker startup
+    // time is included in cacheDuration (which also includes other sw time
+    // anyway, that cannot be accurately split out cross-browser).
     const waitEnd = Math.max(
       (navigationEntry.workerStart || navigationEntry.fetchStart) -
         activationStart,
@@ -49,8 +55,14 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     (metric as TTFBMetricWithAttribution).attribution = {
       waitingDuration: waitEnd,
       cacheDuration: dnsStart - waitEnd,
+      // dnsEnd usually equals connectStart but use connectStart over dnsEnd
+      // for dnsDuration in case there ever is a gap.
       dnsDuration: connectStart - dnsStart,
       connectionDuration: connectEnd - connectStart,
+      // There is often a gap between connectEnd and requestStart. Attribute
+      // that to requestDuration so connectionDuration remains 0 for
+      // service worker controlled requests were connectStart and connectEnd
+      // are the same.
       requestDuration: metric.value - connectEnd,
       navigationEntry: navigationEntry,
     };

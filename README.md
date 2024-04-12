@@ -1030,18 +1030,18 @@ interface TTFBAttribution {
    */
   waitingDuration: number;
   /**
-   * The total time spent checking the HTTP cache for a match. For sites using
-   * service workers this time represents the total service worker time.
+   * The total time spent checking the HTTP cache for a match. For navigations
+   * using service workers this time represents the total service worker time.
    */
   cacheDuration: number;
   /**
    * The total time to resolve the DNS for the requested domain. This cannot
-   * always be accurately measured for requests using service workers.
+   * be measured for requests using service workers and will be 0.
    */
   dnsDuration: number;
   /**
    * The total time to create the connection to the requested domain. This
-   * cannot always be accurately measured for requests using service workers.
+   * cannot be measured for requests using service workers and will be 0.
    */
   connectionDuration: number;
   /**
