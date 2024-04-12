@@ -28,37 +28,33 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
-    const waitingDuration = Math.max(
-      (navigationEntry.workerStart || navigationEntry.fetchStart) -
-        activationStart,
+    const fetchStart = Math.max(
+      navigationEntry.fetchStart - activationStart,
+      0,
+    );
+    const dnsStart = Math.max(
+      navigationEntry.domainLookupStart - activationStart,
+      0,
+    );
+    const dnsEnd = Math.max(
+      navigationEntry.domainLookupStart - activationStart,
+      0,
+    );
+    const connectEnd = Math.max(
+      navigationEntry.connectEnd - activationStart,
+      0,
+    );
+    const responseStart = Math.max(
+      navigationEntry.responseStart - activationStart,
       0,
     );
 
-    const cacheDuration =
-      Math.max(navigationEntry.domainLookupStart - activationStart, 0) -
-      Math.max(
-        (navigationEntry.workerStart || navigationEntry.fetchStart) -
-          activationStart,
-        0,
-      );
-
-    const dnsDuration =
-      Math.max(navigationEntry.domainLookupEnd - activationStart, 0) -
-      Math.max(navigationEntry.domainLookupStart - activationStart, 0);
-
-    const connectionDuration =
-      Math.max(navigationEntry.connectEnd - activationStart, 0) -
-      Math.max(navigationEntry.domainLookupEnd - activationStart, 0);
-
-    const requestDuration =
-      metric.value - Math.max(navigationEntry.connectEnd - activationStart, 0);
-
     (metric as TTFBMetricWithAttribution).attribution = {
-      waitingDuration: waitingDuration,
-      cacheDuration: cacheDuration,
-      dnsDuration: dnsDuration,
-      connectionDuration: connectionDuration,
-      requestDuration: requestDuration,
+      waitingDuration: fetchStart,
+      cacheDuration: dnsStart - fetchStart,
+      dnsDuration: dnsEnd - dnsStart,
+      connectionDuration: connectEnd - dnsEnd,
+      requestDuration: responseStart - connectEnd,
       navigationEntry: navigationEntry,
     };
     return;
