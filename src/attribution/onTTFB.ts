@@ -36,8 +36,8 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       navigationEntry.domainLookupStart - activationStart,
       0,
     );
-    const dnsEnd = Math.max(
-      navigationEntry.domainLookupEnd - activationStart,
+    const connectStart = Math.max(
+      navigationEntry.connectStart - activationStart,
       0,
     );
     const requestStart = Math.max(
@@ -48,8 +48,8 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     (metric as TTFBMetricWithAttribution).attribution = {
       waitingDuration: fetchStart,
       cacheDuration: dnsStart - fetchStart,
-      dnsDuration: dnsEnd - dnsStart,
-      connectionDuration: requestStart - dnsEnd,
+      dnsDuration: connectStart - dnsStart,
+      connectionDuration: requestStart - connectStart,
       requestDuration: metric.value - requestStart,
       navigationEntry: navigationEntry,
     };
