@@ -24,11 +24,7 @@ import {
 } from '../types.js';
 
 const attributeTTFB = (metric: TTFBMetric): void => {
-  // Only attribute if you have a non-zero responseStart value and a
-  // navigationEntry entry.
-  // E.g. For cross-origin redirects, Safari has a workerStart time but no
-  // TTFB time, so do not provide attribution for that.
-  if (metric.entries.length && metric.entries[0].responseStart) {
+  if (metric.entries.length) {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
