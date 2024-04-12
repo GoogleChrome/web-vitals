@@ -1040,8 +1040,8 @@ interface TTFBAttribution {
    */
   dnsDuration: number;
   /**
-   * The total time to create the connection to the requested domain. This cannot be
-   * accurately measured for sites using service workers.
+   * The total time to create the connection to the requested domain. This
+   * cannot be accurately measured for sites using service workers.
    */
   connectionDuration: number;
   /**
