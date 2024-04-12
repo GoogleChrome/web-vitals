@@ -317,7 +317,6 @@ describe('onTTFB()', async function () {
         Math.max(0, navEntry.connectStart - activationStart) -
           Math.max(0, navEntry.domainLookupStart - activationStart),
       );
-
       assert.strictEqual(
         ttfb.attribution.connectionDuration,
         Math.max(0, navEntry.requestStart - activationStart) -
