@@ -1032,9 +1032,9 @@ export interface TTFBAttribution {
   waitingDuration: number;
   /**
    * The total time spent checking the HTTP cache for a match. For navigations
-   * the handled via service worker, this time usually includes the service
-   * worker start-up time as well as time processing `fetch` event listeners,
-   * with some exceptions: https://github.com/w3c/navigation-timing/issues/199
+   * handled via service worker, this duration usually includes service worker
+   * start-up time as well as time processing `fetch` event listeners, with
+   * some exceptions, see: https://github.com/w3c/navigation-timing/issues/199
    */
   cacheDuration: number;
   /**
