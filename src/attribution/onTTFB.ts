@@ -37,15 +37,11 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       0,
     );
     const dnsEnd = Math.max(
-      navigationEntry.domainLookupStart - activationStart,
+      navigationEntry.domainLookupEnd - activationStart,
       0,
     );
-    const connectEnd = Math.max(
-      navigationEntry.connectEnd - activationStart,
-      0,
-    );
-    const responseStart = Math.max(
-      navigationEntry.responseStart - activationStart,
+    const requestStart = Math.max(
+      navigationEntry.requestStart - activationStart,
       0,
     );
 
@@ -53,8 +49,8 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       waitingDuration: fetchStart,
       cacheDuration: dnsStart - fetchStart,
       dnsDuration: dnsEnd - dnsStart,
-      connectionDuration: connectEnd - dnsEnd,
-      requestDuration: responseStart - connectEnd,
+      connectionDuration: requestStart - dnsEnd,
+      requestDuration: metric.value - requestStart,
       navigationEntry: navigationEntry,
     };
     return;
