@@ -27,48 +27,37 @@ const attributeTTFB = (metric: TTFBMetric): void => {
   if (metric.entries.length) {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
-    let redirectDuration = 0;
-    let swDuration = 0;
-    let cacheDuration = 0;
 
-    if (navigationEntry.workerStart) {
-      // Service worker-based timings
-      redirectDuration = navigationEntry.workerStart - activationStart;
+    const waitingDuration = Math.max(
+      (navigationEntry.workerStart || navigationEntry.fetchStart) -
+        activationStart,
+      0,
+    );
 
-      swDuration =
-        Math.max(navigationEntry.domainLookupStart - activationStart, 0) -
-        redirectDuration;
-    } else {
-      // HTTP Cache-based timings
-      redirectDuration = Math.max(
-        navigationEntry.fetchStart - activationStart,
+    const cacheDuration =
+      Math.max(navigationEntry.domainLookupStart - activationStart, 0) -
+      Math.max(
+        (navigationEntry.workerStart || navigationEntry.fetchStart) -
+          activationStart,
         0,
       );
-      cacheDuration =
-        Math.max(navigationEntry.domainLookupStart - activationStart, 0) -
-        redirectDuration;
-    }
 
-    // If the redirect time is less than 20ms, or the document.referrer is set
-    // then it can't really be redirect time and is a misreporting.
-    // Remove and will pick it up in requestDuration
-    if (
-      redirectDuration < 20 ||
-      document.referrer.startsWith(document.location.origin)
-    )
-      redirectDuration = 0;
+    const dnsDuration =
+      Math.max(navigationEntry.domainLookupEnd - activationStart, 0) -
+      Math.max(navigationEntry.domainLookupStart - activationStart, 0);
 
-    // Set requestDuration to the remainder.
-    // This can include extra time at the start removed from redirectTime above
-    // And time between conectionEnd and requestStart
-    // So it's not equal to requestStart to responseStart
+    const connectionDuration =
+      Math.max(navigationEntry.connectEnd - activationStart, 0) -
+      Math.max(navigationEntry.domainLookupEnd - activationStart, 0);
+
     const requestDuration =
-      metric.value - redirectDuration - swDuration - cacheDuration;
+      metric.value - Math.max(navigationEntry.connectEnd - activationStart, 0);
 
     (metric as TTFBMetricWithAttribution).attribution = {
-      redirectDuration: redirectDuration,
-      swDuration: swDuration,
+      waitingDuration: waitingDuration,
       cacheDuration: cacheDuration,
+      dnsDuration: dnsDuration,
+      connectionDuration: connectionDuration,
       requestDuration: requestDuration,
       navigationEntry: navigationEntry,
     };
@@ -76,9 +65,10 @@ const attributeTTFB = (metric: TTFBMetric): void => {
   }
   // Set an empty object if no other attribution has been set.
   (metric as TTFBMetricWithAttribution).attribution = {
-    redirectDuration: 0,
-    swDuration: 0,
+    waitingDuration: 0,
     cacheDuration: 0,
+    dnsDuration: 0,
+    connectionDuration: 0,
     requestDuration: 0,
   };
 };

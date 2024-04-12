@@ -1024,22 +1024,26 @@ interface LCPAttribution {
 ```ts
 interface TTFBAttribution {
   /**
-   * The total time spent resolving redirects before starting the next phase
-   * of the request (checking the cache or service worker). If there were no
-   * redirects, this duration will generally be close to zero (though it's
-   * usually not actually zero because some browser processing is required
-   * before the next request phase can begin).
+   * The total time from when the user initiates loading the page to when the
+   * fetch request is initiated. This is mostly redirect times but may contain
+   * some browser processing time so may be non-zero even without redirects.
    */
-  redirectDuration: number;
+  waitingDuration: number;
   /**
-   * The total time spent in service work (if present), including startup and
-   * fetch event handling.
-   */
-  swDuration: number;
-  /**
-   * The total time spent checking the HTTP cache for a match.
+   * The total time spent checking the HTTP cache for a match. This cannot be
+   * accurately measured for sites using service workers.
    */
   cacheDuration: number;
+  /**
+   * The total time to resolve the DNS for the current request. This cannot be
+   * accurately measured for sites using service workers.
+   */
+  dnsDuration: number;
+  /**
+   * The total time to create the connection to the requested domain. This cannot be
+   * accurately measured for sites using service workers.
+   */
+  connectionDuration: number;
   /**
    * The total time from when the request was sent until the first byte of the
    * response was received. This includes network time as well as server
