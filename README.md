@@ -1025,23 +1025,23 @@ interface LCPAttribution {
 interface TTFBAttribution {
   /**
    * The total time from when the user initiates loading the page to when the
-   * fetch request is initiated. This is mostly redirect times but may contain
-   * some browser processing time so may be non-zero even without redirects.
+   * page starts to handle the request. This is mostly redirect time but may
+   * contain browser processing time so may be non-zero even without redirects.
    */
   waitingDuration: number;
   /**
-   * The total time spent checking the HTTP cache for a match. This cannot be
-   * accurately measured for sites using service workers.
+   * The total time spent checking the HTTP cache for a match. For sites using
+   * service workers this time represents the total service worker time.
    */
   cacheDuration: number;
   /**
-   * The total time to resolve the DNS for the current request. This cannot be
-   * accurately measured for sites using service workers.
+   * The total time to resolve the DNS for the requested domain. This cannot
+   * always be accurately measured for requests using service workers.
    */
   dnsDuration: number;
   /**
    * The total time to create the connection to the requested domain. This
-   * cannot be accurately measured for sites using service workers.
+   * cannot always be accurately measured for requests using service workers.
    */
   connectionDuration: number;
   /**

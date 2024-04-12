@@ -28,8 +28,9 @@ const attributeTTFB = (metric: TTFBMetric): void => {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
-    const fetchStart = Math.max(
-      navigationEntry.fetchStart - activationStart,
+    const waitEnd = Math.max(
+      (navigationEntry.workerStart || navigationEntry.fetchStart) -
+        activationStart,
       0,
     );
     const dnsStart = Math.max(
@@ -40,17 +41,17 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       navigationEntry.connectStart - activationStart,
       0,
     );
-    const requestStart = Math.max(
-      navigationEntry.requestStart - activationStart,
+    const connectEnd = Math.max(
+      navigationEntry.connectEnd - activationStart,
       0,
     );
 
     (metric as TTFBMetricWithAttribution).attribution = {
-      waitingDuration: fetchStart,
-      cacheDuration: dnsStart - fetchStart,
+      waitingDuration: waitEnd,
+      cacheDuration: dnsStart - waitEnd,
       dnsDuration: connectStart - dnsStart,
-      connectionDuration: requestStart - connectStart,
-      requestDuration: metric.value - requestStart,
+      connectionDuration: connectEnd - connectStart,
+      requestDuration: metric.value - connectEnd,
       navigationEntry: navigationEntry,
     };
     return;
