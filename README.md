@@ -64,7 +64,7 @@ You can install this library from npm by running:
 npm install web-vitals
 ```
 
-_**Note:** If you're not using npm, you can still load `web-vitals` via `<script>` tags from a CDN like [unpkg.com](https://unpkg.com). See the [load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn) usage example below for details._
+_**Note:** If you're not using npm, you can still load `web-vitals` via `<script>` tags from a CDN like [unpkg.com](https://unpkg.com) or [jsDelivr](https://www.jsdelivr.com/). See the [load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn) usage example below for details._
 
 There are a few different builds of the `web-vitals` library, and how you load the library depends on which build you want to use.
 
@@ -158,9 +158,9 @@ _**Tip:** while it's certainly possible to inline the code in `dist/polyfill.js`
 
 The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
-The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com):
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com) (or [jsDelivr](https://www.jsdelivr.com/) in the comments):
 
-_**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example purposes only. `unpkg.com` is not affiliated with Google, and there are no guarantees that the URLs shown in these examples will continue to work in the future._
+_**Important!** The [unpkg.com](https://unpkg.com) and [jsDelivr](https://www.jsdelivr.com/) CDNs are shown here for example purposes only. `unpkg.com` is not affiliated with Google, and there are no guarantees that the URLs shown in these examples will continue to work in the future._
 
 **Load the "standard" build** _(using a module script)_
 
@@ -168,6 +168,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
   import {onCLS, onFID, onLCP} from 'https://unpkg.com/web-vitals@3?module';
+  //import {onCLS, onFID, onLCP} from 'https://cdn.jsdelivr.net/npm/web-vitals@3/+esm';
 
   onCLS(console.log);
   onFID(console.log);
@@ -182,6 +183,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
   (function () {
     var script = document.createElement('script');
     script.src = 'https://unpkg.com/web-vitals@3/dist/web-vitals.iife.js';
+    //script.src = 'https://cdn.jsdelivr.net/npm/web-vitals@3/dist/web-vitals.iife.js';
     script.onload = function () {
       // When loading `web-vitals` using a classic script, all the public
       // methods can be found on the `webVitals` global namespace.
@@ -204,6 +206,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
     onFID,
     onLCP,
   } from 'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.js?module';
+  // } from 'https://cdn.jsdelivr.net/npm/web-vitals@3/dist/web-vitals.attribution.js/+esm';
 
   onCLS(console.log);
   onFID(console.log);
@@ -219,6 +222,7 @@ _**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example
     var script = document.createElement('script');
     script.src =
       'https://unpkg.com/web-vitals@3/dist/web-vitals.attribution.iife.js';
+    //'https://cdn.jsdelivr.net/npm/web-vitals@3/dist/web-vitals.attribution.iife.js';
     script.onload = function () {
       // When loading `web-vitals` using a classic script, all the public
       // methods can be found on the `webVitals` global namespace.
