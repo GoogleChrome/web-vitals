@@ -1,5 +1,10 @@
 # Changelog
 
+### v4.0.0-beta.3 (2024-04-22)
+
+- **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
+- Cap TTFB in attribution ([#440](https://github.com/GoogleChrome/web-vitals/pull/440))
+
 ### v4.0.0-beta.2 (2024-04-05)
 
 - Fix errors when importing the library in node ([#457](https://github.com/GoogleChrome/web-vitals/pull/457))
