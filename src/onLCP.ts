@@ -58,6 +58,12 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
     let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: LCPMetric['entries']) => {
+      // If reportAllChanges is set then call this function for each entry
+      // As otherwise only want to emit the last one.
+      if (opts!.reportAllChanges && entries.length > 1) {
+        entries.forEach((entry) => handleEntries([entry]));
+      }
+
       const lastEntry = entries[entries.length - 1] as LargestContentfulPaint;
       if (lastEntry) {
         // Only report if the page wasn't hidden prior to LCP.
