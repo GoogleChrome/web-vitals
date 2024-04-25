@@ -1067,11 +1067,11 @@ The `web-vitals` code has been tested and will run without error in all major br
 Browser support for each function is as follows:
 
 - `onCLS()`: Chromium
-- `onFCP()`: Chromium, Firefox, Safari 14.1+
+- `onFCP()`: Chromium, Firefox, Safari
 - `onFID()`: Chromium, Firefox _(Deprecated)_
 - `onINP()`: Chromium
-- `onLCP()`: Chromium
-- `onTTFB()`: Chromium, Firefox, Safari 15+
+- `onLCP()`: Chromium, Firefox
+- `onTTFB()`: Chromium, Firefox, Safari
 
 ## Limitations
 
