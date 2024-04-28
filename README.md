@@ -110,9 +110,9 @@ See [Send attribution data](#send-attribution-data) for usage examples, and the 
 
 The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
-The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com):
+The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com/browse/web-vitals/). It is also possible to load this from [jsDelivr](https://www.jsdelivr.com/package/npm/web-vitals), and [cdnjs](https://cdnjs.com/libraries/web-vitals).
 
-_**Important!** The [unpkg.com](https://unpkg.com) CDN is shown here for example purposes only. `unpkg.com` is not affiliated with Google, and there are no guarantees that the URLs shown in these examples will continue to work in the future._
+_**Important!** The [unpkg.com](https://unpkg.com), [jsDelivr](https://www.jsdelivr.com/), and [cdnjs](https://cdnjs.com) CDNs are shown here for example purposes only. `unpkg.com`, `jsDelivr`, and `cdnjs` are not affiliated with Google, and there are no guarantees that loading the library from those CDNs will continue to work in the future. Self-hosting the built files rather than loading from the CDN is better for security, reliability, and performance reasons._
 
 **Load the "standard" build** _(using a module script)_
 
