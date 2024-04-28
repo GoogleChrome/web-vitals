@@ -156,7 +156,7 @@ _**Tip:** while it's certainly possible to inline the code in `dist/polyfill.js`
 
 ### From a CDN
 
-The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process.However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
+The recommended way to use the `web-vitals` package is to install it from npm and integrate it into your build process. However, if you're not using npm, it's still possible to use `web-vitals` by requesting it from a CDN that serves npm package files.
 
 The following examples show how to load `web-vitals` from [unpkg.com](https://unpkg.com/browse/web-vitals/). It is also possible to load this from [jsDelivr](https://www.jsdelivr.com/package/npm/web-vitals), and [cdnjs](https://cdnjs.com/libraries/web-vitals).
 
