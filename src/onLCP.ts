@@ -59,7 +59,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
 
     const handleEntries = (entries: LCPMetric['entries']) => {
       // If reportAllChanges is set then call this function for each entry,
-      // As otherwise only want to emit the last one.
+      // otherwise only consider the last one.
       if (!opts!.reportAllChanges) {
         entries = entries.slice(-1);
       }
