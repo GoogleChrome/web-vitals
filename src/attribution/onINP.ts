@@ -186,7 +186,7 @@ const getIntersectingLoAFs = (
   return intersectingLoAFs;
 };
 
-const attributeINP = (metric: INPMetric): void => {
+const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
   const renderTime = entryToRenderTimeMap.get(firstEntry)!;
   const group = pendingEntriesGroupMap.get(renderTime)!;
@@ -220,7 +220,8 @@ const attributeINP = (metric: INPMetric): void => {
 
   const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
 
-  (metric as INPMetricWithAttribution).attribution = {
+  const metricWithAttribution = metric as INPMetricWithAttribution;
+  metricWithAttribution.attribution = {
     interactionTarget: getSelector(
       firstEntryWithTarget && firstEntryWithTarget.target,
     ),
@@ -234,6 +235,7 @@ const attributeINP = (metric: INPMetric): void => {
     presentationDelay: Math.max(nextPaintTime - processingEnd, 0),
     loadState: getLoadState(firstEntry.startTime),
   };
+  return metricWithAttribution;
 };
 
 /**
@@ -278,8 +280,8 @@ export const onINP = (
     // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
     // 123+ that if rolled out fully would make this no longer necessary.
     whenIdle(() => {
-      attributeINP(metric);
-      onReport(metric as INPMetricWithAttribution);
+      const metricWithAttribution = attributeINP(metric);
+      onReport(metricWithAttribution);
     });
   }, opts);
 };

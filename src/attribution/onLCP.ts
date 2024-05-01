@@ -25,13 +25,16 @@ import {
   ReportOpts,
 } from '../types.js';
 
-const attributeLCP = (metric: LCPMetric) => {
+const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
+  const metricWithAttribution = metric as LCPMetricWithAttribution;
+
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
 
     if (navigationEntry) {
       const responseStart = navigationEntry.responseStart;
-      if (isInvalidTimestamp(responseStart)) return;
+      // TODO(bckenny): this is wrong.
+      if (isInvalidTimestamp(responseStart)) return metricWithAttribution;
 
       const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
@@ -78,17 +81,18 @@ const attributeLCP = (metric: LCPMetric) => {
         attribution.lcpResourceEntry = lcpResourceEntry;
       }
 
-      (metric as LCPMetricWithAttribution).attribution = attribution;
-      return;
+      metricWithAttribution.attribution = attribution;
+      return metricWithAttribution;
     }
   }
   // Set an empty object if no other attribution has been set.
-  (metric as LCPMetricWithAttribution).attribution = {
+  metricWithAttribution.attribution = {
     timeToFirstByte: 0,
     resourceLoadDelay: 0,
     resourceLoadDuration: 0,
     elementRenderDelay: metric.value,
   };
+  return metricWithAttribution;
 };
 
 /**
@@ -107,7 +111,7 @@ export const onLCP = (
   opts?: ReportOpts,
 ) => {
   unattributedOnLCP((metric: LCPMetric) => {
-    attributeLCP(metric);
-    onReport(metric as LCPMetricWithAttribution);
+    const metricWithAttribution = attributeLCP(metric);
+    onReport(metricWithAttribution);
   }, opts);
 };

@@ -19,15 +19,18 @@ import {getSelector} from '../lib/getSelector.js';
 import {onFID as unattributedOnFID} from '../onFID.js';
 import {FIDMetric, FIDMetricWithAttribution, ReportOpts} from '../types.js';
 
-const attributeFID = (metric: FIDMetric): void => {
+const attributeFID = (metric: FIDMetric): FIDMetricWithAttribution => {
+  const metricWithAttribution = metric as FIDMetricWithAttribution;
+
   const fidEntry = metric.entries[0];
-  (metric as FIDMetricWithAttribution).attribution = {
+  metricWithAttribution.attribution = {
     eventTarget: getSelector(fidEntry.target),
     eventType: fidEntry.name,
     eventTime: fidEntry.startTime,
     eventEntry: fidEntry,
     loadState: getLoadState(fidEntry.startTime),
   };
+  return metricWithAttribution;
 };
 
 /**
@@ -44,7 +47,7 @@ export const onFID = (
   opts?: ReportOpts,
 ) => {
   unattributedOnFID((metric: FIDMetric) => {
-    attributeFID(metric);
-    onReport(metric as FIDMetricWithAttribution);
+    const metricWithAttribution = attributeFID(metric);
+    onReport(metricWithAttribution);
   }, opts);
 };

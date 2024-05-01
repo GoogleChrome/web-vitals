@@ -27,13 +27,15 @@ const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
   return sources.find((s) => s.node && s.node.nodeType === 1) || sources[0];
 };
 
-const attributeCLS = (metric: CLSMetric): void => {
+const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
+  const metricWithAttribution = metric as CLSMetricWithAttribution;
+
   if (metric.entries.length) {
     const largestEntry = getLargestLayoutShiftEntry(metric.entries);
     if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
       const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
       if (largestSource) {
-        (metric as CLSMetricWithAttribution).attribution = {
+        metricWithAttribution.attribution = {
           largestShiftTarget: getSelector(largestSource.node),
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
@@ -41,12 +43,13 @@ const attributeCLS = (metric: CLSMetric): void => {
           largestShiftEntry: largestEntry,
           loadState: getLoadState(largestEntry.startTime),
         };
-        return;
+        return metricWithAttribution;
       }
     }
   }
   // Set an empty object if no other attribution has been set.
-  (metric as CLSMetricWithAttribution).attribution = {};
+  metricWithAttribution.attribution = {};
+  return metricWithAttribution;
 };
 
 /**
@@ -75,7 +78,7 @@ export const onCLS = (
   opts?: ReportOpts,
 ) => {
   unattributedOnCLS((metric: CLSMetric) => {
-    attributeCLS(metric);
-    onReport(metric as CLSMetricWithAttribution);
+    const metricWithAttribution = attributeCLS(metric);
+    onReport(metricWithAttribution);
   }, opts);
 };

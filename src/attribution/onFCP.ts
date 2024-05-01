@@ -21,34 +21,38 @@ import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
 import {FCPMetric, FCPMetricWithAttribution, ReportOpts} from '../types.js';
 
-const attributeFCP = (metric: FCPMetric): void => {
+const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
+  const metricWithAttribution = metric as FCPMetricWithAttribution;
+
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
     const fcpEntry = metric.entries[metric.entries.length - 1];
 
     if (navigationEntry) {
       const responseStart = navigationEntry.responseStart;
-      if (isInvalidTimestamp(responseStart)) return;
+      // TODO(bckenny): this is wrong.
+      if (isInvalidTimestamp(responseStart)) return metricWithAttribution;
 
       const activationStart = navigationEntry.activationStart || 0;
       const ttfb = Math.max(0, responseStart - activationStart);
 
-      (metric as FCPMetricWithAttribution).attribution = {
+      metricWithAttribution.attribution = {
         timeToFirstByte: ttfb,
         firstByteToFCP: metric.value - ttfb,
         loadState: getLoadState(metric.entries[0].startTime),
         navigationEntry,
         fcpEntry,
       };
-      return;
+      return metricWithAttribution;
     }
   }
   // Set an empty object if no other attribution has been set.
-  (metric as FCPMetricWithAttribution).attribution = {
+  metricWithAttribution.attribution = {
     timeToFirstByte: 0,
     firstByteToFCP: metric.value,
     loadState: getLoadState(getBFCacheRestoreTime()),
   };
+  return metricWithAttribution;
 };
 
 /**
@@ -62,7 +66,7 @@ export const onFCP = (
   opts?: ReportOpts,
 ) => {
   unattributedOnFCP((metric: FCPMetric) => {
-    attributeFCP(metric);
-    onReport(metric as FCPMetricWithAttribution);
+    const metricWithAttribution = attributeFCP(metric);
+    onReport(metricWithAttribution);
   }, opts);
 };
