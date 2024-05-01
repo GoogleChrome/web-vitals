@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type {Metric} from './base.js';
+import type {MetricBase} from './base.js';
 
 /**
  * An LCP-specific version of the Metric object.
  */
-export interface LCPMetric extends Metric {
+export interface LCPMetric extends MetricBase {
   name: 'LCP';
   entries: LargestContentfulPaint[];
 }
@@ -85,18 +85,4 @@ export interface LCPAttribution {
  */
 export interface LCPMetricWithAttribution extends LCPMetric {
   attribution: LCPAttribution;
-}
-
-/**
- * An LCP-specific version of the ReportCallback function.
- */
-export interface LCPReportCallback {
-  (metric: LCPMetric): void;
-}
-
-/**
- * An LCP-specific version of the ReportCallback function with attribution.
- */
-export interface LCPReportCallbackWithAttribution {
-  (metric: LCPMetricWithAttribution): void;
 }

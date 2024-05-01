@@ -19,13 +19,7 @@ import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
-import {
-  FCPMetric,
-  FCPMetricWithAttribution,
-  FCPReportCallback,
-  FCPReportCallbackWithAttribution,
-  ReportOpts,
-} from '../types.js';
+import {FCPMetric, FCPMetricWithAttribution, ReportOpts} from '../types.js';
 
 const attributeFCP = (metric: FCPMetric): void => {
   if (metric.entries.length) {
@@ -64,14 +58,11 @@ const attributeFCP = (metric: FCPMetric): void => {
  * value is a `DOMHighResTimeStamp`.
  */
 export const onFCP = (
-  onReport: FCPReportCallbackWithAttribution,
+  onReport: (metric: FCPMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnFCP(
-    ((metric: FCPMetricWithAttribution) => {
-      attributeFCP(metric);
-      onReport(metric);
-    }) as FCPReportCallback,
-    opts,
-  );
+  unattributedOnFCP((metric: FCPMetric) => {
+    attributeFCP(metric);
+    onReport(metric as FCPMetricWithAttribution);
+  }, opts);
 };

@@ -25,12 +25,7 @@ import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {whenIdle} from './lib/whenIdle.js';
-import {
-  LCPMetric,
-  MetricRatingThresholds,
-  LCPReportCallback,
-  ReportOpts,
-} from './types.js';
+import {LCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for LCP. See https://web.dev/articles/lcp#what_is_a_good_lcp_score */
 export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
@@ -48,7 +43,10 @@ const reportedMetricIDs: Record<string, boolean> = {};
  * performance entry is dispatched, or once the final value of the metric has
  * been determined.
  */
-export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
+export const onLCP = (
+  onReport: (metric: LCPMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
 
@@ -58,7 +56,7 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
     let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: LCPMetric['entries']) => {
-      const lastEntry = entries[entries.length - 1] as LargestContentfulPaint;
+      const lastEntry = entries[entries.length - 1];
       if (lastEntry) {
         // Only report if the page wasn't hidden prior to LCP.
         if (lastEntry.startTime < visibilityWatcher.firstHiddenTime) {

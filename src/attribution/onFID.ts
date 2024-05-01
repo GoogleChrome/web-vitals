@@ -17,13 +17,7 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onFID as unattributedOnFID} from '../onFID.js';
-import {
-  FIDMetric,
-  FIDMetricWithAttribution,
-  FIDReportCallback,
-  FIDReportCallbackWithAttribution,
-  ReportOpts,
-} from '../types.js';
+import {FIDMetric, FIDMetricWithAttribution, ReportOpts} from '../types.js';
 
 const attributeFID = (metric: FIDMetric): void => {
   const fidEntry = metric.entries[0];
@@ -46,14 +40,11 @@ const attributeFID = (metric: FIDMetric): void => {
  * page, it's possible that it will not be reported for some page loads._
  */
 export const onFID = (
-  onReport: FIDReportCallbackWithAttribution,
+  onReport: (metric: FIDMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnFID(
-    ((metric: FIDMetricWithAttribution) => {
-      attributeFID(metric);
-      onReport(metric);
-    }) as FIDReportCallback,
-    opts,
-  );
+  unattributedOnFID((metric: FIDMetric) => {
+    attributeFID(metric);
+    onReport(metric as FIDMetricWithAttribution);
+  }, opts);
 };

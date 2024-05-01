@@ -28,7 +28,6 @@ import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
-  FIDReportCallback,
   FirstInputPolyfillCallback,
   MetricRatingThresholds,
   ReportOpts,
@@ -46,7 +45,10 @@ export const FIDThresholds: MetricRatingThresholds = [100, 300];
  * _**Important:** since FID is only reported after the user interacts with the
  * page, it's possible that it will not be reported for some page loads._
  */
-export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
+export const onFID = (
+  onReport: (metric: FIDMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
 
@@ -65,7 +67,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
     };
 
     const handleEntries = (entries: FIDMetric['entries']) => {
-      (entries as PerformanceEventTiming[]).forEach(handleEntry);
+      entries.forEach(handleEntry);
     };
 
     const po = observe('first-input', handleEntries);

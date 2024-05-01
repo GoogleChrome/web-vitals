@@ -22,8 +22,6 @@ import {
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,
-  LCPReportCallback,
-  LCPReportCallbackWithAttribution,
   ReportOpts,
 } from '../types.js';
 
@@ -105,14 +103,11 @@ const attributeLCP = (metric: LCPMetric) => {
  * been determined.
  */
 export const onLCP = (
-  onReport: LCPReportCallbackWithAttribution,
+  onReport: (metric: LCPMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnLCP(
-    ((metric: LCPMetricWithAttribution) => {
-      attributeLCP(metric);
-      onReport(metric);
-    }) as LCPReportCallback,
-    opts,
-  );
+  unattributedOnLCP((metric: LCPMetric) => {
+    attributeLCP(metric);
+    onReport(metric as LCPMetricWithAttribution);
+  }, opts);
 };

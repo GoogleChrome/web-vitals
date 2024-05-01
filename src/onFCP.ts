@@ -22,12 +22,7 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {
-  FCPMetric,
-  FCPReportCallback,
-  MetricRatingThresholds,
-  ReportOpts,
-} from './types.js';
+import {FCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for FCP. See https://web.dev/articles/fcp#what_is_a_good_fcp_score */
 export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
@@ -38,7 +33,10 @@ export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
  * relevant `paint` performance entry used to determine the value. The reported
  * value is a `DOMHighResTimeStamp`.
  */
-export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
+export const onFCP = (
+  onReport: (metric: FCPMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
 
@@ -48,7 +46,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
     let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: FCPMetric['entries']) => {
-      (entries as PerformancePaintTiming[]).forEach((entry) => {
+      entries.forEach((entry) => {
         if (entry.name === 'first-contentful-paint') {
           po!.disconnect();
 

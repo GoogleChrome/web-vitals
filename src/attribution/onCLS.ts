@@ -17,13 +17,7 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onCLS as unattributedOnCLS} from '../onCLS.js';
-import {
-  CLSReportCallback,
-  CLSReportCallbackWithAttribution,
-  CLSMetric,
-  CLSMetricWithAttribution,
-  ReportOpts,
-} from '../types.js';
+import {CLSMetric, CLSMetricWithAttribution, ReportOpts} from '../types.js';
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
   return entries.reduce((a, b) => (a && a.value > b.value ? a : b));
@@ -77,14 +71,11 @@ const attributeCLS = (metric: CLSMetric): void => {
  * during the same page load._
  */
 export const onCLS = (
-  onReport: CLSReportCallbackWithAttribution,
+  onReport: (metric: CLSMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnCLS(
-    ((metric: CLSMetricWithAttribution) => {
-      attributeCLS(metric);
-      onReport(metric);
-    }) as CLSReportCallback,
-    opts,
-  );
+  unattributedOnCLS((metric: CLSMetric) => {
+    attributeCLS(metric);
+    onReport(metric as CLSMetricWithAttribution);
+  }, opts);
 };

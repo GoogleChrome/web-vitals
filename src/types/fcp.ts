@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type {LoadState, Metric} from './base.js';
+import type {LoadState, MetricBase} from './base.js';
 
 /**
  * An FCP-specific version of the Metric object.
  */
-export interface FCPMetric extends Metric {
+export interface FCPMetric extends MetricBase {
   name: 'FCP';
   entries: PerformancePaintTiming[];
 }
@@ -62,18 +62,4 @@ export interface FCPAttribution {
  */
 export interface FCPMetricWithAttribution extends FCPMetric {
   attribution: FCPAttribution;
-}
-
-/**
- * An FCP-specific version of the ReportCallback function.
- */
-export interface FCPReportCallback {
-  (metric: FCPMetric): void;
-}
-
-/**
- * An FCP-specific version of the ReportCallback function with attribution.
- */
-export interface FCPReportCallbackWithAttribution {
-  (metric: FCPMetricWithAttribution): void;
 }

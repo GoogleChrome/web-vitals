@@ -23,13 +23,7 @@ import {
 import {observe} from '../lib/observe.js';
 import {whenIdle} from '../lib/whenIdle.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
-import {
-  INPMetric,
-  INPMetricWithAttribution,
-  INPReportCallback,
-  INPReportCallbackWithAttribution,
-  ReportOpts,
-} from '../types.js';
+import {INPMetric, INPMetricWithAttribution, ReportOpts} from '../types.js';
 
 interface pendingEntriesGroup {
   startTime: DOMHighResTimeStamp;
@@ -270,25 +264,22 @@ const attributeINP = (metric: INPMetric): void => {
  * during the same page load._
  */
 export const onINP = (
-  onReport: INPReportCallbackWithAttribution,
+  onReport: (metric: INPMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
   if (!loafObserver) {
     loafObserver = observe('long-animation-frame', handleLoAFEntries);
   }
-  unattributedOnINP(
-    ((metric: INPMetricWithAttribution) => {
-      // Queue attribution and reporting in the next idle task.
-      // This is needed to increase the chances that all event entries that
-      // occurred between the user interaction and the next paint
-      // have been dispatched. Note: there is currently an experiment
-      // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
-      // 123+ that if rolled out fully would make this no longer necessary.
-      whenIdle(() => {
-        attributeINP(metric);
-        onReport(metric);
-      });
-    }) as INPReportCallback,
-    opts,
-  );
+  unattributedOnINP((metric: INPMetric) => {
+    // Queue attribution and reporting in the next idle task.
+    // This is needed to increase the chances that all event entries that
+    // occurred between the user interaction and the next paint
+    // have been dispatched. Note: there is currently an experiment
+    // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
+    // 123+ that if rolled out fully would make this no longer necessary.
+    whenIdle(() => {
+      attributeINP(metric);
+      onReport(metric as INPMetricWithAttribution);
+    });
+  }, opts);
 };

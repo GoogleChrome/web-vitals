@@ -15,13 +15,7 @@
  */
 
 import {onTTFB as unattributedOnTTFB} from '../onTTFB.js';
-import {
-  TTFBMetric,
-  TTFBMetricWithAttribution,
-  TTFBReportCallback,
-  TTFBReportCallbackWithAttribution,
-  ReportOpts,
-} from '../types.js';
+import {TTFBMetric, TTFBMetricWithAttribution, ReportOpts} from '../types.js';
 
 const attributeTTFB = (metric: TTFBMetric): void => {
   if (metric.entries.length) {
@@ -91,14 +85,11 @@ const attributeTTFB = (metric: TTFBMetric): void => {
  * and server processing time.
  */
 export const onTTFB = (
-  onReport: TTFBReportCallbackWithAttribution,
+  onReport: (metric: TTFBMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnTTFB(
-    ((metric: TTFBMetricWithAttribution) => {
-      attributeTTFB(metric);
-      onReport(metric);
-    }) as TTFBReportCallback,
-    opts,
-  );
+  unattributedOnTTFB((metric: TTFBMetric) => {
+    attributeTTFB(metric);
+    onReport(metric as TTFBMetricWithAttribution);
+  }, opts);
 };

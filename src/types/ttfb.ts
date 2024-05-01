@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type {Metric} from './base.js';
+import type {MetricBase} from './base.js';
 
 /**
  * A TTFB-specific version of the Metric object.
  */
-export interface TTFBMetric extends Metric {
+export interface TTFBMetric extends MetricBase {
   name: 'TTFB';
   entries: PerformanceNavigationTiming[];
 }
@@ -75,18 +75,4 @@ export interface TTFBAttribution {
  */
 export interface TTFBMetricWithAttribution extends TTFBMetric {
   attribution: TTFBAttribution;
-}
-
-/**
- * A TTFB-specific version of the ReportCallback function.
- */
-export interface TTFBReportCallback {
-  (metric: TTFBMetric): void;
-}
-
-/**
- * A TTFB-specific version of the ReportCallback function with attribution.
- */
-export interface TTFBReportCallbackWithAttribution {
-  (metric: TTFBMetricWithAttribution): void;
 }
