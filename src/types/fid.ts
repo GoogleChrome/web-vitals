@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type {LoadState, MetricBase} from './base.js';
+import type {LoadState, Metric} from './base.js';
 
 /**
  * An FID-specific version of the Metric object.
  */
-export interface FIDMetric extends MetricBase {
+export interface FIDMetric extends Metric {
   name: 'FID';
   entries: PerformanceEventTiming[];
 }

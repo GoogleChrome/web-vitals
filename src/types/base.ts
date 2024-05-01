@@ -21,7 +21,7 @@ import type {INPMetric, INPMetricWithAttribution} from './inp.js';
 import type {LCPMetric, LCPMetricWithAttribution} from './lcp.js';
 import type {TTFBMetric, TTFBMetricWithAttribution} from './ttfb.js';
 
-export interface MetricBase {
+export interface Metric {
   /**
    * The name of the metric (in acronym form).
    */
@@ -60,7 +60,7 @@ export interface MetricBase {
    * The array may also be empty if the metric value was not based on any
    * entries (e.g. a CLS value of 0 given no layout shifts).
    */
-  entries: PerformanceEntry[] | LayoutShift[];
+  entries: PerformanceEntry[];
 
   /**
    * The type of navigation.

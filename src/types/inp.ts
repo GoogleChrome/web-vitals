@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type {LoadState, MetricBase} from './base.js';
+import type {LoadState, Metric} from './base.js';
 
 /**
  * An INP-specific version of the Metric object.
  */
-export interface INPMetric extends MetricBase {
+export interface INPMetric extends Metric {
   name: 'INP';
   entries: PerformanceEventTiming[];
 }

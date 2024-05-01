@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type {LoadState, MetricBase} from './base.js';
+import type {LoadState, Metric} from './base.js';
 
 /**
  * A CLS-specific version of the Metric object.
  */
-export interface CLSMetric extends MetricBase {
+export interface CLSMetric extends Metric {
   name: 'CLS';
   entries: LayoutShift[];
 }
