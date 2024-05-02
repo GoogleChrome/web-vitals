@@ -43,6 +43,7 @@ describe('onFCP()', async function () {
     await beaconCountIs(1);
 
     const [fcp] = await getBeacons();
+    console.log(fcp);
     assert(fcp.value >= 0);
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
@@ -60,6 +61,7 @@ describe('onFCP()', async function () {
     await beaconCountIs(1);
 
     const [fcp] = await getBeacons();
+    console.log(fcp);
     assert(fcp.value >= 0);
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
@@ -77,6 +79,7 @@ describe('onFCP()', async function () {
     await beaconCountIs(1);
 
     const [fcp] = await getBeacons();
+    console.log(fcp);
 
     const activationStart = await browser.execute(() => {
       return performance.getEntriesByType('navigation')[0].activationStart;
@@ -124,6 +127,7 @@ describe('onFCP()', async function () {
     await browser.pause(1000);
 
     const beacons = await getBeacons();
+    console.log(beacons);
     assert.strictEqual(beacons.length, 0);
   });
 
@@ -152,6 +156,7 @@ describe('onFCP()', async function () {
     await stubVisibilityChange('hidden');
 
     const [fcp] = await getBeacons();
+    console.log(fcp);
     assert(fcp.value >= 0);
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
