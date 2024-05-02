@@ -175,6 +175,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp1.value, fcp1.delta);
     // Temp fix to address Firefox flakiness.
     // See https://github.com/GoogleChrome/web-vitals/issues/472
+    console.log(':' + browser.browserName + ':');
     if (browser.browserName !== 'firefox') {
       assert.strictEqual(fcp1.rating, 'good');
     }
