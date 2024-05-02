@@ -43,7 +43,7 @@ describe('onFCP()', async function () {
     await beaconCountIs(1);
 
     const [fcp] = await getBeacons();
-    console.log(fcp);
+    console.log('reports the correct value after the first paint', fcp);
     assert(fcp.value >= 0);
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
@@ -61,7 +61,7 @@ describe('onFCP()', async function () {
     await beaconCountIs(1);
 
     const [fcp] = await getBeacons();
-    console.log(fcp);
+    console.log('reports the correct value when loaded late', fcp);
     assert(fcp.value >= 0);
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
@@ -79,7 +79,7 @@ describe('onFCP()', async function () {
     await beaconCountIs(1);
 
     const [fcp] = await getBeacons();
-    console.log(fcp);
+    console.log('accounts for time prerendering the page', fcp);
 
     const activationStart = await browser.execute(() => {
       return performance.getEntriesByType('navigation')[0].activationStart;
@@ -127,7 +127,10 @@ describe('onFCP()', async function () {
     await browser.pause(1000);
 
     const beacons = await getBeacons();
-    console.log(beacons);
+    console.log(
+      'does not report if the document was hidden at page load time',
+      beacons,
+    );
     assert.strictEqual(beacons.length, 0);
   });
 
@@ -156,7 +159,10 @@ describe('onFCP()', async function () {
     await stubVisibilityChange('hidden');
 
     const [fcp] = await getBeacons();
-    console.log(fcp);
+    console.log(
+      'reports after a render delay before the page changes to hidden',
+      fcp,
+    );
     assert(fcp.value >= 0);
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
@@ -174,7 +180,7 @@ describe('onFCP()', async function () {
     await beaconCountIs(1);
 
     const [fcp1] = await getBeacons();
-    console.log(fcp1);
+    console.log('reports if the page is restored from bfcache', fcp1);
     assert(fcp1.value >= 0);
     assert(fcp1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
