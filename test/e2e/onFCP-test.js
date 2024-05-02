@@ -41,7 +41,6 @@ describe('onFCP()', async function () {
     await navigateTo('/test/fcp');
 
     await beaconCountIs(1);
-    console.log(browser);
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
