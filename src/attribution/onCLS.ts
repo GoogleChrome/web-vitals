@@ -17,7 +17,12 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onCLS as unattributedOnCLS} from '../onCLS.js';
-import {CLSMetric, CLSMetricWithAttribution, ReportOpts} from '../types.js';
+import {
+  CLSAttribution,
+  CLSMetric,
+  CLSMetricWithAttribution,
+  ReportOpts,
+} from '../types.js';
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
   return entries.reduce((a, b) => (a && a.value > b.value ? a : b));
@@ -28,14 +33,15 @@ const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
 };
 
 const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
-  const metricWithAttribution = metric as CLSMetricWithAttribution;
+  // Use an empty object if no other attribution has been set.
+  let attribution: CLSAttribution = {};
 
   if (metric.entries.length) {
     const largestEntry = getLargestLayoutShiftEntry(metric.entries);
     if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
       const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
       if (largestSource) {
-        metricWithAttribution.attribution = {
+        attribution = {
           largestShiftTarget: getSelector(largestSource.node),
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
@@ -43,12 +49,13 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
           largestShiftEntry: largestEntry,
           loadState: getLoadState(largestEntry.startTime),
         };
-        return metricWithAttribution;
       }
     }
   }
-  // Set an empty object if no other attribution has been set.
-  metricWithAttribution.attribution = {};
+
+  // Cast to attribution metric so it can be populated.
+  const metricWithAttribution = metric as CLSMetricWithAttribution;
+  metricWithAttribution.attribution = attribution;
   return metricWithAttribution;
 };
 

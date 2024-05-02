@@ -19,10 +19,20 @@ import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
-import {FCPMetric, FCPMetricWithAttribution, ReportOpts} from '../types.js';
+import {
+  FCPAttribution,
+  FCPMetric,
+  FCPMetricWithAttribution,
+  ReportOpts,
+} from '../types.js';
 
 const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
-  const metricWithAttribution = metric as FCPMetricWithAttribution;
+  // Use a default object if no other attribution has been set.
+  let attribution: FCPAttribution = {
+    timeToFirstByte: 0,
+    firstByteToFCP: metric.value,
+    loadState: getLoadState(getBFCacheRestoreTime()),
+  };
 
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
@@ -30,28 +40,24 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
 
     if (navigationEntry) {
       const responseStart = navigationEntry.responseStart;
-      // TODO(bckenny): this is wrong.
-      if (isInvalidTimestamp(responseStart)) return metricWithAttribution;
+      if (!isInvalidTimestamp(responseStart)) {
+        const activationStart = navigationEntry.activationStart || 0;
+        const ttfb = Math.max(0, responseStart - activationStart);
 
-      const activationStart = navigationEntry.activationStart || 0;
-      const ttfb = Math.max(0, responseStart - activationStart);
-
-      metricWithAttribution.attribution = {
-        timeToFirstByte: ttfb,
-        firstByteToFCP: metric.value - ttfb,
-        loadState: getLoadState(metric.entries[0].startTime),
-        navigationEntry,
-        fcpEntry,
-      };
-      return metricWithAttribution;
+        attribution = {
+          timeToFirstByte: ttfb,
+          firstByteToFCP: metric.value - ttfb,
+          loadState: getLoadState(metric.entries[0].startTime),
+          navigationEntry,
+          fcpEntry,
+        };
+      }
     }
   }
-  // Set an empty object if no other attribution has been set.
-  metricWithAttribution.attribution = {
-    timeToFirstByte: 0,
-    firstByteToFCP: metric.value,
-    loadState: getLoadState(getBFCacheRestoreTime()),
-  };
+
+  // Cast to attribution metric so it can be populated.
+  const metricWithAttribution = metric as FCPMetricWithAttribution;
+  metricWithAttribution.attribution = attribution;
   return metricWithAttribution;
 };
 

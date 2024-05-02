@@ -26,16 +26,18 @@ import {
 } from '../types.js';
 
 const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
-  const metricWithAttribution = metric as LCPMetricWithAttribution;
+  // Use a default object if no other attribution has been set.
+  let attribution: LCPAttribution = {
+    timeToFirstByte: 0,
+    resourceLoadDelay: 0,
+    resourceLoadDuration: 0,
+    elementRenderDelay: metric.value,
+  };
 
-  if (metric.entries.length) {
-    const navigationEntry = getNavigationEntry();
-
-    if (navigationEntry) {
-      const responseStart = navigationEntry.responseStart;
-      // TODO(bckenny): this is wrong.
-      if (isInvalidTimestamp(responseStart)) return metricWithAttribution;
-
+  const navigationEntry = getNavigationEntry();
+  if (metric.entries.length && navigationEntry) {
+    const responseStart = navigationEntry.responseStart;
+    if (!isInvalidTimestamp(responseStart)) {
       const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
       const lcpResourceEntry =
@@ -63,7 +65,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
         lcpEntry.startTime - activationStart,
       );
 
-      const attribution: LCPAttribution = {
+      attribution = {
         element: getSelector(lcpEntry.element),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
@@ -80,18 +82,12 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
       if (lcpResourceEntry) {
         attribution.lcpResourceEntry = lcpResourceEntry;
       }
-
-      metricWithAttribution.attribution = attribution;
-      return metricWithAttribution;
     }
   }
-  // Set an empty object if no other attribution has been set.
-  metricWithAttribution.attribution = {
-    timeToFirstByte: 0,
-    resourceLoadDelay: 0,
-    resourceLoadDuration: 0,
-    elementRenderDelay: metric.value,
-  };
+
+  // Cast to attribution metric so it can be populated.
+  const metricWithAttribution = metric as LCPMetricWithAttribution;
+  metricWithAttribution.attribution = attribution;
   return metricWithAttribution;
 };
 

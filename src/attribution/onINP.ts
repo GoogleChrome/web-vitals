@@ -23,7 +23,12 @@ import {
 import {observe} from '../lib/observe.js';
 import {whenIdle} from '../lib/whenIdle.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
-import {INPMetric, INPMetricWithAttribution, ReportOpts} from '../types.js';
+import {
+  INPAttribution,
+  INPMetric,
+  INPMetricWithAttribution,
+  ReportOpts,
+} from '../types.js';
 
 interface pendingEntriesGroup {
   startTime: DOMHighResTimeStamp;
@@ -220,8 +225,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
 
   const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
 
-  const metricWithAttribution = metric as INPMetricWithAttribution;
-  metricWithAttribution.attribution = {
+  const attribution: INPAttribution = {
     interactionTarget: getSelector(
       firstEntryWithTarget && firstEntryWithTarget.target,
     ),
@@ -235,6 +239,10 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     presentationDelay: Math.max(nextPaintTime - processingEnd, 0),
     loadState: getLoadState(firstEntry.startTime),
   };
+
+  // Cast to attribution metric so it can be populated.
+  const metricWithAttribution = metric as INPMetricWithAttribution;
+  metricWithAttribution.attribution = attribution;
   return metricWithAttribution;
 };
 

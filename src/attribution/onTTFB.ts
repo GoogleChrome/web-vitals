@@ -15,10 +15,22 @@
  */
 
 import {onTTFB as unattributedOnTTFB} from '../onTTFB.js';
-import {TTFBMetric, TTFBMetricWithAttribution, ReportOpts} from '../types.js';
+import {
+  TTFBMetric,
+  TTFBMetricWithAttribution,
+  ReportOpts,
+  TTFBAttribution,
+} from '../types.js';
 
 const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
-  const metricWithAttribution = metric as TTFBMetricWithAttribution;
+  // Use a default object if no other attribution has been set.
+  let attribution: TTFBAttribution = {
+    waitingDuration: 0,
+    cacheDuration: 0,
+    dnsDuration: 0,
+    connectionDuration: 0,
+    requestDuration: 0,
+  };
 
   if (metric.entries.length) {
     const navigationEntry = metric.entries[0];
@@ -45,7 +57,7 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
       0,
     );
 
-    metricWithAttribution.attribution = {
+    attribution = {
       waitingDuration: waitEnd,
       cacheDuration: dnsStart - waitEnd,
       // dnsEnd usually equals connectStart but use connectStart over dnsEnd
@@ -59,16 +71,11 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
       requestDuration: metric.value - connectEnd,
       navigationEntry: navigationEntry,
     };
-    return metricWithAttribution;
   }
-  // Set an empty object if no other attribution has been set.
-  metricWithAttribution.attribution = {
-    waitingDuration: 0,
-    cacheDuration: 0,
-    dnsDuration: 0,
-    connectionDuration: 0,
-    requestDuration: 0,
-  };
+
+  // Cast to attribution metric so it can be populated.
+  const metricWithAttribution = metric as TTFBMetricWithAttribution;
+  metricWithAttribution.attribution = attribution;
   return metricWithAttribution;
 };
 
