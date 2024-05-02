@@ -169,6 +169,7 @@ describe('onFCP()', async function () {
     await beaconCountIs(1);
 
     const [fcp1] = await getBeacons();
+    console.log(fcp1);
     assert(fcp1.value >= 0);
     assert(fcp1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
