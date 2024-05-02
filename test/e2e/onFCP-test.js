@@ -175,8 +175,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp1.value, fcp1.delta);
     // Temp fix to address Firefox flakiness.
     // See https://github.com/GoogleChrome/web-vitals/issues/472
-    console.log(':' + browser.browserName + ':');
-    if (browser.browserName !== 'firefox') {
+    if (browser.capabilities.browserName !== 'firefox') {
       assert.strictEqual(fcp1.rating, 'good');
     }
     assert.strictEqual(fcp1.entries.length, 1);
@@ -195,7 +194,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp2.value, fcp2.delta);
     // Temp fix to address Firefox flakiness.
     // See https://github.com/GoogleChrome/web-vitals/issues/472
-    if (browser.browserName !== 'firefox') {
+    if (browser.capabilities.browserName !== 'firefox') {
       assert.strictEqual(fcp2.rating, 'good');
     }
     assert.strictEqual(fcp2.entries.length, 0);
@@ -214,7 +213,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp3.value, fcp3.delta);
     // Temp fix to address Firefox flakiness.
     // See https://github.com/GoogleChrome/web-vitals/issues/472
-    if (browser.browserName !== 'firefox') {
+    if (browser.capabilities.browserName !== 'firefox') {
       assert.strictEqual(fcp3.rating, 'good');
     }
     assert.strictEqual(fcp3.entries.length, 0);

@@ -682,7 +682,7 @@ const assertStandardReportsAreCorrect = (beacons) => {
   assert.strictEqual(lcp.value, lcp.delta);
   // Temp fix to address Firefox flakiness.
   // See https://github.com/GoogleChrome/web-vitals/issues/472
-  if (browser.browserName !== 'firefox') {
+  if (browser.capabilities.browserName !== 'firefox') {
     assert.strictEqual(lcp.rating, 'good');
   }
   assert.strictEqual(lcp.entries.length, 1);
