@@ -858,6 +858,8 @@ interface FCPAttribution {
 
 #### `FIDAttribution`
 
+_This interface is deprecated and will be removed in next major release_
+
 ```ts
 interface FIDAttribution {
   /**
