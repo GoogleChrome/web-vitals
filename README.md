@@ -488,9 +488,9 @@ For guidance on how to collect and use real-user data to debug performance issue
 
 ## API
 
-### Types
+### Types:
 
-#### [`Metric`](/src/types/base.ts#:~:text=interface%20Metric)
+#### `Metric`
 
 All metrics types inherit from the following base interface:
 
@@ -560,7 +560,7 @@ interface Metric {
 
 Metric-specific subclasses:
 
-##### [`CLSMetric`](/src/types/cls.ts#:~:text=interface%20CLSMetric)
+##### `CLSMetric`
 
 ```ts
 interface CLSMetric extends Metric {
@@ -569,7 +569,7 @@ interface CLSMetric extends Metric {
 }
 ```
 
-##### [`FCPMetric`](/src/types/fcp.ts#:~:text=interface%20FCPMetric)
+##### `FCPMetric`
 
 ```ts
 interface FCPMetric extends Metric {
@@ -578,7 +578,7 @@ interface FCPMetric extends Metric {
 }
 ```
 
-##### [`FIDMetric`](/src/types/fid.ts#:~:text=interface%20FIDMetric)
+##### `FIDMetric`
 
 ```ts
 interface FIDMetric extends Metric {
@@ -587,7 +587,7 @@ interface FIDMetric extends Metric {
 }
 ```
 
-##### [`INPMetric`](/src/types/inp.ts#:~:text=interface%20INPMetric)
+##### `INPMetric`
 
 ```ts
 interface INPMetric extends Metric {
@@ -596,7 +596,7 @@ interface INPMetric extends Metric {
 }
 ```
 
-##### [`LCPMetric`](/src/types/lcp.ts#:~:text=interface%20LCPMetric)
+##### `LCPMetric`
 
 ```ts
 interface LCPMetric extends Metric {
@@ -605,7 +605,7 @@ interface LCPMetric extends Metric {
 }
 ```
 
-##### [`TTFBMetric`](/src/types/ttfb.ts#:~:text=interface%20TTFBMetric)
+##### `TTFBMetric`
 
 ```ts
 interface TTFBMetric extends Metric {
@@ -781,7 +781,7 @@ When using the attribution build, these objects are found as an `attribution` pr
 
 See the [attribution build](#attribution-build) section for details on how to use this feature.
 
-#### [CLS `attribution`](/src/types/cls.ts#:~:text=interface%20CLSAttribution)
+#### `CLSAttribution`
 
 ```ts
 interface CLSAttribution {
@@ -822,7 +822,7 @@ interface CLSAttribution {
 }
 ```
 
-#### [FCP `attribution`](/src/types/fcp.ts#:~:text=interface%20FCPAttribution)
+#### `FCPAttribution`
 
 ```ts
 interface FCPAttribution {
@@ -854,7 +854,7 @@ interface FCPAttribution {
 }
 ```
 
-#### [FID `attribution`](/src/types/fid.ts#:~:text=interface%20FIDAttribution)
+#### `FIDAttribution`
 
 ```ts
 interface FIDAttribution {
@@ -886,7 +886,7 @@ interface FIDAttribution {
 }
 ```
 
-#### [INP `attribution`](/src/types/inp.ts#:~:text=interface%20INPAttribution)
+#### `INPAttribution`
 
 ```ts
 interface INPAttribution {
@@ -977,7 +977,7 @@ interface INPAttribution {
 }
 ```
 
-#### [LCP `attribution`](/src/types/lcp.ts#:~:text=interface%20LCPAttribution)
+#### `LCPAttribution`
 
 ```ts
 interface LCPAttribution {
@@ -1032,7 +1032,7 @@ interface LCPAttribution {
 }
 ```
 
-#### [TTFB `attribution`](/src/types/ttfb.ts#:~:text=interface%20TTFBAttribution)
+#### `TTFBAttribution`
 
 ```ts
 export interface TTFBAttribution {
