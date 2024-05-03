@@ -16,7 +16,6 @@
 
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
-import {isInvalidTimestamp} from './lib/isInvalidTimestamp.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
@@ -72,20 +71,19 @@ export const onTTFB = (
   );
 
   whenReady(() => {
-    const navEntry = getNavigationEntry();
+    const navigationEntry = getNavigationEntry();
 
-    if (navEntry) {
-      const responseStart = navEntry.responseStart;
-
-      if (isInvalidTimestamp(responseStart)) return;
-
+    if (navigationEntry) {
       // The activationStart reference is used because TTFB should be
       // relative to page activation rather than navigation start if the
       // page was prerendered. But in cases where `activationStart` occurs
       // after the first byte is received, this time should be clamped at 0.
-      metric.value = Math.max(responseStart - getActivationStart(), 0);
+      metric.value = Math.max(
+        navigationEntry.responseStart - getActivationStart(),
+        0,
+      );
 
-      metric.entries = [navEntry];
+      metric.entries = [navigationEntry];
       report(true);
 
       // Only report TTFB after bfcache restores if a `navigation` entry
