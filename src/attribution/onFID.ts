@@ -35,7 +35,10 @@ const attributeFID = (metric: FIDMetric): FIDMetricWithAttribution => {
   };
 
   // Use Object.assign to set property to keep tsc happy.
-  const metricWithAttribution = Object.assign(metric, {attribution});
+  const metricWithAttribution: FIDMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
   return metricWithAttribution;
 };
 

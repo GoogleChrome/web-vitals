@@ -52,7 +52,10 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
   }
 
   // Use Object.assign to set property to keep tsc happy.
-  const metricWithAttribution = Object.assign(metric, {attribution});
+  const metricWithAttribution: FCPMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
   return metricWithAttribution;
 };
 

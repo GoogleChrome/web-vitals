@@ -84,7 +84,10 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
   }
 
   // Use Object.assign to set property to keep tsc happy.
-  const metricWithAttribution = Object.assign(metric, {attribution});
+  const metricWithAttribution: LCPMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
   return metricWithAttribution;
 };
 

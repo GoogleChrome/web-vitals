@@ -54,7 +54,10 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
   }
 
   // Use Object.assign to set property to keep tsc happy.
-  const metricWithAttribution = Object.assign(metric, {attribution});
+  const metricWithAttribution: CLSMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
   return metricWithAttribution;
 };
 
