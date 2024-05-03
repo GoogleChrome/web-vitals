@@ -30,10 +30,8 @@ assert.strictEqual = function (actual, expected, message) {
     (expected === 'good' || expected === 'needs-improvement') &&
     actual !== expected
   ) {
-    console.log(
-      'Overriding stricEquals mismatch for Firefox',
-      actual,
-      expected,
+    console.warn(
+      `Overriding assert for Firefox. actual: ${actual} expected: ${expected}`,
     );
     return true;
   }
