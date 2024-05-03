@@ -1,5 +1,11 @@
 # Changelog
 
+### v4.0.0-rc.0 (2024-05-03)
+
+- **[BREAKING]** Update types to support more generic usage
+  ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
+- Fix `reportAllChanges` behavior for LCP when library is loaded late ([#468](https://github.com/GoogleChrome/web-vitals/pull/468))
+
 ### v4.0.0-beta.3 (2024-04-22)
 
 - **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
