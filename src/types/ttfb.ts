@@ -76,17 +76,3 @@ export interface TTFBAttribution {
 export interface TTFBMetricWithAttribution extends TTFBMetric {
   attribution: TTFBAttribution;
 }
-
-/**
- * A TTFB-specific version of the ReportCallback function.
- */
-export interface TTFBReportCallback {
-  (metric: TTFBMetric): void;
-}
-
-/**
- * A TTFB-specific version of the ReportCallback function with attribution.
- */
-export interface TTFBReportCallbackWithAttribution {
-  (metric: TTFBMetricWithAttribution): void;
-}

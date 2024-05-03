@@ -63,17 +63,3 @@ export interface FCPAttribution {
 export interface FCPMetricWithAttribution extends FCPMetric {
   attribution: FCPAttribution;
 }
-
-/**
- * An FCP-specific version of the ReportCallback function.
- */
-export interface FCPReportCallback {
-  (metric: FCPMetric): void;
-}
-
-/**
- * An FCP-specific version of the ReportCallback function with attribution.
- */
-export interface FCPReportCallbackWithAttribution {
-  (metric: FCPMetricWithAttribution): void;
-}

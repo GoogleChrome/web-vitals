@@ -28,12 +28,7 @@ import {onHidden} from './lib/onHidden.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
 
-import {
-  INPMetric,
-  INPReportCallback,
-  MetricRatingThresholds,
-  ReportOpts,
-} from './types.js';
+import {INPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
@@ -65,7 +60,10 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
  * hidden. As a result, the `callback` function might be called multiple times
  * during the same page load._
  */
-export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
+export const onINP = (
+  onReport: (metric: INPMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
 
@@ -96,7 +94,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       // just one or two frames is likely not worth the insight that could be
       // gained.
       durationThreshold: opts!.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
-    } as PerformanceObserverInit);
+    });
 
     report = bindReporter(
       onReport,

@@ -63,17 +63,3 @@ export interface FIDAttribution {
 export interface FIDMetricWithAttribution extends FIDMetric {
   attribution: FIDAttribution;
 }
-
-/**
- * An FID-specific version of the ReportCallback function.
- */
-export interface FIDReportCallback {
-  (metric: FIDMetric): void;
-}
-
-/**
- * An FID-specific version of the ReportCallback function with attribution.
- */
-export interface FIDReportCallbackWithAttribution {
-  (metric: FIDMetricWithAttribution): void;
-}

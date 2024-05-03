@@ -16,25 +16,26 @@
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
-import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import {
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,
-  LCPReportCallback,
-  LCPReportCallbackWithAttribution,
   ReportOpts,
 } from '../types.js';
 
-const attributeLCP = (metric: LCPMetric) => {
+const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
+  // Use a default object if no other attribution has been set.
+  let attribution: LCPAttribution = {
+    timeToFirstByte: 0,
+    resourceLoadDelay: 0,
+    resourceLoadDuration: 0,
+    elementRenderDelay: metric.value,
+  };
+
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
-
     if (navigationEntry) {
-      const responseStart = navigationEntry.responseStart;
-      if (isInvalidTimestamp(responseStart)) return;
-
       const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
       const lcpResourceEntry =
@@ -43,7 +44,7 @@ const attributeLCP = (metric: LCPMetric) => {
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
 
-      const ttfb = Math.max(0, responseStart - activationStart);
+      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
 
       const lcpRequestStart = Math.max(
         ttfb,
@@ -62,7 +63,7 @@ const attributeLCP = (metric: LCPMetric) => {
         lcpEntry.startTime - activationStart,
       );
 
-      const attribution: LCPAttribution = {
+      attribution = {
         element: getSelector(lcpEntry.element),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
@@ -79,18 +80,15 @@ const attributeLCP = (metric: LCPMetric) => {
       if (lcpResourceEntry) {
         attribution.lcpResourceEntry = lcpResourceEntry;
       }
-
-      (metric as LCPMetricWithAttribution).attribution = attribution;
-      return;
     }
   }
-  // Set an empty object if no other attribution has been set.
-  (metric as LCPMetricWithAttribution).attribution = {
-    timeToFirstByte: 0,
-    resourceLoadDelay: 0,
-    resourceLoadDuration: 0,
-    elementRenderDelay: metric.value,
-  };
+
+  // Use Object.assign to set property to keep tsc happy.
+  const metricWithAttribution: LCPMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**
@@ -105,14 +103,11 @@ const attributeLCP = (metric: LCPMetric) => {
  * been determined.
  */
 export const onLCP = (
-  onReport: LCPReportCallbackWithAttribution,
+  onReport: (metric: LCPMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnLCP(
-    ((metric: LCPMetricWithAttribution) => {
-      attributeLCP(metric);
-      onReport(metric);
-    }) as LCPReportCallback,
-    opts,
-  );
+  unattributedOnLCP((metric: LCPMetric) => {
+    const metricWithAttribution = attributeLCP(metric);
+    onReport(metricWithAttribution);
+  }, opts);
 };

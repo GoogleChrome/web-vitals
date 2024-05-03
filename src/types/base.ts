@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-import type {CLSMetric} from './cls.js';
-import type {FCPMetric} from './fcp.js';
-import type {FIDMetric} from './fid.js';
-import type {INPMetric} from './inp.js';
-import type {LCPMetric} from './lcp.js';
-import type {TTFBMetric} from './ttfb.js';
+import type {CLSMetric, CLSMetricWithAttribution} from './cls.js';
+import type {FCPMetric, FCPMetricWithAttribution} from './fcp.js';
+import type {FIDMetric, FIDMetricWithAttribution} from './fid.js';
+import type {INPMetric, INPMetricWithAttribution} from './inp.js';
+import type {LCPMetric, LCPMetricWithAttribution} from './lcp.js';
+import type {TTFBMetric, TTFBMetricWithAttribution} from './ttfb.js';
 
 export interface Metric {
   /**
@@ -60,7 +60,7 @@ export interface Metric {
    * The array may also be empty if the metric value was not based on any
    * entries (e.g. a CLS value of 0 given no layout shifts).
    */
-  entries: (PerformanceEntry | LayoutShift)[];
+  entries: PerformanceEntry[];
 
   /**
    * The type of navigation.
@@ -92,17 +92,14 @@ export type MetricType =
   | LCPMetric
   | TTFBMetric;
 
-/**
- * A version of the `Metric` that is used with the attribution build.
- */
-export interface MetricWithAttribution extends Metric {
-  /**
-   * An object containing potentially-helpful debugging information that
-   * can be sent along with the metric value for the current page visit in
-   * order to help identify issues happening to real-users in the field.
-   */
-  attribution: {[key: string]: unknown};
-}
+/** The union of supported metric attribution types. */
+export type MetricWithAttribution =
+  | CLSMetricWithAttribution
+  | FCPMetricWithAttribution
+  | FIDMetricWithAttribution
+  | INPMetricWithAttribution
+  | LCPMetricWithAttribution
+  | TTFBMetricWithAttribution;
 
 /**
  * The thresholds of metric's "good", "needs improvement", and "poor" ratings.
@@ -118,10 +115,6 @@ export interface MetricWithAttribution extends Metric {
  * | > [1]           | "poor"              |
  */
 export type MetricRatingThresholds = [number, number];
-
-export interface ReportCallback {
-  (metric: MetricType): void;
-}
 
 export interface ReportOpts {
   reportAllChanges?: boolean;

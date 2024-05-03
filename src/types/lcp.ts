@@ -86,17 +86,3 @@ export interface LCPAttribution {
 export interface LCPMetricWithAttribution extends LCPMetric {
   attribution: LCPAttribution;
 }
-
-/**
- * An LCP-specific version of the ReportCallback function.
- */
-export interface LCPReportCallback {
-  (metric: LCPMetric): void;
-}
-
-/**
- * An LCP-specific version of the ReportCallback function with attribution.
- */
-export interface LCPReportCallbackWithAttribution {
-  (metric: LCPMetricWithAttribution): void;
-}

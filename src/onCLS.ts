@@ -22,12 +22,7 @@ import {doubleRAF} from './lib/doubleRAF.js';
 import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
-import {
-  CLSMetric,
-  CLSReportCallback,
-  MetricRatingThresholds,
-  ReportOpts,
-} from './types.js';
+import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for CLS. See https://web.dev/articles/cls#what_is_a_good_cls_score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
@@ -53,7 +48,10 @@ export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
  * hidden. As a result, the `callback` function might be called multiple times
  * during the same page load._
  */
-export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
+export const onCLS = (
+  onReport: (metric: CLSMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
 

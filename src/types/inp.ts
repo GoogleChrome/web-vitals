@@ -122,17 +122,3 @@ export interface INPAttribution {
 export interface INPMetricWithAttribution extends INPMetric {
   attribution: INPAttribution;
 }
-
-/**
- * An INP-specific version of the ReportCallback function.
- */
-export interface INPReportCallback {
-  (metric: INPMetric): void;
-}
-
-/**
- * An INP-specific version of the ReportCallback function with attribution.
- */
-export interface INPReportCallbackWithAttribution {
-  (metric: INPMetricWithAttribution): void;
-}

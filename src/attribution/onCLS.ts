@@ -18,8 +18,7 @@ import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onCLS as unattributedOnCLS} from '../onCLS.js';
 import {
-  CLSReportCallback,
-  CLSReportCallbackWithAttribution,
+  CLSAttribution,
   CLSMetric,
   CLSMetricWithAttribution,
   ReportOpts,
@@ -33,13 +32,16 @@ const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
   return sources.find((s) => s.node && s.node.nodeType === 1) || sources[0];
 };
 
-const attributeCLS = (metric: CLSMetric): void => {
+const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
+  // Use an empty object if no other attribution has been set.
+  let attribution: CLSAttribution = {};
+
   if (metric.entries.length) {
     const largestEntry = getLargestLayoutShiftEntry(metric.entries);
     if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
       const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
       if (largestSource) {
-        (metric as CLSMetricWithAttribution).attribution = {
+        attribution = {
           largestShiftTarget: getSelector(largestSource.node),
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
@@ -47,12 +49,16 @@ const attributeCLS = (metric: CLSMetric): void => {
           largestShiftEntry: largestEntry,
           loadState: getLoadState(largestEntry.startTime),
         };
-        return;
       }
     }
   }
-  // Set an empty object if no other attribution has been set.
-  (metric as CLSMetricWithAttribution).attribution = {};
+
+  // Use Object.assign to set property to keep tsc happy.
+  const metricWithAttribution: CLSMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**
@@ -77,14 +83,11 @@ const attributeCLS = (metric: CLSMetric): void => {
  * during the same page load._
  */
 export const onCLS = (
-  onReport: CLSReportCallbackWithAttribution,
+  onReport: (metric: CLSMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnCLS(
-    ((metric: CLSMetricWithAttribution) => {
-      attributeCLS(metric);
-      onReport(metric);
-    }) as CLSReportCallback,
-    opts,
-  );
+  unattributedOnCLS((metric: CLSMetric) => {
+    const metricWithAttribution = attributeCLS(metric);
+    onReport(metricWithAttribution);
+  }, opts);
 };

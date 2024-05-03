@@ -100,7 +100,7 @@ To load the "attribution" build, change any `import` statements that reference `
 + import {onLCP, onINP, onCLS} from 'web-vitals/attribution';
 ```
 
-Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [`Metric`](#metric) object will contain an additional [`attribution`](#metricwithattribution) property.
+Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [metric](#metric) objects will contain an additional [`attribution`](#attribution) property.
 
 See [Send attribution data](#send-attribution-data) for usage examples, and the [`attribution` reference](#attribution) for details on what values are added for each metric.
 
@@ -492,6 +492,8 @@ For guidance on how to collect and use real-user data to debug performance issue
 
 #### `Metric`
 
+All metrics types inherit from the following base interface:
+
 ```ts
 interface Metric {
   /**
@@ -532,7 +534,7 @@ interface Metric {
    * The array may also be empty if the metric value was not based on any
    * entries (e.g. a CLS value of 0 given no layout shifts).
    */
-  entries: (PerformanceEntry | LayoutShift)[];
+  entries: PerformanceEntry[];
 
   /**
    * The type of navigation.
@@ -558,36 +560,61 @@ interface Metric {
 
 Metric-specific subclasses:
 
-- [`CLSMetric`](/src/types/cls.ts#:~:text=interface%20CLSMetric)
-- [`FCPMetric`](/src/types/fcp.ts#:~:text=interface%20FCPMetric)
-- [`FIDMetric`](/src/types/fid.ts#:~:text=interface%20FIDMetric)
-- [`INPMetric`](/src/types/inp.ts#:~:text=interface%20INPMetric)
-- [`LCPMetric`](/src/types/lcp.ts#:~:text=interface%20LCPMetric)
-- [`TTFBMetric`](/src/types/ttfb.ts#:~:text=interface%20TTFBMetric)
-
-#### `MetricWithAttribution`
-
-See the [attribution build](#attribution-build) section for details on how to use this feature.
+##### `CLSMetric`
 
 ```ts
-interface MetricWithAttribution extends Metric {
-  /**
-   * An object containing potentially-helpful debugging information that
-   * can be sent along with the metric value for the current page visit in
-   * order to help identify issues happening to real-users in the field.
-   */
-  attribution: {[key: string]: unknown};
+interface CLSMetric extends Metric {
+  name: 'CLS';
+  entries: LayoutShift[];
 }
 ```
 
-Metric-specific subclasses:
+##### `FCPMetric`
 
-- [`CLSMetricWithAttribution`](/src/types/cls.ts#:~:text=interface%20CLSMetricWithAttribution)
-- [`FCPMetricWithAttribution`](/src/types/fcp.ts#:~:text=interface%20FCPMetricWithAttribution)
-- [`FIDMetricWithAttribution`](/src/types/fid.ts#:~:text=interface%20FIDMetricWithAttribution)
-- [`INPMetricWithAttribution`](/src/types/inp.ts#:~:text=interface%20INPMetricWithAttribution)
-- [`LCPMetricWithAttribution`](/src/types/lcp.ts#:~:text=interface%20LCPMetricWithAttribution)
-- [`TTFBMetricWithAttribution`](/src/types/ttfb.ts#:~:text=interface%20TTFBMetricWithAttribution)
+```ts
+interface FCPMetric extends Metric {
+  name: 'FCP';
+  entries: PerformancePaintTiming[];
+}
+```
+
+##### `FIDMetric`
+
+_This interface is deprecated and will be removed in next major release_
+
+```ts
+interface FIDMetric extends Metric {
+  name: 'FID';
+  entries: PerformanceEventTiming[];
+}
+```
+
+##### `INPMetric`
+
+```ts
+interface INPMetric extends Metric {
+  name: 'INP';
+  entries: PerformanceEventTiming[];
+}
+```
+
+##### `LCPMetric`
+
+```ts
+interface LCPMetric extends Metric {
+  name: 'LCP';
+  entries: LargestContentfulPaint[];
+}
+```
+
+##### `TTFBMetric`
+
+```ts
+interface TTFBMetric extends Metric {
+  name: 'TTFB';
+  entries: PerformanceNavigationTiming[];
+}
+```
 
 #### `MetricRatingThresholds`
 
@@ -604,27 +631,10 @@ The thresholds of metric's "good", "needs improvement", and "poor" ratings.
 | > [1]           | "poor"              |
 
 ```ts
-export type MetricRatingThresholds = [number, number];
+type MetricRatingThresholds = [number, number];
 ```
 
 _See also [Rating Thresholds](#rating-thresholds)._
-
-#### `ReportCallback`
-
-```ts
-interface ReportCallback {
-  (metric: Metric): void;
-}
-```
-
-Metric-specific subclasses:
-
-- [`CLSReportCallback`](/src/types/cls.ts#:~:text=interface%20CLSReportCallback)
-- [`FCPReportCallback`](/src/types/fcp.ts#:~:text=interface%20FCPReportCallback)
-- [`FIDReportCallback`](/src/types/fid.ts#:~:text=interface%20FIDReportCallback)
-- [`INPReportCallback`](/src/types/inp.ts#:~:text=interface%20INPReportCallback)
-- [`LCPReportCallback`](/src/types/lcp.ts#:~:text=interface%20LCPReportCallback)
-- [`TTFBReportCallback`](/src/types/ttfb.ts#:~:text=interface%20TTFBReportCallback)
 
 #### `ReportOpts`
 
@@ -667,7 +677,7 @@ type LoadState =
 #### `onCLS()`
 
 ```ts
-type onCLS = (callback: CLSReportCallback, opts?: ReportOpts) => void;
+function onCLS(callback: (metric: CLSMetric) => void, opts?: ReportOpts): void;
 ```
 
 Calculates the [CLS](https://web.dev/articles/cls) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/articles/cls#layout_shift_score)).
@@ -679,17 +689,17 @@ _**Important:** CLS should be continually monitored for changes throughout the e
 #### `onFCP()`
 
 ```ts
-type onFCP = (callback: FCPReportCallback, opts?: ReportOpts) => void;
+function onFCP(callback: (metric: FCPMetric) => void, opts?: ReportOpts): void;
 ```
 
 Calculates the [FCP](https://web.dev/articles/fcp) value for the current page and calls the `callback` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
 #### `onFID()`
 
-_Deprecated and will be removed in next major release_
+_This function is deprecated and will be removed in next major release_
 
 ```ts
-type onFID = (callback: FIDReportCallback, opts?: ReportOpts) => void;
+function onFID(callback: (metric: FIDMetric) => void, opts?: ReportOpts): void;
 ```
 
 Calculates the [FID](https://web.dev/articles/fid) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
@@ -699,7 +709,7 @@ _**Important:** since FID is only reported after the user interacts with the pag
 #### `onINP()`
 
 ```ts
-type onINP = (callback: INPReportCallback, opts?: ReportOpts) => void;
+function onINP(callback: (metric: INPMetric) => void, opts?: ReportOpts): void;
 ```
 
 Calculates the [INP](https://web.dev/articles/inp) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
@@ -713,7 +723,7 @@ _**Important:** INP should be continually monitored for changes throughout the e
 #### `onLCP()`
 
 ```ts
-type onLCP = (callback: LCPReportCallback, opts?: ReportOpts) => void;
+function onLCP(callback: (metric: LCPMetric) => void, opts?: ReportOpts): void;
 ```
 
 Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and calls the `callback` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
@@ -723,7 +733,10 @@ If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, 
 #### `onTTFB()`
 
 ```ts
-type onTTFB = (callback: TTFBReportCallback, opts?: ReportOpts) => void;
+function onTTFB(
+  callback: (metric: TTFBMetric) => void,
+  opts?: ReportOpts,
+): void;
 ```
 
 Calculates the [TTFB](https://web.dev/articles/ttfb) value for the current page and calls the `callback` function once the page has loaded, along with the relevant `navigation` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
@@ -760,15 +773,17 @@ console.log(INPThresholds); // [ 200, 500 ]
 console.log(LCPThresholds); // [ 2500, 4000 ]
 ```
 
-_**Note:** It's typically not necessary (or recommended) to manually calculate metric value ratings using these thresholds. Use the [`Metric['rating']`](#metric) supplied by the [`ReportCallback`](#reportcallback) functions instead._
+_**Note:** It's typically not necessary (or recommended) to manually calculate metric value ratings using these thresholds. Use the [`Metric['rating']`](#metric) instead._
 
 ### Attribution:
 
 The following objects contain potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
 
+When using the attribution build, these objects are found as an `attribution` property on each metric.
+
 See the [attribution build](#attribution-build) section for details on how to use this feature.
 
-#### CLS `attribution`:
+#### `CLSAttribution`
 
 ```ts
 interface CLSAttribution {
@@ -809,7 +824,7 @@ interface CLSAttribution {
 }
 ```
 
-#### FCP `attribution`:
+#### `FCPAttribution`
 
 ```ts
 interface FCPAttribution {
@@ -841,7 +856,9 @@ interface FCPAttribution {
 }
 ```
 
-#### FID `attribution`:
+#### `FIDAttribution`
+
+_This interface is deprecated and will be removed in next major release_
 
 ```ts
 interface FIDAttribution {
@@ -873,7 +890,7 @@ interface FIDAttribution {
 }
 ```
 
-#### INP `attribution`:
+#### `INPAttribution`
 
 ```ts
 interface INPAttribution {
@@ -964,7 +981,7 @@ interface INPAttribution {
 }
 ```
 
-#### LCP `attribution`:
+#### `LCPAttribution`
 
 ```ts
 interface LCPAttribution {
@@ -1019,7 +1036,7 @@ interface LCPAttribution {
 }
 ```
 
-#### TTFB `attribution`:
+#### `TTFBAttribution`
 
 ```ts
 export interface TTFBAttribution {
