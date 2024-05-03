@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import _assert from 'assert';
+import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {navigateTo} from '../utils/navigateTo.js';
@@ -23,15 +23,22 @@ import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
 // Temp fix to address Firefox flakiness.
 // See https://github.com/GoogleChrome/web-vitals/issues/472
-const assert = _assert;
-assert.strictEquals = function strictEqual(actual, expected, message) {
+const originalStrictEqual = assert.strictEqual;
+assert.strictEqual = function (actual, expected, message) {
+  const result = originalStrictEqual(actual, expected, message);
   if (
+    !result &&
     browser.capabilities.browserName === 'firefox' &&
     (expected === 'good' || expected === 'needs-improvement')
   ) {
+    console.log(
+      'Overriding stricEquals mismatch for Firefox',
+      actual,
+      expected,
+    );
     return true;
   }
-  return _assert.strictEqual(actual, expected, message);
+  return result;
 };
 
 describe('onFCP()', async function () {
