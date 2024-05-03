@@ -490,7 +490,7 @@ For guidance on how to collect and use real-user data to debug performance issue
 
 ### Types
 
-#### `Metric`
+#### [`Metric`](/src/types/base.ts#:~:text=interface%20Metric)
 
 All metrics types inherit from the following base interface:
 
@@ -781,7 +781,7 @@ When using the attribution build, these objects are found as an `attribution` pr
 
 See the [attribution build](#attribution-build) section for details on how to use this feature.
 
-#### [CLS `attribution`](/src/types/cls.ts#:~:text=interface%20CLSMetricWithAttribution)
+#### [CLS `attribution`](/src/types/cls.ts#:~:text=interface%20CLSAttribution)
 
 ```ts
 interface CLSAttribution {
@@ -822,7 +822,7 @@ interface CLSAttribution {
 }
 ```
 
-#### [FCP `attribution`](/src/types/fcp.ts#:~:text=interface%20FCPMetricWithAttribution)
+#### [FCP `attribution`](/src/types/fcp.ts#:~:text=interface%20FCPAttribution)
 
 ```ts
 interface FCPAttribution {
@@ -854,7 +854,7 @@ interface FCPAttribution {
 }
 ```
 
-#### [FID `attribution`](/src/types/fid.ts#:~:text=interface%20FIDMetricWithAttribution)
+#### [FID `attribution`](/src/types/fid.ts#:~:text=interface%20FIDAttribution)
 
 ```ts
 interface FIDAttribution {
@@ -886,7 +886,7 @@ interface FIDAttribution {
 }
 ```
 
-#### [INP `attribution`](/src/types/inp.ts#:~:text=interface%20INPMetricWithAttribution)
+#### [INP `attribution`](/src/types/inp.ts#:~:text=interface%20INPAttribution)
 
 ```ts
 interface INPAttribution {
@@ -977,7 +977,7 @@ interface INPAttribution {
 }
 ```
 
-#### [LCP `attribution`](/src/types/lcp.ts#:~:text=interface%20LCPMetricWithAttribution)
+#### [LCP `attribution`](/src/types/lcp.ts#:~:text=interface%20LCPAttribution)
 
 ```ts
 interface LCPAttribution {
@@ -1032,7 +1032,7 @@ interface LCPAttribution {
 }
 ```
 
-#### [TTFB `attribution`](/src/types/ttfb.ts#:~:text=interface%20TTFBMetricWithAttribution)
+#### [TTFB `attribution`](/src/types/ttfb.ts#:~:text=interface%20TTFBAttribution)
 
 ```ts
 export interface TTFBAttribution {
