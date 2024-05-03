@@ -100,7 +100,7 @@ To load the "attribution" build, change any `import` statements that reference `
 + import {onLCP, onINP, onCLS} from 'web-vitals/attribution';
 ```
 
-Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [metrics](#metrics) objects will contain an additional [`attribution`](#attribution) property.
+Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [metric](#metric) objects will contain an additional [`attribution`](#attribution) property.
 
 See [Send attribution data](#send-attribution-data) for usage examples, and the [`attribution` reference](#attribution) for details on what values are added for each metric.
 
@@ -580,6 +580,8 @@ interface FCPMetric extends Metric {
 
 ##### `FIDMetric`
 
+_This interface is deprecated and will be removed in next major release_
+
 ```ts
 interface FIDMetric extends Metric {
   name: 'FID';
@@ -694,7 +696,7 @@ Calculates the [FCP](https://web.dev/articles/fcp) value for the current page an
 
 #### `onFID()`
 
-_Deprecated and will be removed in next major release_
+_This function is deprecated and will be removed in next major release_
 
 ```ts
 function onFID(callback: (metric: FIDMetric) => void, opts?: ReportOpts): void;
