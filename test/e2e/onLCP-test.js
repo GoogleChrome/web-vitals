@@ -26,11 +26,10 @@ import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 // See https://github.com/GoogleChrome/web-vitals/issues/472
 const originalStrictEqual = assert.strictEqual;
 assert.strictEqual = function (actual, expected, message) {
-  const result = originalStrictEqual(actual, expected, message);
   if (
-    !result &&
     browser.capabilities.browserName === 'firefox' &&
-    (expected === 'good' || expected === 'needs-improvement')
+    (expected === 'good' || expected === 'needs-improvement') &&
+    actual !== expected
   ) {
     console.log(
       'Overriding stricEquals mismatch for Firefox',
@@ -39,7 +38,7 @@ assert.strictEqual = function (actual, expected, message) {
     );
     return true;
   }
-  return result;
+  return originalStrictEqual(actual, expected, message);
 };
 
 describe('onLCP()', async function () {
