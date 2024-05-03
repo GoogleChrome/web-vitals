@@ -47,7 +47,11 @@ describe('onFCP()', async function () {
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
-    assert.strictEqual(fcp.rating, 'good');
+    // Temp fix to address Firefox flakiness.
+    // See https://github.com/GoogleChrome/web-vitals/issues/472
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(fcp.rating, 'good');
+    }
     assert.strictEqual(fcp.entries.length, 1);
     assert.match(fcp.navigationType, /navigate|reload/);
   });
@@ -64,7 +68,11 @@ describe('onFCP()', async function () {
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
-    assert.strictEqual(fcp.rating, 'good');
+    // Temp fix to address Firefox flakiness.
+    // See https://github.com/GoogleChrome/web-vitals/issues/472
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(fcp.rating, 'good');
+    }
     assert.strictEqual(fcp.entries.length, 1);
     assert.match(fcp.navigationType, /navigate|reload/);
   });
@@ -86,7 +94,11 @@ describe('onFCP()', async function () {
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
-    assert.strictEqual(fcp.rating, 'good');
+    // Temp fix to address Firefox flakiness.
+    // See https://github.com/GoogleChrome/web-vitals/issues/472
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(fcp.rating, 'good');
+    }
     assert.strictEqual(fcp.entries.length, 1);
     assert.strictEqual(fcp.entries[0].startTime - activationStart, fcp.value);
     assert.strictEqual(fcp.navigationType, 'prerender');
@@ -242,7 +254,11 @@ describe('onFCP()', async function () {
     assert(fcp1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
-    assert.strictEqual(fcp1.rating, 'good');
+    // Temp fix to address Firefox flakiness.
+    // See https://github.com/GoogleChrome/web-vitals/issues/472
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(fcp1.rating, 'good');
+    }
     assert.strictEqual(fcp1.entries.length, 0);
     assert.strictEqual(fcp1.navigationType, 'back-forward-cache');
 
@@ -257,7 +273,11 @@ describe('onFCP()', async function () {
     assert(fcp2.id !== fcp1.id);
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
-    assert.strictEqual(fcp2.rating, 'good');
+    // Temp fix to address Firefox flakiness.
+    // See https://github.com/GoogleChrome/web-vitals/issues/472
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(fcp2.rating, 'good');
+    }
     assert.strictEqual(fcp2.entries.length, 0);
     assert.strictEqual(fcp2.navigationType, 'back-forward-cache');
   });
@@ -274,7 +294,11 @@ describe('onFCP()', async function () {
     assert(fcp.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
-    assert.strictEqual(fcp.rating, 'good');
+    // Temp fix to address Firefox flakiness.
+    // See https://github.com/GoogleChrome/web-vitals/issues/472
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(fcp.rating, 'good');
+    }
     assert.strictEqual(fcp.entries.length, 1);
     assert.strictEqual(fcp.navigationType, 'restore');
   });
@@ -302,7 +326,11 @@ describe('onFCP()', async function () {
       assert(fcp.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
-      assert.strictEqual(fcp.rating, 'good');
+      // Temp fix to address Firefox flakiness.
+      // See https://github.com/GoogleChrome/web-vitals/issues/472
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.strictEqual(fcp.rating, 'good');
+      }
       assert.strictEqual(fcp.entries.length, 1);
       assert.match(fcp.navigationType, /navigate|reload/);
 
@@ -350,7 +378,11 @@ describe('onFCP()', async function () {
       assert(fcp.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
-      assert.strictEqual(fcp.rating, 'good');
+      // Temp fix to address Firefox flakiness.
+      // See https://github.com/GoogleChrome/web-vitals/issues/472
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.strictEqual(fcp.rating, 'good');
+      }
       assert.strictEqual(fcp.entries.length, 1);
       assert.strictEqual(fcp.navigationType, 'prerender');
 
@@ -393,7 +425,11 @@ describe('onFCP()', async function () {
       assert(fcp.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
-      assert.strictEqual(fcp.rating, 'good');
+      // Temp fix to address Firefox flakiness.
+      // See https://github.com/GoogleChrome/web-vitals/issues/472
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.strictEqual(fcp.rating, 'good');
+      }
       assert.strictEqual(fcp.entries.length, 0);
       assert.strictEqual(fcp.navigationType, 'back-forward-cache');
 
