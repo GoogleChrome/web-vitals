@@ -56,24 +56,26 @@ export const onLCP = (
     let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: LCPMetric['entries']) => {
-      const lastEntry = entries[entries.length - 1];
-      if (lastEntry) {
+      // If reportAllChanges is set then call this function for each entry,
+      // otherwise only consider the last one.
+      if (!opts!.reportAllChanges) {
+        entries = entries.slice(-1);
+      }
+
+      entries.forEach((entry) => {
         // Only report if the page wasn't hidden prior to LCP.
-        if (lastEntry.startTime < visibilityWatcher.firstHiddenTime) {
+        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
           // The startTime attribute returns the value of the renderTime if it is
           // not 0, and the value of the loadTime otherwise. The activationStart
           // reference is used because LCP should be relative to page activation
           // rather than navigation start if the page was prerendered. But in cases
           // where `activationStart` occurs after the LCP, this time should be
           // clamped at 0.
-          metric.value = Math.max(
-            lastEntry.startTime - getActivationStart(),
-            0,
-          );
-          metric.entries = [lastEntry];
+          metric.value = Math.max(entry.startTime - getActivationStart(), 0);
+          metric.entries = [entry];
           report();
         }
-      }
+      });
     };
 
     const po = observe('largest-contentful-paint', handleEntries);
