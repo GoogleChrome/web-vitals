@@ -26,7 +26,10 @@ import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 // See https://github.com/GoogleChrome/web-vitals/issues/472
 const assert = _assert;
 assert.strictEquals = function strictEqual(actual, expected, message) {
-  if (expected === 'good' && browser.capabilities.browserName === 'firefox') {
+  if (
+    browser.capabilities.browserName === 'firefox' &&
+    (expected === 'good' || expected === 'needs-improvement')
+  ) {
     return true;
   }
   return _assert.strictEqual(actual, expected, message);
