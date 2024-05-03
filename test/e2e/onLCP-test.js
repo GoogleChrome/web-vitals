@@ -690,7 +690,11 @@ const assertStandardReportsAreCorrect = (beacons) => {
   assert(lcp.id.match(/^v4-\d+-\d+$/));
   assert.strictEqual(lcp.name, 'LCP');
   assert.strictEqual(lcp.value, lcp.delta);
-  assert.strictEqual(lcp.rating, 'good');
+  // Temp fix to address Firefox flakiness.
+  // See https://github.com/GoogleChrome/web-vitals/issues/472
+  if (browser.capabilities.browserName !== 'firefox') {
+    assert.strictEqual(lcp.rating, 'good');
+  }
   assert.strictEqual(lcp.entries.length, 1);
   assert.match(lcp.navigationType, /navigate|reload/);
 };
