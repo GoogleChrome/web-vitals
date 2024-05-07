@@ -16,6 +16,7 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {doubleRAF} from './lib/doubleRAF.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -23,10 +24,12 @@ import {
   getInteractionCount,
   initInteractionCountPolyfill,
 } from './lib/polyfills/interactionCountPolyfill.js';
+import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   INPMetric,
   INPReportCallback,
+  Metric,
   MetricRatingThresholds,
   ReportOpts,
 } from './types.js';
@@ -152,16 +155,69 @@ const estimateP98LongestInteraction = () => {
 export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
+  const softNavsEnabled = softNavs(opts);
+  let reportedMetric = false;
+  let metricNavStartTime = 0;
 
   whenActivated(() => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.
-    initInteractionCountPolyfill();
+    initInteractionCountPolyfill(softNavsEnabled);
 
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
 
+    const initNewINPMetric = (
+      navigation?: Metric['navigationType'],
+      navigationId?: string,
+    ) => {
+      longestInteractionList = [];
+      // Important, we want the count for the full page here,
+      // not just for the current navigation.
+      prevInteractionCount =
+        navigation === 'soft-navigation' ? 0 : getInteractionCount();
+      metric = initMetric('INP', 0, navigation, navigationId);
+      report = bindReporter(
+        onReport,
+        metric,
+        INPThresholds,
+        opts!.reportAllChanges,
+      );
+      reportedMetric = false;
+      if (navigation === 'soft-navigation') {
+        const softNavEntry = getSoftNavigationEntry(navigationId);
+        metricNavStartTime =
+          softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
+      }
+    };
+
+    const updateINPMetric = () => {
+      const inp = estimateP98LongestInteraction();
+
+      if (
+        inp &&
+        (inp.latency !== metric.value || (opts && opts.reportAllChanges))
+      ) {
+        metric.value = inp.latency;
+        metric.entries = inp.entries;
+      }
+    };
+
     const handleEntries = (entries: INPMetric['entries']) => {
       entries.forEach((entry) => {
+        if (
+          softNavsEnabled &&
+          entry.navigationId &&
+          entry.navigationId !== metric.navigationId
+        ) {
+          // If the entry is for a new navigationId than previous, then we have
+          // entered a new soft nav, so emit the final INP and reinitialize the
+          // metric.
+          if (!reportedMetric) {
+            updateINPMetric();
+            if (metric.value > 0) report(true);
+          }
+          initNewINPMetric('soft-navigation', entry.navigationId);
+        }
         if (entry.interactionId) {
           processEntry(entry);
         }
@@ -190,13 +246,8 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         }
       });
 
-      const inp = estimateP98LongestInteraction();
-
-      if (inp && inp.latency !== metric.value) {
-        metric.value = inp.latency;
-        metric.entries = inp.entries;
-        report();
-      }
+      updateINPMetric();
+      report();
     };
 
     const po = observe('event', handleEntries, {
@@ -207,6 +258,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       // just one or two frames is likely not worth the insight that could be
       // gained.
       durationThreshold: opts!.durationThreshold ?? 40,
+      opts,
     } as PerformanceObserverInit);
 
     report = bindReporter(
@@ -224,7 +276,11 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
         'PerformanceEventTiming' in window &&
         'interactionId' in PerformanceEventTiming.prototype
       ) {
-        po.observe({type: 'first-input', buffered: true});
+        po.observe({
+          type: 'first-input',
+          buffered: true,
+          includeSoftNavigationObservations: softNavsEnabled,
+        });
       }
 
       onHidden(() => {
@@ -243,19 +299,46 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        longestInteractionList = [];
-        // Important, we want the count for the full page here,
-        // not just for the current navigation.
-        prevInteractionCount = getInteractionCount();
+        initNewINPMetric('back-forward-cache', metric.navigationId);
 
-        metric = initMetric('INP');
-        report = bindReporter(
-          onReport,
-          metric,
-          INPThresholds,
-          opts!.reportAllChanges,
-        );
+        doubleRAF(() => report());
       });
+
+      // Soft navs may be detected by navigationId changes in metrics above
+      // But where no metric is issued we need to also listen for soft nav
+      // entries, then emit the final metric for the previous navigation and
+      // reset the metric for the new navigation.
+      //
+      // As PO is ordered by time, these should not happen before metrics.
+      //
+      // We add a check on startTime as we may be processing many entries that
+      // are already dealt with so just checking navigationId differs from
+      // current metric's navigation id, as we did above, is not sufficient.
+      const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
+        entries.forEach((entry) => {
+          const softNavEntry = getSoftNavigationEntry(entry.navigationId);
+          const softNavEntryStartTime =
+            softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
+          if (
+            entry.navigationId &&
+            entry.navigationId !== metric.navigationId &&
+            softNavEntryStartTime > metricNavStartTime
+          ) {
+            if (!reportedMetric && metric.value > 0) report(true);
+            initNewINPMetric('soft-navigation', entry.navigationId);
+            report = bindReporter(
+              onReport,
+              metric,
+              INPThresholds,
+              opts!.reportAllChanges,
+            );
+          }
+        });
+      };
+
+      if (softNavsEnabled) {
+        observe('soft-navigation', handleSoftNavEntries, opts);
+      }
     }
   });
 };

@@ -53,6 +53,7 @@ interface PerformanceEntryMap {
   navigation: PerformanceNavigationTiming;
   resource: PerformanceResourceTiming;
   paint: PerformancePaintTiming;
+  'soft-navigation': SoftNavigationEntry;
 }
 
 // Update built-in types to be more accurate.
@@ -71,19 +72,32 @@ declare global {
   }
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
+  interface PerformancePaintTiming extends PerformanceEntry {
+    navigationId?: string;
+  }
+
+  // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
   interface PerformanceObserverInit {
     durationThreshold?: number;
+    includeSoftNavigationObservations?: boolean;
   }
 
   // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
   interface PerformanceNavigationTiming {
     activationStart?: number;
+    navigationId?: string;
+  }
+
+  // https://github.com/WICG/soft-navigations
+  interface SoftNavigationEntry extends PerformanceEntry {
+    navigationId?: string;
   }
 
   // https://wicg.github.io/event-timing/#sec-performance-event-timing
   interface PerformanceEventTiming extends PerformanceEntry {
     duration: DOMHighResTimeStamp;
     interactionId?: number;
+    navigationId?: string;
   }
 
   // https://wicg.github.io/layout-instability/#sec-layout-shift-attribution
@@ -98,6 +112,7 @@ declare global {
     value: number;
     sources: LayoutShiftAttribution[];
     hadRecentInput: boolean;
+    navigationId?: string;
   }
 
   // https://w3c.github.io/largest-contentful-paint/#sec-largest-contentful-paint-interface
@@ -108,5 +123,6 @@ declare global {
     id: string;
     url: string;
     element?: Element;
+    navigationId?: string;
   }
 }

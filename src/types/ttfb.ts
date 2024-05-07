@@ -22,7 +22,10 @@ import {NavigationTimingPolyfillEntry} from './polyfills.js';
  */
 export interface TTFBMetric extends Metric {
   name: 'TTFB';
-  entries: PerformanceNavigationTiming[] | NavigationTimingPolyfillEntry[];
+  entries:
+    | PerformanceNavigationTiming[]
+    | NavigationTimingPolyfillEntry[]
+    | SoftNavigationEntry[];
 }
 
 /**
@@ -54,9 +57,12 @@ export interface TTFBAttribution {
   /**
    * The `navigation` entry of the current page, which is useful for diagnosing
    * general page load issues. This can be used to access `serverTiming` for example:
-   * navigationEntry?.serverTiming
+   * navigationEntry.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+  navigationEntry?:
+    | PerformanceNavigationTiming
+    | NavigationTimingPolyfillEntry
+    | SoftNavigationEntry;
 }
 
 /**

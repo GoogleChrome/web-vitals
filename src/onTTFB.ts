@@ -15,9 +15,6 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {initMetric} from './lib/initMetric.js';
-import {isInvalidTimestamp} from './lib/isInvalidTimestamp.js';
-import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {
   MetricRatingThresholds,
@@ -25,10 +22,17 @@ import {
   TTFBReportCallback,
 } from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
+import {initMetric} from './lib/initMetric.js';
+import {isInvalidTimestamp} from './lib/isInvalidTimestamp.js';
+import {observe} from './lib/observe.js';
+import {onBFCacheRestore} from './lib/bfcache.js';
+import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 
 /** Thresholds for TTFB. See https://web.dev/articles/ttfb#what_is_a_good_ttfb_score */
 export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
+
+const hardNavEntry = getNavigationEntry();
 
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
@@ -63,6 +67,7 @@ const whenReady = (callback: () => void) => {
 export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
+  const softNavsEnabled = softNavs(opts);
 
   let metric = initMetric('TTFB');
   let report = bindReporter(
@@ -73,10 +78,8 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
   );
 
   whenReady(() => {
-    const navEntry = getNavigationEntry();
-
-    if (navEntry) {
-      const responseStart = navEntry.responseStart;
+    if (hardNavEntry) {
+      const responseStart = hardNavEntry.responseStart;
 
       if (isInvalidTimestamp(responseStart)) return;
 
@@ -86,22 +89,57 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
       // after the first byte is received, this time should be clamped at 0.
       metric.value = Math.max(responseStart - getActivationStart(), 0);
 
-      metric.entries = [navEntry];
+      // Type convert navigationEntry to prevent TS complaining about:
+      //   [(PerformanceNavigationTiming || NavigatingTimingPolyfillEntry)]
+      // not being same as:
+      //   (PerformanceNavigationTiming || NavigatingTimingPolyfillEntry)[]
+      // when it is for a single entry, like it is here
+      metric.entries = [<PerformanceNavigationTiming>hardNavEntry];
       report(true);
 
       // Only report TTFB after bfcache restores if a `navigation` entry
       // was reported for the initial load.
       onBFCacheRestore(() => {
-        metric = initMetric('TTFB', 0);
+        metric = initMetric(
+          'TTFB',
+          0,
+          'back-forward-cache',
+          metric.navigationId,
+        );
         report = bindReporter(
           onReport,
           metric,
           TTFBThresholds,
           opts!.reportAllChanges,
         );
-
         report(true);
       });
+
+      // Listen for soft-navigation entries and emit a dummy 0 TTFB entry
+      const reportSoftNavTTFBs = (entries: SoftNavigationEntry[]) => {
+        entries.forEach((entry) => {
+          if (entry.navigationId) {
+            metric = initMetric(
+              'TTFB',
+              0,
+              'soft-navigation',
+              entry.navigationId,
+            );
+            metric.entries = [entry];
+            report = bindReporter(
+              onReport,
+              metric,
+              TTFBThresholds,
+              opts!.reportAllChanges,
+            );
+            report(true);
+          }
+        });
+      };
+
+      if (softNavsEnabled) {
+        observe('soft-navigation', reportSoftNavTTFBs, opts);
+      }
     }
   });
 };

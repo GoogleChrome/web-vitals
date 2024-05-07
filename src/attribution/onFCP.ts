@@ -15,9 +15,10 @@
  */
 
 import {getBFCacheRestoreTime} from '../lib/bfcache.js';
-import {getLoadState} from '../lib/getLoadState.js';
-import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
+import {getLoadState} from '../lib/getLoadState.js';
+import {getNavigationEntry, hardNavId} from '../lib/getNavigationEntry.js';
+import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
 import {
   FCPMetric,
@@ -29,16 +30,28 @@ import {
 
 const attributeFCP = (metric: FCPMetric): void => {
   if (metric.entries.length) {
-    const navigationEntry = getNavigationEntry();
+    let navigationEntry;
     const fcpEntry = metric.entries[metric.entries.length - 1];
 
+    let ttfb = 0;
+    let softNavStart = 0;
+    if (!metric.navigationId || metric.navigationId === hardNavId) {
+      navigationEntry = getNavigationEntry();
+      if (navigationEntry) {
+        const responseStart = navigationEntry.responseStart;
+        if (isInvalidTimestamp(responseStart)) return;
+
+        const activationStart = navigationEntry.activationStart || 0;
+        ttfb = Math.max(0, responseStart - activationStart);
+      }
+    } else {
+      navigationEntry = getSoftNavigationEntry(metric.navigationId);
+      // Set ttfb to the SoftNav start time
+      softNavStart = navigationEntry ? navigationEntry.startTime : 0;
+      ttfb = softNavStart;
+    }
+
     if (navigationEntry) {
-      const responseStart = navigationEntry.responseStart;
-      if (isInvalidTimestamp(responseStart)) return;
-
-      const activationStart = navigationEntry.activationStart || 0;
-      const ttfb = Math.max(0, responseStart - activationStart);
-
       (metric as FCPMetricWithAttribution).attribution = {
         timeToFirstByte: ttfb,
         firstByteToFCP: metric.value - ttfb,

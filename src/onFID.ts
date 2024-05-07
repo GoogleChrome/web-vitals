@@ -16,6 +16,7 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {hardNavId} from './lib/getNavigationEntry.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -24,12 +25,13 @@ import {
   firstInputPolyfill,
   resetFirstInputPolyfill,
 } from './lib/polyfills/firstInputPolyfill.js';
-import {runOnce} from './lib/runOnce.js';
+import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
   FIDReportCallback,
   FirstInputPolyfillCallback,
+  Metric,
   MetricRatingThresholds,
   ReportOpts,
 } from './types.js';
@@ -49,26 +51,52 @@ export const FIDThresholds: MetricRatingThresholds = [100, 300];
 export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
   // Set defaults
   opts = opts || {};
+  const softNavsEnabled = softNavs(opts);
 
   whenActivated(() => {
-    const visibilityWatcher = getVisibilityWatcher();
+    let visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FID');
     let report: ReturnType<typeof bindReporter>;
 
-    const handleEntry = (entry: PerformanceEventTiming) => {
-      // Only report if the page wasn't hidden prior to the first input.
-      if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-        metric.value = entry.processingStart - entry.startTime;
-        metric.entries.push(entry);
-        report(true);
+    const initNewFIDMetric = (
+      navigation?: Metric['navigationType'],
+      navigationId?: string,
+    ) => {
+      if (navigation === 'soft-navigation') {
+        visibilityWatcher = getVisibilityWatcher(true);
       }
+      metric = initMetric('FID', 0, navigation, navigationId);
+      report = bindReporter(
+        onReport,
+        metric,
+        FIDThresholds,
+        opts!.reportAllChanges,
+      );
     };
 
     const handleEntries = (entries: FIDMetric['entries']) => {
-      (entries as PerformanceEventTiming[]).forEach(handleEntry);
-    };
+      entries.forEach((entry) => {
+        if (!softNavsEnabled) {
+          po!.disconnect();
+        } else if (
+          entry.navigationId &&
+          entry.navigationId !== metric.navigationId
+        ) {
+          // If the entry is for a new navigationId than previous, then we have
+          // entered a new soft nav, so reinitialize the metric.
+          initNewFIDMetric('soft-navigation', entry.navigationId);
+        }
 
-    const po = observe('first-input', handleEntries);
+        // Only report if the page wasn't hidden prior to the first input.
+        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+          metric.value = entry.processingStart - entry.startTime;
+          metric.entries.push(entry);
+          metric.navigationId = entry.navigationId || hardNavId;
+          report(true);
+        }
+      });
+    };
+    const po = observe('first-input', handleEntries, opts);
     report = bindReporter(
       onReport,
       metric,
@@ -77,12 +105,10 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
     );
 
     if (po) {
-      onHidden(
-        runOnce(() => {
-          handleEntries(po.takeRecords() as FIDMetric['entries']);
-          po.disconnect();
-        }),
-      );
+      onHidden(() => {
+        handleEntries(po!.takeRecords() as FIDMetric['entries']);
+        if (!softNavsEnabled) po.disconnect();
+      });
     }
 
     if (window.__WEB_VITALS_POLYFILL__) {
@@ -93,11 +119,16 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
       // Prefer the native implementation if available,
       if (!po) {
         window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback,
+          handleEntries as FirstInputPolyfillCallback,
         );
       }
       onBFCacheRestore(() => {
-        metric = initMetric('FID');
+        metric = initMetric(
+          'FID',
+          0,
+          'back-forward-cache',
+          metric.navigationId,
+        );
         report = bindReporter(
           onReport,
           metric,
@@ -107,14 +138,19 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
 
         window.webVitals.resetFirstInputPolyfill();
         window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback,
+          handleEntries as FirstInputPolyfillCallback,
         );
       });
     } else {
       // Only monitor bfcache restores if the browser supports FID natively.
       if (po) {
         onBFCacheRestore(() => {
-          metric = initMetric('FID');
+          metric = initMetric(
+            'FID',
+            0,
+            'back-forward-cache',
+            metric.navigationId,
+          );
           report = bindReporter(
             onReport,
             metric,
@@ -123,7 +159,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           );
 
           resetFirstInputPolyfill();
-          firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
+          firstInputPolyfill(handleEntries as FirstInputPolyfillCallback);
         });
       }
     }
