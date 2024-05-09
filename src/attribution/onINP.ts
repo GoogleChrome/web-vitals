@@ -80,19 +80,19 @@ const handleLoAFEntries = (entries: PerformanceLongAnimationFrameTiming[]) => {
   entries.forEach((entry) => pendingLoAFs.push(entry));
 };
 
-const saveInteractionSelectors = (entry: PerformanceEventTiming) => {
+// Save the selector early in case not available later if removed from DOM
+const saveInteractionSelector = (entry: PerformanceEventTiming) => {
   const interactionId = entry.interactionId;
   if (!interactionId) return;
 
-  // Save the selector early in case not available later if removed from DOM
+  // Don't run the getSelector for keyboard events after first one as there could
+  // be a lot of them in short fashion when typing.
+  if (entry.entryType !== 'first-input' && entry.name.startsWith('key')) return;
+
+  // Save any new selectors
   if (!interactionTargetMap.get(interactionId) && entry.target) {
-    // Don't run the getSelector for keyboard events as could be a lot of them
-    // in short fashion when typing so just hard code to 'keyboard'.
-    const selector =
-      entry.entryType !== 'first-input' && entry.name.startsWith('key')
-        ? 'keyboard'
-        : getSelector(entry.target);
-    interactionTargetMap.set(interactionId, selector);
+    const selector = getSelector(entry.target);
+    if (selector) interactionTargetMap.set(interactionId, selector);
   }
 };
 
@@ -195,7 +195,7 @@ const cleanupEntries = () => {
 };
 
 entryPreProcessingCallbacks.push(
-  saveInteractionSelectors,
+  saveInteractionSelector,
   groupEntriesByRenderTime,
 );
 
