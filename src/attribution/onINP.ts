@@ -85,8 +85,8 @@ const saveInteractionSelector = (entry: PerformanceEventTiming) => {
   const interactionId = entry.interactionId;
   if (!interactionId) return;
 
-  // Don't run the getSelector for keyboard events after first one as there could
-  // be a lot of them in short fashion when typing.
+  // Don't run the getSelector for keyboard events as there could be a lot of
+  // them in short fashion when typing. Allow first-input as only one of them.
   if (entry.entryType !== 'first-input' && entry.name.startsWith('key')) return;
 
   // Save any new selectors
