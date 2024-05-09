@@ -85,8 +85,15 @@ const saveInteractionSelectors = (entry: PerformanceEventTiming) => {
   if (!interactionId) return;
 
   // Save the selector early in case not available later if removed from DOM
-  if (!interactionTargetMap.get(interactionId) && entry.target)
-    interactionTargetMap.set(interactionId, getSelector(entry.target));
+  if (!interactionTargetMap.get(interactionId) && entry.target) {
+    // Don't run the getSelector for keyboard events as could be a lot of them
+    // in short fashion when typing so just hard code to 'keyboard'.
+    const selector =
+      entry.entryType !== 'first-input' && entry.name.startsWith('key')
+        ? 'keyboard'
+        : getSelector(entry.target);
+    interactionTargetMap.set(interactionId, selector);
+  }
 };
 
 /**
