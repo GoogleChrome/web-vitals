@@ -65,6 +65,9 @@ const entryToRenderTimeMap: WeakMap<
   DOMHighResTimeStamp
 > = new WeakMap();
 
+// A mapping of interactions to the target selector
+export const interactionTargetMap: Map<number, string> = new Map();
+
 // A reference to the idle task used to clean up entries from the above
 // variables. If the value is -1 it means no task is queue, and if it's
 // greater than -1 the value corresponds to the idle callback handle.
@@ -75,6 +78,15 @@ let idleHandle: number = -1;
  */
 const handleLoAFEntries = (entries: PerformanceLongAnimationFrameTiming[]) => {
   entries.forEach((entry) => pendingLoAFs.push(entry));
+};
+
+const saveInteractionSelectors = (entry: PerformanceEventTiming) => {
+  const interactionId = entry.interactionId;
+  if (!interactionId) return;
+
+  // Save the selector early in case not available later if removed from DOM
+  if (!interactionTargetMap.get(interactionId) && entry.target)
+    interactionTargetMap.set(interactionId, getSelector(entry.target));
 };
 
 /**
@@ -141,6 +153,12 @@ const cleanupEntries = () => {
   // more than sufficient.
   previousRenderTimes = previousRenderTimes.slice(-50);
 
+  // We only need the 10 last targets;
+  if (interactionTargetMap.size > 10) {
+    const keys = Array.from(interactionTargetMap.keys()).slice(0, -10);
+    keys.forEach((k) => interactionTargetMap.delete(k));
+  }
+
   // Keep all render times that are part of a pending INP candidate or
   // that occurred within the 50 most recently-dispatched animation frames.
   const renderTimesToKeep = new Set(
@@ -169,7 +187,10 @@ const cleanupEntries = () => {
   idleHandle = -1;
 };
 
-entryPreProcessingCallbacks.push(groupEntriesByRenderTime);
+entryPreProcessingCallbacks.push(
+  saveInteractionSelectors,
+  groupEntriesByRenderTime,
+);
 
 const getIntersectingLoAFs = (
   start: DOMHighResTimeStamp,
@@ -211,7 +232,11 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // first one found in the entry list.
   // TODO: when the following bug is fixed just use `firstInteractionEntry`.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
+  // We also fallback to interactionTargetMap for when target removed from DOM
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
+  const interactionTarget = firstEntryWithTarget
+    ? getSelector(firstEntryWithTarget.target)
+    : interactionTargetMap.get(firstEntry.interactionId) || '';
 
   // Since entry durations are rounded to the nearest 8ms, we need to clamp
   // the `nextPaintTime` value to be higher than the `processingEnd` or
@@ -226,9 +251,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
 
   const attribution: INPAttribution = {
-    interactionTarget: getSelector(
-      firstEntryWithTarget && firstEntryWithTarget.target,
-    ),
+    interactionTarget: interactionTarget,
     interactionType: firstEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
     interactionTime: firstEntry.startTime,
     nextPaintTime: nextPaintTime,
