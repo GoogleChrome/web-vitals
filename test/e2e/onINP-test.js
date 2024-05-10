@@ -651,6 +651,29 @@ describe('onINP()', async function () {
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
     });
 
+    it('reports the interaction target when entry removed after event callback', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo('/test/inp?attribution=1&mouseup=100&click=50', {
+        readyState: 'interactive',
+      });
+
+      const button = await $('#reset');
+      await simulateUserLikeClick(button);
+
+      // Wait a bit to ensure events are reported
+      await browser.pause(1000);
+      await browser.execute('document.querySelector("#reset").remove()');
+
+      await stubVisibilityChange('hidden');
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+
+      assert.equal(inp1.attribution.interactionType, 'pointer');
+      assert.equal(inp1.attribution.interactionTarget, '#reset');
+    });
+
     it('includes LoAF entries if the browser supports it', async function () {
       if (!browserSupportsLoAF) this.skip();
 
