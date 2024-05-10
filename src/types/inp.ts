@@ -39,6 +39,14 @@ export interface INPAttribution {
   interactionTarget: string;
 
   /**
+   * A node identifying the element that the user first interacted with
+   * as part of the frame where the INP candidate interaction occurred.
+   * If `interactionTargetElement` is null, that generally means the
+   * element was removed from the DOM after the interaction.
+   */
+  interactionTargetElement?: Node;
+
+  /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred
    * within the frame, only the first time is reported).

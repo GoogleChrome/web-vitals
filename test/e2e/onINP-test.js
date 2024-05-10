@@ -668,10 +668,11 @@ describe('onINP()', async function () {
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
 
-      const [inp1] = await getBeacons();
+      const [inp] = await getBeacons();
 
-      assert.equal(inp1.attribution.interactionType, 'pointer');
-      assert.equal(inp1.attribution.interactionTarget, '#reset');
+      assert.equal(inp.attribution.interactionType, 'pointer');
+      assert.equal(inp.attribution.interactionTarget, '#reset');
+      assert(inp.attribution.interactionTargetElement);
     });
 
     it('includes LoAF entries if the browser supports it', async function () {

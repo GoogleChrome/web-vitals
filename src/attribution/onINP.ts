@@ -236,9 +236,10 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
   // We also fallback to interactionTargetMap for when target removed from DOM
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
-  const interactionTarget = firstEntryWithTarget
-    ? getSelector(firstEntryWithTarget.target)
-    : getSelector(interactionTargetMap.get(firstEntry.interactionId)) || '';
+  const interactionTargetElement =
+    firstEntryWithTarget?.target ||
+    interactionTargetMap.get(firstEntry.interactionId);
+  const interactionTarget = getSelector(interactionTargetElement);
 
   // Since entry durations are rounded to the nearest 8ms, we need to clamp
   // the `nextPaintTime` value to be higher than the `processingEnd` or
@@ -254,6 +255,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
 
   const attribution: INPAttribution = {
     interactionTarget: interactionTarget,
+    interactionTargetElement: interactionTargetElement,
     interactionType: firstEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
     interactionTime: firstEntry.startTime,
     nextPaintTime: nextPaintTime,
