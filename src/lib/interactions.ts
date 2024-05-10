@@ -20,7 +20,6 @@ interface Interaction {
   id: number;
   latency: number;
   entries: PerformanceEventTiming[];
-  element?: Node;
 }
 
 interface EntryPreProcessingHook {

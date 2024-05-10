@@ -18,8 +18,8 @@ import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {
   longestInteractionList,
-  longestInteractionMap,
   entryPreProcessingCallbacks,
+  longestInteractionMap,
 } from '../lib/interactions.js';
 import {observe} from '../lib/observe.js';
 import {whenIdle} from '../lib/whenIdle.js';
@@ -66,6 +66,9 @@ const entryToRenderTimeMap: WeakMap<
   DOMHighResTimeStamp
 > = new WeakMap();
 
+// A mapping of interactions to the target selector
+export const interactionTargetMap: Map<number, Node> = new Map();
+
 // A reference to the idle task used to clean up entries from the above
 // variables. If the value is -1 it means no task is queue, and if it's
 // greater than -1 the value corresponds to the idle callback handle.
@@ -78,15 +81,15 @@ const handleLoAFEntries = (entries: PerformanceLongAnimationFrameTiming[]) => {
   entries.forEach((entry) => pendingLoAFs.push(entry));
 };
 
-// Store a reference to the interaction target element in case it's removed
+// Get a reference to the interaction target element in case it's removed
 // from the DOM later.
-const storeInteractionTarget = (entry: PerformanceEventTiming) => {
-  const interactionId = entry.interactionId;
-  if (interactionId && entry.target) {
-    const interaction = longestInteractionMap.get(interactionId);
-    if (interaction && !interaction.element) {
-      interaction.element = entry.target;
-    }
+const saveInteractionTarget = (entry: PerformanceEventTiming) => {
+  if (
+    entry.interactionId &&
+    entry.target &&
+    !interactionTargetMap.has(entry.interactionId)
+  ) {
+    interactionTargetMap.set(entry.interactionId, entry.target);
   }
 };
 
@@ -140,7 +143,9 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
   if (entry.interactionId || entry.entryType === 'first-input') {
     entryToRenderTimeMap.set(entry, renderTime);
   }
+};
 
+const queueCleanup = () => {
   // Queue cleanup of entries that are not part of any INP candidates.
   if (idleHandle < 0) {
     idleHandle = whenIdle(cleanupEntries);
@@ -148,6 +153,16 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
 };
 
 const cleanupEntries = () => {
+  // Delete any stored interaction target elements if they're not part of one
+  // of the 10 longest interactions.
+  if (interactionTargetMap.size > 10) {
+    interactionTargetMap.forEach((_, key) => {
+      if (!longestInteractionMap.has(key)) {
+        interactionTargetMap.delete(key);
+      }
+    });
+  }
+
   // The list of previous render times is used to handle cases where
   // events are dispatched out of order. When this happens they're generally
   // only off by a frame or two, so keeping the most recent 50 should be
@@ -183,8 +198,9 @@ const cleanupEntries = () => {
 };
 
 entryPreProcessingCallbacks.push(
-  storeInteractionTarget,
+  saveInteractionTarget,
   groupEntriesByRenderTime,
+  queueCleanup,
 );
 
 const getIntersectingLoAFs = (
@@ -227,15 +243,12 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // first one found in the entry list.
   // TODO: when the following bug is fixed just use `firstInteractionEntry`.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-  const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
-
-  // As a fallback, also check the saved element from the interaction (for
+  // As a fallback, also check the interactionTargetMap (to account for
   // cases where the element is removed from the DOM before reporting happens).
-  const interaction = longestInteractionMap.get(firstEntry.interactionId);
-
+  const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
   const interactionTargetElement =
     (firstEntryWithTarget && firstEntryWithTarget.target) ||
-    (interaction && interaction.element);
+    interactionTargetMap.get(firstEntry.interactionId);
 
   // Since entry durations are rounded to the nearest 8ms, we need to clamp
   // the `nextPaintTime` value to be higher than the `processingEnd` or
