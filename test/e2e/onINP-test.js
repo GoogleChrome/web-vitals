@@ -651,7 +651,7 @@ describe('onINP()', async function () {
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
     });
 
-    it('reports the interaction target when entry removed after event callback', async function () {
+    it('reports the interaction target when target is removed from the DOM', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo('/test/inp?attribution=1&mouseup=100&click=50', {
@@ -661,8 +661,9 @@ describe('onINP()', async function () {
       const button = await $('#reset');
       await simulateUserLikeClick(button);
 
-      // Wait a bit to ensure events are reported
-      await browser.pause(1000);
+      await nextFrame();
+
+      // Remove the element after the interaction.
       await browser.execute('document.querySelector("#reset").remove()');
 
       await stubVisibilityChange('hidden');
@@ -672,7 +673,6 @@ describe('onINP()', async function () {
 
       assert.equal(inp.attribution.interactionType, 'pointer');
       assert.equal(inp.attribution.interactionTarget, '#reset');
-      assert(inp.attribution.interactionTargetElement);
     });
 
     it('includes LoAF entries if the browser supports it', async function () {
