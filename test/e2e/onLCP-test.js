@@ -715,7 +715,11 @@ const assertStandardReportsAreCorrect = (beacons) => {
 const assertFullReportsAreCorrect = (beacons) => {
   const [lcp1, lcp2] = beacons;
 
-  assert(lcp1.value < 500); // Less than the image load delay.
+  // Temp fix to address Firefox flakiness.
+  // See https://github.com/GoogleChrome/web-vitals/issues/472
+  if (browser.capabilities.browserName !== 'firefox') {
+    assert(lcp1.value < 500); // Less than the image load delay.
+  }
   assert(lcp1.id.match(/^v4-\d+-\d+$/));
   assert.strictEqual(lcp1.name, 'LCP');
   assert.strictEqual(lcp1.value, lcp1.delta);
