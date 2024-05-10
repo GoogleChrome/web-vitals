@@ -66,7 +66,7 @@ const entryToRenderTimeMap: WeakMap<
 > = new WeakMap();
 
 // A mapping of interactions to the target selector
-export const interactionTargetMap: Map<number, string> = new Map();
+export const interactionTargetMap: Map<number, Node> = new Map();
 
 // A reference to the idle task used to clean up entries from the above
 // variables. If the value is -1 it means no task is queue, and if it's
@@ -85,14 +85,9 @@ const saveInteractionSelector = (entry: PerformanceEventTiming) => {
   const interactionId = entry.interactionId;
   if (!interactionId) return;
 
-  // Don't run the getSelector for keyboard events as there could be a lot of
-  // them in short fashion when typing. Allow first-input as only one of them.
-  if (entry.entryType !== 'first-input' && entry.name.startsWith('key')) return;
-
   // Save any new selectors
   if (!interactionTargetMap.get(interactionId) && entry.target) {
-    const selector = getSelector(entry.target);
-    if (selector) interactionTargetMap.set(interactionId, selector);
+    interactionTargetMap.set(interactionId, entry.target);
   }
 };
 
@@ -243,7 +238,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
   const interactionTarget = firstEntryWithTarget
     ? getSelector(firstEntryWithTarget.target)
-    : interactionTargetMap.get(firstEntry.interactionId) || '';
+    : getSelector(interactionTargetMap.get(firstEntry.interactionId)) || '';
 
   // Since entry durations are rounded to the nearest 8ms, we need to clamp
   // the `nextPaintTime` value to be higher than the `processingEnd` or
