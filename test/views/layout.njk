@@ -234,10 +234,8 @@
       self.__toSafeObject = (oldObj) =>  {
         if (typeof oldObj !== 'object') {
           return oldObj;
-        } else if (oldObj instanceof Node) {
-          return oldObj?.id ? `#${oldObj.id}` : oldObj?.nodeName?.toLowerCase();
-        } else if (oldObj instanceof Window) {
-          return '#window';
+        } else if (oldObj instanceof EventTarget) {
+          return oldObj.toString();
         }
         const newObj = {};
         for (let key in oldObj) {
