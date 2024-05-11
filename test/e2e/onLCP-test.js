@@ -269,7 +269,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'needs-improvement');
     assert.strictEqual(lcp1.entries.length, 1);
-    assert.strictEqual(lcp1.entries[0].element, 'img');
+    assert.strictEqual(lcp1.entries[0].element, '[object HTMLImageElement]');
     assert.match(lcp1.navigationType, /navigate|reload/);
   });
 
@@ -304,7 +304,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'good');
     assert.strictEqual(lcp1.entries.length, 1);
-    assert.strictEqual(lcp1.entries[0].element, 'h1');
+    assert.strictEqual(lcp1.entries[0].element, '[object HTMLHeadingElement]');
     assert.match(lcp1.navigationType, /navigate|reload/);
   });
 
@@ -321,7 +321,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp.value, lcp.delta);
     assert.strictEqual(lcp.rating, 'good');
     assert.strictEqual(lcp.entries.length, 1);
-    assert.strictEqual(lcp.entries[0].element, 'h1');
+    assert.strictEqual(lcp.entries[0].element, '[object HTMLHeadingElement]');
     assert.match(lcp.navigationType, /navigate|reload/);
 
     await clearBeacons();
@@ -461,7 +461,7 @@ describe('onLCP()', async function () {
       await imagesPainted();
 
       const navEntry = await browser.execute(() => {
-        return performance.getEntriesByType('navigation')[0].toJSON();
+        return __toSafeObject(performance.getEntriesByType('navigation')[0]);
       });
 
       const lcpResEntry = await browser.execute(() => {
@@ -480,7 +480,8 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.targetElement, '[object HTMLImageElement]');
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
@@ -530,7 +531,8 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.targetElement, '[object HTMLImageElement]');
 
       // Specifically check that resourceLoadDelay falls back to `startTime`.
       assert.equal(
@@ -580,7 +582,8 @@ describe('onLCP()', async function () {
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
       assert.equal(lcp.navigationType, 'prerender');
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.targetElement, '[object HTMLImageElement]');
 
       // Assert each individual LCP sub-part accounts for `activationStart`
       assert.equal(
@@ -628,7 +631,7 @@ describe('onLCP()', async function () {
       });
 
       const navEntry = await browser.execute(() => {
-        return performance.getEntriesByType('navigation')[0].toJSON();
+        return __toSafeObject(performance.getEntriesByType('navigation')[0]);
       });
 
       // Load a new page to trigger the hidden state.
@@ -639,7 +642,11 @@ describe('onLCP()', async function () {
       const [lcp] = await getBeacons();
 
       assert.equal(lcp.attribution.url, undefined);
-      assert.equal(lcp.attribution.element, 'html>body>main>h1');
+      assert.equal(lcp.attribution.target, 'html>body>main>h1');
+      assert.equal(
+        lcp.attribution.targetElement,
+        '[object HTMLHeadingElement]',
+      );
       assert.equal(lcp.attribution.resourceLoadDelay, 0);
       assert.equal(lcp.attribution.resourceLoadDuration, 0);
       assert.equal(
@@ -688,7 +695,8 @@ describe('onLCP()', async function () {
       assert.strictEqual(lcp2.entries.length, 0);
       assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
 
-      assert.equal(lcp2.attribution.element, undefined);
+      assert.equal(lcp2.attribution.target, undefined);
+      assert.equal(lcp2.attribution.targetElement, undefined);
       assert.equal(lcp2.attribution.timeToFirstByte, 0);
       assert.equal(lcp2.attribution.resourceLoadDelay, 0);
       assert.equal(lcp2.attribution.resourceLoadDuration, 0);
