@@ -757,10 +757,6 @@ describe('onCLS()', async function () {
       assert.equal(cls.attribution.largestShiftValue, largestShiftEntry.value);
       assert.equal(cls.attribution.largestShiftTarget, '#p3');
       assert.equal(
-        cls.attribution.largestShiftTargetElement,
-        '[object HTMLParagraphElement]',
-      );
-      assert.equal(
         cls.attribution.largestShiftTime,
         largestShiftEntry.startTime,
       );
@@ -806,10 +802,6 @@ describe('onCLS()', async function () {
 
       assert.equal(cls.attribution.largestShiftValue, largestShiftEntry.value);
       assert.equal(cls.attribution.largestShiftTarget, 'html>body>main>h1');
-      assert.equal(
-        cls.attribution.largestShiftTargetElement,
-        '[object HTMLHeadingElement]',
-      );
       assert.equal(
         cls.attribution.largestShiftTime,
         largestShiftEntry.startTime,

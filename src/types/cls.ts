@@ -37,13 +37,6 @@ export interface CLSAttribution {
    */
   largestShiftTarget?: string;
   /**
-   * A reference to the HTML element identified by `largestShiftTarget`.
-   * NOTE: for attribution purpose, a selector identifying the element is
-   * typically more useful than the element itself. However, the element is
-   * also made available in case additional context is needed.
-   */
-  largestShiftTargetElement?: Node;
-  /**
    * The time when the single largest layout shift contributing to the page's
    * CLS score occurred.
    */

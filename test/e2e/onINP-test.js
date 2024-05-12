@@ -465,7 +465,10 @@ describe('onINP()', async function () {
       assert(allEntriesPresentTogether(inp1.entries));
       assert.match(inp1.navigationType, /navigate|reload/);
 
-      assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
+      assert.equal(
+        inp1.attribution.interactionTargetSelector,
+        'html>body>main>h1',
+      );
       assert.equal(inp1.attribution.interactionType, 'pointer');
       assert.equal(inp1.attribution.interactionTime, inp1.entries[0].startTime);
       assert.equal(inp1.attribution.loadState, 'complete');
@@ -539,8 +542,7 @@ describe('onINP()', async function () {
       assert(allEntriesPresentTogether(inp2.entries));
       assert.match(inp2.navigationType, /navigate|reload/);
 
-      assert.equal(inp2.attribution.interactionTarget, '#textarea');
-      assert.equal(inp2.attribution.interactionTarget, '#textarea');
+      assert.equal(inp2.attribution.interactionTargetSelector, '#textarea');
       assert.equal(
         inp2.attribution.interactionTargetElement,
         '[object HTMLTextAreaElement]',
@@ -659,7 +661,10 @@ describe('onINP()', async function () {
       // The event target should match the h1, even if the `pointerup`
       // entry doesn't contain a target.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-      assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
+      assert.equal(
+        inp1.attribution.interactionTargetSelector,
+        'html>body>main>h1',
+      );
       assert.equal(
         inp1.attribution.interactionTargetElement,
         '[object HTMLHeadingElement]',
@@ -687,7 +692,7 @@ describe('onINP()', async function () {
       const [inp] = await getBeacons();
 
       assert.equal(inp.attribution.interactionType, 'pointer');
-      assert.equal(inp.attribution.interactionTarget, '#reset');
+      assert.equal(inp.attribution.interactionTargetSelector, '#reset');
       assert.equal(
         inp.attribution.interactionTargetElement,
         '[object HTMLButtonElement]',

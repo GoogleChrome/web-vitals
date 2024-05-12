@@ -43,7 +43,6 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
       if (largestSource) {
         attribution = {
           largestShiftTarget: getSelector(largestSource.node),
-          largestShiftTargetElement: largestSource.node,
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
           largestShiftSource: largestSource,

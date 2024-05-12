@@ -263,7 +263,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
 
   const attribution: INPAttribution = {
-    interactionTarget: getSelector(interactionTargetElement),
+    interactionTargetSelector: getSelector(interactionTargetElement),
     interactionTargetElement: interactionTargetElement,
     interactionType: firstEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
     interactionTime: firstEntry.startTime,
