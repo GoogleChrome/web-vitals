@@ -866,7 +866,7 @@ function getAttribution(entries) {
   }
 
   const largestShiftSource = largestShiftEntry.sources.find((source) => {
-    return source.node !== '#text';
+    return source.node !== '[object Text]';
   });
 
   return {largestShiftEntry, largestShiftSource};

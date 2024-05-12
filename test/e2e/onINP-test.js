@@ -58,7 +58,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -81,7 +81,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -109,7 +109,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -135,7 +135,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -158,7 +158,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -183,7 +183,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -312,7 +312,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp1.name, 'INP');
     assert.strictEqual(inp1.value, inp1.delta);
     assert.strictEqual(inp1.rating, 'good');
-    assert(containsEntry(inp1.entries, 'click', 'h1'));
+    assert(containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp1.entries));
     assert.match(inp1.navigationType, /navigate|reload/);
 
@@ -337,7 +337,9 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
     assert.strictEqual(inp2.rating, 'good');
-    assert(containsEntry(inp2.entries, 'keydown', '#textarea'));
+    assert(
+      containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+    );
     assert(allEntriesPresentTogether(inp1.entries));
     assert(inp2.entries[0].startTime > inp1.entries[0].startTime);
     assert.strictEqual(inp2.navigationType, 'back-forward-cache');
@@ -363,7 +365,9 @@ describe('onINP()', async function () {
     assert.strictEqual(inp3.name, 'INP');
     assert.strictEqual(inp3.value, inp3.delta);
     assert.strictEqual(inp3.rating, 'needs-improvement');
-    assert(containsEntry(inp3.entries, 'pointerdown', '#reset'));
+    assert(
+      containsEntry(inp3.entries, 'pointerdown', '[object HTMLButtonElement]'),
+    );
     assert(allEntriesPresentTogether(inp3.entries));
     assert(inp3.entries[0].startTime > inp2.entries[0].startTime);
     assert.strictEqual(inp3.navigationType, 'back-forward-cache');
@@ -403,7 +407,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.strictEqual(inp.navigationType, 'prerender');
   });
@@ -428,7 +432,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', 'h1'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.strictEqual(inp.navigationType, 'restore');
   });
@@ -455,7 +459,9 @@ describe('onINP()', async function () {
       assert.strictEqual(inp1.name, 'INP');
       assert.strictEqual(inp1.value, inp1.delta);
       assert.strictEqual(inp1.rating, 'good');
-      assert(containsEntry(inp1.entries, 'click', 'h1'));
+      assert(
+        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+      );
       assert(allEntriesPresentTogether(inp1.entries));
       assert.match(inp1.navigationType, /navigate|reload/);
 
@@ -534,6 +540,10 @@ describe('onINP()', async function () {
       assert.match(inp2.navigationType, /navigate|reload/);
 
       assert.equal(inp2.attribution.interactionTarget, '#textarea');
+      assert.equal(
+        inp2.attribution.interactionTargetElement,
+        '[object HTMLTextAreaElement]',
+      );
       assert.equal(inp2.attribution.interactionType, 'keyboard');
       assert.equal(inp2.attribution.interactionTime, inp2.entries[0].startTime);
       assert.equal(inp2.attribution.loadState, 'complete');
@@ -542,7 +552,7 @@ describe('onINP()', async function () {
         containsEntry(
           inp2.attribution.processedEventEntries,
           'keydown',
-          '#textarea',
+          '[object HTMLTextAreaElement]',
         ),
       );
 
@@ -649,6 +659,10 @@ describe('onINP()', async function () {
       // entry doesn't contain a target.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
+      assert.equal(
+        inp1.attribution.interactionTargetElement,
+        '[object HTMLHeadingElement]',
+      );
     });
 
     it('reports the interaction target when target is removed from the DOM', async function () {
@@ -673,6 +687,10 @@ describe('onINP()', async function () {
 
       assert.equal(inp.attribution.interactionType, 'pointer');
       assert.equal(inp.attribution.interactionTarget, '#reset');
+      assert.equal(
+        inp.attribution.interactionTargetElement,
+        '[object HTMLButtonElement]',
+      );
     });
 
     it('includes LoAF entries if the browser supports it', async function () {

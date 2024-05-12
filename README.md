@@ -344,7 +344,7 @@ function sendToGoogleAnalytics({name, delta, value, id, attribution}) {
       eventParams.debug_target = attribution.largestShiftTarget;
       break;
     case 'INP':
-      eventParams.debug_target = attribution.eventTarget;
+      eventParams.debug_target = attribution.interactionTarget;
       break;
     case 'LCP':
       eventParams.debug_target = attribution.element;
@@ -897,18 +897,23 @@ interface INPAttribution {
   /**
    * A selector identifying the element that the user first interacted with
    * as part of the frame where the INP candidate interaction occurred.
-   * If `interactionTarget` is an empty string, that generally means the
-   * element was removed from the DOM after the interaction.
+   * If this value is an empty string, that generally means the element was
+   * removed from the DOM after the interaction.
    */
   interactionTarget: string;
-
+  /**
+   * A reference to the HTML element identified by `interactionTarget`.
+   * NOTE: for attribution purpose, a selector identifying the element is
+   * typically more useful than the element itself. However, the element is
+   * also made available in case additional context is needed.
+   */
+  interactionTargetElement: Node | undefined;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred
    * within the frame, only the first time is reported).
    */
   interactionTime: DOMHighResTimeStamp;
-
   /**
    * The best-guess timestamp of the next paint after the interaction.
    * In general, this timestamp is the same as the `startTime + duration` of
@@ -921,7 +926,6 @@ interface INPAttribution {
    * animation frame, which should be closer to the "real" value.
    */
   nextPaintTime: DOMHighResTimeStamp;
-
   /**
    * The type of interaction, based on the event type of the `event` entry
    * that corresponds to the interaction (i.e. the first `event` entry
@@ -930,13 +934,11 @@ interface INPAttribution {
    * and for "keydown" or "keyup" events this will be "keyboard".
    */
   interactionType: 'pointer' | 'keyboard';
-
   /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
    */
   processedEventEntries: PerformanceEventTiming[];
-
   /**
    * If the browser supports the Long Animation Frame API, this array will
    * include any `long-animation-frame` entries that intersect with the INP
@@ -946,7 +948,6 @@ interface INPAttribution {
    * are detect, this array will be empty.
    */
   longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
-
   /**
    * The time from when the user interacted with the page until when the
    * browser was first able to start processing event listeners for that
@@ -954,13 +955,11 @@ interface INPAttribution {
    * begin due to the main thread being busy with other work.
    */
   inputDelay: number;
-
   /**
    * The time from when the first event listener started running in response to
    * the user interaction until when all event listener processing has finished.
    */
   processingDuration: number;
-
   /**
    * The time from when the browser finished processing all event listeners for
    * the user interaction until the next frame is presented on the screen and
@@ -970,7 +969,6 @@ interface INPAttribution {
    * as off-main-thread work (such as compositor, GPU, and raster work).
    */
   presentationDelay: number;
-
   /**
    * The loading state of the document at the time when the interaction
    * corresponding to INP occurred (see `LoadState` for details). If the
