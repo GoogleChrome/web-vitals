@@ -27,6 +27,7 @@ import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 const originalStrictEqual = assert.strictEqual;
 assert.strictEqual = function (actual, expected, message) {
   if (
+    process.env.GITHUB_ACTIONS &&
     browser.capabilities.browserName === 'firefox' &&
     (expected === 'good' || expected === 'needs-improvement') &&
     actual !== expected
@@ -717,7 +718,10 @@ const assertFullReportsAreCorrect = (beacons) => {
 
   // Temp fix to address Firefox flakiness.
   // See https://github.com/GoogleChrome/web-vitals/issues/472
-  if (browser.capabilities.browserName !== 'firefox') {
+  if (
+    !process.env.GITHUB_ACTIONS &&
+    browser.capabilities.browserName == 'firefox'
+  ) {
     assert(lcp1.value < 500); // Less than the image load delay.
   }
   assert(lcp1.id.match(/^v4-\d+-\d+$/));

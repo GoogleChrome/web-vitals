@@ -26,6 +26,7 @@ import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 const originalStrictEqual = assert.strictEqual;
 assert.strictEqual = function (actual, expected, message) {
   if (
+    process.env.GITHUB_ACTIONS &&
     browser.capabilities.browserName === 'firefox' &&
     (expected === 'good' || expected === 'needs-improvement') &&
     actual !== expected
