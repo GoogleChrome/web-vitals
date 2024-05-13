@@ -11,10 +11,9 @@ See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete
 - **[BREAKING]** Add INP breakdown timings and LoAF attribution ([#442](https://github.com/GoogleChrome/web-vitals/pull/442))
 - **[BREAKING]** Deprecate `onFID()` and remove previously deprecated APIs ([#435](https://github.com/GoogleChrome/web-vitals/pull/435))
 - Expose the target element in INP attribution ([#479](https://github.com/GoogleChrome/web-vitals/pull/479))
+- Save INP target to allow reporting when removed from DOM in more cases ([#477](https://github.com/GoogleChrome/web-vitals/pull/477))
 - Cap TTFB in attribution ([#440](https://github.com/GoogleChrome/web-vitals/pull/440))
 - Fix `reportAllChanges` behavior for LCP when library is loaded late ([#468](https://github.com/GoogleChrome/web-vitals/pull/468))
-- Fix errors when importing the library in node ([#457](https://github.com/GoogleChrome/web-vitals/pull/457))
-- Fix onINP() attribution error due to empty entries ([#452](https://github.com/GoogleChrome/web-vitals/pull/452))
 
 ### v3.5.2 (2024-01-25)
 
