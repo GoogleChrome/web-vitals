@@ -28,7 +28,6 @@ import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
-  FIDReportCallback,
   FirstInputPolyfillCallback,
   MetricRatingThresholds,
   ReportOpts,
@@ -46,7 +45,10 @@ export const FIDThresholds: MetricRatingThresholds = [100, 300];
  * _**Important:** since FID is only reported after the user interacts with the
  * page, it's possible that it will not be reported for some page loads._
  */
-export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
+export const onFID = (
+  onReport: (metric: FIDMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
 
@@ -65,10 +67,11 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
     };
 
     const handleEntries = (entries: FIDMetric['entries']) => {
-      (entries as PerformanceEventTiming[]).forEach(handleEntry);
+      entries.forEach(handleEntry);
     };
 
     const po = observe('first-input', handleEntries);
+
     report = bindReporter(
       onReport,
       metric,
@@ -83,19 +86,7 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           po.disconnect();
         }),
       );
-    }
 
-    if (window.__WEB_VITALS_POLYFILL__) {
-      console.warn(
-        'The web-vitals "base+polyfill" build is deprecated. See: https://bit.ly/3aqzsGm',
-      );
-
-      // Prefer the native implementation if available,
-      if (!po) {
-        window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback,
-        );
-      }
       onBFCacheRestore(() => {
         metric = initMetric('FID');
         report = bindReporter(
@@ -105,27 +96,10 @@ export const onFID = (onReport: FIDReportCallback, opts?: ReportOpts) => {
           opts!.reportAllChanges,
         );
 
-        window.webVitals.resetFirstInputPolyfill();
-        window.webVitals.firstInputPolyfill(
-          handleEntry as FirstInputPolyfillCallback,
-        );
+        // Browsers don't re-emit FID on bfcache restore so fake it until you make it
+        resetFirstInputPolyfill();
+        firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
       });
-    } else {
-      // Only monitor bfcache restores if the browser supports FID natively.
-      if (po) {
-        onBFCacheRestore(() => {
-          metric = initMetric('FID');
-          report = bindReporter(
-            onReport,
-            metric,
-            FIDThresholds,
-            opts!.reportAllChanges,
-          );
-
-          resetFirstInputPolyfill();
-          firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
-        });
-      }
     }
   });
 };

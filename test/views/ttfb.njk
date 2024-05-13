@@ -37,30 +37,14 @@
   </script>
 
   <script type="module">
-    function jsonifyEntry(entry) {
-      const newObj = {};
-      for (const k in entry) {
-        if (typeof entry[k] !== 'function') {
-          newObj[k] = entry[k];
-        }
-      }
-      return newObj;
-    }
-
     const {onTTFB} = await __testImport('{{ modulePath }}');
 
     onTTFB((ttfb) => {
       // Log for easier manual testing.
       console.log(ttfb);
 
-      // The stubbed `activationStart` is lost when stringified, so we convert first.
-      ttfb.entries = ttfb.entries.map(jsonifyEntry);
-      if (ttfb.attribution && ttfb.attribution.navigationEntry) {
-        ttfb.attribution.navigationEntry = jsonifyEntry(ttfb.attribution.navigationEntry);
-      }
-
       // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify(ttfb));
+      navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(ttfb)));
     }, {reportAllChanges: self.__reportAllChanges});
   </script>
 {% endblock %}

@@ -14,47 +14,24 @@
  * limitations under the License.
  */
 
-import {NavigationTimingPolyfillEntry} from '../types.js';
+export const getNavigationEntry = (): PerformanceNavigationTiming | void => {
+  const navigationEntry =
+    self.performance &&
+    performance.getEntriesByType &&
+    performance.getEntriesByType('navigation')[0];
 
-const getNavigationEntryFromPerformanceTiming =
-  (): NavigationTimingPolyfillEntry => {
-    const timing = performance.timing;
-    const type = performance.navigation.type;
-
-    const navigationEntry: {[key: string]: number | string} = {
-      entryType: 'navigation',
-      startTime: 0,
-      type: type == 2 ? 'back_forward' : type === 1 ? 'reload' : 'navigate',
-    };
-
-    for (const key in timing) {
-      if (key !== 'navigationStart' && key !== 'toJSON') {
-        navigationEntry[key] = Math.max(
-          (timing[key as keyof PerformanceTiming] as number) -
-            timing.navigationStart,
-          0,
-        );
-      }
-    }
-    return navigationEntry as unknown as NavigationTimingPolyfillEntry;
-  };
-
-export const getNavigationEntry = ():
-  | PerformanceNavigationTiming
-  | NavigationTimingPolyfillEntry
-  | undefined => {
-  if (window.__WEB_VITALS_POLYFILL__) {
-    return (
-      window.performance &&
-      ((performance.getEntriesByType &&
-        performance.getEntriesByType('navigation')[0]) ||
-        getNavigationEntryFromPerformanceTiming())
-    );
-  } else {
-    return (
-      window.performance &&
-      performance.getEntriesByType &&
-      performance.getEntriesByType('navigation')[0]
-    );
+  // Check to ensure the `responseStart` property is present and valid.
+  // In some cases no value is reported by the browser (for
+  // privacy/security reasons), and in other cases (bugs) the value is
+  // negative or is larger than the current page time. Ignore these cases:
+  // https://github.com/GoogleChrome/web-vitals/issues/137
+  // https://github.com/GoogleChrome/web-vitals/issues/162
+  // https://github.com/GoogleChrome/web-vitals/issues/275
+  if (
+    navigationEntry &&
+    navigationEntry.responseStart > 0 &&
+    navigationEntry.responseStart < performance.now()
+  ) {
+    return navigationEntry;
   }
 };

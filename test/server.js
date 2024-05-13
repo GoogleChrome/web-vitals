@@ -26,6 +26,7 @@ nunjucks.configure('./test/views/', {noCache: true});
 // Turn off all caching for tests.
 app.use((req, res, next) => {
   res.set('Cache-Control', 'no-cache');
+  res.set('Access-Control-Allow-Origin', '*');
   next();
 });
 
@@ -50,9 +51,6 @@ app.post('/collect', bodyParser.text(), (req, res) => {
 
 app.get('/test/:view', function (req, res, next) {
   let modulePath = `/dist/web-vitals.js`;
-  if (req.query.polyfill) {
-    modulePath = `/dist/web-vitals.base.js`;
-  }
   if (req.query.attribution) {
     modulePath = `/dist/web-vitals.attribution.js`;
   }
@@ -60,7 +58,6 @@ app.get('/test/:view', function (req, res, next) {
   const data = {
     ...req.query,
     modulePath: modulePath,
-    webVitalsPolyfill: fs.readFileSync('./dist/polyfill.js', 'utf-8'),
   };
 
   const content = nunjucks.render(`${req.params.view}.njk`, data);

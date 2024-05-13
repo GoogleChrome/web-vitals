@@ -18,22 +18,28 @@ import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onFID as unattributedOnFID} from '../onFID.js';
 import {
+  FIDAttribution,
   FIDMetric,
   FIDMetricWithAttribution,
-  FIDReportCallback,
-  FIDReportCallbackWithAttribution,
   ReportOpts,
 } from '../types.js';
 
-const attributeFID = (metric: FIDMetric): void => {
+const attributeFID = (metric: FIDMetric): FIDMetricWithAttribution => {
   const fidEntry = metric.entries[0];
-  (metric as FIDMetricWithAttribution).attribution = {
+  const attribution: FIDAttribution = {
     eventTarget: getSelector(fidEntry.target),
     eventType: fidEntry.name,
     eventTime: fidEntry.startTime,
     eventEntry: fidEntry,
     loadState: getLoadState(fidEntry.startTime),
   };
+
+  // Use Object.assign to set property to keep tsc happy.
+  const metricWithAttribution: FIDMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**
@@ -46,14 +52,11 @@ const attributeFID = (metric: FIDMetric): void => {
  * page, it's possible that it will not be reported for some page loads._
  */
 export const onFID = (
-  onReport: FIDReportCallbackWithAttribution,
+  onReport: (metric: FIDMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnFID(
-    ((metric: FIDMetricWithAttribution) => {
-      attributeFID(metric);
-      onReport(metric);
-    }) as FIDReportCallback,
-    opts,
-  );
+  unattributedOnFID((metric: FIDMetric) => {
+    const metricWithAttribution = attributeFID(metric);
+    onReport(metricWithAttribution);
+  }, opts);
 };

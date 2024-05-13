@@ -18,16 +18,32 @@ import {onTTFB as unattributedOnTTFB} from '../onTTFB.js';
 import {
   TTFBMetric,
   TTFBMetricWithAttribution,
-  TTFBReportCallback,
-  TTFBReportCallbackWithAttribution,
   ReportOpts,
+  TTFBAttribution,
 } from '../types.js';
 
-const attributeTTFB = (metric: TTFBMetric): void => {
+const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
+  // Use a default object if no other attribution has been set.
+  let attribution: TTFBAttribution = {
+    waitingDuration: 0,
+    cacheDuration: 0,
+    dnsDuration: 0,
+    connectionDuration: 0,
+    requestDuration: 0,
+  };
+
   if (metric.entries.length) {
     const navigationEntry = metric.entries[0];
     const activationStart = navigationEntry.activationStart || 0;
 
+    // Measure from workerStart or fetchStart so any service worker startup
+    // time is included in cacheDuration (which also includes other sw time
+    // anyway, that cannot be accurately split out cross-browser).
+    const waitEnd = Math.max(
+      (navigationEntry.workerStart || navigationEntry.fetchStart) -
+        activationStart,
+      0,
+    );
     const dnsStart = Math.max(
       navigationEntry.domainLookupStart - activationStart,
       0,
@@ -36,27 +52,33 @@ const attributeTTFB = (metric: TTFBMetric): void => {
       navigationEntry.connectStart - activationStart,
       0,
     );
-    const requestStart = Math.max(
-      navigationEntry.requestStart - activationStart,
+    const connectEnd = Math.max(
+      navigationEntry.connectEnd - activationStart,
       0,
     );
 
-    (metric as TTFBMetricWithAttribution).attribution = {
-      waitingTime: dnsStart,
-      dnsTime: connectStart - dnsStart,
-      connectionTime: requestStart - connectStart,
-      requestTime: metric.value - requestStart,
+    attribution = {
+      waitingDuration: waitEnd,
+      cacheDuration: dnsStart - waitEnd,
+      // dnsEnd usually equals connectStart but use connectStart over dnsEnd
+      // for dnsDuration in case there ever is a gap.
+      dnsDuration: connectStart - dnsStart,
+      connectionDuration: connectEnd - connectStart,
+      // There is often a gap between connectEnd and requestStart. Attribute
+      // that to requestDuration so connectionDuration remains 0 for
+      // service worker controlled requests were connectStart and connectEnd
+      // are the same.
+      requestDuration: metric.value - connectEnd,
       navigationEntry: navigationEntry,
     };
-    return;
   }
-  // Set an empty object if no other attribution has been set.
-  (metric as TTFBMetricWithAttribution).attribution = {
-    waitingTime: 0,
-    dnsTime: 0,
-    connectionTime: 0,
-    requestTime: 0,
-  };
+
+  // Use Object.assign to set property to keep tsc happy.
+  const metricWithAttribution: TTFBMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**
@@ -75,14 +97,11 @@ const attributeTTFB = (metric: TTFBMetric): void => {
  * and server processing time.
  */
 export const onTTFB = (
-  onReport: TTFBReportCallbackWithAttribution,
+  onReport: (metric: TTFBMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnTTFB(
-    ((metric: TTFBMetricWithAttribution) => {
-      attributeTTFB(metric);
-      onReport(metric);
-    }) as TTFBReportCallback,
-    opts,
-  );
+  unattributedOnTTFB((metric: TTFBMetric) => {
+    const metricWithAttribution = attributeTTFB(metric);
+    onReport(metricWithAttribution);
+  }, opts);
 };

@@ -48,7 +48,7 @@ describe('onFID()', async function () {
 
     const [fid] = await getBeacons();
     assert(fid.value >= 0);
-    assert(fid.id.match(/^v3-\d+-\d+$/));
+    assert(fid.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.rating, 'good');
@@ -69,7 +69,7 @@ describe('onFID()', async function () {
 
     const [fid] = await getBeacons();
     assert(fid.value >= 0);
-    assert(fid.id.match(/^v3-\d+-\d+$/));
+    assert(fid.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.rating, 'good');
@@ -77,7 +77,7 @@ describe('onFID()', async function () {
     assert.match(fid.entries[0].name, /(mouse|pointer)down/);
   });
 
-  it('does not report if the browser does not support FID and the polyfill is not used', async function () {
+  it('does not report if the browser does not support FID', async function () {
     if (browserSupportsFID) this.skip();
 
     await navigateTo('/test/fid');
@@ -94,8 +94,7 @@ describe('onFID()', async function () {
 
     await stubForwardBack();
 
-    // Assert no entries after bfcache restores either (if the browser does
-    // not support native FID and the polyfill is not used).
+    // Assert no entries after bfcache restores either.
     await h1.click();
 
     // Wait a bit to ensure no beacons were sent.
@@ -103,35 +102,6 @@ describe('onFID()', async function () {
 
     const bfcacheRestoreBeacons = await getBeacons();
     assert.strictEqual(bfcacheRestoreBeacons.length, 0);
-  });
-
-  it('falls back to the polyfill in non-supporting browsers', async function () {
-    // Ignore Safari until this bug is fixed:
-    // https://bugs.webkit.org/show_bug.cgi?id=211101
-    if (browser.capabilities.browserName === 'Safari') this.skip();
-
-    await navigateTo('/test/fid?polyfill=1');
-
-    // Click on the <h1>.
-    const h1 = await $('h1');
-    await h1.click();
-
-    await beaconCountIs(1);
-
-    const [fid] = await getBeacons();
-
-    assert(fid.value >= 0);
-    assert(fid.id.match(/^v3-\d+-\d+$/));
-    assert.strictEqual(fid.name, 'FID');
-    assert.strictEqual(fid.value, fid.delta);
-    assert.strictEqual(fid.rating, 'good');
-    assert.match(fid.navigationType, /navigate|reload/);
-    assert.match(fid.entries[0].name, /(mouse|pointer)down/);
-    if (browserSupportsFID) {
-      assert('duration' in fid.entries[0]);
-    } else {
-      assert(!('duration' in fid.entries[0]));
-    }
   });
 
   it('does not report if the document was hidden at page load time', async function () {
@@ -190,7 +160,7 @@ describe('onFID()', async function () {
 
     const [fid1] = await getBeacons();
     assert(fid1.value >= 0);
-    assert(fid1.id.match(/^v3-\d+-\d+$/));
+    assert(fid1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fid1.name, 'FID');
     assert.strictEqual(fid1.value, fid1.delta);
     assert.strictEqual(fid1.rating, 'good');
@@ -207,7 +177,7 @@ describe('onFID()', async function () {
 
     const [fid2] = await getBeacons();
     assert(fid2.value >= 0);
-    assert(fid2.id.match(/^v3-\d+-\d+$/));
+    assert(fid2.id.match(/^v4-\d+-\d+$/));
     assert(fid1.id !== fid2.id);
     assert.strictEqual(fid2.name, 'FID');
     assert.strictEqual(fid2.rating, 'good');
@@ -229,7 +199,7 @@ describe('onFID()', async function () {
 
     const [fid] = await getBeacons();
     assert(fid.value >= 0);
-    assert(fid.id.match(/^v3-\d+-\d+$/));
+    assert(fid.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.rating, 'good');
@@ -250,7 +220,7 @@ describe('onFID()', async function () {
 
     const [fid] = await getBeacons();
     assert(fid.value >= 0);
-    assert(fid.id.match(/^v3-\d+-\d+$/));
+    assert(fid.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(fid.name, 'FID');
     assert.strictEqual(fid.value, fid.delta);
     assert.strictEqual(fid.rating, 'good');
@@ -272,7 +242,7 @@ describe('onFID()', async function () {
 
       const [fid] = await getBeacons();
       assert(fid.value >= 0);
-      assert(fid.id.match(/^v3-\d+-\d+$/));
+      assert(fid.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(fid.name, 'FID');
       assert.strictEqual(fid.value, fid.delta);
       assert.strictEqual(fid.rating, 'good');
