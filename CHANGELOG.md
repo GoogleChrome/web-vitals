@@ -1,30 +1,19 @@
 # Changelog
 
-### v4.0.0-rc.0 (2024-05-03)
+See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
 
-- **[BREAKING]** Update types to support more generic usage
-  ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
-- Fix `reportAllChanges` behavior for LCP when library is loaded late ([#468](https://github.com/GoogleChrome/web-vitals/pull/468))
+### v4.0.0 (2024-05-13)
 
-### v4.0.0-beta.3 (2024-04-22)
-
+- **[BREAKING]** Update types to support more generic usage ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
 - **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
-- Cap TTFB in attribution ([#440](https://github.com/GoogleChrome/web-vitals/pull/440))
-
-### v4.0.0-beta.2 (2024-04-05)
-
-- Fix errors when importing the library in node ([#457](https://github.com/GoogleChrome/web-vitals/pull/457))
-
-### v4.0.0-beta.1 (2024-04-01)
-
 - **[BREAKING]** Rename `TTFBAttribution` fields from `*Time` to `*Duration` ([#453](https://github.com/GoogleChrome/web-vitals/pull/453))
-- Fix onINP() attribution error due to empty entries ([#452](https://github.com/GoogleChrome/web-vitals/pull/452))
-
-### v4.0.0-beta.0 (2024-03-29)
-
 - **[BREAKING]** Rename `resourceLoadTime` to `resourceLoadDuration` in LCP attribution ([#450](https://github.com/GoogleChrome/web-vitals/pull/450))
 - **[BREAKING]** Add INP breakdown timings and LoAF attribution ([#442](https://github.com/GoogleChrome/web-vitals/pull/442))
 - **[BREAKING]** Deprecate `onFID()` and remove previously deprecated APIs ([#435](https://github.com/GoogleChrome/web-vitals/pull/435))
+- Expose the target element in INP attribution ([#479](https://github.com/GoogleChrome/web-vitals/pull/479))
+- Save INP target after interactions to reduce null values when removed from the DOM ([#477](https://github.com/GoogleChrome/web-vitals/pull/477))
+- Cap TTFB in attribution ([#440](https://github.com/GoogleChrome/web-vitals/pull/440))
+- Fix `reportAllChanges` behavior for LCP when library is loaded late ([#468](https://github.com/GoogleChrome/web-vitals/pull/468))
 
 ### v3.5.2 (2024-01-25)
 

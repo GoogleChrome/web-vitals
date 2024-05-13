@@ -2,12 +2,6 @@
 
 This document lists the full set of changes between version 3 and version 4 that are relevant to anyone wanting to upgrade to the new version. This document groups changes into "breaking changes" and "new features" across both the "standard" and "attribution" builds (see [build options](/#build-options) for details).
 
-Note: version 4 is currently in beta, you can install it via the `next` tag on npm:
-
-```sh
-npm install web-vitals@next
-```
-
 ## ⚠️ Breaking changes
 
 ### Standard build
@@ -36,11 +30,10 @@ npm install web-vitals@next
 
 #### `TTFBAttribution`
 
-- **Removed** `waitingTime` in favor of splitting this duration into `waitingDuration` and `cacheDuration` (see below) ([#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
+- **Renamed** `waitingTime` to `waitingDuration`, and also split out the portion of this duration spent checking the HTTP cache, see `cacheDuration` in the [new features](#-new-features) section below ([#453](https://github.com/GoogleChrome/web-vitals/pull/453), [#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
+- **Renamed** `dnsTime` to `dnsDuration` ([#453](https://github.com/GoogleChrome/web-vitals/pull/453)).
+- **Renamed** `connectionTime` to `connectionDuration` ([#453](https://github.com/GoogleChrome/web-vitals/pull/453)).
 - **Renamed** `requestTime` to `requestDuration` ([#453](https://github.com/GoogleChrome/web-vitals/pull/453)).
-- **Added** `redirectDuration` ([#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
-- **Added** `waitingDuration` ([#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
-- **Added** `cacheDuration` ([#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
 
 ## 🚀 New features
 
@@ -58,3 +51,8 @@ No new features were introduced into the "standard" build, outside of the breaki
 - **Added** `presentationDelay`, which measures the time from when the browser finished processing all event listeners for the user interaction until the next frame is presented on the screen and visible to the user. ([#442](https://github.com/GoogleChrome/web-vitals/pull/442)).
 - **Added** `processedEventEntries`, an array of `event` entries that were processed within the same animation frame as the INP candidate interaction ([#442](https://github.com/GoogleChrome/web-vitals/pull/442)).
 - **Added** `longAnimationFrameEntries`, which includes any `long-animation-frame` entries that overlap with the INP candidate interaction ([#442](https://github.com/GoogleChrome/web-vitals/pull/442)).
+- **Added** `interactionTargetElement` ([#479](https://github.com/GoogleChrome/web-vitals/pull/479)).
+
+#### `TTFBAttribution`
+
+- **Added** `cacheDuration`, which marks the total time spent checking the HTTP cache for a match ([#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
