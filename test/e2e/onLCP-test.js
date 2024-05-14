@@ -719,8 +719,10 @@ const assertFullReportsAreCorrect = (beacons) => {
   // Temp fix to address Firefox flakiness.
   // See https://github.com/GoogleChrome/web-vitals/issues/472
   if (
-    !process.env.GITHUB_ACTIONS &&
-    browser.capabilities.browserName == 'firefox'
+    !(
+      process.env.GITHUB_ACTIONS &&
+      browser.capabilities.browserName === 'firefox'
+    )
   ) {
     assert(lcp1.value < 500); // Less than the image load delay.
   }
