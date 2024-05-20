@@ -1,8 +1,8 @@
 # Upgrading to v4
 
-This document lists the full set of changes between version 3 and version 4 that are relevant to anyone wanting to upgrade to the new version. This document groups changes into "breaking changes" and "new features" across both the "standard" and "attribution" builds (see [build options](/#build-options) for details).
+This document lists the full set of changes between version 3 and version 4 that are relevant to anyone wanting to upgrade to the new version. This document groups changes into "breaking changes", "new features", and "deprecations" across both the "standard" and "attribution" builds (see [build options](/#build-options) for details).
 
-## ⚠️ Breaking changes
+## ❌ Breaking changes
 
 ### Standard build
 
@@ -56,3 +56,12 @@ No new features were introduced into the "standard" build, outside of the breaki
 #### `TTFBAttribution`
 
 - **Added** `cacheDuration`, which marks the total time spent checking the HTTP cache for a match ([#458](https://github.com/GoogleChrome/web-vitals/pull/458)).
+
+## ⚠️ Deprecations
+
+### Standard and attribution builds
+
+- The `onFID()` function has been deprecated. Developers should use `onINP()` instead ([#435](https://github.com/GoogleChrome/web-vitals/pull/435)).
+- The `ReportCallback` type has been deprecated in favor of explicit callback types for each metric function ([#483](https://github.com/GoogleChrome/web-vitals/pull/483)).
+
+_All deprecated APIs will be removed in the next major version._
