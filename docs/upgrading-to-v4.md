@@ -61,7 +61,7 @@ No new features were introduced into the "standard" build, outside of the breaki
 
 ### Standard and attribution builds
 
-- The `onFID()` function has been deprecated. Developers should use `onINP()` instead ([#435](https://github.com/GoogleChrome/web-vitals/pull/435)).
+- The `onFID()` function [has been deprecated]https://web.dev/blog/inp-cwv-launch#fid_deprecation_timeline). Developers should use `onINP()` instead ([#435](https://github.com/GoogleChrome/web-vitals/pull/435)).
 - The `ReportCallback` type has been deprecated in favor of explicit callback types for each metric function ([#483](https://github.com/GoogleChrome/web-vitals/pull/483)).
 
 _All deprecated APIs will be removed in the next major version._
