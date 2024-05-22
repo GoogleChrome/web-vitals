@@ -2,6 +2,10 @@
 
 See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
 
+### v4.0.1 (2024-05-21)
+
+- Add the `ReportCallback` type back but deprecate it ([#483](https://github.com/GoogleChrome/web-vitals/pull/483))
+
 ### v4.0.0 (2024-05-13)
 
 - **[BREAKING]** Update types to support more generic usage ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
