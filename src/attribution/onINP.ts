@@ -38,6 +38,12 @@ interface pendingEntriesGroup {
   entries: PerformanceEventTiming[];
 }
 
+/**
+ * The maximum number of LoAFs to retain on cleanup that don't have any
+ * overlapping events.
+ */
+const MAX_UNPAIRED_LOAFS = 20;
+
 // A PerformanceObserver, observing new `long-animation-frame` entries.
 // If this variable is defined it means the browser supports LoAF.
 let loafObserver: PerformanceObserver | undefined;
@@ -181,8 +187,10 @@ const cleanupEntries = () => {
     if (!renderTimesToKeep.has(key)) pendingEntriesGroupMap.delete(key);
   });
 
-  // Remove all pending LoAF entries that don't intersect with entries in
-  // the newly cleaned up `pendingEntriesGroupMap`.
+  // Keep all pending LoAF entries that
+  // - intersect with entries in the newly cleaned up `pendingEntriesGroupMap`
+  // - occur after all existing pendingEntriesGroups, in case a LoAF came in
+  //   before concurrent entries.
   const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
   pendingEntriesGroupMap.forEach((group) => {
     getIntersectingLoAFs(group.startTime, group.processingEnd).forEach(
@@ -191,6 +199,20 @@ const cleanupEntries = () => {
       },
     );
   });
+  const latestRenderTime = Math.max.apply(Math, previousRenderTimes);
+  // Start at the end to keep the most recent `MAX_UNPAIRED_LOAFS` LoAFs.
+  const stoppingPoint = Math.max(
+    0,
+    pendingLoAFs.length - 1 - MAX_UNPAIRED_LOAFS,
+  );
+  for (let i = pendingLoAFs.length - 1; i >= stoppingPoint; i--) {
+    const loaf = pendingLoAFs[i];
+    // If reached LoAFs that overlap with events, no more will be after.
+    if (loafsToKeep.has(loaf) || loaf.startTime <= latestRenderTime) break;
+
+    loafsToKeep.add(loaf);
+  }
+
   pendingLoAFs = Array.from(loafsToKeep);
 
   // Reset the idle callback handle so it can be queued again.
