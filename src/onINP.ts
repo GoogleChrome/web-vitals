@@ -64,6 +64,16 @@ export const onINP = (
   onReport: (metric: INPMetric) => void,
   opts?: ReportOpts,
 ) => {
+  // Return if the browser doesn't support all APIs needed to measure INP.
+  if (
+    !(
+      'PerformanceEventTiming' in self &&
+      'interactionId' in PerformanceEventTiming.prototype
+    )
+  ) {
+    return;
+  }
+
   // Set defaults
   opts = opts || {};
 
@@ -104,15 +114,9 @@ export const onINP = (
     );
 
     if (po) {
-      // If browser supports interactionId (and so supports INP), also
-      // observe entries of type `first-input`. This is useful in cases
+      // Also observe entries of type `first-input`. This is useful in cases
       // where the first interaction is less than the `durationThreshold`.
-      if (
-        'PerformanceEventTiming' in self &&
-        'interactionId' in PerformanceEventTiming.prototype
-      ) {
-        po.observe({type: 'first-input', buffered: true});
-      }
+      po.observe({type: 'first-input', buffered: true});
 
       onHidden(() => {
         handleEntries(po.takeRecords() as INPMetric['entries']);
