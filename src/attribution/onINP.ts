@@ -42,7 +42,7 @@ interface pendingEntriesGroup {
  * The maximum number of LoAFs to retain on cleanup that don't have any
  * overlapping events.
  */
-const MAX_UNPAIRED_LOAFS = 20;
+const MAX_PENDING_ENTRIES = 50;
 
 // A PerformanceObserver, observing new `long-animation-frame` entries.
 // If this variable is defined it means the browser supports LoAF.
@@ -65,6 +65,9 @@ const pendingEntriesGroupMap: Map<number, pendingEntriesGroup> = new Map();
 // are removed.
 let previousRenderTimes: number[] = [];
 
+// The `processingEnd` time of most recently-processed event, chronologically.
+let latestProcessingEnd: number;
+
 // A WeakMap so you can look up the `renderTime` of a given entry and the
 // value returned will be the same value used by `pendingEntriesGroupMap`.
 const entryToRenderTimeMap: WeakMap<
@@ -84,7 +87,8 @@ let idleHandle: number = -1;
  * Adds new LoAF entries to the `pendingLoAFs` list.
  */
 const handleLoAFEntries = (entries: PerformanceLongAnimationFrameTiming[]) => {
-  entries.forEach((entry) => pendingLoAFs.push(entry));
+  pendingLoAFs = pendingLoAFs.concat(entries);
+  queueCleanup();
 };
 
 // Get a reference to the interaction target element in case it's removed
@@ -110,6 +114,8 @@ const saveInteractionTarget = (entry: PerformanceEventTiming) => {
 const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
   let renderTime = entry.startTime + entry.duration;
   let previousRenderTime;
+
+  latestProcessingEnd = Math.max(latestProcessingEnd, entry.processingEnd);
 
   // Iterate of all previous render times in reverse order to find a match.
   // Go in reverse since the most likely match will be at the end.
@@ -149,6 +155,8 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
   if (entry.interactionId || entry.entryType === 'first-input') {
     entryToRenderTimeMap.set(entry, renderTime);
   }
+
+  queueCleanup();
 };
 
 const queueCleanup = () => {
@@ -173,7 +181,7 @@ const cleanupEntries = () => {
   // events are dispatched out of order. When this happens they're generally
   // only off by a frame or two, so keeping the most recent 50 should be
   // more than sufficient.
-  previousRenderTimes = previousRenderTimes.slice(-50);
+  previousRenderTimes = previousRenderTimes.slice(-1 * MAX_PENDING_ENTRIES);
 
   // Keep all render times that are part of a pending INP candidate or
   // that occurred within the 50 most recently-dispatched animation frames.
@@ -187,10 +195,9 @@ const cleanupEntries = () => {
     if (!renderTimesToKeep.has(key)) pendingEntriesGroupMap.delete(key);
   });
 
-  // Keep all pending LoAF entries that
-  // - intersect with entries in the newly cleaned up `pendingEntriesGroupMap`
-  // - occur after all existing pendingEntriesGroups, in case a LoAF came in
-  //   before concurrent entries.
+  // Keep all pending LoAF entries that either:
+  // 1) intersect with entries in the newly cleaned up `pendingEntriesGroupMap`
+  // 2) occur after the most recently-processed event entry.
   const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
   pendingEntriesGroupMap.forEach((group) => {
     getIntersectingLoAFs(group.startTime, group.processingEnd).forEach(
@@ -199,16 +206,13 @@ const cleanupEntries = () => {
       },
     );
   });
-  const latestRenderTime = Math.max.apply(Math, previousRenderTimes);
-  // Start at the end to keep the most recent `MAX_UNPAIRED_LOAFS` LoAFs.
-  const stoppingPoint = Math.max(
-    0,
-    pendingLoAFs.length - 1 - MAX_UNPAIRED_LOAFS,
-  );
-  for (let i = pendingLoAFs.length - 1; i >= stoppingPoint; i--) {
-    const loaf = pendingLoAFs[i];
-    // If reached LoAFs that overlap with events, no more will be after.
-    if (loafsToKeep.has(loaf) || loaf.startTime <= latestRenderTime) break;
+  for (let i = 0; i < MAX_PENDING_ENTRIES; i++) {
+    // Look at pending LoAF in reverse order so the most recent are first.
+    const loaf = pendingLoAFs[pendingLoAFs.length - 1];
+
+    // If we reach LoAFs that overlap with event processing,
+    // we can assume all previous ones have already been handled.
+    if (!loaf || loaf.startTime < latestProcessingEnd) break;
 
     loafsToKeep.add(loaf);
   }
@@ -222,7 +226,6 @@ const cleanupEntries = () => {
 entryPreProcessingCallbacks.push(
   saveInteractionTarget,
   groupEntriesByRenderTime,
-  queueCleanup,
 );
 
 const getIntersectingLoAFs = (
