@@ -326,6 +326,9 @@ describe('onINP()', async function () {
 
     await browser.keys(['a', 'b', 'c']);
 
+    // Ensure the interaction completes.
+    await nextFrame();
+
     await stubForwardBack();
     await beaconCountIs(1);
 

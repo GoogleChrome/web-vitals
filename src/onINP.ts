@@ -27,6 +27,7 @@ import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
+import {whenIdle} from './lib/whenIdle.js';
 
 import {INPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
@@ -85,15 +86,23 @@ export const onINP = (
     let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: INPMetric['entries']) => {
-      entries.forEach(processInteractionEntry);
+      // Queue the `handleEntries()` callback in the next idle task.
+      // This is needed to increase the chances that all event entries that
+      // occurred between the user interaction and the next paint
+      // have been dispatched. Note: there is currently an experiment
+      // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
+      // 123+ that if rolled out fully may make this no longer necessary.
+      whenIdle(() => {
+        entries.forEach(processInteractionEntry);
 
-      const inp = estimateP98LongestInteraction();
+        const inp = estimateP98LongestInteraction();
 
-      if (inp && inp.latency !== metric.value) {
-        metric.value = inp.latency;
-        metric.entries = inp.entries;
-        report();
-      }
+        if (inp && inp.latency !== metric.value) {
+          metric.value = inp.latency;
+          metric.entries = inp.entries;
+          report();
+        }
+      });
     };
 
     const po = observe('event', handleEntries, {
