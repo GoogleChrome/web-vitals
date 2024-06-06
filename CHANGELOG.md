@@ -2,6 +2,11 @@
 
 See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
 
+### v4.1.0 (2024-06-06)
+
+- Move the support check to the top of the onINP() function ([#490](https://github.com/GoogleChrome/web-vitals/pull/490))
+- Fix missing LoAF attribution when entries are dispatched before event entries ([#487](https://github.com/GoogleChrome/web-vitals/pull/487))
+
 ### v4.0.1 (2024-05-21)
 
 - Add the `ReportCallback` type back but deprecate it ([#483](https://github.com/GoogleChrome/web-vitals/pull/483))
