@@ -211,7 +211,7 @@ const cleanupEntries = () => {
   });
   for (let i = 0; i < MAX_PREVIOUS_FRAMES; i++) {
     // Look at pending LoAF in reverse order so the most recent are first.
-    const loaf = pendingLoAFs[pendingLoAFs.length - 1];
+    const loaf = pendingLoAFs[pendingLoAFs.length - 1 - i];
 
     // If we reach LoAFs that overlap with event processing,
     // we can assume all previous ones have already been handled.
