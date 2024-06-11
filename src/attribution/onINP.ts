@@ -35,12 +35,13 @@ interface pendingEntriesGroup {
   startTime: DOMHighResTimeStamp;
   processingStart: DOMHighResTimeStamp;
   processingEnd: DOMHighResTimeStamp;
+  renderTime: DOMHighResTimeStamp;
   entries: PerformanceEventTiming[];
 }
 
-// The maximum number of previous frames for which data is kept in regards to.
+// The maximum number of previous frames for which data is kept.
 // Storing data about previous frames is necessary to handle cases where event
-// and LoAF entries are dispatched out or order, and so a buffer of previous
+// and LoAF entries are dispatched out of order, and so a buffer of previous
 // frame data is needed to determine various bits of INP attribution once all
 // the frame-related data has come in.
 // In most cases this out-of-order data is only off by a frame or two, so
@@ -56,29 +57,23 @@ let loafObserver: PerformanceObserver | undefined;
 // list is cleaned up and entries that are known to not match INP are removed.
 let pendingLoAFs: PerformanceLongAnimationFrameTiming[] = [];
 
-// A mapping between a particular frame's render time and all of the
-// event timing entries that occurred within that frame. Note that periodically
-// this map is cleaned up and entries that are known to not match INP are
-// removed.
-const pendingEntriesGroupMap: Map<number, pendingEntriesGroup> = new Map();
-
-// A list of recent render times. This corresponds to the keys in
-// `pendingEntriesGroupMap` but as an array so it can be iterated on in
-// reverse. Note that this list is periodically clean up and old render times
-// are removed.
-let previousRenderTimes: number[] = [];
+// An array of groups of all the event timing entries that occurred within a
+// particular frame. Note that periodically this array is cleaned up and entries
+// that are known to not match INP are removed.
+let pendingEntriesGroups: pendingEntriesGroup[] = [];
 
 // The `processingEnd` time of most recently-processed event, chronologically.
 let latestProcessingEnd: number;
 
-// A WeakMap so you can look up the `renderTime` of a given entry and the
-// value returned will be the same value used by `pendingEntriesGroupMap`.
-const entryToRenderTimeMap: WeakMap<
+// A WeakMap to look up the event-timing-entries group of a given entry.
+// Note that this only maps from "important" entries: either the first input or
+// those with an `interactionId`.
+const entryToEntriesGroupMap: WeakMap<
   PerformanceEventTiming,
-  DOMHighResTimeStamp
+  pendingEntriesGroup
 > = new WeakMap();
 
-// A mapping of interactions to the target selector
+// A mapping of interactionIds to the target Node.
 export const interactionTargetMap: Map<number, Node> = new Map();
 
 // A reference to the idle task used to clean up entries from the above
@@ -109,54 +104,55 @@ const saveInteractionTarget = (entry: PerformanceEventTiming) => {
 /**
  * Groups entries that were presented within the same animation frame by
  * a common `renderTime`. This function works by referencing
- * `pendingEntriesGroupMap` and using an existing render time if one is found
+ * `pendingEntriesGroups` and using an existing render time if one is found
  * (otherwise creating a new one). This function also adds all interaction
- * entries to an `entryToRenderTimeMap` WeakMap so that the "grouped" render
- * times can be looked up later.
+ * entries to an `entryToRenderTimeMap` WeakMap so that the "grouped" entries
+ * can be looked up later.
  */
 const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
-  let renderTime = entry.startTime + entry.duration;
-  let previousRenderTime;
+  const renderTime = entry.startTime + entry.duration;
+  let group;
 
   latestProcessingEnd = Math.max(latestProcessingEnd, entry.processingEnd);
 
-  // Iterate of all previous render times in reverse order to find a match.
+  // Iterate over all previous render times in reverse order to find a match.
   // Go in reverse since the most likely match will be at the end.
-  for (let i = previousRenderTimes.length - 1; i >= 0; i--) {
-    previousRenderTime = previousRenderTimes[i];
+  for (let i = pendingEntriesGroups.length - 1; i >= 0; i--) {
+    const potentialGroup = pendingEntriesGroups[i];
 
-    // If a previous render time is within 8ms of the current render time,
-    // assume they were part of the same frame and re-use the previous time.
-    // Also break out of the loop because all subsequent times will be newer.
-    if (Math.abs(renderTime - previousRenderTime) <= 8) {
-      const group = pendingEntriesGroupMap.get(previousRenderTime)!;
+    // If a group's render time is within 8ms of the entry's render time,
+    // assume they were part of the same frame and add it to the group.
+    if (Math.abs(renderTime - potentialGroup.renderTime) <= 8) {
+      group = potentialGroup;
       group.startTime = Math.min(entry.startTime, group.startTime);
       group.processingStart = Math.min(
         entry.processingStart,
         group.processingStart,
       );
       group.processingEnd = Math.max(entry.processingEnd, group.processingEnd);
+      group.renderTime = Math.max(group.renderTime, renderTime);
       group.entries.push(entry);
 
-      renderTime = previousRenderTime;
       break;
     }
   }
 
-  // If there was no matching render time, assume this is a new frame.
-  if (renderTime !== previousRenderTime) {
-    previousRenderTimes.push(renderTime);
-    pendingEntriesGroupMap.set(renderTime, {
+  // If there was no matching group, assume this is a new frame.
+  if (!group) {
+    group = {
       startTime: entry.startTime,
       processingStart: entry.processingStart,
       processingEnd: entry.processingEnd,
+      renderTime,
       entries: [entry],
-    });
+    };
+
+    pendingEntriesGroups.push(group);
   }
 
   // Store the grouped render time for this entry for reference later.
   if (entry.interactionId || entry.entryType === 'first-input') {
-    entryToRenderTimeMap.set(entry, renderTime);
+    entryToEntriesGroupMap.set(entry, group);
   }
 
   queueCleanup();
@@ -180,35 +176,29 @@ const cleanupEntries = () => {
     });
   }
 
-  // The list of previous render times is used to handle cases where
-  // events are dispatched out of order. When this happens they're generally
-  // only off by a frame or two, so keeping the most recent 50 should be
-  // more than sufficient.
-  previousRenderTimes = previousRenderTimes.slice(-1 * MAX_PREVIOUS_FRAMES);
-
   // Keep all render times that are part of a pending INP candidate or
-  // that occurred within the 50 most recently-dispatched animation frames.
-  const renderTimesToKeep = new Set(
-    (previousRenderTimes as (number | undefined)[]).concat(
-      longestInteractionList.map((i) => entryToRenderTimeMap.get(i.entries[0])),
-    ),
-  );
-
-  pendingEntriesGroupMap.forEach((_, key) => {
-    if (!renderTimesToKeep.has(key)) pendingEntriesGroupMap.delete(key);
+  // that occurred within the 50 most recently-dispatched groups of events.
+  const longestInteractionGroups = longestInteractionList.map((i) => {
+    return entryToEntriesGroupMap.get(i.entries[0]);
+  });
+  const minIndex = pendingEntriesGroups.length - MAX_PREVIOUS_FRAMES;
+  pendingEntriesGroups = pendingEntriesGroups.filter((group, index) => {
+    if (index >= minIndex) return true;
+    return longestInteractionGroups.includes(group);
   });
 
   // Keep all pending LoAF entries that either:
-  // 1) intersect with entries in the newly cleaned up `pendingEntriesGroupMap`
+  // 1) intersect with entries in the newly cleaned up `pendingEntriesGroups`
   // 2) occur after the most recently-processed event entry.
   const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
-  pendingEntriesGroupMap.forEach((group) => {
+  for (let i = 0; i < pendingEntriesGroups.length; i++) {
+    const group = pendingEntriesGroups[i];
     getIntersectingLoAFs(group.startTime, group.processingEnd).forEach(
       (loaf) => {
         loafsToKeep.add(loaf);
       },
     );
-  });
+  }
   for (let i = 0; i < MAX_PREVIOUS_FRAMES; i++) {
     // Look at pending LoAF in reverse order so the most recent are first.
     const loaf = pendingLoAFs[pendingLoAFs.length - 1 - i];
@@ -253,8 +243,7 @@ const getIntersectingLoAFs = (
 
 const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
-  const renderTime = entryToRenderTimeMap.get(firstEntry)!;
-  const group = pendingEntriesGroupMap.get(renderTime)!;
+  const group = entryToEntriesGroupMap.get(firstEntry)!;
 
   const processingStart = firstEntry.processingStart;
   const processingEnd = group.processingEnd;
