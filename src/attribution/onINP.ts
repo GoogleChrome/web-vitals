@@ -130,7 +130,6 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
         group.processingStart,
       );
       group.processingEnd = Math.max(entry.processingEnd, group.processingEnd);
-      group.renderTime = Math.max(group.renderTime, renderTime);
       group.entries.push(entry);
 
       break;
