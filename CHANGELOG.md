@@ -2,6 +2,10 @@
 
 See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
 
+### v4.1.1 (2024-06-10)
+
+- Fix pending LoAF cleanup logic ([#493](https://github.com/GoogleChrome/web-vitals/pull/493))
+
 ### v4.1.0 (2024-06-06)
 
 - Move the support check to the top of the onINP() function ([#490](https://github.com/GoogleChrome/web-vitals/pull/490))
