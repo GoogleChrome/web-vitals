@@ -244,6 +244,21 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
   const group = entryToEntriesGroupMap.get(firstEntry)!;
 
+  if (!group) {
+    // @ts-ignore
+    const obj = {
+      reportTime: performance.now(),
+      navigationType: metric.navigationType,
+      entries: metric.entries.map((e) => {
+        return Object.assign({interactionId: e.interactionId}, e.toJSON());
+      }),
+      value: metric.value,
+      delta: metric.delta,
+    };
+    // This should never happen, so throw an error to figure out why.
+    throw new Error(`Missing group: ${JSON.stringify(obj)}`);
+  }
+
   const processingStart = firstEntry.processingStart;
   const processingEnd = group.processingEnd;
 
