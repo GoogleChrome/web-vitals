@@ -81,12 +81,12 @@ declare global {
 
   // https://w3c.github.io/largest-contentful-paint/#sec-largest-contentful-paint-interface
   interface LargestContentfulPaint extends PerformanceEntry {
-    renderTime: DOMHighResTimeStamp;
-    loadTime: DOMHighResTimeStamp;
-    size: number;
-    id: string;
-    url: string;
-    element?: Element;
+    readonly renderTime: DOMHighResTimeStamp;
+    readonly loadTime: DOMHighResTimeStamp;
+    readonly size: number;
+    readonly id: string;
+    readonly url: string;
+    readonly element: Element | null;
   }
 
   // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
