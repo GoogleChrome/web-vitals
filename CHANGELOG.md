@@ -2,6 +2,10 @@
 
 See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
 
+### v4.2.1 (2024-06-30)
+
+- Fix compatibility issues with TypeScript v5.5 ([#497](https://github.com/GoogleChrome/web-vitals/pull/497))
+
 ### v4.2.0 (2024-06-20)
 
 - Refactor INP attribution code to fix errors on Windows 10 ([#495](https://github.com/GoogleChrome/web-vitals/pull/495))
