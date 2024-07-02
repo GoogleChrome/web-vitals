@@ -405,14 +405,9 @@ addEventListener('visibilitychange', () => {
     flushQueue();
   }
 });
-
-// NOTE: Safari does not reliably fire the `visibilitychange` event when the
-// page is being unloaded. If Safari support is needed, you should also flush
-// the queue in the `pagehide` event.
-addEventListener('pagehide', flushQueue);
 ```
 
-_**Note:** see [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` and `pagehide` are recommended over events like `beforeunload` and `unload`._
+_**Note:** see [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`._
 
 <a name="bundle-versions"><a>
 
