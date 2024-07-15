@@ -767,8 +767,7 @@ onTTFB((metric) => {
 ```
 
 > [!NOTE]
-> Browsers that do not support `navigation` entries will fall back to
-> using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers.
+> Browsers that do not support `navigation` entries will fall back to using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers.
 
 ### Rating Thresholds:
 
