@@ -42,7 +42,10 @@ The library supports all of the [Core Web Vitals](https://web.dev/articles/vital
 
 - [First Contentful Paint (FCP)](https://web.dev/articles/fcp)
 - [Time to First Byte (TTFB)](https://web.dev/articles/ttfb)
-- [First Input Delay (FID)](https://web.dev/articles/fid) _Deprecated and will be removed in next major release_
+- [First Input Delay (FID)](https://web.dev/articles/fid)
+
+> [!CAUTION]
+> FID is deprecated and will be removed in the next major release.
 
 <a name="installation"><a>
 <a name="load-the-library"><a>
@@ -63,7 +66,8 @@ You can install this library from npm by running:
 npm install web-vitals
 ```
 
-_**Note:** If you're not using npm, you can still load `web-vitals` via `<script>` tags from a CDN like [unpkg.com](https://unpkg.com). See the [load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn) usage example below for details._
+> [!NOTE]
+> If you're not using npm, you can still load `web-vitals` via `<script>` tags from a CDN like [unpkg.com](https://unpkg.com). See the [load `web-vitals` from a CDN](#load-web-vitals-from-a-cdn) usage example below for details.
 
 There are a few different builds of the `web-vitals` library, and how you load the library depends on which build you want to use.
 
@@ -81,7 +85,8 @@ onINP(console.log);
 onLCP(console.log);
 ```
 
-_**Note:** in version 2, these functions were named `getXXX()` rather than `onXXX()`. They've [been renamed](https://github.com/GoogleChrome/web-vitals/pull/222) in version 3 to reduce confusion (see [#217](https://github.com/GoogleChrome/web-vitals/pull/217) for details) and will continue to be available using the `getXXX()` until at least version 4. Users are encouraged to switch to the new names, though, for future compatibility._
+> [!NOTE]
+> In version 2, these functions were named `getXXX()` rather than `onXXX()`. They've [been renamed](https://github.com/GoogleChrome/web-vitals/pull/222) in version 3 to reduce confusion (see [#217](https://github.com/GoogleChrome/web-vitals/pull/217) for details) and will continue to be available using the `getXXX()` until at least version 4. Users are encouraged to switch to the new names, though, for future compatibility.
 
 <a name="attribution-build"><a>
 
@@ -213,13 +218,15 @@ In other cases, a metric callback may be called more than once:
 - CLS and INP should be reported any time the [page's `visibilityState` changes to hidden](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden).
 - All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/articles/bfcache).
 
-_**Warning:** do not call any of the Web Vitals functions (e.g. `onCLS()`, `onINP()`, `onLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak._
+> [!WARNING]
+> Do not call any of the Web Vitals functions (e.g. `onCLS()`, `onINP()`, `onLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak.
 
 ### Report the value on every change
 
 In most cases, you only want the `callback` function to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each larger layout shift as it happens) by setting `reportAllChanges` to `true` in the optional, [configuration object](#reportopts) (second parameter).
 
-_**Important:** `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP._
+> [!IMPORTANT]
+> `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP.
 
 This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production.
 
@@ -250,7 +257,8 @@ onINP(logDelta);
 onLCP(logDelta);
 ```
 
-_**Note:** the first time the `callback` function is called, its `value` and `delta` properties will be the same._
+> [!NOTE]
+> The first time the `callback` function is called, its `value` and `delta` properties will be the same.
 
 In addition to using the `id` field to group multiple deltas for the same metric, it can also be used to differentiate different metrics reported on the same page. For example, after a back/forward cache restore, a new metric object is created with a new `id` (since back/forward cache restores are considered separate page visits).
 
@@ -361,7 +369,8 @@ onINP(sendToGoogleAnalytics);
 onLCP(sendToGoogleAnalytics);
 ```
 
-_**Note:** this example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4._
+> [!NOTE]
+> This example relies on custom [event parameters](https://support.google.com/analytics/answer/11396839) in Google Analytics 4.
 
 See [Debug performance in the field](https://web.dev/articles/debug-performance-in-the-field) for more information and examples.
 
@@ -407,7 +416,8 @@ addEventListener('visibilitychange', () => {
 });
 ```
 
-_**Note:** see [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`._
+> [!NOTE]
+> See [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`.
 
 <a name="bundle-versions"><a>
 
@@ -575,7 +585,8 @@ interface FCPMetric extends Metric {
 
 ##### `FIDMetric`
 
-_This interface is deprecated and will be removed in next major release_
+> [!CAUTION]
+> This interface is deprecated and will be removed in the next major release.
 
 ```ts
 interface FIDMetric extends Metric {
@@ -679,7 +690,8 @@ Calculates the [CLS](https://web.dev/articles/cls) value for the current page an
 
 If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every layout shift](#report-the-value-on-every-change)).
 
-_**Important:** CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
+> [!IMPORTANT]
+> CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this).
 
 #### `onFCP()`
 
@@ -691,7 +703,8 @@ Calculates the [FCP](https://web.dev/articles/fcp) value for the current page an
 
 #### `onFID()`
 
-_This function is deprecated and will be removed in next major release_
+> [!CAUTION]
+> This function is deprecated and will be removed in the next major release.
 
 ```ts
 function onFID(callback: (metric: FIDMetric) => void, opts?: ReportOpts): void;
@@ -699,7 +712,8 @@ function onFID(callback: (metric: FIDMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [FID](https://web.dev/articles/fid) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-_**Important:** since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads._
+> [!IMPORTANT]
+> Since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads.
 
 #### `onINP()`
 
@@ -713,7 +727,8 @@ A custom `durationThreshold` [configuration option](#reportopts) can optionally 
 
 If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every interaction](#report-the-value-on-every-change)).
 
-_**Important:** INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this)._
+> [!IMPORTANT]
+> INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this).
 
 #### `onLCP()`
 
@@ -751,8 +766,8 @@ onTTFB((metric) => {
 });
 ```
 
-_**Note:** browsers that do not support `navigation` entries will fall back to
-using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers._
+> [!NOTE]
+> Browsers that do not support `navigation` entries will fall back to using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers.
 
 ### Rating Thresholds:
 
@@ -768,7 +783,8 @@ console.log(INPThresholds); // [ 200, 500 ]
 console.log(LCPThresholds); // [ 2500, 4000 ]
 ```
 
-_**Note:** It's typically not necessary (or recommended) to manually calculate metric value ratings using these thresholds. Use the [`Metric['rating']`](#metric) instead._
+> [!NOTE]
+> It's typically not necessary (or recommended) to manually calculate metric value ratings using these thresholds. Use the [`Metric['rating']`](#metric) instead.
 
 ### Attribution:
 
@@ -853,7 +869,8 @@ interface FCPAttribution {
 
 #### `FIDAttribution`
 
-_This interface is deprecated and will be removed in next major release_
+> [!CAUTION]
+> This interface is deprecated and will be removed in the next major release.
 
 ```ts
 interface FIDAttribution {
@@ -1091,7 +1108,8 @@ The primary limitation of these APIs is they have no visibility into `<iframe>` 
 
 For same-origin iframes, it's possible to use the `web-vitals` library to measure metrics, but it's tricky because it requires the developer to add the library to every frame and `postMessage()` the results to the parent frame for aggregation.
 
-_**Note:** given the lack of iframe support, the `onCLS()` function technically measures [DCLS](https://github.com/wicg/layout-instability#cumulative-scores) (Document Cumulative Layout Shift) rather than CLS, if the page includes iframes)._
+> [!NOTE]
+> Given the lack of iframe support, the `onCLS()` function technically measures [DCLS](https://github.com/wicg/layout-instability#cumulative-scores) (Document Cumulative Layout Shift) rather than CLS, if the page includes iframes).
 
 ## Development
 
