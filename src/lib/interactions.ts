@@ -51,7 +51,7 @@ const getInteractionCountForNavigation = () => {
 };
 
 export const resetInteractions = () => {
-  prevInteractionCount = 0;
+  prevInteractionCount = getInteractionCount();
   longestInteractionList.length = 0;
   longestInteractionMap.clear();
 };
