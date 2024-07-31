@@ -14,19 +14,18 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {hardNavId} from './lib/getNavigationEntry.js';
+import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
+import {hardNavId} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FCPMetric,
-  FCPReportCallback,
   Metric,
   MetricRatingThresholds,
   ReportOpts,
@@ -41,7 +40,10 @@ export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
  * relevant `paint` performance entry used to determine the value. The reported
  * value is a `DOMHighResTimeStamp`.
  */
-export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
+export const onFCP = (
+  onReport: (metric: FCPMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
@@ -73,7 +75,7 @@ export const onFCP = (onReport: FCPReportCallback, opts?: ReportOpts) => {
     };
 
     const handleEntries = (entries: FCPMetric['entries']) => {
-      (entries as PerformancePaintTiming[]).forEach((entry) => {
+      entries.forEach((entry) => {
         if (entry.name === 'first-contentful-paint') {
           if (!softNavsEnabled) {
             // If we're not using soft navs monitoring, we should not see

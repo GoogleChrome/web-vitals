@@ -18,112 +18,28 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {initMetric} from './lib/initMetric.js';
+import {
+  DEFAULT_DURATION_THRESHOLD,
+  processInteractionEntry,
+  estimateP98LongestInteraction,
+  resetInteractions,
+} from './lib/interactions.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
-import {
-  getInteractionCount,
-  initInteractionCountPolyfill,
-} from './lib/polyfills/interactionCountPolyfill.js';
+import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
+import {whenIdle} from './lib/whenIdle.js';
+
 import {
   INPMetric,
-  INPReportCallback,
   Metric,
   MetricRatingThresholds,
   ReportOpts,
 } from './types.js';
 
-interface Interaction {
-  id: number;
-  latency: number;
-  entries: PerformanceEventTiming[];
-}
-
 /** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
-
-// Used to store the interaction count after a bfcache restore, since p98
-// interaction latencies should only consider the current navigation.
-let prevInteractionCount = 0;
-
-/**
- * Returns the interaction count since the last bfcache restore (or for the
- * full page lifecycle if there were no bfcache restores).
- */
-const getInteractionCountForNavigation = () => {
-  return getInteractionCount() - prevInteractionCount;
-};
-
-// To prevent unnecessary memory usage on pages with lots of interactions,
-// store at most 10 of the longest interactions to consider as INP candidates.
-const MAX_INTERACTIONS_TO_CONSIDER = 10;
-
-// A list of longest interactions on the page (by latency) sorted so the
-// longest one is first. The list is as most MAX_INTERACTIONS_TO_CONSIDER long.
-let longestInteractionList: Interaction[] = [];
-
-// A mapping of longest interactions by their interaction ID.
-// This is used for faster lookup.
-const longestInteractionMap: {[interactionId: string]: Interaction} = {};
-
-/**
- * Takes a performance entry and adds it to the list of worst interactions
- * if its duration is long enough to make it among the worst. If the
- * entry is part of an existing interaction, it is merged and the latency
- * and entries list is updated as needed.
- */
-const processEntry = (entry: PerformanceEventTiming) => {
-  // The least-long of the 10 longest interactions.
-  const minLongestInteraction =
-    longestInteractionList[longestInteractionList.length - 1];
-
-  const existingInteraction = longestInteractionMap[entry.interactionId!];
-
-  // Only process the entry if it's possibly one of the ten longest,
-  // or if it's part of an existing interaction.
-  if (
-    existingInteraction ||
-    longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
-    entry.duration > minLongestInteraction.latency
-  ) {
-    // If the interaction already exists, update it. Otherwise create one.
-    if (existingInteraction) {
-      existingInteraction.entries.push(entry);
-      existingInteraction.latency = Math.max(
-        existingInteraction.latency,
-        entry.duration,
-      );
-    } else {
-      const interaction = {
-        id: entry.interactionId!,
-        latency: entry.duration,
-        entries: [entry],
-      };
-      longestInteractionMap[interaction.id] = interaction;
-      longestInteractionList.push(interaction);
-    }
-
-    // Sort the entries by latency (descending) and keep only the top ten.
-    longestInteractionList.sort((a, b) => b.latency - a.latency);
-    longestInteractionList.splice(MAX_INTERACTIONS_TO_CONSIDER).forEach((i) => {
-      delete longestInteractionMap[i.id];
-    });
-  }
-};
-
-/**
- * Returns the estimated p98 longest interaction based on the stored
- * interaction candidates and the interaction count for the current page.
- */
-const estimateP98LongestInteraction = () => {
-  const candidateInteractionIndex = Math.min(
-    longestInteractionList.length - 1,
-    Math.floor(getInteractionCountForNavigation() / 50),
-  );
-
-  return longestInteractionList[candidateInteractionIndex];
-};
 
 /**
  * Calculates the [INP](https://web.dev/articles/inp) value for the current
@@ -152,7 +68,20 @@ const estimateP98LongestInteraction = () => {
  * hidden. As a result, the `callback` function might be called multiple times
  * during the same page load._
  */
-export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
+export const onINP = (
+  onReport: (metric: INPMetric) => void,
+  opts?: ReportOpts,
+) => {
+  // Return if the browser doesn't support all APIs needed to measure INP.
+  if (
+    !(
+      'PerformanceEventTiming' in self &&
+      'interactionId' in PerformanceEventTiming.prototype
+    )
+  ) {
+    return;
+  }
+
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
@@ -170,11 +99,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       navigation?: Metric['navigationType'],
       navigationId?: string,
     ) => {
-      longestInteractionList = [];
-      // Important, we want the count for the full page here,
-      // not just for the current navigation.
-      prevInteractionCount =
-        navigation === 'soft-navigation' ? 0 : getInteractionCount();
+      resetInteractions();
       metric = initMetric('INP', 0, navigation, navigationId);
       report = bindReporter(
         onReport,
@@ -203,51 +128,18 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
     };
 
     const handleEntries = (entries: INPMetric['entries']) => {
-      entries.forEach((entry) => {
-        if (
-          softNavsEnabled &&
-          entry.navigationId &&
-          entry.navigationId !== metric.navigationId
-        ) {
-          // If the entry is for a new navigationId than previous, then we have
-          // entered a new soft nav, so emit the final INP and reinitialize the
-          // metric.
-          if (!reportedMetric) {
-            updateINPMetric();
-            if (metric.value > 0) report(true);
-          }
-          initNewINPMetric('soft-navigation', entry.navigationId);
-        }
-        if (entry.interactionId) {
-          processEntry(entry);
-        }
+      // Queue the `handleEntries()` callback in the next idle task.
+      // This is needed to increase the chances that all event entries that
+      // occurred between the user interaction and the next paint
+      // have been dispatched. Note: there is currently an experiment
+      // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
+      // 123+ that if rolled out fully may make this no longer necessary.
+      whenIdle(() => {
+        entries.forEach(processInteractionEntry);
 
-        // Entries of type `first-input` don't currently have an `interactionId`,
-        // so to consider them in INP we have to first check that an existing
-        // entry doesn't match the `duration` and `startTime`.
-        // Note that this logic assumes that `event` entries are dispatched
-        // before `first-input` entries. This is true in Chrome (the only browser
-        // that currently supports INP).
-        // TODO(philipwalton): remove once crbug.com/1325826 is fixed.
-        if (entry.entryType === 'first-input') {
-          const noMatchingEntry = !longestInteractionList.some(
-            (interaction) => {
-              return interaction.entries.some((prevEntry) => {
-                return (
-                  entry.duration === prevEntry.duration &&
-                  entry.startTime === prevEntry.startTime
-                );
-              });
-            },
-          );
-          if (noMatchingEntry) {
-            processEntry(entry);
-          }
-        }
+        updateINPMetric();
+        report();
       });
-
-      updateINPMetric();
-      report();
     };
 
     const po = observe('event', handleEntries, {
@@ -257,7 +149,7 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
       // and performance. Running this callback for any interaction that spans
       // just one or two frames is likely not worth the insight that could be
       // gained.
-      durationThreshold: opts!.durationThreshold ?? 40,
+      durationThreshold: opts!.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
       opts,
     } as PerformanceObserverInit);
 
@@ -269,38 +161,24 @@ export const onINP = (onReport: INPReportCallback, opts?: ReportOpts) => {
     );
 
     if (po) {
-      // If browser supports interactionId (and so supports INP), also
-      // observe entries of type `first-input`. This is useful in cases
+      // Also observe entries of type `first-input`. This is useful in cases
       // where the first interaction is less than the `durationThreshold`.
-      if (
-        'PerformanceEventTiming' in window &&
-        'interactionId' in PerformanceEventTiming.prototype
-      ) {
-        po.observe({
-          type: 'first-input',
-          buffered: true,
-          includeSoftNavigationObservations: softNavsEnabled,
-        });
-      }
+      po.observe({
+        type: 'first-input',
+        buffered: true,
+        includeSoftNavigationObservations: softNavsEnabled,
+      });
 
       onHidden(() => {
         handleEntries(po.takeRecords() as INPMetric['entries']);
-
-        // If the interaction count shows that there were interactions but
-        // none were captured by the PerformanceObserver, report a latency of 0.
-        if (metric.value < 0 && getInteractionCountForNavigation() > 0) {
-          metric.value = 0;
-          metric.entries = [];
-        }
-
         report(true);
       });
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
+        resetInteractions();
         initNewINPMetric('back-forward-cache', metric.navigationId);
-
         doubleRAF(() => report());
       });
 

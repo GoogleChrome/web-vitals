@@ -31,43 +31,14 @@
   <p id="p5"><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
   <script type="module">
-    function jsonifyNode(node) {
-      return node.id ? `#${node.id}` : node.nodeName.toLowerCase();
-    }
-
-    function jsonifySource(source) {
-      const node = jsonifyNode(source.node);
-      return {node, previousRect: source.previousRect, currentRect: source.currentRect};
-    }
-
-    function jsonifyEntry(entry) {
-      const {entryType, hadRecentInput, startTime, value} = entry;
-      const sources = entry.sources.map(jsonifySource);
-      return {entryType, hadRecentInput, sources, startTime, value};
-    }
-
     const {onCLS} = await __testImport('{{ modulePath }}');
 
     onCLS((cls) => {
       // Log for easier manual testing.
       console.log(cls);
 
-      // Sources is verbose to serialize, so remove first.
-      cls = {
-        ...cls,
-        entries: cls.entries.map(jsonifyEntry),
-      };
-
-      if (cls.attribution) {
-        cls.attribution = Object.keys(cls.attribution).length ? {
-          ...cls.attribution,
-          largestShiftSource: jsonifySource(cls.attribution.largestShiftSource),
-          largestShiftEntry: jsonifyEntry(cls.attribution.largestShiftEntry),
-        } : {};
-      }
-
       // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify(cls));
+      navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
     }, {reportAllChanges: self.__reportAllChanges});
   </script>
 {% endblock %}

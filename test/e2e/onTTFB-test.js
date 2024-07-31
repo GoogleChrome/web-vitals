@@ -75,7 +75,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v3-\d+-\d+$/));
+    assert(ttfb.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -93,7 +93,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v3-\d+-\d+$/));
+    assert(ttfb.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -111,7 +111,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 1000);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v3-\d+-\d+$/));
+    assert(ttfb.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'needs-improvement');
@@ -176,7 +176,7 @@ describe('onTTFB()', async function () {
     assert(ttfb1.value >= 0);
     assert(ttfb1.value >= ttfb1.entries[0].requestStart);
     assert(ttfb1.value <= ttfb1.entries[0].loadEventEnd);
-    assert(ttfb1.id.match(/^v3-\d+-\d+$/));
+    assert(ttfb1.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(ttfb1.name, 'TTFB');
     assert.strictEqual(ttfb1.rating, 'good');
     assert.strictEqual(ttfb1.value, ttfb1.delta);
@@ -190,7 +190,7 @@ describe('onTTFB()', async function () {
 
     const ttfb2 = await getTTFBBeacon();
 
-    assert(ttfb2.id.match(/^v3-\d+-\d+$/));
+    assert(ttfb2.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(ttfb2.value, 0);
     assert.strictEqual(ttfb2.name, 'TTFB');
     assert.strictEqual(ttfb2.value, ttfb2.delta);
@@ -231,7 +231,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v3-\d+-\d+$/));
+    assert(ttfb.id.match(/^v4-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -250,7 +250,7 @@ describe('onTTFB()', async function () {
       assert(ttfb.value >= 0);
       assert(ttfb.value >= ttfb.entries[0].requestStart);
       assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-      assert(ttfb.id.match(/^v3-\d+-\d+$/));
+      assert(ttfb.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
       assert.strictEqual(ttfb.rating, 'good');
@@ -261,20 +261,25 @@ describe('onTTFB()', async function () {
 
       const navEntry = ttfb.entries[0];
       assert.strictEqual(
-        ttfb.attribution.waitingTime,
-        navEntry.domainLookupStart,
+        ttfb.attribution.waitingDuration,
+        navEntry.workerStart || navEntry.fetchStart,
       );
       assert.strictEqual(
-        ttfb.attribution.dnsTime,
+        ttfb.attribution.cacheDuration,
+        navEntry.domainLookupStart -
+          (navEntry.workerStart || navEntry.fetchStart),
+      );
+      assert.strictEqual(
+        ttfb.attribution.dnsDuration,
         navEntry.connectStart - navEntry.domainLookupStart,
       );
       assert.strictEqual(
-        ttfb.attribution.connectionTime,
-        navEntry.requestStart - navEntry.connectStart,
+        ttfb.attribution.connectionDuration,
+        navEntry.connectEnd - navEntry.connectStart,
       );
       assert.strictEqual(
-        ttfb.attribution.requestTime,
-        navEntry.responseStart - navEntry.requestStart,
+        ttfb.attribution.requestDuration,
+        navEntry.responseStart - navEntry.connectEnd,
       );
 
       assert.deepEqual(ttfb.attribution.navigationEntry, navEntry);
@@ -285,7 +290,6 @@ describe('onTTFB()', async function () {
 
       const ttfb = await getTTFBBeacon();
 
-      // Since this value is stubbed in the browser, get it separately.
       const activationStart = await browser.execute(() => {
         return performance.getEntriesByType('navigation')[0].activationStart;
       });
@@ -304,24 +308,34 @@ describe('onTTFB()', async function () {
 
       const navEntry = ttfb.entries[0];
       assert.strictEqual(
-        ttfb.attribution.waitingTime,
-        Math.max(0, navEntry.domainLookupStart - activationStart),
+        ttfb.attribution.waitingDuration,
+        Math.max(
+          0,
+          (navEntry.workerStart || navEntry.fetchStart) - activationStart,
+        ),
       );
       assert.strictEqual(
-        ttfb.attribution.dnsTime,
+        ttfb.attribution.cacheDuration,
+        Math.max(0, navEntry.domainLookupStart - activationStart) -
+          Math.max(
+            0,
+            (navEntry.workerStart || navEntry.fetchStart) - activationStart,
+          ),
+      );
+      assert.strictEqual(
+        ttfb.attribution.dnsDuration,
         Math.max(0, navEntry.connectStart - activationStart) -
           Math.max(0, navEntry.domainLookupStart - activationStart),
       );
       assert.strictEqual(
-        ttfb.attribution.connectionTime,
-        Math.max(0, navEntry.requestStart - activationStart) -
+        ttfb.attribution.connectionDuration,
+        Math.max(0, navEntry.connectEnd - activationStart) -
           Math.max(0, navEntry.connectStart - activationStart),
       );
-
       assert.strictEqual(
-        ttfb.attribution.requestTime,
+        ttfb.attribution.requestDuration,
         Math.max(0, navEntry.responseStart - activationStart) -
-          Math.max(0, navEntry.requestStart - activationStart),
+          Math.max(0, navEntry.connectEnd - activationStart),
       );
 
       assert.deepEqual(ttfb.attribution.navigationEntry, navEntry);
@@ -340,17 +354,18 @@ describe('onTTFB()', async function () {
       const ttfb = await getTTFBBeacon();
 
       assert(ttfb.value >= 0);
-      assert(ttfb.id.match(/^v3-\d+-\d+$/));
+      assert(ttfb.id.match(/^v4-\d+-\d+$/));
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
       assert.strictEqual(ttfb.rating, 'good');
       assert.strictEqual(ttfb.navigationType, 'back-forward-cache');
       assert.strictEqual(ttfb.entries.length, 0);
 
-      assert.strictEqual(ttfb.attribution.waitingTime, 0);
-      assert.strictEqual(ttfb.attribution.dnsTime, 0);
-      assert.strictEqual(ttfb.attribution.connectionTime, 0);
-      assert.strictEqual(ttfb.attribution.requestTime, 0);
+      assert.strictEqual(ttfb.attribution.waitingDuration, 0);
+      assert.strictEqual(ttfb.attribution.cacheDuration, 0);
+      assert.strictEqual(ttfb.attribution.dnsDuration, 0);
+      assert.strictEqual(ttfb.attribution.connectionDuration, 0);
+      assert.strictEqual(ttfb.attribution.requestDuration, 0);
       assert.strictEqual(ttfb.attribution.navigationEntry, undefined);
     });
   });

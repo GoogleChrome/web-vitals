@@ -15,20 +15,25 @@
  */
 
 import {getBFCacheRestoreTime} from '../lib/bfcache.js';
-import {isInvalidTimestamp} from '../lib/isInvalidTimestamp.js';
 import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry, hardNavId} from '../lib/getNavigationEntry.js';
 import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
 import {
+  FCPAttribution,
   FCPMetric,
   FCPMetricWithAttribution,
-  FCPReportCallback,
-  FCPReportCallbackWithAttribution,
   ReportOpts,
 } from '../types.js';
 
-const attributeFCP = (metric: FCPMetric): void => {
+const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
+  // Use a default object if no other attribution has been set.
+  let attribution: FCPAttribution = {
+    timeToFirstByte: 0,
+    firstByteToFCP: metric.value,
+    loadState: getLoadState(getBFCacheRestoreTime()),
+  };
+
   if (metric.entries.length) {
     let navigationEntry;
     const fcpEntry = metric.entries[metric.entries.length - 1];
@@ -39,8 +44,6 @@ const attributeFCP = (metric: FCPMetric): void => {
       navigationEntry = getNavigationEntry();
       if (navigationEntry) {
         const responseStart = navigationEntry.responseStart;
-        if (isInvalidTimestamp(responseStart)) return;
-
         const activationStart = navigationEntry.activationStart || 0;
         ttfb = Math.max(0, responseStart - activationStart);
       }
@@ -52,22 +55,22 @@ const attributeFCP = (metric: FCPMetric): void => {
     }
 
     if (navigationEntry) {
-      (metric as FCPMetricWithAttribution).attribution = {
+      attribution = {
         timeToFirstByte: ttfb,
         firstByteToFCP: metric.value - ttfb,
         loadState: getLoadState(metric.entries[0].startTime),
         navigationEntry,
         fcpEntry,
       };
-      return;
     }
   }
-  // Set an empty object if no other attribution has been set.
-  (metric as FCPMetricWithAttribution).attribution = {
-    timeToFirstByte: 0,
-    firstByteToFCP: metric.value,
-    loadState: getLoadState(getBFCacheRestoreTime()),
-  };
+
+  // Use Object.assign to set property to keep tsc happy.
+  const metricWithAttribution: FCPMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**
@@ -77,14 +80,11 @@ const attributeFCP = (metric: FCPMetric): void => {
  * value is a `DOMHighResTimeStamp`.
  */
 export const onFCP = (
-  onReport: FCPReportCallbackWithAttribution,
+  onReport: (metric: FCPMetricWithAttribution) => void,
   opts?: ReportOpts,
 ) => {
-  unattributedOnFCP(
-    ((metric: FCPMetricWithAttribution) => {
-      attributeFCP(metric);
-      onReport(metric);
-    }) as FCPReportCallback,
-    opts,
-  );
+  unattributedOnFCP((metric: FCPMetric) => {
+    const metricWithAttribution = attributeFCP(metric);
+    onReport(metricWithAttribution);
+  }, opts);
 };

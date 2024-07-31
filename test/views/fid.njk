@@ -31,7 +31,7 @@
       console.log(fid);
 
       // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify(fid));
+      navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fid)));
     }, {reportAllChanges: self.__reportAllChanges});
   </script>
 {% endblock %}

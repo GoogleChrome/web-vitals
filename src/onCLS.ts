@@ -15,17 +15,16 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {onBFCacheRestore} from './lib/bfcache.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {onFCP} from './onFCP.js';
 import {
   CLSMetric,
-  CLSReportCallback,
   Metric,
   MetricRatingThresholds,
   ReportOpts,
@@ -55,7 +54,10 @@ export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
  * hidden. As a result, the `callback` function might be called multiple times
  * during the same page load._
  */
-export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
+export const onCLS = (
+  onReport: (metric: CLSMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);

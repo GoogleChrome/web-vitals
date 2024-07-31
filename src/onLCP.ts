@@ -18,16 +18,16 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {hardNavId} from './lib/getNavigationEntry.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
+import {hardNavId} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
+import {whenIdle} from './lib/whenIdle.js';
 import {
   LCPMetric,
-  LCPReportCallback,
   Metric,
   MetricRatingThresholds,
   ReportOpts,
@@ -47,7 +47,10 @@ export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
  * performance entry is dispatched, or once the final value of the metric has
  * been determined.
  */
-export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
+export const onLCP = (
+  onReport: (metric: LCPMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   let reportedMetric = false;
   opts = opts || {};
@@ -77,6 +80,15 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         metricNavStartTime =
           softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
       }
+      // Stop listening after input. Note: while scrolling is an input that
+      // stops LCP observation, it's unreliable since it can be programmatically
+      // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
+      ['keydown', 'click'].forEach((type) => {
+        // Wrap in a setTimeout so the callback is run in a separate task
+        // to avoid extending the keyboard/click handler to reduce INP impact
+        // https://github.com/GoogleChrome/web-vitals/issues/383
+        addEventListener(type, () => whenIdle(finalizeAllLCPs), {once: true});
+      });
     };
 
     const handleEntries = (entries: LCPMetric['entries']) => {
@@ -143,16 +155,6 @@ export const onLCP = (onReport: LCPReportCallback, opts?: ReportOpts) => {
         LCPThresholds,
         opts!.reportAllChanges,
       );
-
-      // Stop listening after input. Note: while scrolling is an input that
-      // stops LCP observation, it's unreliable since it can be programmatically
-      // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
-      ['keydown', 'click'].forEach((type) => {
-        // Wrap in a setTimeout so the callback is run in a separate task
-        // to avoid extending the keyboard/click handler to reduce INP impact
-        // https://github.com/GoogleChrome/web-vitals/issues/383
-        addEventListener(type, () => setTimeout(finalizeAllLCPs, 0), true);
-      });
 
       onHidden(finalizeAllLCPs);
 

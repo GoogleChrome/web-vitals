@@ -1,5 +1,45 @@
 # Changelog
 
+See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
+
+### v4.2.2 (2024-07-17)
+
+- Fix interaction count after bfcache restore ([#505](https://github.com/GoogleChrome/web-vitals/pull/505))
+
+### v4.2.1 (2024-06-30)
+
+- Fix compatibility issues with TypeScript v5.5 ([#497](https://github.com/GoogleChrome/web-vitals/pull/497))
+
+### v4.2.0 (2024-06-20)
+
+- Refactor INP attribution code to fix errors on Windows 10 ([#495](https://github.com/GoogleChrome/web-vitals/pull/495))
+
+### v4.1.1 (2024-06-10)
+
+- Fix pending LoAF cleanup logic ([#493](https://github.com/GoogleChrome/web-vitals/pull/493))
+
+### v4.1.0 (2024-06-06)
+
+- Move the support check to the top of the onINP() function ([#490](https://github.com/GoogleChrome/web-vitals/pull/490))
+- Fix missing LoAF attribution when entries are dispatched before event entries ([#487](https://github.com/GoogleChrome/web-vitals/pull/487))
+
+### v4.0.1 (2024-05-21)
+
+- Add the `ReportCallback` type back but deprecate it ([#483](https://github.com/GoogleChrome/web-vitals/pull/483))
+
+### v4.0.0 (2024-05-13)
+
+- **[BREAKING]** Update types to support more generic usage ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
+- **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
+- **[BREAKING]** Rename `TTFBAttribution` fields from `*Time` to `*Duration` ([#453](https://github.com/GoogleChrome/web-vitals/pull/453))
+- **[BREAKING]** Rename `resourceLoadTime` to `resourceLoadDuration` in LCP attribution ([#450](https://github.com/GoogleChrome/web-vitals/pull/450))
+- **[BREAKING]** Add INP breakdown timings and LoAF attribution ([#442](https://github.com/GoogleChrome/web-vitals/pull/442))
+- **[BREAKING]** Deprecate `onFID()` and remove previously deprecated APIs ([#435](https://github.com/GoogleChrome/web-vitals/pull/435))
+- Expose the target element in INP attribution ([#479](https://github.com/GoogleChrome/web-vitals/pull/479))
+- Save INP target after interactions to reduce null values when removed from the DOM ([#477](https://github.com/GoogleChrome/web-vitals/pull/477))
+- Cap TTFB in attribution ([#440](https://github.com/GoogleChrome/web-vitals/pull/440))
+- Fix `reportAllChanges` behavior for LCP when library is loaded late ([#468](https://github.com/GoogleChrome/web-vitals/pull/468))
+
 ### v3.5.2 (2024-01-25)
 
 - Pick the first non-null `target` for INP attribution ([#421](https://github.com/GoogleChrome/web-vitals/pull/421))

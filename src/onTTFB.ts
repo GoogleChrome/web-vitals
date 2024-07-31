@@ -16,14 +16,9 @@
 
 import {bindReporter} from './lib/bindReporter.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {
-  MetricRatingThresholds,
-  ReportOpts,
-  TTFBReportCallback,
-} from './types.js';
+import {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {initMetric} from './lib/initMetric.js';
-import {isInvalidTimestamp} from './lib/isInvalidTimestamp.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {softNavs} from './lib/softNavs.js';
@@ -64,7 +59,10 @@ const whenReady = (callback: () => void) => {
  * includes time spent on DNS lookup, connection negotiation, network latency,
  * and server processing time.
  */
-export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
+export const onTTFB = (
+  onReport: (metric: TTFBMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
@@ -80,21 +78,13 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
   whenReady(() => {
     if (hardNavEntry) {
       const responseStart = hardNavEntry.responseStart;
-
-      if (isInvalidTimestamp(responseStart)) return;
-
       // The activationStart reference is used because TTFB should be
       // relative to page activation rather than navigation start if the
       // page was prerendered. But in cases where `activationStart` occurs
       // after the first byte is received, this time should be clamped at 0.
       metric.value = Math.max(responseStart - getActivationStart(), 0);
 
-      // Type convert navigationEntry to prevent TS complaining about:
-      //   [(PerformanceNavigationTiming || NavigatingTimingPolyfillEntry)]
-      // not being same as:
-      //   (PerformanceNavigationTiming || NavigatingTimingPolyfillEntry)[]
-      // when it is for a single entry, like it is here
-      metric.entries = [<PerformanceNavigationTiming>hardNavEntry];
+      metric.entries = [hardNavEntry];
       report(true);
 
       // Only report TTFB after bfcache restores if a `navigation` entry
@@ -112,6 +102,7 @@ export const onTTFB = (onReport: TTFBReportCallback, opts?: ReportOpts) => {
           TTFBThresholds,
           opts!.reportAllChanges,
         );
+
         report(true);
       });
 

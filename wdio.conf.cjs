@@ -13,6 +13,16 @@
  limitations under the License.
 */
 
+const argv = require('yargs').argv;
+
+// Allow running tests for a comma-delimited set of metrics via `--metrics=TTFB,LCP`.
+const metrics = argv.metrics ? argv.metrics.toUpperCase().split(',') : ['*'];
+
+// Allow running tests for a comma-delimited set of browsers via `--browsers=chrome,safari`.
+const browsers = argv.browsers
+  ? argv.browsers.toLowerCase().split(',')
+  : ['chrome', 'firefox', 'safari'];
+
 module.exports.config = {
   //
   // ====================
@@ -36,7 +46,7 @@ module.exports.config = {
   // then the current working directory is where your `package.json` resides, so `wdio`
   // will be called from there.
   //
-  specs: ['test/e2e/*-test.js'],
+  specs: metrics.map((metric) => `test/e2e/on${metric}-test.js`),
   // Patterns to exclude.
   exclude: [
     // 'path/to/excluded/files'
@@ -63,36 +73,21 @@ module.exports.config = {
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
   // https://saucelabs.com/platform/platform-configurator
   //
-  capabilities: [
-    {
-      'pageLoadStrategy': 'none',
-      // maxInstances can get overwritten per capability. So if you have an in-house Selenium
-      // grid with only 5 firefox instances available you can make sure that not more than
-      // 5 instances get started at a time.
-      'maxInstances': 1,
-      //
-      'browserName': 'chrome',
-      // If outputDir is provided WebdriverIO can capture driver session logs
-      // it is possible to configure which logTypes to include/exclude.
-      // excludeDriverLogs: ['*'], // pass '*' to exclude all driver session logs
-      // excludeDriverLogs: ['bugreport', 'server'],
-      'goog:chromeOptions': {
+  capabilities: browsers.map((browserName) => {
+    const capability = {
+      browserName: browserName,
+      maxInstances: 1,
+      pageLoadStrategy: 'none',
+    };
+    if (browserName === 'chrome') {
+      capability['goog:chromeOptions'] = {
         excludeSwitches: ['enable-automation'],
         // Uncomment to test on Chrome Canary.
         // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'
-      },
-    },
-    {
-      browserName: 'firefox',
-      maxInstances: 1,
-      pageLoadStrategy: 'none',
-    },
-    {
-      browserName: 'safari',
-      maxInstances: 1,
-      pageLoadStrategy: 'none',
-    },
-  ],
+      };
+    }
+    return capability;
+  }),
   //
   // ===================
   // Test Configurations
