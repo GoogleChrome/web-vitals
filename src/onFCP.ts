@@ -19,7 +19,7 @@ import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
-import {hardNavId} from './lib/getNavigationEntry.js';
+import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
@@ -48,6 +48,7 @@ export const onFCP = (
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
   let metricNavStartTime = 0;
+  const hardNavId = getNavigationEntry()?.navigationId || '1';
 
   whenActivated(() => {
     let visibilityWatcher = getVisibilityWatcher();

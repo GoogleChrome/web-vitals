@@ -27,8 +27,6 @@ import {whenActivated} from './lib/whenActivated.js';
 /** Thresholds for TTFB. See https://web.dev/articles/ttfb#what_is_a_good_ttfb_score */
 export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
 
-const hardNavEntry = getNavigationEntry();
-
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
  * @param callback
@@ -76,6 +74,7 @@ export const onTTFB = (
   );
 
   whenReady(() => {
+    const hardNavEntry = getNavigationEntry();
     if (hardNavEntry) {
       const responseStart = hardNavEntry.responseStart;
       // The activationStart reference is used because TTFB should be

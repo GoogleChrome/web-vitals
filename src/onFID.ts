@@ -17,7 +17,7 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
-import {hardNavId} from './lib/getNavigationEntry.js';
+import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -54,6 +54,7 @@ export const onFID = (
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
+  const hardNavId = getNavigationEntry()?.navigationId || '1';
 
   whenActivated(() => {
     let visibilityWatcher = getVisibilityWatcher();

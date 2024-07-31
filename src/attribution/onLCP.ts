@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {getNavigationEntry, hardNavId} from '../lib/getNavigationEntry.js';
+import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
@@ -26,6 +26,7 @@ import {
 } from '../types.js';
 
 const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
+  const hardNavId = getNavigationEntry()?.navigationId || '1';
   // Use a default object if no other attribution has been set.
   let attribution: LCPAttribution = {
     timeToFirstByte: 0,

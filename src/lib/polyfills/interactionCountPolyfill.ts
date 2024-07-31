@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {hardNavId} from '../getNavigationEntry.js';
+import {getNavigationEntry} from '../getNavigationEntry.js';
 import {observe} from '../observe.js';
 
 declare global {
@@ -26,10 +26,11 @@ declare global {
 let interactionCountEstimate = 0;
 let minKnownInteractionId = Infinity;
 let maxKnownInteractionId = 0;
-let currentNavId = hardNavId;
+let currentNavId = '';
 let softNavsEnabled = false;
 
 const updateEstimate = (entries: PerformanceEventTiming[]) => {
+  if (!currentNavId) currentNavId = getNavigationEntry()?.navigationId || '1';
   entries.forEach((e) => {
     if (e.interactionId) {
       if (

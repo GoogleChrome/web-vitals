@@ -35,5 +35,3 @@ export const getNavigationEntry = (): PerformanceNavigationTiming | void => {
     return navigationEntry;
   }
 };
-
-export const hardNavId = getNavigationEntry()?.navigationId || '1';

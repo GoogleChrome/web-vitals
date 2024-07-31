@@ -17,7 +17,7 @@
 import {getBFCacheRestoreTime} from './bfcache.js';
 import {generateUniqueID} from './generateUniqueID.js';
 import {getActivationStart} from './getActivationStart.js';
-import {getNavigationEntry, hardNavId} from './getNavigationEntry.js';
+import {getNavigationEntry} from './getNavigationEntry.js';
 import {MetricType} from '../types.js';
 
 export const initMetric = <MetricName extends MetricType['name']>(
@@ -26,6 +26,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
   navigation?: MetricType['navigationType'],
   navigationId?: string,
 ) => {
+  const hardNavId = getNavigationEntry()?.navigationId || '1';
   const hardNavEntry = getNavigationEntry();
   let navigationType: MetricType['navigationType'] = 'navigate';
 
