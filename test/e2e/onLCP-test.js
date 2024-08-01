@@ -264,6 +264,9 @@ describe('onLCP()', async function () {
     // Wait for a frame to be painted.
     await browser.executeAsync((done) => requestAnimationFrame(done));
 
+    // Wait a bit to ensure beacon gets a chance to be sent
+    await browser.pause(1000);
+
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
 
