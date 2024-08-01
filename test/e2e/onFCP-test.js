@@ -121,14 +121,11 @@ describe('onFCP()', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await navigateTo('/test/fcp?hidden=1', {readyState: 'complete'});
-    const WVloaded = await browser.execute(() => {
-      return window.WVloaded;
-    });
-    assert(WVloaded, true);
 
-    // Wait a bit to ensure an initial "frame" happens to avoid Safari
-    // flakiness with this test if switching visibility as soon as interactive.
-    // await browser.pause(1000);
+    // Wait a bit to ensure web-vitals.js is loaded before making page visible.
+    // That _should_ be the case when 'complete' readyState happens but for
+    // Safari this doesn't always happen in CI leading to test flakiness.
+    await browser.pause(100);
 
     await stubVisibilityChange('visible');
 
