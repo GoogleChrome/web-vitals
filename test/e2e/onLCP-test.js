@@ -263,13 +263,12 @@ describe('onLCP()', async function () {
   it('stops reporting after the document changes to hidden (reportAllChanges === false)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateTo('/test/lcp?imgDelay=0&imgHidden=1');
+    await navigateTo('/test/lcp?imgDelay=0&imgHidden=1', {
+      readyState: 'interactive',
+    });
 
     // Wait for a frame to be painted.
     await browser.executeAsync((done) => requestAnimationFrame(done));
-
-    // Wait a bit to ensure beacon gets a chance to be sent
-    await browser.pause(1000);
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
