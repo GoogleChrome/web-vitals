@@ -21,24 +21,6 @@ import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
-// Temp fix to address Firefox flakiness.
-// See https://github.com/GoogleChrome/web-vitals/issues/472
-const originalStrictEqual = assert.strictEqual;
-assert.strictEqual = function (actual, expected, message) {
-  if (
-    process.env.GITHUB_ACTIONS &&
-    browser.capabilities.browserName === 'firefox' &&
-    (expected === 'good' || expected === 'needs-improvement') &&
-    actual !== expected
-  ) {
-    console.error(
-      `Override assert for Firefox (actual: ${actual}, expected: ${expected})`,
-    );
-    return true;
-  }
-  return originalStrictEqual(actual, expected, message);
-};
-
 describe('onFCP()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
