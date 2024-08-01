@@ -22,11 +22,7 @@
  */
 export function domReadyState(state) {
   return browser.executeAsync(async (state, done) => {
-    const logs = [];
-    logs.push(['foo', self.wv, document.readyState]);
-
     await new Promise((resolve) => {
-      logs.push(['foo:promise', self.wv, document.readyState]);
       if (document.readyState === 'complete' || document.readyState === state) {
         resolve();
       } else {
@@ -41,13 +37,9 @@ export function domReadyState(state) {
       }
     });
     if (state !== 'loading') {
-      logs.push(['foo2', self.wv, document.readyState]);
       await Promise.all(self.__readyPromises);
     }
-    logs.push(['foo3', self.wv, document.readyState]);
-    logs.push(['vs', document.visibilityState]);
-
-    // Queue a task so this resolves after any event callbacks run.
-    setTimeout(() => done(logs), 0);
+    // Queue a task so this resolves after any event callback run.
+    setTimeout(done, 0);
   }, state);
 }

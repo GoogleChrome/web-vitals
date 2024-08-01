@@ -37,7 +37,5 @@
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
     }, {reportAllChanges: self.__reportAllChanges});
-
-    self.wv = true;
   </script>
 {% endblock %}
