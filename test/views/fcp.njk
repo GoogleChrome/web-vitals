@@ -27,51 +27,8 @@
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
 
-  <script>
-    (async function() {
-      document.addEventListener('DOMContentLoaded', () => {
-        console.log('DCL');
-      });
-
-
-      const state = 'interactive';
-      const logs = [];
-      self.foo = document.readyState;
-      logs.push(['foo', document.readyState]);
-
-      await new Promise((resolve) => {
-        logs.push(['foo:promise', document.readyState]);
-        if (document.readyState === 'complete' || document.readyState === state) {
-          resolve();
-        } else {
-          document.addEventListener('readystatechange', () => {
-            console.log('readystatechange', document.readyState);
-            if (
-              document.readyState === state ||
-              document.readyState === 'complete'
-            ) {
-              resolve();
-            }
-          });
-        }
-      });
-      // logs.push(self.__toSafeObject(self.__readyPromises));
-      // if (state !== 'loading') {
-        self.foo2 = document.readyState;
-        logs.push(['foo2', document.readyState]);
-        await Promise.all(self.__readyPromises);
-      // }
-      self.foo3 = document.readyState;
-      logs.push(['foo3', document.readyState]);
-      // Queue a task so this resolves after any event callback run.
-      setTimeout(() => console.log(logs), 0);
-    })();
-  </script>
-
   <script type="module">
-    console.log('before __testImport');
     const {onFCP} = await __testImport('{{ modulePath }}');
-    console.log('after __testImport');
 
     onFCP((fcp) => {
       // Log for easier manual testing.
@@ -81,7 +38,6 @@
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
     }, {reportAllChanges: self.__reportAllChanges});
 
-    console.log('wc', self.wv = true);
-
+    self.wv = true;
   </script>
 {% endblock %}

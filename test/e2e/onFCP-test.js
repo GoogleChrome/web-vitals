@@ -134,23 +134,7 @@ describe('onFCP()', async function () {
   it.only('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    console.log(await navigateTo('/test/fcp?hidden=1', {readyState: 'complete'}));
-
-    // await browser.pause(1000);
-
-    const foo = await browser.execute(() => self.foo);
-    console.log({foo});
-
-    const foo2 = await browser.execute(() => self.foo2);
-    console.log({foo2});
-
-    const wv = await browser.execute(() => self.wv);
-
-    console.log({wv});
-    assert.equal(wv, true);
-
-    const vs = await browser.execute(() => self.document.visibilityState);
-    console.log({vs});
+    console.log(await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'}));
 
     await stubVisibilityChange('visible');
 

@@ -35,7 +35,6 @@ export async function navigateTo(urlPath, opts) {
     });
   }
 
-  console.log('navigateTo', opts);
   if (opts?.readyState) {
     return await domReadyState(opts.readyState);
   }

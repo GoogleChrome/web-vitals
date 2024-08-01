@@ -23,11 +23,10 @@
 export function domReadyState(state) {
   return browser.executeAsync(async (state, done) => {
     const logs = [];
-    self.foo = document.readyState;
-    logs.push(['foo', document.readyState]);
+    logs.push(['foo', self.wv, document.readyState]);
 
     await new Promise((resolve) => {
-      logs.push(['foo:promise', document.readyState]);
+      logs.push(['foo:promise', self.wv, document.readyState]);
       if (document.readyState === 'complete' || document.readyState === state) {
         resolve();
       } else {
@@ -41,15 +40,14 @@ export function domReadyState(state) {
         });
       }
     });
-    // logs.push(self.__toSafeObject(self.__readyPromises));
     if (state !== 'loading') {
-      self.foo2 = document.readyState;
-      logs.push(['foo2', document.readyState]);
+      logs.push(['foo2', self.wv, document.readyState]);
       await Promise.all(self.__readyPromises);
     }
-    self.foo3 = document.readyState;
-    logs.push(['foo3', document.readyState]);
-    // Queue a task so this resolves after any event callback run.
+    logs.push(['foo3', self.wv, document.readyState]);
+    logs.push(['vs', document.visibilityState]);
+
+    // Queue a task so this resolves after any event callbacks run.
     setTimeout(() => done(logs), 0);
   }, state);
 }
