@@ -120,7 +120,7 @@ describe('onFCP()', async function () {
   it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'});
+    await navigateTo('/test/fcp?hidden=1', {readyState: 'complete'});
     const WVloaded = await browser.execute(() => {
       return window.WVloaded;
     });
