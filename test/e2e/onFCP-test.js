@@ -131,7 +131,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(bfcacheRestoreBeacons.length, 0);
   });
 
-  it.only('does not report if the document was hidden at page load time', async function () {
+  it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
     console.log(await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'}));
