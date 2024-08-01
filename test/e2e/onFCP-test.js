@@ -122,6 +122,10 @@ describe('onFCP()', async function () {
 
     await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'});
 
+    // Wait a bit to ensure an initial "frame" happens to avoid Safari
+    // flakiness with this test if switching visibility as soon as interactive.
+    await browser.pause(100);
+
     await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
