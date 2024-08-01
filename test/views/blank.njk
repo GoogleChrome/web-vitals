@@ -1,0 +1,22 @@
+<script type="module">
+  document.addEventListener('DOMContentLoaded', () => {
+    console.log('DCL');
+  });
+
+  document.addEventListener('readystatechange', () => {
+    console.log('readystatechange', document.readyState);
+  });
+</script>
+
+
+<script type="module">
+
+// import '/dist/foo.js';
+// import '/dist/bar.js';
+
+await import('/dist/foo.js');
+await import('/dist/bar.js');
+
+console.log('done');
+
+</script>
