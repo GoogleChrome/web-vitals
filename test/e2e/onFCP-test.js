@@ -17,7 +17,7 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
-import {browserSupportsPrerender} from '../utils/browserSupportsPrerender.js';
+import {browserSupportsActivationStart} from '../utils/browserSupportsActivationStart.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
@@ -29,6 +29,11 @@ describe('onFCP()', async function () {
   let browserSupportsFCP;
   before(async function () {
     browserSupportsFCP = await browserSupportsEntry('paint');
+  });
+
+  let browserSupportsPrerender;
+  before(async function () {
+    browserSupportsPrerender = await browserSupportsActivationStart();
   });
 
   beforeEach(async function () {

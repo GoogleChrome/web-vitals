@@ -18,15 +18,8 @@
  * Returns true if the browser supports using Prerendering
  * @return {boolean}
  */
-export function browserSupportsPrerender() {
+export function browserSupportsActivationStart() {
   return browser.execute(() => {
-    if (
-      self.HTMLScriptElement.supports &&
-      self.HTMLScriptElement.supports('speculationrules')
-    ) {
-      return true;
-    }
-
-    return false;
+    return 'activationStart' in self.PerformanceNavigationTiming.prototype;
   });
 }
