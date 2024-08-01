@@ -17,6 +17,7 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {browserSupportsPrerender} from '../utiles/browserSupportsPrerender.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
@@ -71,6 +72,7 @@ describe('onFCP()', async function () {
 
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsFCP) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/fcp?prerender=1');
 
@@ -317,6 +319,7 @@ describe('onFCP()', async function () {
 
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsFCP) this.skip();
+      if (!browserSupportsPrerender) this.skip();
 
       await navigateTo(`/test/fcp?attribution=1&prerender=1`, {
         readyState: 'complete',
