@@ -121,10 +121,14 @@ describe('onFCP()', async function () {
     if (!browserSupportsFCP) this.skip();
 
     await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'});
+    const WVloaded = await browser.execute(() => {
+      return window.WVloaded;
+    });
+    assert(WVloaded, true);
 
     // Wait a bit to ensure an initial "frame" happens to avoid Safari
     // flakiness with this test if switching visibility as soon as interactive.
-    await browser.pause(100);
+    // await browser.pause(1000);
 
     await stubVisibilityChange('visible');
 
