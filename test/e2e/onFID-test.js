@@ -16,6 +16,7 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {browserSupportsActivationStart} from '../utils/browserSupportsActivationStart.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
@@ -26,8 +27,10 @@ describe('onFID()', async function () {
   this.retries(2);
 
   let browserSupportsFID;
+  let browserSupportsPrerender;
   before(async function () {
     browserSupportsFID = await browserSupportsEntry('first-input');
+    browserSupportsPrerender = await browserSupportsActivationStart();
   });
 
   beforeEach(async function () {
@@ -188,6 +191,7 @@ describe('onFID()', async function () {
 
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsFID) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/fid?prerender=1');
 

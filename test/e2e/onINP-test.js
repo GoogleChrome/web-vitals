@@ -16,6 +16,7 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
+import {browserSupportsActivationStart} from '../utils/browserSupportsActivationStart.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {nextFrame} from '../utils/nextFrame.js';
@@ -30,9 +31,11 @@ describe('onINP()', async function () {
 
   let browserSupportsINP;
   let browserSupportsLoAF;
+  let browserSupportsPrerender;
   before(async function () {
     browserSupportsINP = await browserSupportsEntry('event');
     browserSupportsLoAF = await browserSupportsEntry('long-animation-frame');
+    browserSupportsPrerender = await browserSupportsActivationStart();
   });
 
   beforeEach(async function () {
@@ -392,6 +395,7 @@ describe('onINP()', async function () {
 
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsINP) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/inp?click=100&prerender=1', {
       readyState: 'interactive',
