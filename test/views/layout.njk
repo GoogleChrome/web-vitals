@@ -227,6 +227,7 @@
 
         const importPromise = import(modulePath);
         self.__readyPromises.push(importPromise);
+        console.log('self.__readyPromises.push(importPromise)', self.__readyPromises.length);
 
         return await importPromise;
       };
