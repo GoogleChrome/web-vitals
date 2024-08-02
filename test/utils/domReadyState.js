@@ -40,7 +40,7 @@ export function domReadyState(state) {
         });
       }
     });
-    if (state !== 'loading') {
+    if (state !== 'loading' && self.__readyPromises) {
       logs.push(['foo2', self.wv, document.readyState]);
       await Promise.all(self.__readyPromises);
     }
