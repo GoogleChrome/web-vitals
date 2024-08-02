@@ -23,6 +23,7 @@
 export function domReadyState(state) {
   return browser.executeAsync(async (state, done) => {
     const logs = [];
+    logs.push(['title', document.title]);
     logs.push(['foo', self.wv, document.readyState]);
 
     await new Promise((resolve) => {
@@ -46,6 +47,7 @@ export function domReadyState(state) {
     }
     logs.push(['foo3', self.wv, document.readyState]);
     logs.push(['vs', document.visibilityState]);
+    logs.push(['title', document.title]);
 
     // Queue a task so this resolves after any event callbacks run.
     setTimeout(() => done(logs), 0);
