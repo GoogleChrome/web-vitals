@@ -16,7 +16,6 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
-import {browserSupportsActivationStart} from '../utils/browserSupportsActivationStart.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
 import {navigateTo} from '../utils/navigateTo.js';
@@ -28,10 +27,8 @@ describe('onLCP()', async function () {
   this.retries(2);
 
   let browserSupportsLCP;
-  let browserSupportsPrerender;
   before(async function () {
     browserSupportsLCP = await browserSupportsEntry('largest-contentful-paint');
-    browserSupportsPrerender = await browserSupportsActivationStart();
   });
 
   beforeEach(async function () {
@@ -146,7 +143,6 @@ describe('onLCP()', async function () {
 
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsLCP) this.skip();
-    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/lcp?prerender=1');
 
@@ -542,7 +538,6 @@ describe('onLCP()', async function () {
 
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsLCP) this.skip();
-      if (!browserSupportsPrerender) this.skip();
 
       await navigateTo('/test/lcp?attribution=1&prerender=1');
 

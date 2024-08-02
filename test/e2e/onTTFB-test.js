@@ -16,7 +16,6 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
-import {browserSupportsActivationStart} from '../utils/browserSupportsActivationStart.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 
@@ -58,11 +57,6 @@ function assertValidEntry(entry) {
 describe('onTTFB()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
-
-  let browserSupportsPrerender;
-  before(async function () {
-    browserSupportsPrerender = await browserSupportsActivationStart();
-  });
 
   beforeEach(async function () {
     // In Safari when navigating to 'about:blank' between tests the
@@ -128,7 +122,6 @@ describe('onTTFB()', async function () {
   });
 
   it('accounts for time prerendering the page', async function () {
-    if (!browserSupportsPrerender) this.skip();
     await navigateTo('/test/ttfb?prerender=1');
 
     const ttfb = await getTTFBBeacon();
@@ -293,7 +286,6 @@ describe('onTTFB()', async function () {
     });
 
     it('accounts for time prerendering the page', async function () {
-      if (!browserSupportsPrerender) this.skip();
       await navigateTo('/test/ttfb?attribution=1&prerender=1');
 
       const ttfb = await getTTFBBeacon();

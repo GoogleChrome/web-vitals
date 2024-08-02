@@ -16,7 +16,6 @@
 
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
-import {browserSupportsActivationStart} from '../utils/browserSupportsActivationStart.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
@@ -30,10 +29,8 @@ describe('onCLS()', async function () {
   this.retries(2);
 
   let browserSupportsCLS;
-  let browserSupportsPrerender;
   before(async function () {
     browserSupportsCLS = await browserSupportsEntry('layout-shift');
-    browserSupportsPrerender = await browserSupportsActivationStart();
 
     // Set a standard screen size so thresholds are the same
     browser.setWindowSize(1280, 1024);
@@ -689,7 +686,6 @@ describe('onCLS()', async function () {
 
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsCLS) this.skip();
-    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/cls?prerender=1');
 
