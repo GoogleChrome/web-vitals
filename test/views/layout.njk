@@ -259,6 +259,22 @@
         return newObj;
       };
 
+      self.onReport = (metric) => {
+        // Log for easier manual testing.
+        console.log(metric);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(metric)));
+      };
+
+      self.reportOpts = {
+        reportAllChanges: self.__reportAllChanges,
+        durationThreshold: self.__durationThreshold,
+      }
+
+      self.importWebVitals = () => {
+        return import('{{ modulePath }}');
+      };
     }());
   </script>
   {% block head %}{% endblock %}

@@ -93,11 +93,14 @@ describe('onINP()', async function () {
     // after user input.
     await navigateTo('/test/inp?click=100&loadAfterInput=1');
 
-    // Wait until
-    await nextFrame();
-
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    await browser.executeAsync(async (done) => {
+      const {onINP} = await self.importWebVitals();
+      onINP(self.onReport, self.reportOpts);
+      done();
+    });
 
     await stubVisibilityChange('hidden');
 
@@ -121,11 +124,14 @@ describe('onINP()', async function () {
     // after user input.
     await navigateTo('/test/inp?click=100&reportAllChanges=1&loadAfterInput=1');
 
-    // Wait until
-    await nextFrame();
-
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    await browser.executeAsync(async (done) => {
+      const {onINP} = await self.importWebVitals();
+      onINP(self.onReport, self.reportOpts);
+      done();
+    });
 
     await beaconCountIs(1);
 
@@ -696,7 +702,7 @@ describe('onINP()', async function () {
       );
     });
 
-    it.only('includes LoAF entries if the browser supports it', async function () {
+    it('includes LoAF entries if the browser supports it', async function () {
       if (!browserSupportsLoAF) this.skip();
 
       console.log(await navigateTo('/test/inp?attribution=1&pointerdown=100', {readyState: 'interactive'}));
