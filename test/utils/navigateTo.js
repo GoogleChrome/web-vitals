@@ -29,6 +29,9 @@ export async function navigateTo(urlPath, opts) {
   // manually wait until the URL matches the passed URL. Note that this can
   // still fail if the prior test navigated to a page with the same URL.
   await browser.waitUntil(async () => {
+    return (await browser.url()).endsWith(urlPath);
+  });
+  await browser.waitUntil(async () => {
     return (await browser.execute(() => location.href)).endsWith(urlPath);
   });
 
