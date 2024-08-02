@@ -50,6 +50,9 @@ export function domReadyState(state) {
     logs.push(['title', document.title, window.location.href]);
 
     // Queue a task so this resolves after any event callbacks run.
-    setTimeout(() => done(logs), 0);
+    setTimeout(() => {
+      logs.push(['foo4', self.wv, document.readyState]);
+      done(logs);
+    }, 0);
   }, state);
 }

@@ -696,10 +696,10 @@ describe('onINP()', async function () {
       );
     });
 
-    it('includes LoAF entries if the browser supports it', async function () {
+    it.only('includes LoAF entries if the browser supports it', async function () {
       if (!browserSupportsLoAF) this.skip();
 
-      await navigateTo('/test/inp?attribution=1&pointerdown=100');
+      console.log(await navigateTo('/test/inp?attribution=1&pointerdown=100', {readyState: 'interactive'}));
 
       // Click on the <textarea>.
       const textarea = await $('#textarea');

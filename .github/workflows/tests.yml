@@ -33,7 +33,7 @@ jobs:
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for chrome
-        run: npm run test:e2e -- --browsers=chrome --metrics=FCP
+        run: npm run test:e2e -- --browsers=chrome --metrics=INP
   firefox-tests:
     name: Run Firefox e2e tests
     # Runs best on macos for CI as linux requires extra setup
@@ -48,7 +48,7 @@ jobs:
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for firefox
-        run: npm run test:e2e -- --browsers=firefox --metrics=FCP
+        run: npm run test:e2e -- --browsers=firefox --metrics=INP
   safari-tests:
     name: Run Safari e2e tests
     # Requires macos
@@ -63,4 +63,4 @@ jobs:
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for safari
-        run: npm run test:e2e -- --browsers=safari --metrics=FCP
+        run: npm run test:e2e -- --browsers=safari --metrics=INP
