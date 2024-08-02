@@ -36,12 +36,9 @@ export async function navigateTo(urlPath, opts) {
     await browser.waitUntil(
       async () => {
         const url = await browser.getUrl();
-        console.log('url', url);
-
         const url2 = await browser.execute(() => location.href);
-        console.log('url2', url2);
 
-        return url.endsWith(urlPath);
+        return url.endsWith(urlPath) && url2.endsWith(urlPath);
       },
       {interval: 50},
     );
