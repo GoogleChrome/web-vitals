@@ -701,12 +701,9 @@ describe('onINP()', async function () {
 
       console.log(await navigateTo('/test/inp?attribution=1&pointerdown=100', {readyState: 'interactive'}));
 
-      await browser.pause(1000);
-
       // Click on the <textarea>.
       const textarea = await $('#textarea');
       await textarea.click();
-
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);

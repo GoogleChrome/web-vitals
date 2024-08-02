@@ -19,6 +19,16 @@
   <title>Web Vitals Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <script>
+    console.log({wv: self.wv}, document.readyState);
+    addEventListener('readystatechange', () => {
+      console.log({wv: self.wv}, document.readyState);
+    }, true);
+    addEventListener('DOMContentLoaded', () => {
+      console.log({wv: self.wv});
+    }, true);
+  </script>
+
+  <script>
     (function() {
       /**
        * @param {string} visibilityState
