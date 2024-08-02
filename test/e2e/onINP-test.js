@@ -705,6 +705,8 @@ describe('onINP()', async function () {
       const textarea = await $('#textarea');
       await textarea.click();
 
+      await browser.pause(100);
+
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
 
