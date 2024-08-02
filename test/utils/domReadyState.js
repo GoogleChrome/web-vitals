@@ -36,7 +36,7 @@ export function domReadyState(state) {
         });
       }
     });
-    if (state !== 'loading' && self.__readyPromises) {
+    if (state !== 'loading') {
       await Promise.all(self.__readyPromises);
     }
     // Queue a task so this resolves after any event callback run.

@@ -125,7 +125,7 @@ describe('onFCP()', async function () {
     // Wait a bit to ensure web-vitals.js is loaded before making page visible.
     // That _should_ be the case when 'complete' readyState happens but for
     // Safari this doesn't always happen in CI leading to test flakiness.
-    await browser.pause(100);
+    // await browser.pause(100);
 
     await stubVisibilityChange('visible');
 
@@ -225,7 +225,7 @@ describe('onFCP()', async function () {
     // Wait a bit to ensure web-vitals.js is loaded before making page visible.
     // That _should_ be the case when 'complete' readyState happens but for
     // Safari this doesn't always happen in CI leading to test flakiness.
-    await browser.pause(100);
+    // await browser.pause(100);
 
     await stubVisibilityChange('visible');
 
