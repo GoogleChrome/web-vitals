@@ -33,7 +33,6 @@ export async function navigateTo(urlPath, opts) {
     browser.capabilities.browserName === 'firefox' ||
     browser.capabilities.browserName === 'Safari'
   ) {
-    console.log('Hi Barry');
     await browser.waitUntil(async () => {
       return (await browser.getUrl()).endsWith(urlPath);
     });
