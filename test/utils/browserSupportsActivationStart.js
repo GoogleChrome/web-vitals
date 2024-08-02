@@ -19,7 +19,8 @@
  * @return {boolean}
  */
 export function browserSupportsActivationStart() {
-  return browser.execute(() => {
-    return 'activationStart' in self.PerformanceNavigationTiming.prototype;
-  });
+  // return browser.execute(() => {
+  //   return 'activationStart' in self.PerformanceNavigationTiming.prototype;
+  // });
+  return true;
 }
