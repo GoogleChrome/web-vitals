@@ -24,16 +24,28 @@ import {domReadyState} from './domReadyState.js';
 export async function navigateTo(urlPath, opts) {
   await browser.url(urlPath);
 
-  // It's possible that `browser.url()` will return before the navigation
+  // In Firefox and Safri, if the global PageLoadStrategy is set to "none",
+  // then it's possible that `browser.url()` will return before the navigation
   // has started and the old page will still be around, so we have to
   // manually wait until the URL matches the passed URL. Note that this can
   // still fail if the prior test navigated to a page with the same URL.
-  await browser.waitUntil(async () => {
-    return (await browser.getUrl()).endsWith(urlPath);
-  });
-  await browser.waitUntil(async () => {
-    return (await browser.execute(() => location.href)).endsWith(urlPath);
-  });
+  if (
+    browser.capabilities.browserName !== 'Safari' ||
+    browser.capabilities.browserName !== 'firefox'
+  ) {
+    await browser.waitUntil(
+      async () => {
+        const url = await browser.getUrl();
+        console.log('url', url);
+
+        const url2 = await browser.execute(() => location.href);
+        console.log('url2', url2);
+
+        return url.endsWith(urlPath);
+      },
+      {interval: 50},
+    );
+  }
 
   if (opts?.readyState) {
     await domReadyState(opts.readyState);
