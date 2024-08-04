@@ -24,15 +24,22 @@ import {domReadyState} from './domReadyState.js';
 export async function navigateTo(urlPath, opts) {
   await browser.url(urlPath);
 
-  // In Firefox, if the global PageLoadStrategy is set to "none", then
-  // it's possible that `browser.url()` will return before the navigation
+  // In Firefox and Safari, if the global PageLoadStrategy is set to "none",
+  // then it's possible that `browser.url()` will return before the navigation
   // has started and the old page will still be around, so we have to
   // manually wait until the URL matches the passed URL. Note that this can
   // still fail if the prior test navigated to a page with the same URL.
-  if (browser.capabilities.browserName === 'firefox') {
-    await browser.waitUntil(async () => {
-      return (await browser.getUrl()).endsWith(urlPath);
-    });
+  if (browser.capabilities.browserName !== 'chrome') {
+    await browser.waitUntil(
+      async () => {
+        // Get the URL from the browser and webdriver to ensure the page has
+        // actually started to load.
+        const url = await browser.execute(() => location.href);
+
+        return url.endsWith(urlPath);
+      },
+      {interval: 50},
+    );
   }
 
   if (opts?.readyState) {

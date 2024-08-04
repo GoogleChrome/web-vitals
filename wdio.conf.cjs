@@ -82,6 +82,8 @@ module.exports.config = {
     if (browserName === 'chrome') {
       capability['goog:chromeOptions'] = {
         excludeSwitches: ['enable-automation'],
+        // Can remove next line after puppeteer 21.2.1 lands
+        args: ['disable-search-engine-choice-screen'],
         // Uncomment to test on Chrome Canary.
         // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'
       };

@@ -22,24 +22,6 @@ import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
-// Temp fix to address Firefox flakiness.
-// See https://github.com/GoogleChrome/web-vitals/issues/472
-const originalStrictEqual = assert.strictEqual;
-assert.strictEqual = function (actual, expected, message) {
-  if (
-    process.env.GITHUB_ACTIONS &&
-    browser.capabilities.browserName === 'firefox' &&
-    (expected === 'good' || expected === 'needs-improvement') &&
-    actual !== expected
-  ) {
-    console.error(
-      `Override assert for Firefox (actual: ${actual}, expected: ${expected})`,
-    );
-    return true;
-  }
-  return originalStrictEqual(actual, expected, message);
-};
-
 describe('onLCP()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
@@ -277,7 +259,9 @@ describe('onLCP()', async function () {
   it('stops reporting after the document changes to hidden (reportAllChanges === false)', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateTo('/test/lcp?imgDelay=0&imgHidden=1');
+    await navigateTo('/test/lcp?imgDelay=0&imgHidden=1', {
+      readyState: 'interactive',
+    });
 
     // Wait for a frame to be painted.
     await browser.executeAsync((done) => requestAnimationFrame(done));
@@ -716,19 +700,7 @@ const assertStandardReportsAreCorrect = (beacons) => {
 const assertFullReportsAreCorrect = (beacons) => {
   const [lcp1, lcp2] = beacons;
 
-  // Temp fix to address Firefox flakiness.
-  // See https://github.com/GoogleChrome/web-vitals/issues/472
-  if (
-    process.env.GITHUB_ACTIONS &&
-    browser.capabilities.browserName === 'firefox' &&
-    lcp1.value >= 500
-  ) {
-    console.log(
-      `Override assert for Firefox (actual: ${lcp1.value}, expected: < 500)`,
-    );
-  } else {
-    assert(lcp1.value < 500); // Less than the image load delay.
-  }
+  assert(lcp1.value < 500); // Less than the image load delay.
   assert(lcp1.id.match(/^v4-\d+-\d+$/));
   assert.strictEqual(lcp1.name, 'LCP');
   assert.strictEqual(lcp1.value, lcp1.delta);
