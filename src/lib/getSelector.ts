@@ -25,7 +25,6 @@ export const getSelector = (node: Node | null | undefined, maxLen?: number) => {
   let sel = '';
 
   try {
-    console.log('Hi Barry, using sorted selector code');
     while (node && node.nodeType !== 9) {
       const el: Element = node as Element;
       const part = el.id
