@@ -25,6 +25,7 @@ export const getSelector = (node: Node | null | undefined, maxLen?: number) => {
   let sel = '';
 
   try {
+    console.log('Hi Barry, using sorted selector code');
     while (node && node.nodeType !== 9) {
       const el: Element = node as Element;
       const part = el.id
@@ -34,7 +35,7 @@ export const getSelector = (node: Node | null | undefined, maxLen?: number) => {
           el.classList.value &&
           el.classList.value.trim() &&
           el.classList.value.trim().length
-            ? '.' + el.classList.value.trim().replace(/\s+/g, '.')
+            ? '.' + el.classList.value.trim().split(' ').sort().join('.')
             : '');
       if (sel.length + part.length > (maxLen || 100) - 1) return sel || part;
       sel = sel ? part + '>' + sel : part;
