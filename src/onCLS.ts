@@ -14,15 +14,21 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
-import {initMetric} from './lib/initMetric.js';
-import {observe} from './lib/observe.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
+import {initMetric} from './lib/initMetric.js';
+import {observe} from './lib/observe.js';
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
+import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {onFCP} from './onFCP.js';
-import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
+import {
+  CLSMetric,
+  Metric,
+  MetricRatingThresholds,
+  ReportOpts,
+} from './types.js';
 
 /** Thresholds for CLS. See https://web.dev/articles/cls#what_is_a_good_cls_score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
@@ -54,6 +60,9 @@ export const onCLS = (
 ) => {
   // Set defaults
   opts = opts || {};
+  const softNavsEnabled = softNavs(opts);
+  let reportedMetric = false;
+  let metricNavStartTime = 0;
 
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
@@ -65,8 +74,45 @@ export const onCLS = (
       let sessionValue = 0;
       let sessionEntries: LayoutShift[] = [];
 
+      const initNewCLSMetric = (
+        navigation?: Metric['navigationType'],
+        navigationId?: string,
+      ) => {
+        metric = initMetric('CLS', 0, navigation, navigationId);
+        report = bindReporter(
+          onReport,
+          metric,
+          CLSThresholds,
+          opts!.reportAllChanges,
+        );
+        sessionValue = 0;
+        reportedMetric = false;
+        if (navigation === 'soft-navigation') {
+          const softNavEntry = getSoftNavigationEntry(navigationId);
+          metricNavStartTime = softNavEntry ? softNavEntry.startTime || 0 : 0;
+        }
+      };
+
       const handleEntries = (entries: LayoutShift[]) => {
         entries.forEach((entry) => {
+          // If the entry is for a new navigationId than previous, then we have
+          // entered a new soft nav, so emit the final LCP and reinitialize the
+          // metric.
+          if (
+            softNavsEnabled &&
+            entry.navigationId &&
+            entry.navigationId !== metric.navigationId
+          ) {
+            // If the current session value is larger than the current CLS value,
+            // update CLS and the entries contributing to it.
+            if (sessionValue > metric.value) {
+              metric.value = sessionValue;
+              metric.entries = sessionEntries;
+            }
+            report(true);
+            initNewCLSMetric('soft-navigation', entry.navigationId);
+          }
+
           // Only count layout shifts without recent user input.
           if (!entry.hadRecentInput) {
             const firstSessionEntry = sessionEntries[0];
@@ -99,7 +145,7 @@ export const onCLS = (
         }
       };
 
-      const po = observe('layout-shift', handleEntries);
+      const po = observe('layout-shift', handleEntries, opts);
       if (po) {
         report = bindReporter(
           onReport,
@@ -111,22 +157,51 @@ export const onCLS = (
         onHidden(() => {
           handleEntries(po.takeRecords() as CLSMetric['entries']);
           report(true);
+          reportedMetric = true;
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          sessionValue = 0;
-          metric = initMetric('CLS', 0);
-          report = bindReporter(
-            onReport,
-            metric,
-            CLSThresholds,
-            opts!.reportAllChanges,
-          );
-
+          initNewCLSMetric('back-forward-cache', metric.navigationId);
           doubleRAF(() => report());
         });
+
+        // Soft navs may be detected by navigationId changes in metrics above
+        // But where no metric is issued we need to also listen for soft nav
+        // entries, then emit the final metric for the previous navigation and
+        // reset the metric for the new navigation.
+        //
+        // As PO is ordered by time, these should not happen before metrics.
+        //
+        // We add a check on startTime as we may be processing many entries that
+        // are already dealt with so just checking navigationId differs from
+        // current metric's navigation id, as we did above, is not sufficient.
+        const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
+          entries.forEach((entry) => {
+            const navId = entry.navigationId;
+            const softNavEntry = navId ? getSoftNavigationEntry(navId) : null;
+            if (
+              navId &&
+              navId !== metric.navigationId &&
+              softNavEntry &&
+              (softNavEntry.startTime || 0) > metricNavStartTime
+            ) {
+              if (!reportedMetric) report(true);
+              initNewCLSMetric('soft-navigation', entry.navigationId);
+              report = bindReporter(
+                onReport,
+                metric,
+                CLSThresholds,
+                opts!.reportAllChanges,
+              );
+            }
+          });
+        };
+
+        if (softNavsEnabled) {
+          observe('soft-navigation', handleSoftNavEntries, opts);
+        }
 
         // Queue a task to report (if nothing else triggers a report first).
         // This allows CLS to be reported as soon as FCP fires when

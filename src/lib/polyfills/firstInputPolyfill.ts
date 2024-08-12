@@ -88,7 +88,7 @@ const reportFirstInputDelayIfRecordedAndValid = () => {
       processingStart: firstInputEvent!.timeStamp + firstInputDelay,
     } as FirstInputPolyfillEntry;
     callbacks.forEach(function (callback) {
-      callback(entry);
+      callback([entry]);
     });
     callbacks = [];
   }

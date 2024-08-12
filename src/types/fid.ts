@@ -15,13 +15,15 @@
  */
 
 import type {LoadState, Metric} from './base.js';
+import {FirstInputPolyfillEntry} from './polyfills.js';
 
 /**
  * An FID-specific version of the Metric object.
  */
 export interface FIDMetric extends Metric {
   name: 'FID';
-  entries: PerformanceEventTiming[];
+  // Polyfill is still used for bfcache restore and soft navs.
+  entries: (PerformanceEventTiming | FirstInputPolyfillEntry)[];
 }
 
 /**
@@ -46,8 +48,9 @@ export interface FIDAttribution {
   eventType: string;
   /**
    * The `PerformanceEventTiming` entry corresponding to FID.
+   * Polyfill is still used for bfcache restore and soft navs.
    */
-  eventEntry: PerformanceEventTiming;
+  eventEntry: PerformanceEventTiming | FirstInputPolyfillEntry;
   /**
    * The loading state of the document at the time when the first interaction
    * occurred (see `LoadState` for details). If the first interaction occurred

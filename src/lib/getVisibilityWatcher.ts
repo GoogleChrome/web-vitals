@@ -61,7 +61,10 @@ const removeChangeListeners = () => {
   removeEventListener('prerenderingchange', onVisibilityUpdate, true);
 };
 
-export const getVisibilityWatcher = () => {
+export const getVisibilityWatcher = (reset = false) => {
+  if (reset) {
+    firstHiddenTime = -1;
+  }
   if (firstHiddenTime < 0) {
     // If the document is hidden when this code runs, assume it was hidden
     // since navigation start. This isn't a perfect heuristic, but it's the
