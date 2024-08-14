@@ -77,7 +77,10 @@ export const onCLS = (
             // include the entry in the current session. Otherwise, start a new
             // session.
             if (
-              sessionValue &&
+              sessionValue && 
+              entry.startTime && 
+              lastSessionEntry.startTime && 
+              firstSessionEntry.startTime &&
               entry.startTime - lastSessionEntry.startTime < 1000 &&
               entry.startTime - firstSessionEntry.startTime < 5000
             ) {
