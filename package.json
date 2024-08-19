@@ -76,7 +76,9 @@
     "attribution.js",
     "attribution.d.ts",
     "dist",
-    "src"
+    "src",
+    "tsconfig.json",
+    "rollup.config.js"
   ],
   "scripts": {
     "build": "run-s clean build:ts build:js",
