@@ -62,10 +62,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
           lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
         ),
       );
-      const lcpRenderTime = Math.max(
-        lcpResponseEnd,
-        lcpEntry.startTime - activationStart,
-      );
+      const lcpRenderTime = metric.value;
 
       attribution = {
         element: getSelector(lcpEntry.element),
