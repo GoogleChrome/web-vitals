@@ -239,6 +239,7 @@ const getIntersectingLoAFs = (
 
 const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
+  const inpTime = firstEntry.startTime + metric.value;
   const group = entryToEntriesGroupMap.get(firstEntry)!;
 
   const processingStart = firstEntry.processingStart;
@@ -246,10 +247,8 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // mark event timing duration as that paint.
   // See: https://github.com/GoogleChrome/web-vitals/issues/492
   // So cap to the INP value.
-  const processingEnd = Math.min(
-    group.processingEnd,
-    firstEntry.startTime + metric.value,
-  );
+  const processingEnd =
+    group.processingEnd >= inpTime ? inpTime : group.processingEnd;
 
   // Sort the entries in processing time order.
   const processedEventEntries = group.entries.sort((a, b) => {
@@ -280,14 +279,11 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     longAnimationFrameEntries.map((loaf) => loaf.startTime + loaf.duration),
   );
 
-  // processingEnd can extend beyond duration for modals where we artificially
-  // mark event timing duration as that paint.
-  // See: https://github.com/GoogleChrome/web-vitals/issues/492
-  // So cap to the INP value.
-  const nextPaintTime = Math.min(
-    firstEntry.startTime + metric.value,
-    Math.max.apply(Math, nextPaintTimeCandidates),
-  );
+  const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
+  // If processingEnd has been capped to inpTime then presentationDelay is 0
+  // Else use the nextPaintTime
+  const presentationDelay =
+    processingEnd == inpTime ? 0 : Math.max(nextPaintTime - processingEnd, 0);
 
   const attribution: INPAttribution = {
     interactionTarget: getSelector(interactionTargetElement),
@@ -299,7 +295,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     longAnimationFrameEntries: longAnimationFrameEntries,
     inputDelay: processingStart - firstEntry.startTime,
     processingDuration: processingEnd - processingStart,
-    presentationDelay: Math.max(nextPaintTime - processingEnd, 0),
+    presentationDelay: presentationDelay,
     loadState: getLoadState(firstEntry.startTime),
   };
 
