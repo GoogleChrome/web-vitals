@@ -1089,7 +1089,7 @@ export interface TTFBAttribution {
 
 ## Browser Support
 
-The `web-vitals` code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9. However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
+The `web-vitals` code has been tested and will run without error in all major browsers for the past 30 months ([Baseline Widely Available](https://web.dev/baseline)). However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
 
 Browser support for each function is as follows:
 

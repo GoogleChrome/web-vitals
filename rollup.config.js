@@ -24,19 +24,17 @@ const configurePlugins = ({module}) => {
         [
           '@babel/preset-env',
           {
-            /**
-             * We support Baseline Widely Available (-30 months). This only
-             * affects the built packages in /dist and available through unpkg
-             * and other CDNs. Developers importing or building this library
-             * can support other versions based on their own user bases.
-             *
-             * Last updated: Sep 2024.
-             */
-            targets: {
-              'safari': '13.1',
-              'chrome': '100',
-              'firefox': '98',
-            },
+            targets: [
+              // Match browser supporting "Baseline Widely Available" features:
+              // https://web.dev/baseline
+              'chrome >0 and last 2.5 years',
+              'edge >0 and last 2.5 years',
+              'safari >0 and last 2.5 years',
+              'firefox >0 and last 2.5 years',
+              'and_chr >0 and last 2.5 years',
+              'and_ff >0 and last 2.5 years',
+              'ios >0 and last 2.5 years',
+            ],
           },
         ],
       ],
