@@ -31,7 +31,8 @@ export function browserSupportsEntry(type) {
     // Firefox supports the event timing API but not `interactionId`.
     if (
       type === 'event' &&
-      !('interactionId' in self?.PerformanceEventTiming?.prototype)
+      self.PerformanceEventTiming &&
+      !('interactionId' in PerformanceEventTiming.prototype)
     ) {
       return false;
     }
