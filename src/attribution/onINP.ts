@@ -117,9 +117,7 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
 
   // Iterate over all previous render times in reverse order to find a match.
   // Go in reverse since the most likely match will be at the end.
-  for (let i = pendingEntriesGroups.length - 1; i >= 0; i--) {
-    const potentialGroup = pendingEntriesGroups[i];
-
+  for (const potentialGroup of pendingEntriesGroups) {
     // If a group's render time is within 8ms of the entry's render time,
     // assume they were part of the same frame and add it to the group.
     if (Math.abs(renderTime - potentialGroup.renderTime) <= 8) {
@@ -190,8 +188,7 @@ const cleanupEntries = () => {
   // 1) intersect with entries in the newly cleaned up `pendingEntriesGroups`
   // 2) occur after the most recently-processed event entry (for up to MAX_PREVIOUS_FRAMES)
   const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
-  for (let i = 0; i < pendingEntriesGroups.length; i++) {
-    const group = pendingEntriesGroups[i];
+  for (const group of pendingEntriesGroups) {
     getIntersectingLoAFs(group.startTime, group.processingEnd).forEach(
       (loaf) => {
         loafsToKeep.add(loaf);
@@ -223,7 +220,7 @@ const getIntersectingLoAFs = (
 ) => {
   const intersectingLoAFs = [];
 
-  for (let i = 0, loaf; (loaf = pendingLoAFs[i]); i++) {
+  for (const loaf of pendingLoAFs) {
     // If the LoAF ends before the given start time, ignore it.
     if (loaf.startTime + loaf.duration < start) continue;
 
@@ -260,7 +257,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // cases where the element is removed from the DOM before reporting happens).
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
   const interactionTargetElement =
-    (firstEntryWithTarget && firstEntryWithTarget.target) ||
+    firstEntryWithTarget?.target ||
     interactionTargetMap.get(firstEntry.interactionId);
 
   // Since entry durations are rounded to the nearest 8ms, we need to clamp

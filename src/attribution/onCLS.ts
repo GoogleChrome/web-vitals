@@ -29,7 +29,7 @@ const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
 };
 
 const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
-  return sources.find((s) => s.node && s.node.nodeType === 1) || sources[0];
+  return sources.find((s) => s?.node?.nodeType === 1) || sources[0];
 };
 
 const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
@@ -38,7 +38,7 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
 
   if (metric.entries.length) {
     const largestEntry = getLargestLayoutShiftEntry(metric.entries);
-    if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
+    if (largestEntry?.sources?.length) {
       const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
       if (largestSource) {
         attribution = {

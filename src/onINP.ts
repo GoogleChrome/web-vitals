@@ -97,7 +97,7 @@ export const onINP = (
 
         const inp = estimateP98LongestInteraction();
 
-        if (inp && inp.latency !== metric.value) {
+        if (inp?.latency !== metric.value) {
           metric.value = inp.latency;
           metric.entries = inp.entries;
           report();
