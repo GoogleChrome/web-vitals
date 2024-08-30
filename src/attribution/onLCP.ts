@@ -62,14 +62,13 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
           lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
         ),
       );
-      const lcpRenderTime = metric.value;
 
       attribution = {
         element: getSelector(lcpEntry.element),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
         resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
-        elementRenderDelay: lcpRenderTime - lcpResponseEnd,
+        elementRenderDelay: metric.value - lcpResponseEnd,
         navigationEntry,
         lcpEntry,
       };
