@@ -242,7 +242,14 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const group = entryToEntriesGroupMap.get(firstEntry)!;
 
   const processingStart = firstEntry.processingStart;
-  const processingEnd = group.processingEnd;
+  // processingEnd can extend beyond duration for modals where we artificially
+  // mark event timing duration as that paint.
+  // See: https://github.com/GoogleChrome/web-vitals/issues/492
+  // So cap to the INP value.
+  const processingEnd = Math.min(
+    group.processingEnd,
+    firstEntry.startTime + metric.value,
+  );
 
   // Sort the entries in processing time order.
   const processedEventEntries = group.entries.sort((a, b) => {
@@ -273,7 +280,14 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     longAnimationFrameEntries.map((loaf) => loaf.startTime + loaf.duration),
   );
 
-  const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
+  // processingEnd can extend beyond duration for modals where we artificially
+  // mark event timing duration as that paint.
+  // See: https://github.com/GoogleChrome/web-vitals/issues/492
+  // So cap to the INP value.
+  const nextPaintTime = Math.min(
+    firstEntry.startTime + metric.value,
+    Math.max.apply(Math, nextPaintTimeCandidates),
+  );
 
   const attribution: INPAttribution = {
     interactionTarget: getSelector(interactionTargetElement),
