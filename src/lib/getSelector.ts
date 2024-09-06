@@ -30,11 +30,8 @@ export const getSelector = (node: Node | null | undefined, maxLen?: number) => {
       const part = el.id
         ? '#' + el.id
         : getName(el) +
-          (el.classList &&
-          el.classList.value &&
-          el.classList.value.trim() &&
-          el.classList.value.trim().length
-            ? '.' + el.classList.value.trim().split(' ').sort().join('.')
+          (el.classList?.length
+            ? '.' + Array.from(el.classList).sort().join('.')
             : '');
       if (sel.length + part.length > (maxLen || 100) - 1) return sel || part;
       sel = sel ? part + '>' + sel : part;
