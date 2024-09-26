@@ -42,10 +42,6 @@ The library supports all of the [Core Web Vitals](https://web.dev/articles/vital
 
 - [First Contentful Paint (FCP)](https://web.dev/articles/fcp)
 - [Time to First Byte (TTFB)](https://web.dev/articles/ttfb)
-- [First Input Delay (FID)](https://web.dev/articles/fid)
-
-> [!CAUTION]
-> FID is deprecated and will be removed in the next major release.
 
 <a name="installation"><a>
 <a name="load-the-library"><a>
@@ -210,8 +206,8 @@ Note that some of these metrics will not report until the user has interacted wi
 
 Also, in some cases a metric callback may never be called:
 
-- FID and INP are not reported if the user never interacts with the page.
-- CLS, FCP, FID, and LCP are not reported if the page was loaded in the background.
+- INP is not reported if the user never interacts with the page.
+- CLS, FCP, and LCP are not reported if the page was loaded in the background.
 
 In other cases, a metric callback may be called more than once:
 
@@ -504,7 +500,7 @@ interface Metric {
   /**
    * The name of the metric (in acronym form).
    */
-  name: 'CLS' | 'FCP' | 'FID' | 'INP' | 'LCP' | 'TTFB';
+  name: 'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB';
 
   /**
    * The current value of the metric.
@@ -580,18 +576,6 @@ interface CLSMetric extends Metric {
 interface FCPMetric extends Metric {
   name: 'FCP';
   entries: PerformancePaintTiming[];
-}
-```
-
-##### `FIDMetric`
-
-> [!CAUTION]
-> This interface is deprecated and will be removed in the next major release.
-
-```ts
-interface FIDMetric extends Metric {
-  name: 'FID';
-  entries: PerformanceEventTiming[];
 }
 ```
 
@@ -700,20 +684,6 @@ function onFCP(callback: (metric: FCPMetric) => void, opts?: ReportOpts): void;
 ```
 
 Calculates the [FCP](https://web.dev/articles/fcp) value for the current page and calls the `callback` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
-
-#### `onFID()`
-
-> [!CAUTION]
-> This function is deprecated and will be removed in the next major release.
-
-```ts
-function onFID(callback: (metric: FIDMetric) => void, opts?: ReportOpts): void;
-```
-
-Calculates the [FID](https://web.dev/articles/fid) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
-
-> [!IMPORTANT]
-> Since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads.
 
 #### `onINP()`
 
@@ -864,41 +834,6 @@ interface FCPAttribution {
    * navigationEntry?.serverTiming
    */
   navigationEntry?: PerformanceNavigationTiming;
-}
-```
-
-#### `FIDAttribution`
-
-> [!CAUTION]
-> This interface is deprecated and will be removed in the next major release.
-
-```ts
-interface FIDAttribution {
-  /**
-   * A selector identifying the element that the user interacted with. This
-   * element will be the `target` of the `event` dispatched.
-   */
-  eventTarget: string;
-  /**
-   * The time when the user interacted. This time will match the `timeStamp`
-   * value of the `event` dispatched.
-   */
-  eventTime: number;
-  /**
-   * The `type` of the `event` dispatched from the user interaction.
-   */
-  eventType: string;
-  /**
-   * The `PerformanceEventTiming` entry corresponding to FID.
-   */
-  eventEntry: PerformanceEventTiming;
-  /**
-   * The loading state of the document at the time when the first interaction
-   * occurred (see `LoadState` for details). If the first interaction occurred
-   * while the document was loading and executing script (e.g. usually in the
-   * `dom-interactive` phase) it can result in long input delays.
-   */
-  loadState: LoadState;
 }
 ```
 
@@ -1095,7 +1030,6 @@ Browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari
-- `onFID()`: Chromium, Firefox _(Deprecated)_
 - `onINP()`: Chromium
 - `onLCP()`: Chromium, Firefox
 - `onTTFB()`: Chromium, Firefox, Safari
