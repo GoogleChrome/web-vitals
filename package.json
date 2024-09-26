@@ -31,10 +31,6 @@
       "types": "./dist/modules/onFCP.d.ts",
       "default": "./dist/modules/onFCP.js"
     },
-    "./onFID.js": {
-      "types": "./dist/modules/onFID.d.ts",
-      "default": "./dist/modules/onFID.js"
-    },
     "./onINP.js": {
       "types": "./dist/modules/onINP.d.ts",
       "default": "./dist/modules/onINP.js"
@@ -54,10 +50,6 @@
     "./attribution/onFCP.js": {
       "types": "./dist/modules/attribution/onFCP.d.ts",
       "default": "./dist/modules/attribution/onFCP.js"
-    },
-    "./attribution/onFID.js": {
-      "types": "./dist/modules/attribution/onFID.d.ts",
-      "default": "./dist/modules/attribution/onFID.js"
     },
     "./attribution/onINP.js": {
       "types": "./dist/modules/attribution/onINP.d.ts",
@@ -110,7 +102,6 @@
     "Core Web Vitals",
     "CLS",
     "FCP",
-    "FID",
     "INP",
     "LCP",
     "TTFB"

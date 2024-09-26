@@ -99,7 +99,7 @@ const reportFirstInputDelayIfRecordedAndValid = () => {
  * Pointer events can trigger main or compositor thread behavior.
  * We differentiate these cases based on whether or not we see a
  * 'pointercancel' event, which are fired when we scroll. If we're scrolling
- * we don't need to report input delay since FID excludes scrolling and
+ * we don't need to report input delay since INP excludes scrolling and
  * pinch/zooming.
  */
 const onPointerDown = (delay: number, event: Event) => {
