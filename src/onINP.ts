@@ -66,12 +66,8 @@ export const onINP = (
   opts?: ReportOpts,
 ) => {
   // Return if the browser doesn't support all APIs needed to measure INP.
-  if (
-    !(
-      'PerformanceEventTiming' in self &&
-      'interactionId' in PerformanceEventTiming.prototype
-    )
-  ) {
+  const eventTimingProto = globalThis.PerformanceEventTiming?.prototype;
+  if (!(eventTimingProto && 'interactionId' in eventTimingProto)) {
     return;
   }
 
@@ -93,7 +89,9 @@ export const onINP = (
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
       whenIdle(() => {
-        entries.forEach(processInteractionEntry);
+        for (const entry of entries) {
+          processInteractionEntry(entry);
+        }
 
         const inp = estimateP98LongestInteraction();
 

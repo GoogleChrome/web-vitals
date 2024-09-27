@@ -16,8 +16,7 @@
 
 export const getNavigationEntry = (): PerformanceNavigationTiming | void => {
   const navigationEntry =
-    performance?.getEntriesByType &&
-    performance.getEntriesByType('navigation')[0];
+    globalThis.performance?.getEntriesByType?.('navigation')[0];
 
   // Check to ensure the `responseStart` property is present and valid.
   // In some cases no value is reported by the browser (for
@@ -28,7 +27,7 @@ export const getNavigationEntry = (): PerformanceNavigationTiming | void => {
   // https://github.com/GoogleChrome/web-vitals/issues/275
   if (
     navigationEntry?.responseStart > 0 &&
-    navigationEntry.responseStart < performance.now()
+    navigationEntry?.responseStart < globalThis.performance?.now()
   ) {
     return navigationEntry;
   }

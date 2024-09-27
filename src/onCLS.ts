@@ -66,7 +66,7 @@ export const onCLS = (
       let sessionEntries: LayoutShift[] = [];
 
       const handleEntries = (entries: LayoutShift[]) => {
-        entries.forEach((entry) => {
+        for (const entry of entries) {
           // Only count layout shifts without recent user input.
           if (!entry.hadRecentInput) {
             const firstSessionEntry = sessionEntries[0];
@@ -88,7 +88,7 @@ export const onCLS = (
               sessionEntries = [entry];
             }
           }
-        });
+        }
 
         // If the current session value is larger than the current CLS value,
         // update CLS and the entries contributing to it.
@@ -131,7 +131,7 @@ export const onCLS = (
         // Queue a task to report (if nothing else triggers a report first).
         // This allows CLS to be reported as soon as FCP fires when
         // `reportAllChanges` is true.
-        setTimeout(report, 0);
+        setTimeout(report);
       }
     }),
   );

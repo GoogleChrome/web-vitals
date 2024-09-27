@@ -62,7 +62,7 @@ export const onLCP = (
         entries = entries.slice(-1);
       }
 
-      entries.forEach((entry) => {
+      for (const entry of entries) {
         // Only report if the page wasn't hidden prior to LCP.
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
           // The startTime attribute returns the value of the renderTime if it is
@@ -75,7 +75,7 @@ export const onLCP = (
           metric.entries = [entry];
           report();
         }
-      });
+      }
     };
 
     const po = observe('largest-contentful-paint', handleEntries);
@@ -100,12 +100,12 @@ export const onLCP = (
       // Stop listening after input. Note: while scrolling is an input that
       // stops LCP observation, it's unreliable since it can be programmatically
       // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
-      ['keydown', 'click'].forEach((type) => {
+      for (const type of ['keydown', 'click']) {
         // Wrap in a setTimeout so the callback is run in a separate task
         // to avoid extending the keyboard/click handler to reduce INP impact
         // https://github.com/GoogleChrome/web-vitals/issues/383
         addEventListener(type, () => whenIdle(stopListening), true);
-      });
+      }
 
       onHidden(stopListening);
 

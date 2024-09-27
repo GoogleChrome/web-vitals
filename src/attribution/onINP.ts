@@ -166,11 +166,11 @@ const cleanupEntries = () => {
   // Delete any stored interaction target elements if they're not part of one
   // of the 10 longest interactions.
   if (interactionTargetMap.size > 10) {
-    interactionTargetMap.forEach((_, key) => {
+    for (const [key] of interactionTargetMap) {
       if (!longestInteractionMap.has(key)) {
         interactionTargetMap.delete(key);
       }
-    });
+    }
   }
 
   // Keep all render times that are part of a pending INP candidate or
@@ -189,11 +189,10 @@ const cleanupEntries = () => {
   // 2) occur after the most recently-processed event entry (for up to MAX_PREVIOUS_FRAMES)
   const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
   for (const group of pendingEntriesGroups) {
-    getIntersectingLoAFs(group.startTime, group.processingEnd).forEach(
-      (loaf) => {
-        loafsToKeep.add(loaf);
-      },
-    );
+    const loafs = getIntersectingLoAFs(group.startTime, group.processingEnd);
+    for (const loaf of loafs) {
+      loafsToKeep.add(loaf);
+    }
   }
   const prevFrameIndexCutoff = pendingLoAFs.length - 1 - MAX_PREVIOUS_FRAMES;
   // Filter `pendingLoAFs` to preserve LoAF order.

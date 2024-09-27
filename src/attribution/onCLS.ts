@@ -25,7 +25,7 @@ import {
 } from '../types.js';
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
-  return entries.reduce((a, b) => (a && a.value > b.value ? a : b));
+  return entries.reduce((a, b) => (a?.value > b.value ? a : b));
 };
 
 const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
