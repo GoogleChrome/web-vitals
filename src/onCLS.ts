@@ -75,8 +75,9 @@ export const onCLS = (
             // session.
             if (
               sessionValue &&
-              // `lastSessionEntry` will be defined if `sessionsValue` is.
-              entry.startTime - lastSessionEntry!.startTime < 1000 &&
+              firstSessionEntry &&
+              lastSessionEntry &&
+              entry.startTime - lastSessionEntry.startTime < 1000 &&
               entry.startTime - firstSessionEntry.startTime < 5000
             ) {
               sessionValue += entry.value;
