@@ -19,7 +19,6 @@ export * from './types/polyfills.js';
 
 export * from './types/cls.js';
 export * from './types/fcp.js';
-export * from './types/fid.js';
 export * from './types/inp.js';
 export * from './types/lcp.js';
 export * from './types/ttfb.js';
