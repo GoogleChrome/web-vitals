@@ -239,17 +239,16 @@ const getIntersectingLoAFs = (
 
 const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
-  const endTime = firstEntry.startTime + metric.value;
-  const group = entryToEntriesGroupMap.get(firstEntry)!;
+  const nextPaintTime = firstEntry.startTime + firstEntry.duration;
 
+  const group = entryToEntriesGroupMap.get(firstEntry)!;
   const processingStart = firstEntry.processingStart;
-  // processingEnd can extend beyond duration for modals where we artificially
-  // mark event timing duration at the time modal dialog started (and provided
-  // visual feedback)"
-  // See: https://github.com/GoogleChrome/web-vitals/issues/492
-  // So cap to the end time.
-  const processingEnd =
-    group.processingEnd >= endTime ? endTime : group.processingEnd;
+  // `processingEnd` can extend beyond the event duration in some cases
+  // (e.g. sync modals like `alert()`, where duration is when the modal is
+  // shown, but since it's sync, `processingEnd` is when it's dismissed).
+  // So for the purposes of INP attribution, processingEnd is capped at
+  // `nextPaintTime`: https://github.com/GoogleChrome/web-vitals/issues/492
+  const processingEnd = Math.min(group.processingEnd, nextPaintTime);
 
   // Sort the entries in processing time order.
   const processedEventEntries = group.entries.sort((a, b) => {
@@ -267,24 +266,8 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // cases where the element is removed from the DOM before reporting happens).
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
   const interactionTargetElement =
-    (firstEntryWithTarget && firstEntryWithTarget.target) ||
+    firstEntryWithTarget?.target ??
     interactionTargetMap.get(firstEntry.interactionId);
-
-  // Since entry durations are rounded to the nearest 8ms, we need to clamp
-  // the `nextPaintTime` value to be higher than the `processingEnd` or
-  // end time of any LoAF entry.
-  const nextPaintTimeCandidates = [
-    firstEntry.startTime + firstEntry.duration,
-    processingEnd,
-  ].concat(
-    longAnimationFrameEntries.map((loaf) => loaf.startTime + loaf.duration),
-  );
-
-  const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
-  // If processingEnd has been capped to endTime then presentationDelay is 0
-  // Else use the nextPaintTime
-  const presentationDelay =
-    processingEnd == endTime ? 0 : Math.max(nextPaintTime - processingEnd, 0);
 
   const attribution: INPAttribution = {
     interactionTarget: getSelector(interactionTargetElement),
@@ -296,7 +279,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     longAnimationFrameEntries: longAnimationFrameEntries,
     inputDelay: processingStart - firstEntry.startTime,
     processingDuration: processingEnd - processingStart,
-    presentationDelay: presentationDelay,
+    presentationDelay: nextPaintTime - processingEnd,
     loadState: getLoadState(firstEntry.startTime),
   };
 
