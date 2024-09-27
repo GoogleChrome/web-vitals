@@ -246,7 +246,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // `processingEnd` can extend beyond the event duration in some cases
   // (e.g. sync modals like `alert()`, where duration is when the modal is
   // shown, but since it's sync, `processingEnd` is when it's dismissed).
-  // So for the purposes of INP attribution, processingEnd is capped at
+  // So for the purposes of INP attribution, `processingEnd` is capped at
   // `nextPaintTime`: https://github.com/GoogleChrome/web-vitals/issues/492
   const processingEnd = Math.min(group.processingEnd, nextPaintTime);
 
