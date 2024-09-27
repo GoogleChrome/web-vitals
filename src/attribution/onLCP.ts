@@ -54,13 +54,13 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
               activationStart
           : 0,
       );
-      const lcpResponseEnd = Math.max(
-        lcpRequestStart,
-        lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
-      );
-      const lcpRenderTime = Math.max(
-        lcpResponseEnd,
-        lcpEntry.startTime - activationStart,
+      const lcpResponseEnd = Math.min(
+        // Cap at LCP time (videos continue downloading after LCP for example)
+        metric.value,
+        Math.max(
+          lcpRequestStart,
+          lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
+        ),
       );
 
       attribution = {
@@ -68,7 +68,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
         resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
-        elementRenderDelay: lcpRenderTime - lcpResponseEnd,
+        elementRenderDelay: metric.value - lcpResponseEnd,
         navigationEntry,
         lcpEntry,
       };
