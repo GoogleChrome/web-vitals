@@ -322,7 +322,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
  */
 export const onINP = (
   onReport: (metric: INPMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   if (!loafObserver) {
     loafObserver = observe('long-animation-frame', handleLoAFEntries);

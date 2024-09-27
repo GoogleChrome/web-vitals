@@ -50,11 +50,8 @@ export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
  */
 export const onCLS = (
   onReport: (metric: CLSMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
-
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   onFCP(

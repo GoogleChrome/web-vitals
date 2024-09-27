@@ -104,7 +104,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
  */
 export const onLCP = (
   onReport: (metric: LCPMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   unattributedOnLCP((metric: LCPMetric) => {
     const metricWithAttribution = attributeLCP(metric);

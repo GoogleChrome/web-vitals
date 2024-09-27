@@ -35,11 +35,8 @@ export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
  */
 export const onFCP = (
   onReport: (metric: FCPMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
-
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FCP');

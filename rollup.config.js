@@ -35,6 +35,7 @@ const configurePlugins = ({module}) => {
               'and_ff >0 and last 2.5 years',
               'ios >0 and last 2.5 years',
             ],
+            bugfixes: true,
           },
         ],
       ],
@@ -56,24 +57,24 @@ const configs = [
     },
     plugins: configurePlugins({module: true}),
   },
-  {
-    input: 'dist/modules/index.js',
-    output: {
-      format: 'umd',
-      file: `./dist/web-vitals.umd.cjs`,
-      name: 'webVitals',
-    },
-    plugins: configurePlugins({module: false}),
-  },
-  {
-    input: 'dist/modules/index.js',
-    output: {
-      format: 'iife',
-      file: './dist/web-vitals.iife.js',
-      name: 'webVitals',
-    },
-    plugins: configurePlugins({module: false}),
-  },
+  // {
+  //   input: 'dist/modules/index.js',
+  //   output: {
+  //     format: 'umd',
+  //     file: `./dist/web-vitals.umd.cjs`,
+  //     name: 'webVitals',
+  //   },
+  //   plugins: configurePlugins({module: false}),
+  // },
+  // {
+  //   input: 'dist/modules/index.js',
+  //   output: {
+  //     format: 'iife',
+  //     file: './dist/web-vitals.iife.js',
+  //     name: 'webVitals',
+  //   },
+  //   plugins: configurePlugins({module: false}),
+  // },
   {
     input: 'dist/modules/attribution/index.js',
     output: {
@@ -82,24 +83,24 @@ const configs = [
     },
     plugins: configurePlugins({module: true}),
   },
-  {
-    input: 'dist/modules/attribution/index.js',
-    output: {
-      format: 'umd',
-      file: `./dist/web-vitals.attribution.umd.cjs`,
-      name: 'webVitals',
-    },
-    plugins: configurePlugins({module: false}),
-  },
-  {
-    input: 'dist/modules/attribution/index.js',
-    output: {
-      format: 'iife',
-      file: './dist/web-vitals.attribution.iife.js',
-      name: 'webVitals',
-    },
-    plugins: configurePlugins({module: false}),
-  },
+  // {
+  //   input: 'dist/modules/attribution/index.js',
+  //   output: {
+  //     format: 'umd',
+  //     file: `./dist/web-vitals.attribution.umd.cjs`,
+  //     name: 'webVitals',
+  //   },
+  //   plugins: configurePlugins({module: false}),
+  // },
+  // {
+  //   input: 'dist/modules/attribution/index.js',
+  //   output: {
+  //     format: 'iife',
+  //     file: './dist/web-vitals.attribution.iife.js',
+  //     name: 'webVitals',
+  //   },
+  //   plugins: configurePlugins({module: false}),
+  // },
 ];
 
 export default configs;

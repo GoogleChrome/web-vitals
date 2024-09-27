@@ -45,11 +45,8 @@ const reportedMetricIDs: Record<string, boolean> = {};
  */
 export const onLCP = (
   onReport: (metric: LCPMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
-
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('LCP');

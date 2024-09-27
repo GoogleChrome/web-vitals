@@ -57,11 +57,8 @@ const whenReady = (callback: () => void) => {
  */
 export const onTTFB = (
   onReport: (metric: TTFBMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
-
   let metric = initMetric('TTFB');
   let report = bindReporter(
     onReport,

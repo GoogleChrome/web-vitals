@@ -63,16 +63,13 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
  */
 export const onINP = (
   onReport: (metric: INPMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   // Return if the browser doesn't support all APIs needed to measure INP.
   const eventTimingProto = globalThis.PerformanceEventTiming?.prototype;
   if (!(eventTimingProto && 'interactionId' in eventTimingProto)) {
     return;
   }
-
-  // Set defaults
-  opts = opts || {};
 
   whenActivated(() => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.

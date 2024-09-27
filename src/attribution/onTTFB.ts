@@ -98,7 +98,7 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
  */
 export const onTTFB = (
   onReport: (metric: TTFBMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   unattributedOnTTFB((metric: TTFBMetric) => {
     const metricWithAttribution = attributeTTFB(metric);
