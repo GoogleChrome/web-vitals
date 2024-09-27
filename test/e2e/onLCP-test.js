@@ -465,7 +465,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
@@ -515,7 +515,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
 
       // Specifically check that resourceLoadDelay falls back to `startTime`.
       assert.equal(
@@ -565,7 +565,7 @@ describe('onLCP()', async function () {
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
       assert.equal(lcp.navigationType, 'prerender');
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img');
+      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
 
       // Assert each individual LCP sub-part accounts for `activationStart`
       assert.equal(

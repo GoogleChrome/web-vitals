@@ -20,7 +20,7 @@
     {% if not imgDelay %}
       {% set imgDelay = 500 %}
     {% endif %}
-    <img elementtiming="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
+    <img class="foo bar" elementtiming="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 
