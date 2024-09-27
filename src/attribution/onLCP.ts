@@ -56,7 +56,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
       );
       const lcpResponseEnd = Math.min(
         // Cap at LCP time (videos continue downloading after LCP for example)
-        lcpEntry.startTime - activationStart,
+        metric.value,
         Math.max(
           lcpRequestStart,
           lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
