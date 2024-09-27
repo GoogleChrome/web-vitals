@@ -239,16 +239,17 @@ const getIntersectingLoAFs = (
 
 const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
-  const inpTime = firstEntry.startTime + metric.value;
+  const endTime = firstEntry.startTime + metric.value;
   const group = entryToEntriesGroupMap.get(firstEntry)!;
 
   const processingStart = firstEntry.processingStart;
   // processingEnd can extend beyond duration for modals where we artificially
-  // mark event timing duration as that paint.
+  // mark event timing duration at the time modal dialog started (and provided
+  // visual feedback)"
   // See: https://github.com/GoogleChrome/web-vitals/issues/492
-  // So cap to the INP value.
+  // So cap to the end time.
   const processingEnd =
-    group.processingEnd >= inpTime ? inpTime : group.processingEnd;
+    group.processingEnd >= endTime ? endTime : group.processingEnd;
 
   // Sort the entries in processing time order.
   const processedEventEntries = group.entries.sort((a, b) => {
@@ -280,10 +281,10 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   );
 
   const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
-  // If processingEnd has been capped to inpTime then presentationDelay is 0
+  // If processingEnd has been capped to endTime then presentationDelay is 0
   // Else use the nextPaintTime
   const presentationDelay =
-    processingEnd == inpTime ? 0 : Math.max(nextPaintTime - processingEnd, 0);
+    processingEnd == endTime ? 0 : Math.max(nextPaintTime - processingEnd, 0);
 
   const attribution: INPAttribution = {
     interactionTarget: getSelector(interactionTargetElement),
