@@ -73,12 +73,7 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
     };
   }
 
-  // Use Object.assign to set property to keep tsc happy.
-  const metricWithAttribution: TTFBMetricWithAttribution = Object.assign(
-    metric,
-    {attribution},
-  );
-  return metricWithAttribution;
+  return {...metric, attribution};
 };
 
 /**

@@ -37,7 +37,8 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
     const navigationEntry = getNavigationEntry();
     if (navigationEntry) {
       const activationStart = navigationEntry.activationStart || 0;
-      const lcpEntry = metric.entries[metric.entries.length - 1];
+      // The `metric.entries.length` check ensures there will be an entry.
+      const lcpEntry = metric.entries.at(-1)!;
       const lcpResourceEntry =
         lcpEntry.url &&
         performance
@@ -83,12 +84,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
     }
   }
 
-  // Use Object.assign to set property to keep tsc happy.
-  const metricWithAttribution: LCPMetricWithAttribution = Object.assign(
-    metric,
-    {attribution},
-  );
-  return metricWithAttribution;
+  return {...metric, attribution};
 };
 
 /**

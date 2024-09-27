@@ -41,7 +41,7 @@ export const getSelector = (node: Node | null | undefined) => {
       }
       node = el.parentNode;
     }
-  } catch (err) {
+  } catch {
     // Do nothing...
   }
   return sel;

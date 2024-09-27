@@ -47,7 +47,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
 
   return {
     name,
-    value: value,
+    value,
     rating: 'good' as const, // If needed, will be updated when reported. `const` to keep the type from widening to `string`.
     delta: 0,
     entries,

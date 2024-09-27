@@ -95,8 +95,7 @@ export const processInteractionEntry = (entry: PerformanceEventTiming) => {
   if (!(entry.interactionId || entry.entryType === 'first-input')) return;
 
   // The least-long of the 10 longest interactions.
-  const minLongestInteraction =
-    longestInteractionList[longestInteractionList.length - 1];
+  const minLongestInteraction = longestInteractionList.at(-1);
 
   const existingInteraction = longestInteractionMap.get(entry.interactionId!);
 
@@ -105,7 +104,8 @@ export const processInteractionEntry = (entry: PerformanceEventTiming) => {
   if (
     existingInteraction ||
     longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
-    entry.duration > minLongestInteraction.latency
+    // If the above conditions are false, `minLongestInteraction` will be set.
+    entry.duration > minLongestInteraction!.latency
   ) {
     // If the interaction already exists, update it. Otherwise create one.
     if (existingInteraction) {

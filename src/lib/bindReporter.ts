@@ -35,7 +35,7 @@ export const bindReporter = <MetricName extends MetricType['name']>(
   thresholds: MetricRatingThresholds,
   reportAllChanges?: boolean,
 ) => {
-  let prevValue: number;
+  let prevValue: number = -1;
   let delta: number;
   return (forceReport?: boolean) => {
     if (metric.value >= 0) {
@@ -46,7 +46,7 @@ export const bindReporter = <MetricName extends MetricType['name']>(
         // value exists (which can happen in the case of the document becoming
         // hidden when the metric value is 0).
         // See: https://github.com/GoogleChrome/web-vitals/issues/14
-        if (delta || prevValue === undefined) {
+        if (delta || prevValue < 0) {
           prevValue = metric.value;
           metric.delta = delta;
           metric.rating = getRating(metric.value, thresholds);

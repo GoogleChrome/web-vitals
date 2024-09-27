@@ -67,7 +67,7 @@ export const onCLS = (
           // Only count layout shifts without recent user input.
           if (!entry.hadRecentInput) {
             const firstSessionEntry = sessionEntries[0];
-            const lastSessionEntry = sessionEntries[sessionEntries.length - 1];
+            const lastSessionEntry = sessionEntries.at(-1);
 
             // If the entry occurred less than 1 second after the previous entry
             // and less than 5 seconds after the first entry in the session,
@@ -75,7 +75,8 @@ export const onCLS = (
             // session.
             if (
               sessionValue &&
-              entry.startTime - lastSessionEntry.startTime < 1000 &&
+              // `lastSessionEntry` will be defined if `sessionsValue` is.
+              entry.startTime - lastSessionEntry!.startTime < 1000 &&
               entry.startTime - firstSessionEntry.startTime < 5000
             ) {
               sessionValue += entry.value;

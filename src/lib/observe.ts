@@ -48,12 +48,10 @@ export const observe = <K extends keyof PerformanceEntryMap>(
           callback(list.getEntries() as PerformanceEntryMap[K]);
         });
       });
-      po.observe(
-        Object.assign({type, buffered: true}, opts) as PerformanceObserverInit,
-      );
+      po.observe({type, buffered: true, ...opts} as PerformanceObserverInit);
       return po;
     }
-  } catch (e) {
+  } catch {
     // Do nothing.
   }
   return;

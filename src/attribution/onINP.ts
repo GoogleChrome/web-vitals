@@ -117,7 +117,9 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
 
   // Iterate over all previous render times in reverse order to find a match.
   // Go in reverse since the most likely match will be at the end.
-  for (const potentialGroup of pendingEntriesGroups) {
+  for (let i = pendingEntriesGroups.length - 1; i >= 0; i--) {
+    const potentialGroup = pendingEntriesGroups[i];
+
     // If a group's render time is within 8ms of the entry's render time,
     // assume they were part of the same frame and add it to the group.
     if (Math.abs(renderTime - potentialGroup.renderTime) <= 8) {
@@ -285,12 +287,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     loadState: getLoadState(firstEntry.startTime),
   };
 
-  // Use Object.assign to set property to keep tsc happy.
-  const metricWithAttribution: INPMetricWithAttribution = Object.assign(
-    metric,
-    {attribution},
-  );
-  return metricWithAttribution;
+  return {...metric, attribution};
 };
 
 /**
