@@ -22,12 +22,15 @@ export const getNavigationEntry = (): PerformanceNavigationTiming | void => {
   // In some cases no value is reported by the browser (for
   // privacy/security reasons), and in other cases (bugs) the value is
   // negative or is larger than the current page time. Ignore these cases:
-  // https://github.com/GoogleChrome/web-vitals/issues/137
-  // https://github.com/GoogleChrome/web-vitals/issues/162
-  // https://github.com/GoogleChrome/web-vitals/issues/275
+  // - https://github.com/GoogleChrome/web-vitals/issues/137
+  // - https://github.com/GoogleChrome/web-vitals/issues/162
+  // - https://github.com/GoogleChrome/web-vitals/issues/275
   if (
-    navigationEntry?.responseStart > 0 &&
-    navigationEntry?.responseStart < globalThis.performance?.now()
+    navigationEntry &&
+    navigationEntry.responseStart > 0 &&
+    // Note: if `navigationEnrtry` exists, then we don't need to
+    // feature-detect `performance.now()`.
+    navigationEntry.responseStart < performance.now()
   ) {
     return navigationEntry;
   }

@@ -84,7 +84,12 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
     }
   }
 
-  return {...metric, attribution};
+  // Use `Object.assign()` to ensure the original metric object is returned.
+  const metricWithAttribution: LCPMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**

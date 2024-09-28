@@ -73,7 +73,12 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
     };
   }
 
-  return {...metric, attribution};
+  // Use `Object.assign()` to ensure the original metric object is returned.
+  const metricWithAttribution: TTFBMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**

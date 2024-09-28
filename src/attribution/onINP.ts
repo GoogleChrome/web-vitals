@@ -219,7 +219,7 @@ const getIntersectingLoAFs = (
   start: DOMHighResTimeStamp,
   end: DOMHighResTimeStamp,
 ) => {
-  const intersectingLoAFs = [];
+  const intersectingLoAFs: PerformanceLongAnimationFrameTiming[] = [];
 
   for (const loaf of pendingLoAFs) {
     // If the LoAF ends before the given start time, ignore it.
@@ -281,7 +281,12 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     loadState: getLoadState(firstEntry.startTime),
   };
 
-  return {...metric, attribution};
+  // Use `Object.assign()` to ensure the original metric object is returned.
+  const metricWithAttribution: INPMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**
