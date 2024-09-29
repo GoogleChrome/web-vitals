@@ -262,6 +262,8 @@ In addition to using the `id` field to group multiple deltas for the same metric
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
 
+The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method, which is widely available across browsers, and supports sending data as the page is being unloaded.
+
 ```js
 import {onCLS, onINP, onLCP} from 'web-vitals';
 
