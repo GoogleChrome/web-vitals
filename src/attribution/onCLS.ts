@@ -29,7 +29,7 @@ const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
 };
 
 const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
-  return sources.find((s) => s?.node?.nodeType === 1) || sources[0];
+  return sources.find((s) => s.node?.nodeType === 1) || sources[0];
 };
 
 const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
