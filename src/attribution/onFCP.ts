@@ -51,7 +51,12 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
     }
   }
 
-  return {...metric, attribution};
+  // Use `Object.assign()` to ensure the original metric object is returned.
+  const metricWithAttribution: FCPMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**

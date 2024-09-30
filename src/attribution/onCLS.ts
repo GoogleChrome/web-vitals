@@ -25,11 +25,11 @@ import {
 } from '../types.js';
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
-  return entries.reduce((a, b) => (a?.value > b.value ? a : b));
+  return entries.reduce((a, b) => (a.value > b.value ? a : b));
 };
 
 const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
-  return sources.find((s) => s?.node?.nodeType === 1) || sources[0];
+  return sources.find((s) => s.node?.nodeType === 1) || sources[0];
 };
 
 const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
@@ -53,7 +53,12 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
     }
   }
 
-  return {...metric, attribution};
+  // Use `Object.assign()` to ensure the original metric object is returned.
+  const metricWithAttribution: CLSMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**

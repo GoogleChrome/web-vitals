@@ -66,8 +66,12 @@ export const onINP = (
   opts: ReportOpts = {},
 ) => {
   // Return if the browser doesn't support all APIs needed to measure INP.
-  const eventTimingProto = globalThis.PerformanceEventTiming?.prototype;
-  if (!(eventTimingProto && 'interactionId' in eventTimingProto)) {
+  if (
+    !(
+      globalThis.PerformanceEventTiming &&
+      'interactionId' in PerformanceEventTiming.prototype
+    )
+  ) {
     return;
   }
 
@@ -92,7 +96,7 @@ export const onINP = (
 
         const inp = estimateP98LongestInteraction();
 
-        if (inp?.latency !== metric.value) {
+        if (inp && inp.latency !== metric.value) {
           metric.value = inp.latency;
           metric.entries = inp.entries;
           report();

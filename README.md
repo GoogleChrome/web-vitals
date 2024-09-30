@@ -262,7 +262,7 @@ In addition to using the `id` field to group multiple deltas for the same metric
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
 
-The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/docs/Web/API/Fetch_API) API when not.
+The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method, which is widely available across browsers, and supports sending data as the page is being unloaded.
 
 ```js
 import {onCLS, onINP, onLCP} from 'web-vitals';
@@ -272,9 +272,9 @@ function sendToAnalytics(metric) {
   // Note: JSON.stringify will likely include more data than you need.
   const body = JSON.stringify(metric);
 
-  // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-  navigator?.sendBeacon('/analytics', body) ||
-    fetch('/analytics', {body, method: 'POST', keepalive: true});
+  // Use `navigator.sendBeacon()` to send the data, which supports
+  // sending while the page is unloading.
+  navigator.sendBeacon('/analytics', body);
 }
 
 onCLS(sendToAnalytics);
@@ -392,9 +392,9 @@ function flushQueue() {
     // Note: JSON.stringify will likely include more data than you need.
     const body = JSON.stringify([...queue]);
 
-    // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-    (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-      fetch('/analytics', {body, method: 'POST', keepalive: true});
+    // Use `navigator.sendBeacon()` to send the data, which supports
+    // sending while the page is unloading.
+    navigator.sendBeacon('/analytics', body);
 
     queue.clear();
   }
