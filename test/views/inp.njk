@@ -58,7 +58,7 @@
     const params = new URLSearchParams(location.search);
     for (const [key, value] of params) {
       const el = document.getElementById(`${key}-blocking-time`);
-      if (el && el.nodeName.toLowerCase() === 'input') {
+      if (el?.nodeName.toLowerCase() === 'input') {
         el.value = value;
       }
     }

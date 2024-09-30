@@ -22,7 +22,7 @@ import {runOnce} from './runOnce.js';
  * if the browser's visibility state is (or becomes) hidden.
  */
 export const whenIdle = (cb: () => void): number => {
-  const rIC = self.requestIdleCallback || self.setTimeout;
+  const rIC = globalThis.requestIdleCallback || setTimeout;
 
   let handle = -1;
   cb = runOnce(cb);

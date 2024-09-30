@@ -63,20 +63,17 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
  */
 export const onINP = (
   onReport: (metric: INPMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   // Return if the browser doesn't support all APIs needed to measure INP.
   if (
     !(
-      'PerformanceEventTiming' in self &&
+      globalThis.PerformanceEventTiming &&
       'interactionId' in PerformanceEventTiming.prototype
     )
   ) {
     return;
   }
-
-  // Set defaults
-  opts = opts || {};
 
   whenActivated(() => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.
@@ -93,7 +90,9 @@ export const onINP = (
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
       whenIdle(() => {
-        entries.forEach(processInteractionEntry);
+        for (const entry of entries) {
+          processInteractionEntry(entry);
+        }
 
         const inp = estimateP98LongestInteraction();
 

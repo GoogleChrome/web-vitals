@@ -35,7 +35,7 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
 
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
-    const fcpEntry = metric.entries[metric.entries.length - 1];
+    const fcpEntry = metric.entries.at(-1);
 
     if (navigationEntry) {
       const activationStart = navigationEntry.activationStart || 0;
@@ -51,7 +51,7 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
     }
   }
 
-  // Use Object.assign to set property to keep tsc happy.
+  // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: FCPMetricWithAttribution = Object.assign(
     metric,
     {attribution},
@@ -67,7 +67,7 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
  */
 export const onFCP = (
   onReport: (metric: FCPMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   unattributedOnFCP((metric: FCPMetric) => {
     const metricWithAttribution = attributeFCP(metric);

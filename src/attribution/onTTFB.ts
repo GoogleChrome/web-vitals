@@ -73,7 +73,7 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
     };
   }
 
-  // Use Object.assign to set property to keep tsc happy.
+  // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: TTFBMetricWithAttribution = Object.assign(
     metric,
     {attribution},
@@ -98,7 +98,7 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
  */
 export const onTTFB = (
   onReport: (metric: TTFBMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   unattributedOnTTFB((metric: TTFBMetric) => {
     const metricWithAttribution = attributeTTFB(metric);

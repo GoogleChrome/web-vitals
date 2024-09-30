@@ -168,11 +168,11 @@ const cleanupEntries = () => {
   // Delete any stored interaction target elements if they're not part of one
   // of the 10 longest interactions.
   if (interactionTargetMap.size > 10) {
-    interactionTargetMap.forEach((_, key) => {
+    for (const [key] of interactionTargetMap) {
       if (!longestInteractionMap.has(key)) {
         interactionTargetMap.delete(key);
       }
-    });
+    }
   }
 
   // Keep all render times that are part of a pending INP candidate or
@@ -190,13 +190,11 @@ const cleanupEntries = () => {
   // 1) intersect with entries in the newly cleaned up `pendingEntriesGroups`
   // 2) occur after the most recently-processed event entry (for up to MAX_PREVIOUS_FRAMES)
   const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
-  for (let i = 0; i < pendingEntriesGroups.length; i++) {
-    const group = pendingEntriesGroups[i];
-    getIntersectingLoAFs(group.startTime, group.processingEnd).forEach(
-      (loaf) => {
-        loafsToKeep.add(loaf);
-      },
-    );
+  for (const group of pendingEntriesGroups) {
+    const loafs = getIntersectingLoAFs(group.startTime, group.processingEnd);
+    for (const loaf of loafs) {
+      loafsToKeep.add(loaf);
+    }
   }
   const prevFrameIndexCutoff = pendingLoAFs.length - 1 - MAX_PREVIOUS_FRAMES;
   // Filter `pendingLoAFs` to preserve LoAF order.
@@ -221,9 +219,9 @@ const getIntersectingLoAFs = (
   start: DOMHighResTimeStamp,
   end: DOMHighResTimeStamp,
 ) => {
-  const intersectingLoAFs = [];
+  const intersectingLoAFs: PerformanceLongAnimationFrameTiming[] = [];
 
-  for (let i = 0, loaf; (loaf = pendingLoAFs[i]); i++) {
+  for (const loaf of pendingLoAFs) {
     // If the LoAF ends before the given start time, ignore it.
     if (loaf.startTime + loaf.duration < start) continue;
 
@@ -283,7 +281,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     loadState: getLoadState(firstEntry.startTime),
   };
 
-  // Use Object.assign to set property to keep tsc happy.
+  // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: INPMetricWithAttribution = Object.assign(
     metric,
     {attribution},
@@ -320,7 +318,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
  */
 export const onINP = (
   onReport: (metric: INPMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   if (!loafObserver) {
     loafObserver = observe('long-animation-frame', handleLoAFEntries);

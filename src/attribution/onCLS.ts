@@ -25,11 +25,11 @@ import {
 } from '../types.js';
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
-  return entries.reduce((a, b) => (a && a.value > b.value ? a : b));
+  return entries.reduce((a, b) => (a.value > b.value ? a : b));
 };
 
 const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
-  return sources.find((s) => s.node && s.node.nodeType === 1) || sources[0];
+  return sources.find((s) => s.node?.nodeType === 1) || sources[0];
 };
 
 const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
@@ -38,7 +38,7 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
 
   if (metric.entries.length) {
     const largestEntry = getLargestLayoutShiftEntry(metric.entries);
-    if (largestEntry && largestEntry.sources && largestEntry.sources.length) {
+    if (largestEntry?.sources?.length) {
       const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
       if (largestSource) {
         attribution = {
@@ -53,7 +53,7 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
     }
   }
 
-  // Use Object.assign to set property to keep tsc happy.
+  // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: CLSMetricWithAttribution = Object.assign(
     metric,
     {attribution},
@@ -84,7 +84,7 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
  */
 export const onCLS = (
   onReport: (metric: CLSMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   unattributedOnCLS((metric: CLSMetric) => {
     const metricWithAttribution = attributeCLS(metric);

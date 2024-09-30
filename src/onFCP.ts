@@ -35,18 +35,15 @@ export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
  */
 export const onFCP = (
   onReport: (metric: FCPMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
-
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FCP');
     let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: FCPMetric['entries']) => {
-      entries.forEach((entry) => {
+      for (const entry of entries) {
         if (entry.name === 'first-contentful-paint') {
           po!.disconnect();
 
@@ -61,7 +58,7 @@ export const onFCP = (
             report(true);
           }
         }
-      });
+      }
     };
 
     const po = observe('paint', handleEntries);

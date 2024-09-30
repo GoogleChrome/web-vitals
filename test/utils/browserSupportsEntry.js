@@ -37,10 +37,6 @@ export function browserSupportsEntry(type) {
       return false;
     }
 
-    return (
-      self.PerformanceObserver &&
-      self.PerformanceObserver.supportedEntryTypes &&
-      self.PerformanceObserver.supportedEntryTypes.includes(type)
-    );
+    return self.PerformanceObserver?.supportedEntryTypes?.includes(type);
   }, type);
 }

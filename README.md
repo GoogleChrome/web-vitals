@@ -262,7 +262,7 @@ In addition to using the `id` field to group multiple deltas for the same metric
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
 
-The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/docs/Web/API/Fetch_API) API when not.
+The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method, which is widely available across browsers, and supports sending data as the page is being unloaded.
 
 ```js
 import {onCLS, onINP, onLCP} from 'web-vitals';
@@ -272,9 +272,9 @@ function sendToAnalytics(metric) {
   // Note: JSON.stringify will likely include more data than you need.
   const body = JSON.stringify(metric);
 
-  // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-  (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-    fetch('/analytics', {body, method: 'POST', keepalive: true});
+  // Use `navigator.sendBeacon()` to send the data, which supports
+  // sending while the page is unloading.
+  navigator.sendBeacon('/analytics', body);
 }
 
 onCLS(sendToAnalytics);
@@ -392,9 +392,9 @@ function flushQueue() {
     // Note: JSON.stringify will likely include more data than you need.
     const body = JSON.stringify([...queue]);
 
-    // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-    (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-      fetch('/analytics', {body, method: 'POST', keepalive: true});
+    // Use `navigator.sendBeacon()` to send the data, which supports
+    // sending while the page is unloading.
+    navigator.sendBeacon('/analytics', body);
 
     queue.clear();
   }
@@ -1024,7 +1024,9 @@ export interface TTFBAttribution {
 
 ## Browser Support
 
-The `web-vitals` code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9. However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
+The `web-vitals` code is tested in Chrome, Firefox, and Safari. In addition, all JavaScript features used in the code are part of ([Baseline Widely Available](https://web.dev/baseline)), and thus should run without error in all versions of these browsers released within the last 30 months.
+
+However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet), which means in some browsers those metrics will not be reported.
 
 Browser support for each function is as follows:
 
