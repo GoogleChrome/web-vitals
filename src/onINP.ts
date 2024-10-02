@@ -26,7 +26,7 @@ import {
 import {observe} from './lib/observe.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {whenIdle} from './lib/whenIdle.js';
+import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
 import {INPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
@@ -88,7 +88,7 @@ export const onINP = (
       // have been dispatched. Note: there is currently an experiment
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
-      whenIdle(() => {
+      whenIdleOrHidden(() => {
         for (const entry of entries) {
           processInteractionEntry(entry);
         }

@@ -22,7 +22,7 @@ import {
   longestInteractionMap,
 } from '../lib/interactions.js';
 import {observe} from '../lib/observe.js';
-import {whenIdle} from '../lib/whenIdle.js';
+import {whenIdleOrHidden} from '../lib/whenIdleOrHidden.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
 import {
   INPAttribution,
@@ -79,7 +79,7 @@ export const interactionTargetMap: Map<number, Node> = new Map();
 // A reference to the idle task used to clean up entries from the above
 // variables. If the value is -1 it means no task is queue, and if it's
 // greater than -1 the value corresponds to the idle callback handle.
-let idleHandle: number = -1;
+let cleanupPending = false;
 
 /**
  * Adds new LoAF entries to the `pendingLoAFs` list.
@@ -159,8 +159,9 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
 
 const queueCleanup = () => {
   // Queue cleanup of entries that are not part of any INP candidates.
-  if (idleHandle < 0) {
-    idleHandle = whenIdle(cleanupEntries);
+  if (!cleanupPending) {
+    whenIdleOrHidden(cleanupEntries);
+    cleanupPending = true;
   }
 };
 
@@ -206,8 +207,7 @@ const cleanupEntries = () => {
     return loafsToKeep.has(loaf);
   });
 
-  // Reset the idle callback handle so it can be queued again.
-  idleHandle = -1;
+  cleanupPending = false;
 };
 
 entryPreProcessingCallbacks.push(

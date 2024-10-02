@@ -23,7 +23,7 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {whenIdle} from './lib/whenIdle.js';
+import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 import {LCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for LCP. See https://web.dev/articles/lcp#what_is_a_good_lcp_score */
@@ -84,13 +84,19 @@ export const onLCP = (
         opts!.reportAllChanges,
       );
 
+      // Ensure this logic only runs once, and wrap it in an idle callback
+      // so the callback is run in a separate task to avoid extending the
+      // keyboard/click handler to reduce INP impact.
+      // https://github.com/GoogleChrome/web-vitals/issues/383
       const stopListening = runOnce(() => {
-        if (!reportedMetricIDs[metric.id]) {
-          handleEntries(po!.takeRecords() as LCPMetric['entries']);
-          po!.disconnect();
-          reportedMetricIDs[metric.id] = true;
-          report(true);
-        }
+        whenIdleOrHidden(() => {
+          if (!reportedMetricIDs[metric.id]) {
+            handleEntries(po!.takeRecords() as LCPMetric['entries']);
+            po!.disconnect();
+            reportedMetricIDs[metric.id] = true;
+            report(true);
+          }
+        });
       });
 
       // Stop listening after input or visibilitychange.
@@ -98,10 +104,7 @@ export const onLCP = (
       // unreliable since it can be programmatically generated.
       // See: https://github.com/GoogleChrome/web-vitals/issues/75
       for (const type of ['keydown', 'click', 'visibilitychange']) {
-        // Wrap in a setTimeout so the callback is run in a separate task
-        // to avoid extending the keyboard/click handler to reduce INP impact
-        // https://github.com/GoogleChrome/web-vitals/issues/383
-        addEventListener(type, () => whenIdle(stopListening), {
+        addEventListener(type, () => stopListening(), {
           capture: true,
           once: true,
         });
