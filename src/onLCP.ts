@@ -88,16 +88,17 @@ export const onLCP = (
       // so the callback is run in a separate task to avoid extending the
       // keyboard/click handler to reduce INP impact.
       // https://github.com/GoogleChrome/web-vitals/issues/383
-      const stopListening = runOnce(() => {
-        whenIdleOrHidden(() => {
-          if (!reportedMetricIDs[metric.id]) {
-            handleEntries(po!.takeRecords() as LCPMetric['entries']);
-            po!.disconnect();
-            reportedMetricIDs[metric.id] = true;
-            report(true);
-          }
-        });
-      });
+      const stopListening = () =>
+        whenIdleOrHidden(
+          runOnce(() => {
+            if (!reportedMetricIDs[metric.id]) {
+              handleEntries(po!.takeRecords() as LCPMetric['entries']);
+              po!.disconnect();
+              reportedMetricIDs[metric.id] = true;
+              report(true);
+            }
+          }),
+        );
 
       // Stop listening after input or visibilitychange.
       // Note: while scrolling is an input that stops LCP observation, it's
