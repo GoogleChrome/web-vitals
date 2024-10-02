@@ -21,7 +21,6 @@ import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {whenIdle} from './lib/whenIdle.js';
@@ -94,17 +93,19 @@ export const onLCP = (
         }
       });
 
-      // Stop listening after input. Note: while scrolling is an input that
-      // stops LCP observation, it's unreliable since it can be programmatically
-      // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
-      for (const type of ['keydown', 'click']) {
+      // Stop listening after input or visibilitychange.
+      // Note: while scrolling is an input that stops LCP observation, it's
+      // unreliable since it can be programmatically generated.
+      // See: https://github.com/GoogleChrome/web-vitals/issues/75
+      for (const type of ['keydown', 'click', 'visibilitychange']) {
         // Wrap in a setTimeout so the callback is run in a separate task
         // to avoid extending the keyboard/click handler to reduce INP impact
         // https://github.com/GoogleChrome/web-vitals/issues/383
-        addEventListener(type, () => whenIdle(stopListening), true);
+        addEventListener(type, () => whenIdle(stopListening), {
+          capture: true,
+          once: true,
+        });
       }
-
-      onHidden(stopListening);
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.

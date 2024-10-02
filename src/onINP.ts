@@ -24,7 +24,6 @@ import {
   resetInteractions,
 } from './lib/interactions.js';
 import {observe} from './lib/observe.js';
-import {onHidden} from './lib/onHidden.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {whenIdle} from './lib/whenIdle.js';
@@ -126,9 +125,11 @@ export const onINP = (
       // where the first interaction is less than the `durationThreshold`.
       po.observe({type: 'first-input', buffered: true});
 
-      onHidden(() => {
-        handleEntries(po.takeRecords() as INPMetric['entries']);
-        report(true);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          handleEntries(po.takeRecords() as INPMetric['entries']);
+          report(true);
+        }
       });
 
       // Only report after a bfcache restore if the `PerformanceObserver`
