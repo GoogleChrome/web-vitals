@@ -32,7 +32,7 @@ export const whenIdle = (cb: () => void): number => {
     cb();
   } else {
     handle = rIC(cb);
-    onHidden(cb);
+    onHidden(cb, true);
   }
   return handle;
 };
