@@ -24,10 +24,9 @@ import {
   resetInteractions,
 } from './lib/interactions.js';
 import {observe} from './lib/observe.js';
-import {onHidden} from './lib/onHidden.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {whenIdle} from './lib/whenIdle.js';
+import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
 import {INPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
@@ -89,7 +88,7 @@ export const onINP = (
       // have been dispatched. Note: there is currently an experiment
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
-      whenIdle(() => {
+      whenIdleOrHidden(() => {
         for (const entry of entries) {
           processInteractionEntry(entry);
         }
@@ -126,9 +125,11 @@ export const onINP = (
       // where the first interaction is less than the `durationThreshold`.
       po.observe({type: 'first-input', buffered: true});
 
-      onHidden(() => {
-        handleEntries(po.takeRecords() as INPMetric['entries']);
-        report(true);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          handleEntries(po.takeRecords() as INPMetric['entries']);
+          report(true);
+        }
       });
 
       // Only report after a bfcache restore if the `PerformanceObserver`

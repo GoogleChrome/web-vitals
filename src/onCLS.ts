@@ -19,7 +19,6 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
 import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
@@ -107,9 +106,11 @@ export const onCLS = (
           opts!.reportAllChanges,
         );
 
-        onHidden(() => {
-          handleEntries(po.takeRecords() as CLSMetric['entries']);
-          report(true);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') {
+            handleEntries(po.takeRecords() as CLSMetric['entries']);
+            report(true);
+          }
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`
