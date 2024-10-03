@@ -76,9 +76,7 @@ const entryToEntriesGroupMap: WeakMap<
 // A mapping of interactionIds to the target Node.
 export const interactionTargetMap: Map<number, Node> = new Map();
 
-// A reference to the idle task used to clean up entries from the above
-// variables. If the value is -1 it means no task is queue, and if it's
-// greater than -1 the value corresponds to the idle callback handle.
+// A boolean flag indicating whether or not a cleanup task has been queued.
 let cleanupPending = false;
 
 /**
