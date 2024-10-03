@@ -1,6 +1,12 @@
 # Changelog
 
-See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
+### v5.0.0-rc.0 (2024-10-03)
+
+- **[BREAKING]** Remove the deprecated `onFID()` function ([#519](https://github.com/GoogleChrome/web-vitals/pull/519))
+- **[BREAKING]** Change browser support policy to Baseline Widely Available ([#525](https://github.com/GoogleChrome/web-vitals/pull/525))
+- **[BREAKING]** Sort the classes that appear in attribution selectors to reduce cardinality ([#518](https://github.com/GoogleChrome/web-vitals/pull/518))
+- Cap INP breakdowns to INP duration ([#528](https://github.com/GoogleChrome/web-vitals/pull/528))
+- Cap LCP load duration to LCP time ([#527](https://github.com/GoogleChrome/web-vitals/pull/527))
 
 ### v4.2.3 (2024-08-06)
 
@@ -32,6 +38,9 @@ See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete
 - Add the `ReportCallback` type back but deprecate it ([#483](https://github.com/GoogleChrome/web-vitals/pull/483))
 
 ### v4.0.0 (2024-05-13)
+
+[!NOTE]
+See the [upgrading to v4](/docs/upgrading-to-v4.md) guide for a complete list of all API changes in version 4.
 
 - **[BREAKING]** Update types to support more generic usage ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
 - **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
