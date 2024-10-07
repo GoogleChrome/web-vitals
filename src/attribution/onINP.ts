@@ -220,7 +220,7 @@ const getIntersectingLoAFs = (
   const intersectingLoAFs: PerformanceLongAnimationFrameTiming[] = [];
 
   // pendingLoAFs must be in order of startTime.
-  if (DEBUG) {
+  if (DEBUG_WEB_VITALS) {
     for (let i = 1; i < pendingLoAFs.length; i++) {
       if (pendingLoAFs[i].startTime < pendingLoAFs[i - 1].startTime) {
         throw new Error('pendingLoAFs not sorted by timestamps');

@@ -45,7 +45,7 @@ const configurePlugins = ({module}) => {
       mangle: true,
       compress: {
         global_defs: {
-          DEBUG: Boolean(process.env.DEBUG),
+          DEBUG_WEB_VITALS: Boolean(process.env.DEBUG),
         },
       },
     }),

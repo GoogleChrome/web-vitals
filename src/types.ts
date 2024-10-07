@@ -94,6 +94,6 @@ declare global {
     duration: DOMHighResTimeStamp;
   }
 
-  // Augment the global scope with DEBUG variable injected by rollup.
-  var DEBUG: boolean | undefined; // eslint-disable-line no-var
+  // Augment the global scope with DEBUG_WEB_VITALS variable injected by terser.
+  var DEBUG_WEB_VITALS: boolean | undefined; // eslint-disable-line no-var
 }
