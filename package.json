@@ -75,6 +75,7 @@
     "build:ts": "tsc -b",
     "build:js": "rollup -c",
     "clean": "rm -rf dist tsconfig.tsbuildinfo",
+    "debug:build": "run-s clean build:ts 'build:js -- --environment DEBUG'",
     "dev": "run-p watch test:server",
     "format": "prettier \"**/*.{cjs,css,html,js,json,md,ts,yml,yaml}\" --write --ignore-path .gitignore",
     "format:check": "prettier \"**/*.{cjs,css,html,js,json,html,md,ts,yml,yaml}\" --check --ignore-path .gitignore",

@@ -43,7 +43,11 @@ const configurePlugins = ({module}) => {
     terser({
       module,
       mangle: true,
-      compress: true,
+      compress: {
+        global_defs: {
+          DEBUG: Boolean(process.env.DEBUG),
+        },
+      },
     }),
   ];
 };

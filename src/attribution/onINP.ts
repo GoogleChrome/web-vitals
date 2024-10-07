@@ -219,6 +219,15 @@ const getIntersectingLoAFs = (
 ) => {
   const intersectingLoAFs: PerformanceLongAnimationFrameTiming[] = [];
 
+  // pendingLoAFs must be in order of startTime.
+  if (DEBUG) {
+    for (let i = 1; i < pendingLoAFs.length; i++) {
+      if (pendingLoAFs[i].startTime < pendingLoAFs[i - 1].startTime) {
+        throw new Error('pendingLoAFs not sorted by timestamps');
+      }
+    }
+  }
+
   for (const loaf of pendingLoAFs) {
     // If the LoAF ends before the given start time, ignore it.
     if (loaf.startTime + loaf.duration < start) continue;

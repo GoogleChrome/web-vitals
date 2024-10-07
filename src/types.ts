@@ -93,4 +93,7 @@ declare global {
     renderStart: DOMHighResTimeStamp;
     duration: DOMHighResTimeStamp;
   }
+
+  // Augment the global scope with DEBUG variable injected by rollup.
+  var DEBUG: boolean | undefined; // eslint-disable-line no-var
 }
