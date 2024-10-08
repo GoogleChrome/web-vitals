@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {runOnce} from './runOnce.js';
+
 /**
  * Runs the passed callback during the next idle period, or immediately
  * if the browser's visibility state is (or becomes) hidden.
@@ -26,6 +28,7 @@ export const whenIdleOrHidden = (cb: () => void) => {
   if (document.visibilityState === 'hidden') {
     cb();
   } else {
+    cb = runOnce(cb);
     rIC(cb);
     document.addEventListener('visibilitychange', cb, {once: true});
   }
