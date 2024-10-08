@@ -235,15 +235,23 @@ const getIntersectingLoAFs = (
 
 const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
-  const nextPaintTime = firstEntry.startTime + firstEntry.duration;
-
   const group = entryToEntriesGroupMap.get(firstEntry)!;
+
   const processingStart = firstEntry.processingStart;
-  // `processingEnd` can extend beyond the event duration in some cases
-  // (e.g. sync modals like `alert()`, where duration is when the modal is
-  // shown, but since it's sync, `processingEnd` is when it's dismissed).
-  // So for the purposes of INP attribution, `processingEnd` is capped at
-  // `nextPaintTime`: https://github.com/GoogleChrome/web-vitals/issues/492
+
+  // Due to the fact that durations can be rounded down to the nearest 8ms,
+  // we have to clamp `nextPaintTime` so it doesn't appear to occur before
+  // processing starts. Note: we can't use `processingEnd` since processing
+  // can extend beyond the event duration in some cases (see next comment).
+  const nextPaintTime = Math.max(
+    firstEntry.startTime + firstEntry.duration,
+    processingStart,
+  );
+
+  // For the purposes of attribution, clamp `processingEnd` to `nextPaintTime`,
+  // so processing is never reported as taking longer than INP (which can
+  // happen via the web APIs in the case of sync modals, e.g. `alert()`).
+  // See: https://github.com/GoogleChrome/web-vitals/issues/492
   const processingEnd = Math.min(group.processingEnd, nextPaintTime);
 
   // Sort the entries in processing time order.
