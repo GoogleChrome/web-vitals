@@ -864,13 +864,9 @@ interface INPAttribution {
   /**
    * The best-guess timestamp of the next paint after the interaction.
    * In general, this timestamp is the same as the `startTime + duration` of
-   * the event timing entry. However, since `duration` values are rounded to
-   * the nearest 8ms, it can sometimes appear that the paint occurred before
-   * processing ended (which cannot happen). This value clamps the paint time
-   * so it's always after `processingEnd` from the Event Timing API and
-   * `renderStart` from the Long Animation Frame API (where available).
-   * It also averages the duration values for all entries in the same
-   * animation frame, which should be closer to the "real" value.
+   * the event timing entry. However, since duration values are rounded to the
+   * nearest 8ms (and can be rounded down), this value is clamped to always be
+   * reported after the processing times.
    */
   nextPaintTime: DOMHighResTimeStamp;
   /**
