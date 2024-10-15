@@ -53,8 +53,9 @@ export interface INPAttribution {
   /**
    * The best-guess timestamp of the next paint after the interaction.
    * In general, this timestamp is the same as the `startTime + duration` of
-   * the event timing entry. However, due to this being rounded to 8ms it
-   * can be slightly after that.
+   * the event timing entry. However, since duration values are rounded to the
+   * nearest 8ms (and can be rounded down), this value is clamped to always be
+   * reported after the processing times.
    */
   nextPaintTime: DOMHighResTimeStamp;
   /**
