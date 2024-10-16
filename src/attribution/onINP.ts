@@ -233,6 +233,8 @@ const getIntersectingLoAFs = (
   return intersectingLoAFs;
 };
 
+// Export to allow it to be used from dist if needed
+// See https://github.com/GoogleChrome/web-vitals/pull/549
 export const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
   const group = entryToEntriesGroupMap.get(firstEntry)!;
