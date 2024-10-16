@@ -29,8 +29,6 @@ import {LCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 /** Thresholds for LCP. See https://web.dev/articles/lcp#what_is_a_good_lcp_score */
 export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
 
-const reportedMetricIDs: Record<string, boolean> = {};
-
 /**
  * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and
  * calls the `callback` function once the value is ready (along with the
@@ -84,17 +82,12 @@ export const onLCP = (
         opts!.reportAllChanges,
       );
 
-      // Ensure this logic only runs once, and wrap it in an idle callback
-      // so the callback is run in a separate task to avoid extending the
-      // keyboard/click handler to reduce INP impact.
-      // https://github.com/GoogleChrome/web-vitals/issues/383
+      // Ensure this logic only runs once, since it can be triggered from
+      // any of three different event listeners below.
       const stopListening = runOnce(() => {
-        if (!reportedMetricIDs[metric.id]) {
-          handleEntries(po!.takeRecords() as LCPMetric['entries']);
-          po!.disconnect();
-          reportedMetricIDs[metric.id] = true;
-          report(true);
-        }
+        handleEntries(po!.takeRecords() as LCPMetric['entries']);
+        po!.disconnect();
+        report(true);
       });
 
       // Stop listening after input or visibilitychange.
@@ -102,6 +95,9 @@ export const onLCP = (
       // unreliable since it can be programmatically generated.
       // See: https://github.com/GoogleChrome/web-vitals/issues/75
       for (const type of ['keydown', 'click', 'visibilitychange']) {
+        // Wrap the listener in an idle callback so it's run in a separate
+        // task to reduce potential INP impact.
+        // https://github.com/GoogleChrome/web-vitals/issues/383
         addEventListener(type, () => whenIdleOrHidden(stopListening), {
           capture: true,
           once: true,
@@ -121,7 +117,6 @@ export const onLCP = (
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;
-          reportedMetricIDs[metric.id] = true;
           report(true);
         });
       });
