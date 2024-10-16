@@ -233,7 +233,7 @@ const getIntersectingLoAFs = (
   return intersectingLoAFs;
 };
 
-const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
+export const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
   const group = entryToEntriesGroupMap.get(firstEntry)!;
 
