@@ -15,6 +15,7 @@
  */
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
+import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import {
@@ -25,6 +26,7 @@ import {
 } from '../types.js';
 
 const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
+  const hardNavId = getNavigationEntry()?.navigationId || '1';
   // Use a default object if no other attribution has been set.
   let attribution: LCPAttribution = {
     timeToFirstByte: 0,
@@ -34,9 +36,29 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
   };
 
   if (metric.entries.length) {
-    const navigationEntry = getNavigationEntry();
+    let navigationEntry;
+    let activationStart = 0;
+    let responseStart = 0;
+    let softNavStart = 0;
+
+    if (!metric.navigationId || metric.navigationId === hardNavId) {
+      navigationEntry = getNavigationEntry();
+      activationStart =
+        navigationEntry && navigationEntry.activationStart
+          ? navigationEntry.activationStart
+          : 0;
+      responseStart =
+        navigationEntry && navigationEntry.responseStart
+          ? navigationEntry.responseStart
+          : 0;
+    } else {
+      navigationEntry = getSoftNavigationEntry(metric.navigationId);
+      // Set activationStart to the SoftNav start time
+      softNavStart = navigationEntry ? navigationEntry.startTime : 0;
+      activationStart = softNavStart;
+    }
+
     if (navigationEntry) {
-      const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
       const lcpResourceEntry =
         lcpEntry.url &&
@@ -44,7 +66,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
 
-      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+      const ttfb = Math.max(0, responseStart - activationStart);
 
       const lcpRequestStart = Math.max(
         ttfb,
@@ -55,12 +77,14 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
           : 0,
       );
       const lcpResponseEnd = Math.max(
-        lcpRequestStart,
+        lcpRequestStart - softNavStart,
         lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
+        0,
       );
       const lcpRenderTime = Math.max(
-        lcpResponseEnd,
-        lcpEntry.startTime - activationStart,
+        lcpResponseEnd - softNavStart,
+        lcpEntry ? lcpEntry.startTime - activationStart : 0,
+        0,
       );
 
       attribution = {

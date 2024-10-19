@@ -17,6 +17,7 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
+import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onHidden} from './lib/onHidden.js';
@@ -24,11 +25,12 @@ import {
   firstInputPolyfill,
   resetFirstInputPolyfill,
 } from './lib/polyfills/firstInputPolyfill.js';
-import {runOnce} from './lib/runOnce.js';
+import {softNavs} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {
   FIDMetric,
   FirstInputPolyfillCallback,
+  Metric,
   MetricRatingThresholds,
   ReportOpts,
 } from './types.js';
@@ -51,26 +53,52 @@ export const onFID = (
 ) => {
   // Set defaults
   opts = opts || {};
+  const softNavsEnabled = softNavs(opts);
+  const hardNavId = getNavigationEntry()?.navigationId || '1';
 
   whenActivated(() => {
-    const visibilityWatcher = getVisibilityWatcher();
+    let visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FID');
     let report: ReturnType<typeof bindReporter>;
 
-    const handleEntry = (entry: PerformanceEventTiming) => {
-      // Only report if the page wasn't hidden prior to the first input.
-      if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-        metric.value = entry.processingStart - entry.startTime;
-        metric.entries.push(entry);
-        report(true);
+    const initNewFIDMetric = (
+      navigation?: Metric['navigationType'],
+      navigationId?: string,
+    ) => {
+      if (navigation === 'soft-navigation') {
+        visibilityWatcher = getVisibilityWatcher(true);
       }
+      metric = initMetric('FID', 0, navigation, navigationId);
+      report = bindReporter(
+        onReport,
+        metric,
+        FIDThresholds,
+        opts!.reportAllChanges,
+      );
     };
 
     const handleEntries = (entries: FIDMetric['entries']) => {
-      entries.forEach(handleEntry);
+      entries.forEach((entry) => {
+        if (!softNavsEnabled) {
+          po!.disconnect();
+        } else if (
+          entry.navigationId &&
+          entry.navigationId !== metric.navigationId
+        ) {
+          // If the entry is for a new navigationId than previous, then we have
+          // entered a new soft nav, so reinitialize the metric.
+          initNewFIDMetric('soft-navigation', entry.navigationId);
+        }
+        // Only report if the page wasn't hidden prior to the first input.
+        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+          metric.value = entry.processingStart - entry.startTime;
+          metric.entries.push(entry);
+          metric.navigationId = entry.navigationId || hardNavId;
+          report(true);
+        }
+      });
     };
-
-    const po = observe('first-input', handleEntries);
+    const po = observe('first-input', handleEntries, opts);
 
     report = bindReporter(
       onReport,
@@ -80,15 +108,18 @@ export const onFID = (
     );
 
     if (po) {
-      onHidden(
-        runOnce(() => {
-          handleEntries(po.takeRecords() as FIDMetric['entries']);
-          po.disconnect();
-        }),
-      );
+      onHidden(() => {
+        handleEntries(po!.takeRecords() as FIDMetric['entries']);
+        if (!softNavsEnabled) po.disconnect();
+      });
 
       onBFCacheRestore(() => {
-        metric = initMetric('FID');
+        metric = initMetric(
+          'FID',
+          0,
+          'back-forward-cache',
+          metric.navigationId,
+        );
         report = bindReporter(
           onReport,
           metric,
@@ -98,7 +129,7 @@ export const onFID = (
 
         // Browsers don't re-emit FID on bfcache restore so fake it until you make it
         resetFirstInputPolyfill();
-        firstInputPolyfill(handleEntry as FirstInputPolyfillCallback);
+        firstInputPolyfill(handleEntries as FirstInputPolyfillCallback);
       });
     }
   });

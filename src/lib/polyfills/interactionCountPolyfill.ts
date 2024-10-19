@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import {getNavigationEntry} from '../getNavigationEntry.js';
 import {observe} from '../observe.js';
 
 declare global {
@@ -25,10 +26,23 @@ declare global {
 let interactionCountEstimate = 0;
 let minKnownInteractionId = Infinity;
 let maxKnownInteractionId = 0;
+let currentNavId = '';
+let softNavsEnabled = false;
 
 const updateEstimate = (entries: PerformanceEventTiming[]) => {
+  if (!currentNavId) currentNavId = getNavigationEntry()?.navigationId || '1';
   entries.forEach((e) => {
     if (e.interactionId) {
+      if (
+        softNavsEnabled &&
+        e.navigationId &&
+        e.navigationId !== currentNavId
+      ) {
+        currentNavId = e.navigationId;
+        interactionCountEstimate = 0;
+        minKnownInteractionId = Infinity;
+        maxKnownInteractionId = 0;
+      }
       minKnownInteractionId = Math.min(minKnownInteractionId, e.interactionId);
       maxKnownInteractionId = Math.max(maxKnownInteractionId, e.interactionId);
 
@@ -52,12 +66,15 @@ export const getInteractionCount = () => {
 /**
  * Feature detects native support or initializes the polyfill if needed.
  */
-export const initInteractionCountPolyfill = () => {
+export const initInteractionCountPolyfill = (softNavs?: boolean) => {
   if ('interactionCount' in performance || po) return;
+
+  softNavsEnabled = softNavs || false;
 
   po = observe('event', updateEstimate, {
     type: 'event',
     buffered: true,
     durationThreshold: 0,
+    includeSoftNavigationObservations: softNavsEnabled,
   } as PerformanceObserverInit);
 };
