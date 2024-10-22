@@ -8,6 +8,10 @@
 - Cap INP breakdowns to INP duration ([#528](https://github.com/GoogleChrome/web-vitals/pull/528))
 - Cap LCP load duration to LCP time ([#527](https://github.com/GoogleChrome/web-vitals/pull/527))
 
+### v4.2.4 (2024-10-22)
+
+- Fix memory leak in registering new event listeners on every keydown and click ([#554](https://github.com/GoogleChrome/web-vitals/pull/554))
+
 ### v4.2.3 (2024-08-06)
 
 - Fix missing LoAF entries in INP attribution ([#512](https://github.com/GoogleChrome/web-vitals/pull/512))
