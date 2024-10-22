@@ -15,7 +15,11 @@
  */
 
 export const getNavigationEntry = (): PerformanceNavigationTiming | void => {
-  const navigationEntry = performance.getEntriesByType('navigation')[0];
+  // JSDOM does not implement getEntriesByType: https://github.com/jsdom/jsdom/issues/3309
+  const navigationEntry =
+    self.performance &&
+    performance.getEntriesByType &&
+    performance.getEntriesByType('navigation')[0];
 
   // Check to ensure the `responseStart` property is present and valid.
   // In some cases a zero value is reported by the browser (for
