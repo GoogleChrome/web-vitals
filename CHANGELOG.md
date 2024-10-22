@@ -2,7 +2,7 @@
 
 See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
 
-### v4.2.4 (2024-10-10)
+### v4.2.4 (2024-10-22)
 
 - Fix memory leak in registering new event listeners on every keydown and click ([#554](https://github.com/GoogleChrome/web-vitals/pull/554))
 
