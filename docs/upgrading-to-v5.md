@@ -51,6 +51,10 @@ The library nows sorts the classes that appear in attribution selectors ([#518](
 
 While not a breaking change in the API, this may result in a short term difference in reports based on the selector during the change over from v4 to v5, but longer term should result in few selectors that are more easily grouped in reporting.
 
+## 🚀 New features
+
+Additional cappings have been added to LCP ([#527](https://github.com/GoogleChrome/web-vitals/pull/527)) and INP ([#528](https://github.com/GoogleChrome/web-vitals/pull/528)) breakdowns to handle edge cases.
+
 ## ⚠️ Deprecations
 
 There are no deprecations in v5.
