@@ -7,7 +7,7 @@ This document lists the full set of changes between version 4 and version 5 that
 There are three breaking changes in v5:
 
 1. [Removal of First Input Delay (FID) support and `onFID()`](#removal-of-first-input-delay-fid-support-and-onfid)
-2. [Change browser support policy to Baseline Widely Available](#change-in-the-browser-support-policy-to-baseline-widely-available)
+2. [Change in the browser support policy to Baseline Widely Available](#change-in-the-browser-support-policy-to-baseline-widely-available)
 3. [Sort the classes that appear in attribution selectors to reduce cardinality](#sort-the-classes-that-appear-in-attribution-selectors-to-reduce-cardinality)
 
 ### Removal of First Input Delay (FID) support and `onFID()`
