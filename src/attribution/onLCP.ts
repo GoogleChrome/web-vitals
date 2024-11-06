@@ -16,13 +16,19 @@
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
-import {onLCP as unattributedOnLCP} from '../onLCP.js';
+import {
+  onLCP as unattributedOnLCP,
+  entryPreProcessingCallbacks,
+} from '../onLCP.js';
 import {
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,
   ReportOpts,
 } from '../types.js';
+
+// A reference to the LCP Target node incase it is removed before reporting
+let lcpTargetNode: Node;
 
 const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
   // Use a default object if no other attribution has been set.
@@ -65,7 +71,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
       );
 
       attribution = {
-        element: getSelector(lcpEntry.element),
+        element: getSelector(lcpEntry.element || lcpTargetNode),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
         resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
@@ -91,6 +97,16 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
   );
   return metricWithAttribution;
 };
+
+// Get a reference to the LCP target element in case it's removed from the DOM
+// later.
+const saveLCPTarget = (lcpEntry: LargestContentfulPaint) => {
+  if (lcpEntry.element) {
+    lcpTargetNode = lcpEntry.element;
+  }
+};
+
+entryPreProcessingCallbacks.push(saveLCPTarget);
 
 /**
  * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and
