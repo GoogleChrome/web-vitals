@@ -715,6 +715,60 @@ describe('onINP()', async function () {
       const [inp1] = await getBeacons();
       assert(inp1.attribution.longAnimationFrameEntries.length > 0);
     });
+
+    it('includes target even when removed (reportAllChanges === false)', async function () {
+      if (!browserSupportsLoAF) this.skip();
+
+      await navigateTo('/test/inp?attribution=1&pointerdown=100', {
+        readyState: 'interactive',
+      });
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      await browser.execute(() => {
+        // Remove target element
+        document.querySelector('h1').remove();
+      });
+
+      await nextFrame();
+
+      await stubVisibilityChange('hidden');
+      await beaconCountIs(1);
+
+      const [inp] = await getBeacons();
+      // Note this should be the reduced selector without the full path
+      assert.equal(inp.attribution.interactionTarget, 'h1');
+    });
+
+    it('includes target (reportAllChanges === true)', async function () {
+      // We can't guarantee the orer or reporting removed targets with
+      // reportAllChanges so don't even try. Just test the target without
+      // removal to compare to previous test
+      if (!browserSupportsLoAF) this.skip();
+
+      await navigateTo(
+        '/test/inp?attribution=1&pointerdown=100&reportAllChanges=1',
+        {
+          readyState: 'interactive',
+        },
+      );
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      // Can't guarantee order so let's wait for beacon
+      await beaconCountIs(1);
+
+      await browser.execute(() => {
+        // Remove target element
+        document.querySelector('h1').remove();
+      });
+
+      const [inp] = await getBeacons();
+      // Note this should be the full selector with the full path
+      assert.equal(inp.attribution.interactionTarget, 'html>body>main>h1');
+    });
   });
 });
 

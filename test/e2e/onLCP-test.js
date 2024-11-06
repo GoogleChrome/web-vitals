@@ -683,7 +683,7 @@ describe('onLCP()', async function () {
       assert.equal(lcp2.attribution.lcpEntry, undefined);
     });
 
-    it('reports the target when removed (reportAllChanges === false)', async function () {
+    it('reports the target even when removed (reportAllChanges === false)', async function () {
       if (!browserSupportsLCP) this.skip();
 
       await navigateTo('/test/lcp?attribution=1');
@@ -700,10 +700,14 @@ describe('onLCP()', async function () {
 
       const [lcp] = await getBeacons();
       assertStandardReportsAreCorrect([lcp]);
+      // Note this should be the reduced selector without the full path
       assert.equal(lcp.attribution.element, 'img.bar.foo');
     });
 
-    it('reports the target when removed (reportAllChanges === true)', async function () {
+    it('reports the target (reportAllChanges === true)', async function () {
+      // We can't guarantee the orer or reporting removed targets with
+      // reportAllChanges so don't even try. Just test the targets without
+      // removal to compare to previous test
       if (!browserSupportsLCP) this.skip();
 
       await navigateTo('/test/lcp?attribution=1&reportAllChanges=1');
@@ -711,16 +715,13 @@ describe('onLCP()', async function () {
       // Wait until all images are loaded and fully rendered.
       await imagesPainted();
 
-      await browser.execute(() => {
-        document.querySelector('img').remove();
-      });
-
       // Load a new page to trigger the hidden state.
       await navigateTo('about:blank');
 
       await beaconCountIs(2);
       const [lcp1, lcp2] = await getBeacons();
       assertFullReportsAreCorrect([lcp1, lcp2]);
+      // Note these should be the full selectors with the full paths
       assert.equal(lcp1.attribution.element, 'html>body>main>h1');
       assert.equal(lcp2.attribution.element, 'html>body>main>p>img.bar.foo');
     });
