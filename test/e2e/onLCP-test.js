@@ -682,6 +682,48 @@ describe('onLCP()', async function () {
       assert.equal(lcp2.attribution.lcpResourceEntry, undefined);
       assert.equal(lcp2.attribution.lcpEntry, undefined);
     });
+
+    it('reports the target when removed (reportAllChanges === false)', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      await browser.execute(() => {
+        document.querySelector('img').remove();
+      });
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      const [lcp] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp]);
+      assert.equal(lcp.attribution.element, 'img.bar.foo');
+    });
+
+    it('reports the target when removed (reportAllChanges === true)', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1&reportAllChanges=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      await browser.execute(() => {
+        document.querySelector('img').remove();
+      });
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(2);
+      const [lcp1, lcp2] = await getBeacons();
+      assertFullReportsAreCorrect([lcp1, lcp2]);
+      assert.equal(lcp1.attribution.element, 'html>body>main>h1');
+      assert.equal(lcp2.attribution.element, 'html>body>main>p>img.bar.foo');
+    });
   });
 });
 
