@@ -28,7 +28,7 @@ import {
 } from '../types.js';
 
 // A reference to the LCP Target node incase it is removed before reporting
-let lcpTargetNode: Node;
+const lcpTargetMap: WeakMap<LargestContentfulPaint, Node> = new WeakMap();
 
 const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
   // Use a default object if no other attribution has been set.
@@ -71,7 +71,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
       );
 
       attribution = {
-        element: getSelector(lcpEntry.element || lcpTargetNode),
+        element: getSelector(lcpEntry.element || lcpTargetMap.get(lcpEntry)),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
         resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
@@ -101,8 +101,8 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
 // Get a reference to the LCP target element in case it's removed from the DOM
 // later.
 const saveLCPTarget = (lcpEntry: LargestContentfulPaint) => {
-  if (lcpEntry.element) {
-    lcpTargetNode = lcpEntry.element;
+  if (lcpEntry.element && !lcpTargetMap.get(lcpEntry)) {
+    lcpTargetMap.set(lcpEntry, lcpEntry.element);
   }
 };
 
