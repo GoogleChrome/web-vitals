@@ -742,7 +742,7 @@ describe('onINP()', async function () {
     });
 
     it('includes target (reportAllChanges === true)', async function () {
-      // We can't guarantee the orer or reporting removed targets with
+      // We can't guarantee the order or reporting removed targets with
       // reportAllChanges so don't even try. Just test the target without
       // removal to compare to previous test
       if (!browserSupportsLoAF) this.skip();

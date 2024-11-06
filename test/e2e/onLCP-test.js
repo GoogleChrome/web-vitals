@@ -705,7 +705,7 @@ describe('onLCP()', async function () {
     });
 
     it('reports the target (reportAllChanges === true)', async function () {
-      // We can't guarantee the orer or reporting removed targets with
+      // We can't guarantee the order or reporting removed targets with
       // reportAllChanges so don't even try. Just test the targets without
       // removal to compare to previous test
       if (!browserSupportsLCP) this.skip();

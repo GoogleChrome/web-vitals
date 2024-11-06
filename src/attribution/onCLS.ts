@@ -27,7 +27,7 @@ import {
   ReportOpts,
 } from '../types.js';
 
-// A reference to the LCP Target node incase it is removed before reporting
+// A reference to the layout shift target node incase it is removed before reporting
 const layoutShiftTargetMap: WeakMap<LayoutShift, Node | undefined> =
   new WeakMap();
 
@@ -50,7 +50,7 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
       if (largestSource) {
         attribution = {
           largestShiftTarget: getSelector(
-            largestSource.node || layoutShiftTargetMap.get(largestEntry),
+            largestSource.node ?? layoutShiftTargetMap.get(largestEntry),
           ),
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
