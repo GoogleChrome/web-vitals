@@ -53,9 +53,12 @@ declare global {
     durationThreshold?: number;
   }
 
-  // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
   interface PerformanceNavigationTiming {
+    // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
     activationStart?: number;
+    // Early Hints support
+    firstInterimResponseStart?: number;
+    finalResponseHeadersStart?: number;
   }
 
   // https://wicg.github.io/event-timing/#sec-performance-event-timing

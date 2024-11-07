@@ -368,6 +368,17 @@ describe('onTTFB()', async function () {
       assert.strictEqual(ttfb.attribution.requestDuration, 0);
       assert.strictEqual(ttfb.attribution.navigationEntry, undefined);
     });
+
+    it('reports the correct value for Early Hints', async function () {
+      await navigateTo(
+        '/test/ttfb?responseStart=10&earlyHintsDelay=50&attribution=1',
+      );
+
+      const ttfb = await getTTFBBeacon();
+
+      assert.strictEqual(ttfb.value, 10);
+      assert.strictEqual(ttfb.attribution.documentDuration, 50);
+    });
   });
 });
 
