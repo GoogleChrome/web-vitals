@@ -63,7 +63,7 @@ export interface TTFBAttribution {
    */
   requestDuration: number;
   /**
-   * The total time from the first byte of the response was received. Until the
+   * The total time from the first byte of the response was received until the
    * first byte of the document was received. This will only be non-zero for
    * servers using Early Hints and where browsers support sending this additional
    * timing. This time is after the TTFB metric.value.
