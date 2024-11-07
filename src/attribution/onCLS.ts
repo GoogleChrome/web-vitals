@@ -52,6 +52,8 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
           largestShiftTarget: getSelector(
             largestSource.node ?? layoutShiftTargetMap.get(largestEntry),
           ),
+          largestShiftTargetElement:
+            largestSource.node ?? layoutShiftTargetMap.get(largestEntry),
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
           largestShiftSource: largestSource,

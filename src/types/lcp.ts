@@ -31,9 +31,14 @@ export interface LCPMetric extends Metric {
  */
 export interface LCPAttribution {
   /**
-   * The element corresponding to the largest contentful paint for the page.
+   * The selector of the element corresponding to the largest contentful paint
+   * for the page.
    */
   element?: string;
+  /**
+   * The element corresponding to the largest contentful paint for the page.
+   */
+  elementNode?: Node;
   /**
    * The URL (if applicable) of the LCP image resource. If the LCP element
    * is a text node, this value will not be set.

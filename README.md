@@ -351,7 +351,7 @@ function sendToGoogleAnalytics({name, delta, value, id, attribution}) {
       eventParams.debug_target = attribution.interactionTarget;
       break;
     case 'LCP':
-      eventParams.debug_target = attribution.element;
+      eventParams.debug_target = attribution.elementSelector;
       break;
   }
 
@@ -927,9 +927,14 @@ interface INPAttribution {
 ```ts
 interface LCPAttribution {
   /**
+   * The selecotr of the element corresponding to the largest contentful paint
+   * for the page.
+   */
+  elementSelector?: string;
+  /**
    * The element corresponding to the largest contentful paint for the page.
    */
-  element?: string;
+  element?: Node;
   /**
    * The URL (if applicable) of the LCP image resource. If the LCP element
    * is a text node, this value will not be set.
