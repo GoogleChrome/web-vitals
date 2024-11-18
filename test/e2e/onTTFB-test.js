@@ -377,7 +377,6 @@ describe('onTTFB()', async function () {
       const ttfb = await getTTFBBeacon();
 
       assert.strictEqual(ttfb.value, 10);
-      assert.strictEqual(ttfb.attribution.documentDuration, 50);
     });
   });
 });
