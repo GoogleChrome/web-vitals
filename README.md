@@ -1010,16 +1010,6 @@ export interface TTFBAttribution {
    */
   requestDuration: number;
   /**
-   * The total time, after TTFB, after which the document started to be
-   * received (i.e. when the document HTTP headers start to artive).
-   * This will only be non-zero for servers using Early Hints and where
-   * browsers support sending this additional timing. It is the time between
-   * the Early Hints first response (TTFB) and when the actual document
-   * response started and is useful to understand how much later the document
-   * TTFB is from the actual TTFB.
-   */
-  documentDuration: number;
-  /**
    * The `navigation` entry of the current page, which is useful for diagnosing
    * general page load issues. This can be used to access `serverTiming` for
    * example: navigationEntry?.serverTiming

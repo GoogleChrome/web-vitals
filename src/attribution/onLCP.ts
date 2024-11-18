@@ -45,7 +45,15 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
 
-      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+      const ttfb = Math.max(
+        0,
+        // From Chrome 115 until, Chrome reported responseStart as the document
+        // bytes, rather than Early Hint bytes. Prefer the Early Hint bytes
+        // (firstInterimResponseStart) for consistency with other browers, if
+        // non-zero
+        navigationEntry.firstInterimResponseStart ??
+          navigationEntry.responseStart - activationStart,
+      );
 
       const lcpRequestStart = Math.max(
         ttfb,

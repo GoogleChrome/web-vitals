@@ -5,7 +5,7 @@
 - **[BREAKING]** Remove the deprecated `onFID()` function ([#519](https://github.com/GoogleChrome/web-vitals/pull/519))
 - **[BREAKING]** Change browser support policy to Baseline Widely Available ([#525](https://github.com/GoogleChrome/web-vitals/pull/525))
 - **[BREAKING]** Sort the classes that appear in attribution selectors to reduce cardinality ([#518](https://github.com/GoogleChrome/web-vitals/pull/518))
-- **[BREAKING]** Add interoperable TTFB and `documentDuration` to measure Early Hints better ([#566](https://github.com/GoogleChrome/web-vitals/pull/566))
+- **[BREAKING]** Add interoperable TTFB to measure Early Hints consistently ([#566](https://github.com/GoogleChrome/web-vitals/pull/566))
 - Cap INP breakdowns to INP duration ([#528](https://github.com/GoogleChrome/web-vitals/pull/528))
 - Cap LCP load duration to LCP time ([#527](https://github.com/GoogleChrome/web-vitals/pull/527))
 

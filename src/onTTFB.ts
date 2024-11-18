@@ -71,10 +71,10 @@ export const onTTFB = (
     const navigationEntry = getNavigationEntry();
 
     if (navigationEntry) {
-      // Form Chrome 115 until Chrome 132 (with flags), Chrome reported
-      // responseStart as the document bytes, rather than Early Hint bytes.
-      // Prefer the Early Hint bytes (firstInterimResponseStart) for
-      // consistency with other browers, if non-zero
+      // From Chrome 115 until, Chrome reported responseStart as the document
+      // bytes, rather than Early Hint bytes. Prefer the Early Hint bytes
+      // (firstInterimResponseStart) for consistency with other browers, if
+      // non-zero
       const responseStart =
         navigationEntry.firstInterimResponseStart ||
         navigationEntry.responseStart;

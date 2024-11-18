@@ -30,7 +30,6 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
     dnsDuration: 0,
     connectionDuration: 0,
     requestDuration: 0,
-    documentDuration: 0,
   };
 
   if (metric.entries.length) {
@@ -58,11 +57,6 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
       0,
     );
 
-    // Fallback to responseStart for finalResponseHeadersStart
-    const finalResponseHeadersStart =
-      (navigationEntry.finalResponseHeadersStart ??
-        navigationEntry.responseStart) - activationStart;
-
     attribution = {
       waitingDuration: waitEnd,
       cacheDuration: dnsStart - waitEnd,
@@ -75,7 +69,6 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
       // service worker controlled requests were connectStart and connectEnd
       // are the same.
       requestDuration: metric.value - connectEnd,
-      documentDuration: finalResponseHeadersStart - metric.value,
       navigationEntry: navigationEntry,
     };
   }
