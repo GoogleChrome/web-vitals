@@ -51,7 +51,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
         // bytes, rather than Early Hint bytes. Prefer the Early Hint bytes
         // (firstInterimResponseStart) for consistency with other browers, if
         // non-zero
-        navigationEntry.firstInterimResponseStart ??
+        navigationEntry.firstInterimResponseStart ||
           navigationEntry.responseStart - activationStart,
       );
 
