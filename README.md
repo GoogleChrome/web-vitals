@@ -416,6 +416,9 @@ addEventListener('visibilitychange', () => {
 });
 ```
 
+> [!IMPORTANT]
+> To ensure your event listener is executed after all metrics have been reported, attach it to `window` object with `addEventListener` or `window.addEventListener`.
+
 > [!NOTE]
 > See [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`.
 
