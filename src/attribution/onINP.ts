@@ -28,6 +28,7 @@ import {
   INPAttribution,
   INPMetric,
   INPMetricWithAttribution,
+  LongAnimationFrameSummary,
   ReportOpts,
 } from '../types.js';
 
@@ -233,6 +234,78 @@ const getIntersectingLoAFs = (
   return intersectingLoAFs;
 };
 
+const getLoAFSummary = (attribution: INPAttribution) => {
+  const loafAttribution: LongAnimationFrameSummary = {};
+
+  // Stats across all LoAF entries and scripts.
+  const interactionTime = attribution.interactionTime;
+  const inputDelay = attribution.inputDelay;
+  const processingDuration = attribution.processingDuration;
+  let totalStyleAndLayout = 0;
+  let totalForcedStyleAndLayout = 0;
+  let totalScriptTime = 0;
+  let numScripts = 0;
+  let slowestScriptDuration = 0;
+  let slowestScript: PerformanceScriptTiming | null = null;
+  let slowestScriptPhase: string = '';
+  const phases: Record<string, Record<string, number>> = {} as Record<
+    string,
+    Record<string, number>
+  >;
+
+  attribution.longAnimationFrameEntries.forEach((loafEntry) => {
+    totalStyleAndLayout +=
+      loafEntry.startTime + loafEntry.duration - loafEntry.styleAndLayoutStart;
+    loafEntry.scripts.forEach((script) => {
+      const scriptEndTime = script.startTime + script.duration;
+      if (scriptEndTime < interactionTime) {
+        return;
+      }
+      totalScriptTime += script.duration;
+      numScripts++;
+      totalForcedStyleAndLayout += script.forcedStyleAndLayoutDuration;
+      const blockingDuration =
+        scriptEndTime - Math.max(interactionTime, script.startTime);
+      const invokerType = script.invokerType; //.replace('-', '_');
+      let phase = 'processingDuration';
+      if (script.startTime < interactionTime + inputDelay) {
+        phase = 'inputDelay';
+      } else if (
+        script.startTime >
+        interactionTime + inputDelay + processingDuration
+      ) {
+        phase = 'presentation';
+      }
+      if (!(phase in phases)) {
+        phases[phase] = {};
+      }
+      if (!(invokerType in phases[phase])) {
+        phases[phase][invokerType] = 0;
+      }
+      phases[phase][invokerType] += blockingDuration;
+
+      if (blockingDuration > slowestScriptDuration) {
+        slowestScript = script;
+        slowestScriptPhase = phase;
+        slowestScriptDuration = blockingDuration;
+      }
+    });
+  });
+  loafAttribution.numScripts = numScripts;
+  if (slowestScript) loafAttribution.slowestScript = slowestScript;
+  if (slowestScript)
+    loafAttribution.slowestScriptPhase = slowestScriptPhase as
+      | 'inputDelay'
+      | 'processingDuration'
+      | 'presentationDelay';
+  loafAttribution.totalDurationsPerPhase = phases;
+  loafAttribution.totalForcedStyleAndLayoutDuration = totalForcedStyleAndLayout;
+  loafAttribution.totalNonForcedStyleAndLayoutDuration = totalStyleAndLayout;
+  loafAttribution.totalScriptDuration = totalScriptTime;
+
+  return loafAttribution;
+};
+
 const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
   const group = entryToEntriesGroupMap.get(firstEntry)!;
@@ -286,6 +359,8 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     presentationDelay: nextPaintTime - processingEnd,
     loadState: getLoadState(firstEntry.startTime),
   };
+
+  attribution.longAnimationFrameSummary = getLoAFSummary(attribution);
 
   // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: INPMetricWithAttribution = Object.assign(

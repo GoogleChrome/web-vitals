@@ -892,6 +892,15 @@ interface INPAttribution {
    */
   longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
   /**
+   * If the browser supports the Long Animation Frame API, this array will
+   * include any `long-animation-frame` entries that intersect with the INP
+   * candidate interaction's `startTime` and the `processingEnd` time of the
+   * last event processed within that animation frame. If the browser does not
+   * support the Long Animation Frame API or no `long-animation-frame` entries
+   * are detect, this array will be empty.
+   */
+  longAnimationFrameSummary?: LongAnimationFrameSummary;
+  /**
    * The time from when the user interacted with the page until when the
    * browser was first able to start processing event listeners for that
    * interaction. This time captures the delay before event processing can
@@ -919,6 +928,62 @@ interface INPAttribution {
    * (e.g. usually in the `dom-interactive` phase) it can result in long delays.
    */
   loadState: LoadState;
+}
+```
+
+#### `LongAnimationFrameSummary`
+
+```ts
+/**
+ * An object containing potentially-helpful debugging information summarized
+ * from the LongAnimationFrames intersecting the INP event.
+ *
+ * NOTE: Long Animation Frames below 50 milliseconds are not reported, and
+ * so their scripts cannot be included. For Long Animation Frames that are
+ * reported, only scripts above 5 milliseconds are included.
+ */
+export interface LongAnimationFrameSummary {
+  /**
+   * The number of Long Animation Frame scripts that intersect the INP event.
+   * NOTE: This may be be less than the total count of scripts in the Long
+   * Animation Frames as some scripts may occur before the interaction.
+   */
+  numScripts?: number;
+  /**
+   * The slowest Long Animation Frame script that intersects the INP event.
+   */
+  slowestScript?: PerformanceScriptTiming;
+  /**
+   * The INP phase where the longest script ran.
+   */
+  slowestScriptPhase?:
+    | 'inputDelay'
+    | 'processingDuration'
+    | 'presentationDelay';
+  /**
+   * The total blocking durations in each phase by invoker for scripts that
+   * intersect the INP event.
+   */
+  totalDurationsPerPhase?: Record<
+    'inputDelay' | 'processingDuration' | 'presentationDelay',
+    Record<string, number>
+  >;
+  /**
+   * The total forced style and layout durations as provided by Long Animation
+   * Frame scripts intercepting the INP event.
+   */
+  totalForcedStyleAndLayoutDuration?: number;
+  /**
+   * The total non-force (i.e. end-of-frame) style and layout duration from any
+   * Long Animation Frames intercepting INP event.
+   */
+  totalNonForcedStyleAndLayoutDuration?: number;
+  /**
+   * The total duration of Long Animation Frame scripts that intersect the INP
+   * duration. Note, this includes forced style and layout within those
+   * scripts.
+   */
+  totalScriptDuration?: number;
 }
 ```
 
