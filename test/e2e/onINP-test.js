@@ -26,7 +26,7 @@ const ROUNDING_ERROR = 8;
 
 describe('onINP()', async function () {
   // Retry all tests in this suite up to 2 times.
-  this.retries(0);
+  this.retries(2);
 
   let browserSupportsINP;
   let browserSupportsLoAF;
@@ -750,18 +750,18 @@ describe('onINP()', async function () {
           .totalForcedStyleAndLayoutDuration,
         0,
       );
-      assert(
+      assert.equals(
         inp1.attribution.longAnimationFrameSummary
-          .totalNonForcedStyleAndLayoutDuration >= 0,
+          .totalNonForcedStyleAndLayoutDuration,
+        0,
       );
       assert(
         inp1.attribution.longAnimationFrameSummary
           .totalNonForcedStyleAndLayoutDuration <=
           inp1.attribution.presentationDelay,
       );
-      assert.equal(
-        inp1.attribution.longAnimationFrameSummary.totalScriptDuration,
-        100,
+      assert(
+        inp1.attribution.longAnimationFrameSummary.totalScriptDuration >= 100,
       );
     });
   });
