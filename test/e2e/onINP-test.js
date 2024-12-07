@@ -750,6 +750,10 @@ describe('onINP()', async function () {
           .totalForcedStyleAndLayoutDuration,
         0,
       );
+      assert(
+        inp1.attribution.longAnimationFrameSummary
+          .totalNonForcedStyleAndLayoutDuration >= 0,
+      );
       assert.equal(
         inp1.attribution.longAnimationFrameSummary
           .totalNonForcedStyleAndLayoutDuration,
