@@ -26,7 +26,7 @@ const ROUNDING_ERROR = 8;
 
 describe('onINP()', async function () {
   // Retry all tests in this suite up to 2 times.
-  this.retries(2);
+  this.retries(0);
 
   let browserSupportsINP;
   let browserSupportsLoAF;
@@ -714,6 +714,55 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
       assert(inp1.attribution.longAnimationFrameEntries.length > 0);
+      assert(inp1.attribution.longAnimationFrameSummary != {});
+      assert.equal(inp1.attribution.longAnimationFrameSummary.numScripts, 1);
+      assert.equal(
+        JSON.stringify(
+          inp1.attribution.longAnimationFrameSummary.slowestScript,
+        ),
+        JSON.stringify(
+          inp1.attribution.longAnimationFrameEntries[0].scripts[0],
+        ),
+      );
+      assert.equal(
+        inp1.attribution.longAnimationFrameSummary.slowestScriptPhase,
+        'processingDuration',
+      );
+      assert.equal(
+        Object.keys(
+          inp1.attribution.longAnimationFrameSummary.totalDurationsPerPhase,
+        ),
+        'processingDuration',
+      );
+      assert.equal(
+        Object.keys(
+          inp1.attribution.longAnimationFrameSummary.totalDurationsPerPhase
+            .processingDuration,
+        ),
+        'event-listener',
+      );
+      assert(
+        inp1.attribution.longAnimationFrameSummary.totalDurationsPerPhase
+          .processingDuration['event-listener'] >= 100,
+      );
+      assert.equal(
+        inp1.attribution.longAnimationFrameSummary
+          .totalForcedStyleAndLayoutDuration,
+        0,
+      );
+      assert(
+        inp1.attribution.longAnimationFrameSummary
+          .totalNonForcedStyleAndLayoutDuration >= 0,
+      );
+      assert(
+        inp1.attribution.longAnimationFrameSummary
+          .totalNonForcedStyleAndLayoutDuration <=
+          inp1.attribution.presentationDelay,
+      );
+      assert.equal(
+        inp1.attribution.longAnimationFrameSummary.totalScriptDuration,
+        100,
+      );
     });
   });
 });
