@@ -745,12 +745,12 @@ describe('onINP()', async function () {
         inp1.attribution.longAnimationFrameSummary.totalDurationsPerPhase
           .processingDuration['event-listener'] >= 100,
       );
-      assert.equals(
+      assert.equal(
         inp1.attribution.longAnimationFrameSummary
           .totalForcedStyleAndLayoutDuration,
         0,
       );
-      assert.equals(
+      assert.equal(
         inp1.attribution.longAnimationFrameSummary
           .totalNonForcedStyleAndLayoutDuration,
         0,
