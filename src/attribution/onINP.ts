@@ -261,9 +261,9 @@ const getLoAFSummary = (attribution: INPAttribution) => {
       if (scriptEndTime < interactionTime) {
         return;
       }
-      const interestingScriptDuration =
+      const intersectingScriptDuration =
         scriptEndTime - Math.max(interactionTime, script.startTime);
-      totalScriptTime += interestingScriptDuration;
+      totalScriptTime += intersectingScriptDuration;
       numScripts++;
       totalForcedStyleAndLayout += script.forcedStyleAndLayoutDuration;
       const invokerType = script.invokerType;
@@ -276,14 +276,17 @@ const getLoAFSummary = (attribution: INPAttribution) => {
       ) {
         phase = 'presentationDelay';
       }
+
+      // Define the record if necessary
       phases[phase] ??= {} as Record<ScriptInvokerType, number>;
       phases[phase][invokerType] ??= 0;
-      phases[phase][invokerType] += interestingScriptDuration;
+      // Increment it with this value
+      phases[phase][invokerType] += intersectingScriptDuration;
 
-      if (interestingScriptDuration > slowestScriptDuration) {
+      if (intersectingScriptDuration > slowestScriptDuration) {
         slowestScript = script;
         slowestScriptPhase = phase;
-        slowestScriptDuration = interestingScriptDuration;
+        slowestScriptDuration = intersectingScriptDuration;
       }
     });
   });
