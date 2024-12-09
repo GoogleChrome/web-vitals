@@ -248,10 +248,7 @@ const getLoAFSummary = (attribution: INPAttribution) => {
   let slowestScriptDuration = 0;
   let slowestScript: PerformanceScriptTiming | null = null;
   let slowestScriptPhase: string = '';
-  const phases: Record<
-    string,
-    Record<ScriptInvokerType, number>
-  > = {} as Record<string, Record<ScriptInvokerType, number>>;
+  const phases = {} as Record<string, Record<ScriptInvokerType, number>>;
 
   attribution.longAnimationFrameEntries.forEach((loafEntry) => {
     totalNonForcedStyleAndLayoutDuration +=

@@ -56,7 +56,7 @@ export interface LongAnimationFrameSummary {
    */
   totalDurationsPerPhase?: Record<
     'inputDelay' | 'processingDuration' | 'presentationDelay',
-    Record<string, number>
+    Record<ScriptInvokerType, number>
   >;
   /**
    * The total forced style and layout durations as provided by Long Animation
