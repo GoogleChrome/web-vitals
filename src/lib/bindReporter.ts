@@ -48,7 +48,7 @@ export const bindReporter = <MetricName extends MetricType['name']>(
         // See: https://github.com/GoogleChrome/web-vitals/issues/14
         if (delta || prevValue === undefined) {
           prevValue = metric.value;
-          metric.delta = delta
+          metric.delta = delta;
           metric.rating = getRating(metric.value, thresholds);
           callback(metric);
         }
