@@ -892,12 +892,10 @@ interface INPAttribution {
    */
   longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
   /**
-   * If the browser supports the Long Animation Frame API, this array will
-   * include any `long-animation-frame` entries that intersect with the INP
-   * candidate interaction's `startTime` and the `processingEnd` time of the
-   * last event processed within that animation frame. If the browser does not
-   * support the Long Animation Frame API or no `long-animation-frame` entries
-   * are detect, this array will be empty.
+   * If the browser supports the Long Animation Frame API, this object
+   * summarises information relevant to INP across the long animation frames
+   * intersecting the INP event. See the LongAnimationFrameSummary definition
+   * for an explanation of what is included.
    */
   longAnimationFrameSummary?: LongAnimationFrameSummary;
   /**

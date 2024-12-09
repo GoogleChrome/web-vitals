@@ -60,12 +60,12 @@ export interface LongAnimationFrameSummary {
   >;
   /**
    * The total forced style and layout durations as provided by Long Animation
-   * Frame scripts intercepting the INP event.
+   * Frame scripts intersecting the INP event.
    */
   totalForcedStyleAndLayoutDuration?: number;
   /**
    * The total non-force (i.e. end-of-frame) style and layout duration from any
-   * Long Animation Frames intercepting INP event.
+   * Long Animation Frames intersecting INP event.
    */
   totalNonForcedStyleAndLayoutDuration?: number;
   /**
@@ -133,12 +133,10 @@ export interface INPAttribution {
    */
   longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
   /**
-   * If the browser supports the Long Animation Frame API, this array will
-   * include any `long-animation-frame` entries that intersect with the INP
-   * candidate interaction's `startTime` and the `processingEnd` time of the
-   * last event processed within that animation frame. If the browser does not
-   * support the Long Animation Frame API or no `long-animation-frame` entries
-   * are detect, this array will be empty.
+   * If the browser supports the Long Animation Frame API, this object
+   * summarises information relevant to INP across the long animation frames
+   * intersecting the INP event. See the LongAnimationFrameSummary definition
+   * for an explanation of what is included.
    */
   longAnimationFrameSummary?: LongAnimationFrameSummary;
   /**

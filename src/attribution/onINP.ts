@@ -241,32 +241,32 @@ const getLoAFSummary = (attribution: INPAttribution) => {
   const interactionTime = attribution.interactionTime;
   const inputDelay = attribution.inputDelay;
   const processingDuration = attribution.processingDuration;
-  let totalStyleAndLayout = 0;
+  let totalNonForcedStyleAndLayoutDuration = 0;
   let totalForcedStyleAndLayout = 0;
   let totalScriptTime = 0;
   let numScripts = 0;
   let slowestScriptDuration = 0;
   let slowestScript: PerformanceScriptTiming | null = null;
   let slowestScriptPhase: string = '';
-  const phases: Record<string, Record<string, number>> = {} as Record<
+  const phases: Record<
     string,
-    Record<string, number>
-  >;
+    Record<ScriptInvokerType, number>
+  > = {} as Record<string, Record<ScriptInvokerType, number>>;
 
   attribution.longAnimationFrameEntries.forEach((loafEntry) => {
-    totalStyleAndLayout +=
+    totalNonForcedStyleAndLayoutDuration +=
       loafEntry.startTime + loafEntry.duration - loafEntry.styleAndLayoutStart;
     loafEntry.scripts.forEach((script) => {
       const scriptEndTime = script.startTime + script.duration;
       if (scriptEndTime < interactionTime) {
         return;
       }
-      totalScriptTime += script.duration;
+      const interestingScriptDuration =
+        scriptEndTime - Math.max(interactionTime, script.startTime);
+      totalScriptTime += interestingScriptDuration;
       numScripts++;
       totalForcedStyleAndLayout += script.forcedStyleAndLayoutDuration;
-      const blockingDuration =
-        scriptEndTime - Math.max(interactionTime, script.startTime);
-      const invokerType = script.invokerType; //.replace('-', '_');
+      const invokerType = script.invokerType;
       let phase = 'processingDuration';
       if (script.startTime < interactionTime + inputDelay) {
         phase = 'inputDelay';
@@ -274,20 +274,16 @@ const getLoAFSummary = (attribution: INPAttribution) => {
         script.startTime >
         interactionTime + inputDelay + processingDuration
       ) {
-        phase = 'presentation';
+        phase = 'presentationDelay';
       }
-      if (!(phase in phases)) {
-        phases[phase] = {};
-      }
-      if (!(invokerType in phases[phase])) {
-        phases[phase][invokerType] = 0;
-      }
-      phases[phase][invokerType] += blockingDuration;
+      phases[phase] ??= {} as Record<ScriptInvokerType, number>;
+      phases[phase][invokerType] ??= 0;
+      phases[phase][invokerType] += interestingScriptDuration;
 
-      if (blockingDuration > slowestScriptDuration) {
+      if (interestingScriptDuration > slowestScriptDuration) {
         slowestScript = script;
         slowestScriptPhase = phase;
-        slowestScriptDuration = blockingDuration;
+        slowestScriptDuration = interestingScriptDuration;
       }
     });
   });
@@ -300,7 +296,8 @@ const getLoAFSummary = (attribution: INPAttribution) => {
       | 'presentationDelay';
   loafAttribution.totalDurationsPerPhase = phases;
   loafAttribution.totalForcedStyleAndLayoutDuration = totalForcedStyleAndLayout;
-  loafAttribution.totalNonForcedStyleAndLayoutDuration = totalStyleAndLayout;
+  loafAttribution.totalNonForcedStyleAndLayoutDuration =
+    totalNonForcedStyleAndLayoutDuration;
   loafAttribution.totalScriptDuration = totalScriptTime;
 
   return loafAttribution;
