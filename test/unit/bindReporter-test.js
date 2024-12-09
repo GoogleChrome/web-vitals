@@ -102,7 +102,7 @@ describe('bindReporter', () => {
       metric.value = 0.15;
       reporter(true);
       // To avoid 0.049999999 values
-      let fixDelta = Number(report[1].delta.toFixed(2));
+      let fixDelta = Number(reports[1].delta.toFixed(2));
       assert.equal(fixDelta, 0.05);
     });
 
