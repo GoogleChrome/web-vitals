@@ -88,9 +88,47 @@ declare global {
     readonly element: Element | null;
   }
 
-  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
+  // https://w3c.github.io/long-animation-frames/#sec-PerformanceLongAnimationFrameTiming
+  export type ScriptInvokerType =
+    | 'classic-script'
+    | 'module-script'
+    | 'event-listener'
+    | 'user-callback'
+    | 'resolve-promise'
+    | 'reject-promise';
+  export type ScriptWindowAttribution =
+    | 'self'
+    | 'descendant'
+    | 'ancestor'
+    | 'same-page'
+    | 'other';
+  interface PerformanceScriptTiming extends PerformanceEntry {
+    readonly startTime: DOMHighResTimeStamp;
+    readonly duration: DOMHighResTimeStamp;
+    readonly name: string;
+    readonly entryType: string;
+
+    readonly invokerType: ScriptInvokerType;
+    readonly invoker: string;
+    readonly executionStart: DOMHighResTimeStamp;
+    readonly sourceURL: string;
+    readonly sourceFunctionName: string;
+    readonly sourceCharPosition: number;
+    readonly pauseDuration: DOMHighResTimeStamp;
+    readonly forcedStyleAndLayoutDuration: DOMHighResTimeStamp;
+    readonly window?: Window;
+    readonly windowAttribution: ScriptWindowAttribution;
+  }
   interface PerformanceLongAnimationFrameTiming extends PerformanceEntry {
-    renderStart: DOMHighResTimeStamp;
-    duration: DOMHighResTimeStamp;
+    readonly startTime: DOMHighResTimeStamp;
+    readonly duration: DOMHighResTimeStamp;
+    readonly name: string;
+    readonly entryType: string;
+
+    readonly renderStart: DOMHighResTimeStamp;
+    readonly styleAndLayoutStart: DOMHighResTimeStamp;
+    readonly blockingDuration: DOMHighResTimeStamp;
+    readonly firstUIEventTimestamp: DOMHighResTimeStamp;
+    readonly scripts: Array<PerformanceScriptTiming>;
   }
 }
