@@ -16,13 +16,19 @@
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
-import {onLCP as unattributedOnLCP} from '../onLCP.js';
+import {
+  onLCP as unattributedOnLCP,
+  entryPreProcessingCallbacks,
+} from '../onLCP.js';
 import {
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,
   ReportOpts,
 } from '../types.js';
+
+// A reference to the LCP target node in case it's removed before reporting.
+const lcpTargetMap: WeakMap<LargestContentfulPaint, Node> = new WeakMap();
 
 const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
   // Use a default object if no other attribution has been set.
@@ -65,7 +71,8 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
       );
 
       attribution = {
-        element: getSelector(lcpEntry.element),
+        target: getSelector(lcpEntry.element ?? lcpTargetMap.get(lcpEntry)),
+        targetElement: lcpEntry.element ?? lcpTargetMap.get(lcpEntry),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
         resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
@@ -91,6 +98,16 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
   );
   return metricWithAttribution;
 };
+
+// Get a reference to the LCP target element in case it's removed from the DOM
+// later.
+const saveLCPTarget = (lcpEntry: LargestContentfulPaint) => {
+  if (lcpEntry.element && !lcpTargetMap.get(lcpEntry)) {
+    lcpTargetMap.set(lcpEntry, lcpEntry.element);
+  }
+};
+
+entryPreProcessingCallbacks.push(saveLCPTarget);
 
 /**
  * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and

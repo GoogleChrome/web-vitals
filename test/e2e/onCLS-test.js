@@ -835,6 +835,62 @@ describe('onCLS()', async function () {
 
       assert.deepEqual(cls.attribution, {});
     });
+
+    it('reports the target when removed (reportAllChanges === false)', async function () {
+      if (!browserSupportsCLS) this.skip();
+
+      await navigateTo(`/test/cls?noLayoutShifts=1&attribution=1`, {
+        readyState: 'complete',
+      });
+
+      // Wait until the page is loaded and content is visible before triggering
+      // a layout shift.
+      await firstContentfulPaint();
+
+      await triggerLayoutShift();
+
+      await browser.execute(() => {
+        // Remove target element
+        document.querySelector('h1').remove();
+        // Remove other elements too to prevent them reporting
+        document.querySelector('#p1').remove();
+        document.querySelector('#p5').remove();
+      });
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [cls] = await getBeacons();
+      // Note this should be the reduced selector without the full path
+      assert.equal(cls.attribution.largestShiftTarget, 'h1');
+    });
+
+    it('reports the target (reportAllChanges === true)', async function () {
+      // We can't guarantee the order or reporting removed targets with
+      // reportAllChanges so don't even try. Just test the target without
+      // removal to compare to previous test
+      if (!browserSupportsCLS) this.skip();
+
+      await navigateTo(
+        `/test/cls?noLayoutShifts=1&attribution=1&reportAllChanges=1`,
+        {
+          readyState: 'complete',
+        },
+      );
+
+      // Wait until the page is loaded and content is visible before triggering
+      // a layout shift.
+      await firstContentfulPaint();
+      await clearBeacons();
+
+      await triggerLayoutShift();
+      await beaconCountIs(1);
+
+      const [cls] = await getBeacons();
+      // Note this should be the full selector with the full path
+      assert.equal(cls.attribution.largestShiftTarget, 'html>body>main>h1');
+    });
   });
 });
 

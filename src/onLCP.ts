@@ -29,6 +29,12 @@ import {LCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 /** Thresholds for LCP. See https://web.dev/articles/lcp#what_is_a_good_lcp_score */
 export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
 
+interface EntryPreProcessingHook {
+  (entry: LargestContentfulPaint): void;
+}
+
+export const entryPreProcessingCallbacks: EntryPreProcessingHook[] = [];
+
 /**
  * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and
  * calls the `callback` function once the value is ready (along with the
@@ -57,6 +63,9 @@ export const onLCP = (
       }
 
       for (const entry of entries) {
+        for (const cb of entryPreProcessingCallbacks) {
+          cb(entry);
+        }
         // Only report if the page wasn't hidden prior to LCP.
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
           // The startTime attribute returns the value of the renderTime if it is
