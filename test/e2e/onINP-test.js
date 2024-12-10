@@ -715,17 +715,20 @@ describe('onINP()', async function () {
       const [inp1] = await getBeacons();
       assert(inp1.attribution.longAnimationFrameEntries.length > 0);
       assert(inp1.attribution.longAnimationFrameSummary != {});
-      assert.equal(inp1.attribution.longAnimationFrameSummary.numScripts, 1);
+      assert.equal(
+        inp1.attribution.longAnimationFrameSummary.numIntersectingScripts,
+        1,
+      );
       assert.equal(
         JSON.stringify(
-          inp1.attribution.longAnimationFrameSummary.slowestScript,
+          inp1.attribution.longAnimationFrameSummary.slowestScript.entry,
         ),
         JSON.stringify(
           inp1.attribution.longAnimationFrameEntries[0].scripts[0],
         ),
       );
       assert.equal(
-        inp1.attribution.longAnimationFrameSummary.slowestScriptPhase,
+        inp1.attribution.longAnimationFrameSummary.slowestScript.phase,
         'processingDuration',
       );
       assert.equal(
