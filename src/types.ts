@@ -56,7 +56,7 @@ declare global {
   interface PerformanceNavigationTiming {
     // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
     activationStart?: number;
-    // Early Hints support
+    // https://w3c.github.io/resource-timing/#dom-performanceresourcetiming-firstinterimresponsestart
     firstInterimResponseStart?: number;
     finalResponseHeadersStart?: number;
   }
