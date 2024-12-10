@@ -953,10 +953,69 @@ export interface LongAnimationFrameSummary {
    */
   numLongAnimationFrames: number;
   /**
-   * Summary details about the slowest Long Animation Frame script that
-   * intersects the INP interaction.
+   * The slowest Long Animation Frame script that intersects the INP
+   * interaction.
    */
-  slowestScript?: SlowestScriptSummary;
+  slowestScriptEntry: PerformanceScriptTiming;
+  /**
+   * The INP sub-part where the longest script ran.
+   */
+  slowestScriptSubpart: INPSubpart; //'inputDelay' | 'processingDuration' | 'presentationDelay';
+  /**
+   * The amount of time the slowest script intersected the INP duration.
+   */
+  slowestScriptIntersectingDuration: number;
+  /**
+   * The total duration time of the slowest script (compile and execution,
+   * including forced style and layout). Note this may be longer than the
+   * intersectingScriptDuration if the INP interaction happened mid-script.
+   */
+  slowestScriptTotalDuration: number;
+  /**
+   * The compile duration of the slowest script. Note this may be longer
+   * than the intersectingScriptDuration if the INP interaction happened
+   * mid-script.
+   */
+  slowestScriptCompileDuration: number;
+  /**
+   * The execution duration of the slowest script. Note this may be longer
+   * than the intersectingScriptDuration if the INP interaction happened
+   * mid-script.
+   */
+  slowestScriptExecutionDuration: number;
+  /**
+  /**
+   * The forced style and layoult duration of the slowest script. Note this
+   * may be longer than the intersectingScriptDuration if the INP interaction
+   * happened mid-script.
+   */
+  slowestScriptForcedStyleAndLayoutDuration: number;
+  /**
+   * The pause duration of the slowest script. Note this may be longer
+   * than the intersectingScriptDuration if the INP interaction happened
+   * mid-script.
+   */
+  slowestScriptPauseDuration: number;
+  /**
+   * The invokerType of the slowest script.
+   */
+  slowestScriptInvokerType: ScriptInvokerType;
+  /**
+   * The invoker of the slowest script.
+   */
+  slowestScriptInvoker?: string;
+  /**
+   * The sourceURL of the slowest script.
+   */
+  slowestScriptSourceURL?: string;
+  /**
+   * The sourceFunctionName of the slowest script.
+   */
+  slowestScriptSourceFunctionName?: string;
+  /**
+   * The sourceCharPosition of the slowest script.
+   */
+  slowestScriptSourceCharPosition?: number;
   /**
    * The total blocking durations in each sub-part by invoker for scripts that
    * intersect the INP interaction.
@@ -985,82 +1044,6 @@ export interface LongAnimationFrameSummary {
    * scripts.
    */
   totalScriptDuration: number;
-}
-```
-
-#### `slowestScriptSummary`
-
-```ts
-/**
- * An object containing potentially-helpful debugging information summarized
- * from the slowest script intersecting the INP duration (ignoring any script
- * duration prior to the INP time).
- */
-export interface SlowestScriptSummary {
-  /**
-   * The slowest Long Animation Frame script that intersects the INP
-   * interaction.
-   */
-  entry: PerformanceScriptTiming;
-  /**
-   * The INP sub-part where the longest script ran.
-   */
-  subpart: INPSubpart; //'inputDelay' | 'processingDuration' | 'presentationDelay';
-  /**
-   * The amount of time the slowest script intersected the INP duration.
-   */
-  intersectingDuration: number;
-  /**
-   * The total duration time of the slowest script (compile and execution,
-   * including forced style and layout). Note this may be longer than the
-   * intersectingScriptDuration if the INP interaction happened mid-script.
-   */
-  totalDuration: number;
-  /**
-   * The compile duration of the slowest script. Note this may be longer
-   * than the intersectingScriptDuration if the INP interaction happened
-   * mid-script.
-   */
-  compileDuration: number;
-  /**
-   * The execution duration of the slowest script. Note this may be longer
-   * than the intersectingScriptDuration if the INP interaction happened
-   * mid-script.
-   */
-  executionDuration: number;
-  /**
-  /**
-   * The forced style and layoult duration of the slowest script. Note this
-   * may be longer than the intersectingScriptDuration if the INP interaction
-   * happened mid-script.
-   */
-  forcedStyleAndLayoutDuration: number;
-  /**
-   * The pause duration of the slowest script. Note this may be longer
-   * than the intersectingScriptDuration if the INP interaction happened
-   * mid-script.
-   */
-  pauseDuration: number;
-  /**
-   * The invokerType of the slowest script.
-   */
-  invokerType: ScriptInvokerType;
-  /**
-   * The invoker of the slowest script.
-   */
-  invoker?: string;
-  /**
-   * The sourceURL of the slowest script.
-   */
-  sourceURL?: string;
-  /**
-   * The sourceFunctionName of the slowest script.
-   */
-  sourceFunctionName?: string;
-  /**
-   * The sourceCharPosition of the slowest script.
-   */
-  sourceCharPosition?: number;
 }
 ```
 
