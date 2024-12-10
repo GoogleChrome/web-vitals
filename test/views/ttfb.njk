@@ -43,38 +43,6 @@
         // Block...
       }
     }
-
-    if (params.has('earlyHintsDelay')) {
-      const earlyHintsDelay = Number(params.get('earlyHintsDelay'))
-      // Block for delay time—to avoid the library seeing future timestamps,
-      // and so not reporting a TTFB at all as it's invalid.
-      block(Number(params.get('earlyHintsDelay')));
-      // Chrome >= 133 has both finalResponseHeadersStart and firstInterimResponseStart
-      if ('finalResponseHeadersStart' in PerformanceNavigationTiming.prototype) {
-        Object.defineProperties(navEntry, {
-          'firstInterimResponseStart': {
-            value: Number(navEntry.responseStart),
-            enumerable: true,
-          },
-          'finalResponseHeadersStart': {
-            value: Number(navEntry.responseStart + earlyHintsDelay),
-            enumerable: true,
-          }
-        });
-      } else if ('firstInterimResponseStart' in PerformanceNavigationTiming.prototype) {
-        // TODO: Can remove these after Chrome 133 lands and above is used.
-        Object.defineProperties(navEntry, {
-          'firstInterimResponseStart': {
-            value: Number(navEntry.responseStart),
-            enumerable: true,
-          },
-          'responseStart': {
-            value: Number(navEntry.responseStart + earlyHintsDelay),
-            enumerable: true,
-          },
-        })
-      };
-    }
   </script>
 
   <script type="module">
