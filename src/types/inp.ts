@@ -41,9 +41,9 @@ export interface SlowestScriptSummary {
    */
   entry: PerformanceScriptTiming;
   /**
-   * The INP subpart where the longest script ran.
+   * The INP sub-part where the longest script ran.
    */
-  subpart: INPSubpart;
+  subpart: INPSubpart; //'inputDelay' | 'processingDuration' | 'presentationDelay';
   /**
    * The amount of time the slowest script intersected the INP duration.
    */
@@ -127,8 +127,13 @@ export interface LongAnimationFrameSummary {
    */
   slowestScript?: SlowestScriptSummary;
   /**
-   * The total blocking durations in each subpart by invoker for scripts that
+   * The total blocking durations in each sub-part by invoker for scripts that
    * intersect the INP interaction.
+   * For example:
+   * {
+   *    'inputDelay': { 'event-listener': 185, 'user-callback': 28},
+   *    'processingDuration': { 'event-listener': 144},
+   * }
    */
   totalDurationsPerSubpart: Partial<
     Record<INPSubpart, Partial<Record<ScriptInvokerType, number>>>

@@ -958,12 +958,16 @@ export interface LongAnimationFrameSummary {
    */
   slowestScript?: slowestScriptSummary;
   /**
-   * The total blocking durations in each phase by invoker for scripts that
+   * The total blocking durations in each sub-part by invoker for scripts that
    * intersect the INP interaction.
+   * For example:
+   * {
+   *    'inputDelay': { 'event-listener': 185, 'user-callback': 28},
+   *    'processingDuration': { 'event-listener': 144},
+   * }
    */
-  totalDurationsPerPhase?: Record<
-    'inputDelay' | 'processingDuration' | 'presentationDelay',
-    Record<ScriptInvokerType, number>
+  totalDurationsPerSubpart?: Partial<
+    Record<INPSubpart, Partial<Record<ScriptInvokerType, number>>>
   >;
   /**
    * The total forced style and layout durations as provided by Long Animation
@@ -999,9 +1003,9 @@ export interface SlowestScriptSummary {
    */
   entry: PerformanceScriptTiming;
   /**
-   * The INP phase where the longest script ran.
+   * The INP sub-part where the longest script ran.
    */
-  phase: 'inputDelay' | 'processingDuration' | 'presentationDelay';
+  subpart: INPSubpart; //'inputDelay' | 'processingDuration' | 'presentationDelay';
   /**
    * The amount of time the slowest script intersected the INP duration.
    */
