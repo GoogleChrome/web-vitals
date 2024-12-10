@@ -29,6 +29,7 @@ import {
   INPMetric,
   INPMetricWithAttribution,
   LongAnimationFrameSummary,
+  SlowestScriptSummary,
   ReportOpts,
 } from '../types.js';
 
@@ -246,7 +247,7 @@ const getLoAFSummary = (attribution: INPAttribution) => {
   let totalScriptTime = 0;
   let numScripts = 0;
   let slowestScriptDuration = 0;
-  let slowestScript: PerformanceScriptTiming | null = null;
+  let slowestScriptEntry!: PerformanceScriptTiming;
   let slowestScriptPhase: string = '';
   const phases = {} as Record<string, Record<ScriptInvokerType, number>>;
 
@@ -281,19 +282,44 @@ const getLoAFSummary = (attribution: INPAttribution) => {
       phases[phase][invokerType] += intersectingScriptDuration;
 
       if (intersectingScriptDuration > slowestScriptDuration) {
-        slowestScript = script;
+        slowestScriptEntry = script;
         slowestScriptPhase = phase;
         slowestScriptDuration = intersectingScriptDuration;
       }
     });
   });
-  loafAttribution.numScripts = numScripts;
-  if (slowestScript) loafAttribution.slowestScript = slowestScript;
-  if (slowestScript)
-    loafAttribution.slowestScriptPhase = slowestScriptPhase as
-      | 'inputDelay'
-      | 'processingDuration'
-      | 'presentationDelay';
+
+  // Gather the summary information into the loafAttribution object
+  loafAttribution.numLongAnimationFrames =
+    attribution.longAnimationFrameEntries.length;
+  loafAttribution.numIntersectingScripts = numScripts;
+  if (slowestScriptEntry !== null) {
+    const slowestScript: SlowestScriptSummary = {
+      entry: slowestScriptEntry,
+      phase: slowestScriptPhase as
+        | 'inputDelay'
+        | 'processingDuration'
+        | 'presentationDelay',
+      intersectingDuration: slowestScriptDuration,
+      totalDuration: slowestScriptEntry.duration,
+      compileDuration:
+        slowestScriptEntry.executionStart - slowestScriptEntry.startTime,
+      executionDuration:
+        slowestScriptEntry.startTime +
+        slowestScriptEntry.duration -
+        slowestScriptEntry.executionStart,
+      forcedStyleAndLayoutDuration:
+        slowestScriptEntry.forcedStyleAndLayoutDuration,
+      pauseDuration: slowestScriptEntry.pauseDuration,
+      invokerType: slowestScriptEntry.invokerType,
+      invoker: slowestScriptEntry.invoker,
+      sourceURL: slowestScriptEntry.sourceURL,
+      sourceFunctionName: slowestScriptEntry.sourceFunctionName,
+      sourceCharPosition: slowestScriptEntry.sourceCharPosition,
+    };
+
+    loafAttribution.slowestScript = slowestScript;
+  }
   loafAttribution.totalDurationsPerPhase = phases;
   loafAttribution.totalForcedStyleAndLayoutDuration = totalForcedStyleAndLayout;
   loafAttribution.totalNonForcedStyleAndLayoutDuration =

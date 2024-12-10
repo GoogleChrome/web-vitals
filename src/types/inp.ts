@@ -26,7 +26,79 @@ export interface INPMetric extends Metric {
 
 /**
  * An object containing potentially-helpful debugging information summarized
- * from the LongAnimationFrames intersecting the INP event.
+ * from the slowest script intersecting the INP duration (ignoring any script
+ * duration prior to the INP time).
+ */
+export interface SlowestScriptSummary {
+  /**
+   * The slowest Long Animation Frame script that intersects the INP
+   * interaction.
+   */
+  entry: PerformanceScriptTiming;
+  /**
+   * The INP phase where the longest script ran.
+   */
+  phase: 'inputDelay' | 'processingDuration' | 'presentationDelay';
+  /**
+   * The amount of time the slowest script intersected the INP duration.
+   */
+  intersectingDuration: number;
+  /**
+   * The total duration time of the slowest script (compile and execution,
+   * including forced style and layout). Note this may be longer than the
+   * intersectingScriptDuration if the INP interaction happened mid-script.
+   */
+  totalDuration: number;
+  /**
+   * The compile duration of the slowest script. Note this may be longer
+   * than the intersectingScriptDuration if the INP interaction happened
+   * mid-script.
+   */
+  compileDuration: number;
+  /**
+   * The execution duration of the slowest script. Note this may be longer
+   * than the intersectingScriptDuration if the INP interaction happened
+   * mid-script.
+   */
+  executionDuration: number;
+  /**
+  /**
+   * The forced style and layoult duration of the slowest script. Note this
+   * may be longer than the intersectingScriptDuration if the INP interaction
+   * happened mid-script.
+   */
+  forcedStyleAndLayoutDuration: number;
+  /**
+   * The pause duration of the slowest script. Note this may be longer
+   * than the intersectingScriptDuration if the INP interaction happened
+   * mid-script.
+   */
+  pauseDuration: number;
+  /**
+   * The invokerType of the slowest script.
+   */
+  invokerType: ScriptInvokerType;
+  /**
+   * The invoker of the slowest script.
+   */
+  invoker?: string;
+  /**
+   * The sourceURL of the slowest script.
+   */
+  sourceURL?: string;
+  /**
+   * The sourceFunctionName of the slowest script.
+   */
+  sourceFunctionName?: string;
+  /**
+   * The sourceCharPosition of the slowest script.
+   */
+  sourceCharPosition?: number;
+}
+
+/**
+ * An object containing potentially-helpful debugging information summarized
+ * from the LongAnimationFrames intersecting the INP interaction.
  *
  * NOTE: Long Animation Frames below 50 milliseconds are not reported, and
  * so their scripts cannot be included. For Long Animation Frames that are
@@ -34,25 +106,24 @@ export interface INPMetric extends Metric {
  */
 export interface LongAnimationFrameSummary {
   /**
-   * The number of Long Animation Frame scripts that intersect the INP event.
+   * The number of Long Animation Frame scripts that intersect the INP
+   * interaction.
    * NOTE: This may be be less than the total count of scripts in the Long
    * Animation Frames as some scripts may occur before the interaction.
    */
-  numScripts?: number;
+  numIntersectingScripts?: number;
   /**
-   * The slowest Long Animation Frame script that intersects the INP event.
+   * The number of Long Animation Frames intersecting the INP interaction.
    */
-  slowestScript?: PerformanceScriptTiming;
+  numLongAnimationFrames?: number;
   /**
-   * The INP phase where the longest script ran.
+   * Summary details about the slowest Long Animation Frame script that
+   * intersects the INP interaction.
    */
-  slowestScriptPhase?:
-    | 'inputDelay'
-    | 'processingDuration'
-    | 'presentationDelay';
+  slowestScript?: SlowestScriptSummary;
   /**
    * The total blocking durations in each phase by invoker for scripts that
-   * intersect the INP event.
+   * intersect the INP interaction.
    */
   totalDurationsPerPhase?: Record<
     'inputDelay' | 'processingDuration' | 'presentationDelay',
@@ -60,12 +131,12 @@ export interface LongAnimationFrameSummary {
   >;
   /**
    * The total forced style and layout durations as provided by Long Animation
-   * Frame scripts intersecting the INP event.
+   * Frame scripts intersecting the INP interaction.
    */
   totalForcedStyleAndLayoutDuration?: number;
   /**
    * The total non-force (i.e. end-of-frame) style and layout duration from any
-   * Long Animation Frames intersecting INP event.
+   * Long Animation Frames intersecting INP interaction.
    */
   totalNonForcedStyleAndLayoutDuration?: number;
   /**
@@ -135,8 +206,8 @@ export interface INPAttribution {
   /**
    * If the browser supports the Long Animation Frame API, this object
    * summarises information relevant to INP across the long animation frames
-   * intersecting the INP event. See the LongAnimationFrameSummary definition
-   * for an explanation of what is included.
+   * intersecting the INP interaction. See the LongAnimationFrameSummary
+   * definition for an explanation of what is included.
    */
   longAnimationFrameSummary?: LongAnimationFrameSummary;
   /**
