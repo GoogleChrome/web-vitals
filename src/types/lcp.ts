@@ -34,11 +34,11 @@ export interface LCPAttribution {
    * A selector identifying the element corresponding to the largest contentful paint
    * for the page.
    */
-  element?: string;
+  target?: string;
   /**
    * The element corresponding to the largest contentful paint for the page.
    */
-  elementNode?: Node;
+  targetElement?: Node;
   /**
    * The URL (if applicable) of the LCP image resource. If the LCP element
    * is a text node, this value will not be set.
