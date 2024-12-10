@@ -27,7 +27,7 @@ import {
   ReportOpts,
 } from '../types.js';
 
-// A reference to the LCP Target node incase it is removed before reporting
+// A reference to the LCP target node in case it's removed before reporting.
 const lcpTargetMap: WeakMap<LargestContentfulPaint, Node> = new WeakMap();
 
 const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {

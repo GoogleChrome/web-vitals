@@ -927,7 +927,7 @@ interface INPAttribution {
 ```ts
 interface LCPAttribution {
   /**
-   * The selector of the element corresponding to the largest contentful paint
+   * A selector identifying the element corresponding to the largest contentful paint
    * for the page.
    */
   element?: string;

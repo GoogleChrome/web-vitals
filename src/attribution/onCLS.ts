@@ -27,7 +27,7 @@ import {
   ReportOpts,
 } from '../types.js';
 
-// A reference to the layout shift target node incase it is removed before reporting
+// A reference to the layout shift target node in case it's removed before reporting.
 const layoutShiftTargetMap: WeakMap<LayoutShift, Node | undefined> =
   new WeakMap();
 
