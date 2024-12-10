@@ -728,24 +728,24 @@ describe('onINP()', async function () {
         ),
       );
       assert.equal(
-        inp1.attribution.longAnimationFrameSummary.slowestScript.phase,
+        inp1.attribution.longAnimationFrameSummary.slowestScript.subpart,
         'processingDuration',
       );
       assert.equal(
         Object.keys(
-          inp1.attribution.longAnimationFrameSummary.totalDurationsPerPhase,
+          inp1.attribution.longAnimationFrameSummary.totalDurationsPerSubpart,
         ),
         'processingDuration',
       );
       assert.equal(
         Object.keys(
-          inp1.attribution.longAnimationFrameSummary.totalDurationsPerPhase
+          inp1.attribution.longAnimationFrameSummary.totalDurationsPerSubpart
             .processingDuration,
         ),
         'event-listener',
       );
       assert(
-        inp1.attribution.longAnimationFrameSummary.totalDurationsPerPhase
+        inp1.attribution.longAnimationFrameSummary.totalDurationsPerSubpart
           .processingDuration['event-listener'] >= 100,
       );
       assert.equal(

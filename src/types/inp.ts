@@ -24,6 +24,11 @@ export interface INPMetric extends Metric {
   entries: PerformanceEventTiming[];
 }
 
+export type INPSubpart =
+  | 'inputDelay'
+  | 'processingDuration'
+  | 'presentationDelay';
+
 /**
  * An object containing potentially-helpful debugging information summarized
  * from the slowest script intersecting the INP duration (ignoring any script
@@ -36,9 +41,9 @@ export interface SlowestScriptSummary {
    */
   entry: PerformanceScriptTiming;
   /**
-   * The INP phase where the longest script ran.
+   * The INP subpart where the longest script ran.
    */
-  phase: 'inputDelay' | 'processingDuration' | 'presentationDelay';
+  subpart: INPSubpart;
   /**
    * The amount of time the slowest script intersected the INP duration.
    */
@@ -111,40 +116,39 @@ export interface LongAnimationFrameSummary {
    * NOTE: This may be be less than the total count of scripts in the Long
    * Animation Frames as some scripts may occur before the interaction.
    */
-  numIntersectingScripts?: number;
+  numIntersectingScripts: number;
   /**
    * The number of Long Animation Frames intersecting the INP interaction.
    */
-  numLongAnimationFrames?: number;
+  numLongAnimationFrames: number;
   /**
    * Summary details about the slowest Long Animation Frame script that
    * intersects the INP interaction.
    */
   slowestScript?: SlowestScriptSummary;
   /**
-   * The total blocking durations in each phase by invoker for scripts that
+   * The total blocking durations in each subpart by invoker for scripts that
    * intersect the INP interaction.
    */
-  totalDurationsPerPhase?: Record<
-    'inputDelay' | 'processingDuration' | 'presentationDelay',
-    Record<ScriptInvokerType, number>
+  totalDurationsPerSubpart: Partial<
+    Record<INPSubpart, Partial<Record<ScriptInvokerType, number>>>
   >;
   /**
    * The total forced style and layout durations as provided by Long Animation
    * Frame scripts intersecting the INP interaction.
    */
-  totalForcedStyleAndLayoutDuration?: number;
+  totalForcedStyleAndLayoutDuration: number;
   /**
    * The total non-force (i.e. end-of-frame) style and layout duration from any
    * Long Animation Frames intersecting INP interaction.
    */
-  totalNonForcedStyleAndLayoutDuration?: number;
+  totalNonForcedStyleAndLayoutDuration: number;
   /**
    * The total duration of Long Animation Frame scripts that intersect the INP
    * duration. Note, this includes forced style and layout within those
    * scripts.
    */
-  totalScriptDuration?: number;
+  totalScriptDuration: number;
 }
 
 /**

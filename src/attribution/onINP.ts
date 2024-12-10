@@ -28,6 +28,7 @@ import {
   INPAttribution,
   INPMetric,
   INPMetricWithAttribution,
+  INPSubpart,
   LongAnimationFrameSummary,
   SlowestScriptSummary,
   ReportOpts,
@@ -236,8 +237,6 @@ const getIntersectingLoAFs = (
 };
 
 const getLoAFSummary = (attribution: INPAttribution) => {
-  const loafAttribution: LongAnimationFrameSummary = {};
-
   // Stats across all LoAF entries and scripts.
   const interactionTime = attribution.interactionTime;
   const inputDelay = attribution.inputDelay;
@@ -248,10 +247,12 @@ const getLoAFSummary = (attribution: INPAttribution) => {
   let numScripts = 0;
   let slowestScriptDuration = 0;
   let slowestScriptEntry!: PerformanceScriptTiming;
-  let slowestScriptPhase: string = '';
-  const phases = {} as Record<string, Record<ScriptInvokerType, number>>;
+  let slowestScriptPhase!: INPSubpart;
+  const subparts: Partial<
+    Record<INPSubpart, Partial<Record<ScriptInvokerType, number>>>
+  > = {};
 
-  attribution.longAnimationFrameEntries.forEach((loafEntry) => {
+  for (const loafEntry of attribution.longAnimationFrameEntries) {
     totalNonForcedStyleAndLayoutDuration +=
       loafEntry.startTime + loafEntry.duration - loafEntry.styleAndLayoutStart;
     loafEntry.scripts.forEach((script) => {
@@ -265,41 +266,38 @@ const getLoAFSummary = (attribution: INPAttribution) => {
       numScripts++;
       totalForcedStyleAndLayout += script.forcedStyleAndLayoutDuration;
       const invokerType = script.invokerType;
-      let phase = 'processingDuration';
+      let subpart: INPSubpart = 'processingDuration';
       if (script.startTime < interactionTime + inputDelay) {
-        phase = 'inputDelay';
+        subpart = 'inputDelay';
       } else if (
         script.startTime >
         interactionTime + inputDelay + processingDuration
       ) {
-        phase = 'presentationDelay';
+        subpart = 'presentationDelay';
       }
 
-      // Define the record if necessary
-      phases[phase] ??= {} as Record<ScriptInvokerType, number>;
-      phases[phase][invokerType] ??= 0;
+      // Define the record if necessary. Annoyingly Typescript doesn't yet
+      // recognise this so need a few `!`s on the next two lines to convinced
+      // it is typed.
+      subparts[subpart] ??= {};
+      subparts[subpart]![invokerType] ??= 0;
       // Increment it with this value
-      phases[phase][invokerType] += intersectingScriptDuration;
+      subparts[subpart]![invokerType]! += intersectingScriptDuration;
 
       if (intersectingScriptDuration > slowestScriptDuration) {
         slowestScriptEntry = script;
-        slowestScriptPhase = phase;
+        slowestScriptPhase = subpart;
         slowestScriptDuration = intersectingScriptDuration;
       }
     });
-  });
+  }
 
-  // Gather the summary information into the loafAttribution object
-  loafAttribution.numLongAnimationFrames =
-    attribution.longAnimationFrameEntries.length;
-  loafAttribution.numIntersectingScripts = numScripts;
+  // Gather the slowest script summary information
+  let slowestScript: SlowestScriptSummary | undefined = undefined;
   if (slowestScriptEntry !== null) {
-    const slowestScript: SlowestScriptSummary = {
+    slowestScript = {
       entry: slowestScriptEntry,
-      phase: slowestScriptPhase as
-        | 'inputDelay'
-        | 'processingDuration'
-        | 'presentationDelay',
+      subpart: slowestScriptPhase,
       intersectingDuration: slowestScriptDuration,
       totalDuration: slowestScriptEntry.duration,
       compileDuration:
@@ -317,16 +315,20 @@ const getLoAFSummary = (attribution: INPAttribution) => {
       sourceFunctionName: slowestScriptEntry.sourceFunctionName,
       sourceCharPosition: slowestScriptEntry.sourceCharPosition,
     };
-
-    loafAttribution.slowestScript = slowestScript;
   }
-  loafAttribution.totalDurationsPerPhase = phases;
-  loafAttribution.totalForcedStyleAndLayoutDuration = totalForcedStyleAndLayout;
-  loafAttribution.totalNonForcedStyleAndLayoutDuration =
-    totalNonForcedStyleAndLayoutDuration;
-  loafAttribution.totalScriptDuration = totalScriptTime;
 
-  return loafAttribution;
+  // Gather the summary information into the loafAttribution object
+  const loafSummary: LongAnimationFrameSummary = {
+    numLongAnimationFrames: attribution.longAnimationFrameEntries.length,
+    numIntersectingScripts: numScripts,
+    slowestScript: slowestScript,
+    totalDurationsPerSubpart: subparts,
+    totalForcedStyleAndLayoutDuration: totalForcedStyleAndLayout,
+    totalNonForcedStyleAndLayoutDuration: totalNonForcedStyleAndLayoutDuration,
+    totalScriptDuration: totalScriptTime,
+  };
+
+  return loafSummary;
 };
 
 const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
