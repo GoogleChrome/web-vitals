@@ -947,16 +947,16 @@ export interface LongAnimationFrameSummary {
    * NOTE: This may be be less than the total count of scripts in the Long
    * Animation Frames as some scripts may occur before the interaction.
    */
-  numIntersectingScripts?: number;
+  numIntersectingScripts: number;
   /**
    * The number of Long Animation Frames intersecting the INP interaction.
    */
-  numLongAnimationFrames?: number;
+  numLongAnimationFrames: number;
   /**
    * Summary details about the slowest Long Animation Frame script that
    * intersects the INP interaction.
    */
-  slowestScript?: slowestScriptSummary;
+  slowestScript?: SlowestScriptSummary;
   /**
    * The total blocking durations in each sub-part by invoker for scripts that
    * intersect the INP interaction.
@@ -966,25 +966,25 @@ export interface LongAnimationFrameSummary {
    *    'processingDuration': { 'event-listener': 144},
    * }
    */
-  totalDurationsPerSubpart?: Partial<
+  totalDurationsPerSubpart: Partial<
     Record<INPSubpart, Partial<Record<ScriptInvokerType, number>>>
   >;
   /**
    * The total forced style and layout durations as provided by Long Animation
-   * Frame scripts intercepting the INP interaction.
+   * Frame scripts intersecting the INP interaction.
    */
-  totalForcedStyleAndLayoutDuration?: number;
+  totalForcedStyleAndLayoutDuration: number;
   /**
    * The total non-force (i.e. end-of-frame) style and layout duration from any
-   * Long Animation Frames intercepting INP interaction.
+   * Long Animation Frames intersecting INP interaction.
    */
-  totalNonForcedStyleAndLayoutDuration?: number;
+  totalNonForcedStyleAndLayoutDuration: number;
   /**
    * The total duration of Long Animation Frame scripts that intersect the INP
    * duration. Note, this includes forced style and layout within those
    * scripts.
    */
-  totalScriptDuration?: number;
+  totalScriptDuration: number;
 }
 ```
 
