@@ -88,13 +88,7 @@ declare global {
     readonly element: Element | null;
   }
 
-  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
-  export type ScriptWindowAttribution =
-    | 'self'
-    | 'descendant'
-    | 'ancestor'
-    | 'same-page'
-    | 'other';
+  // https://w3c.github.io/long-animation-frames/#sec-PerformanceLongAnimationFrameTiming
   export type ScriptInvokerType =
     | 'classic-script'
     | 'module-script'
@@ -102,12 +96,18 @@ declare global {
     | 'user-callback'
     | 'resolve-promise'
     | 'reject-promise';
-
+  export type ScriptWindowAttribution =
+    | 'self'
+    | 'descendant'
+    | 'ancestor'
+    | 'same-page'
+    | 'other';
   interface PerformanceScriptTiming extends PerformanceEntry {
     readonly startTime: DOMHighResTimeStamp;
     readonly duration: DOMHighResTimeStamp;
     readonly name: string;
     readonly entryType: string;
+
     readonly invokerType: ScriptInvokerType;
     readonly invoker: string;
     readonly executionStart: DOMHighResTimeStamp;
@@ -119,14 +119,16 @@ declare global {
     readonly window?: Window;
     readonly windowAttribution: ScriptWindowAttribution;
   }
-
-  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
   interface PerformanceLongAnimationFrameTiming extends PerformanceEntry {
-    duration: DOMHighResTimeStamp;
-    renderStart: DOMHighResTimeStamp;
-    styleAndLayoutStart: DOMHighResTimeStamp;
-    firstUIEventTimestamp: DOMHighResTimeStamp;
-    blockingDuration: DOMHighResTimeStamp;
-    scripts: Array<PerformanceScriptTiming>;
+    readonly startTime: DOMHighResTimeStamp;
+    readonly duration: DOMHighResTimeStamp;
+    readonly name: string;
+    readonly entryType: string;
+
+    readonly renderStart: DOMHighResTimeStamp;
+    readonly styleAndLayoutStart: DOMHighResTimeStamp;
+    readonly blockingDuration: DOMHighResTimeStamp;
+    readonly firstUIEventTimestamp: DOMHighResTimeStamp;
+    readonly scripts: Array<PerformanceScriptTiming>;
   }
 }
