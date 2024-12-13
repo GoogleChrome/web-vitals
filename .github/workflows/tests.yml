@@ -1,0 +1,66 @@
+name: Run tests
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  unit-tests:
+    name: Run unit tests
+    # Doesn't require anything special so let's use ubuntu as more available
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: NPM install
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Run unit tests
+        run: npm run test:unit
+  chrome-tests:
+    name: Run Chrome e2e tests
+    # Runs best on macos for CI as linux requires extra chrome flags
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: NPM install
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Run server
+        run: npm run test:server &
+      - name: Run e2e tests for chrome
+        run: npm run test:e2e -- --browsers=chrome
+  firefox-tests:
+    name: Run Firefox e2e tests
+    # Runs best on macos for CI as linux requires extra setup
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: NPM install
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Run server
+        run: npm run test:server &
+      - name: Run e2e tests for firefox
+        run: npm run test:e2e -- --browsers=firefox
+  safari-tests:
+    name: Run Safari e2e tests
+    # Requires macos
+    runs-on: macos-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: NPM install
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Run server
+        run: npm run test:server &
+      - name: Run e2e tests for safari
+        run: npm run test:e2e -- --browsers=safari

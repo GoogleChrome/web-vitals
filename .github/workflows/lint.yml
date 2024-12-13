@@ -1,0 +1,20 @@
+name: Lint Code Base
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  lint:
+    name: Lint Code Base
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      - name: NPM install
+        run: npm install
+      - name: Run Prettier
+        run: npm run format:check
+      - name: Run ESlint
+        run: npm run lint

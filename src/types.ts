@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {FirstInputPolyfillCallback} from './types/polyfills.js';
-
 export * from './types/base.js';
 export * from './types/polyfills.js';
 
@@ -26,34 +24,14 @@ export * from './types/inp.js';
 export * from './types/lcp.js';
 export * from './types/ttfb.js';
 
-
-// --------------------------------------------------------------------------
-// Web Vitals package globals
-// --------------------------------------------------------------------------
-
-export interface WebVitalsGlobal {
-  firstInputPolyfill: (onFirstInput: FirstInputPolyfillCallback) => void;
-  resetFirstInputPolyfill: () => void;
-  firstHiddenTime: number;
-}
-
-declare global {
-  interface Window {
-    webVitals: WebVitalsGlobal;
-
-    // Build flags:
-    __WEB_VITALS_POLYFILL__: boolean;
-  }
-}
-
 // --------------------------------------------------------------------------
 // Everything below is modifications to built-in modules.
 // --------------------------------------------------------------------------
 
 interface PerformanceEntryMap {
-  'navigation': PerformanceNavigationTiming;
-  'resource': PerformanceResourceTiming;
-  'paint': PerformancePaintTiming;
+  navigation: PerformanceNavigationTiming;
+  resource: PerformanceResourceTiming;
+  paint: PerformancePaintTiming;
 }
 
 // Update built-in types to be more accurate.
@@ -66,7 +44,9 @@ declare global {
   }
 
   interface Performance {
-    getEntriesByType<K extends keyof PerformanceEntryMap>(type: K): PerformanceEntryMap[K][]
+    getEntriesByType<K extends keyof PerformanceEntryMap>(
+      type: K,
+    ): PerformanceEntryMap[K][];
   }
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
@@ -82,7 +62,7 @@ declare global {
   // https://wicg.github.io/event-timing/#sec-performance-event-timing
   interface PerformanceEventTiming extends PerformanceEntry {
     duration: DOMHighResTimeStamp;
-    interactionId?: number;
+    interactionId: number;
   }
 
   // https://wicg.github.io/layout-instability/#sec-layout-shift-attribution
@@ -101,11 +81,17 @@ declare global {
 
   // https://w3c.github.io/largest-contentful-paint/#sec-largest-contentful-paint-interface
   interface LargestContentfulPaint extends PerformanceEntry {
-    renderTime: DOMHighResTimeStamp;
-    loadTime: DOMHighResTimeStamp;
-    size: number;
-    id: string;
-    url: string;
-    element?: Element;
+    readonly renderTime: DOMHighResTimeStamp;
+    readonly loadTime: DOMHighResTimeStamp;
+    readonly size: number;
+    readonly id: string;
+    readonly url: string;
+    readonly element: Element | null;
+  }
+
+  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
+  interface PerformanceLongAnimationFrameTiming extends PerformanceEntry {
+    renderStart: DOMHighResTimeStamp;
+    duration: DOMHighResTimeStamp;
   }
 }

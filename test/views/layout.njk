@@ -52,7 +52,7 @@
        */
       self.__stubForwardBack = (visibilityStateAfterRestore) => {
         return new Promise((resolve) => {
-          window.dispatchEvent(new PageTransitionEvent('pagehide', {
+          self.dispatchEvent(new PageTransitionEvent('pagehide', {
             persisted: true,
           }));
           self.__stubVisibilityChange('hidden');
@@ -61,7 +61,7 @@
               if (visibilityStateAfterRestore !== 'hidden') {
                 self.__stubVisibilityChange('visible');
               }
-              window.dispatchEvent(new PageTransitionEvent('pageshow', {
+              self.dispatchEvent(new PageTransitionEvent('pageshow', {
                 persisted: true,
               }));
               resolve();
@@ -115,6 +115,56 @@
         });
       }
 
+      /**
+       * @return {Promise<void>}
+       */
+      self.__afterLoad = new Promise((resolve) => {
+        if (document.readyState === 'complete') {
+          resolve();
+        } else {
+          addEventListener('load', resolve);
+        }
+      });
+
+      /**
+       * @return {Promise<void>}
+       */
+      self.__afterElementsRendered = new Promise((resolve) => {
+        addEventListener('DOMContentLoaded', () => {
+          if (PerformanceObserver.supportedEntryTypes.includes('element')) {
+            const nodes = new Set([...document.querySelectorAll('[elementtiming]:not([hidden])')]);
+            if (nodes.size === 0 || !PerformanceObserver.supportedEntryTypes.includes('element')) {
+              resolve();
+            }
+            new PerformanceObserver((list) => {
+              for (const entry of list.getEntries()) {
+                if (nodes.has(entry.element)) {
+                  nodes.delete(entry.element);
+                }
+              }
+              if (nodes.size === 0) {
+                resolve();
+              }
+            }).observe({type: 'element', buffered: true});
+          } else {
+            self.__afterLoad.then(() => {
+              requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                  resolve();
+                });
+              });
+            });
+          }
+        }, true);
+      });
+
+      /**
+       * @return {Promise<void>}
+       */
+      self.__afterFirstInput = new Promise((resolve) => {
+        new PerformanceObserver(resolve).observe({type: 'first-input', buffered: true});
+      });
+
       // Uncomment to stub running in a browser that doesn't support performance APIs
       // (e.g. some version of Opera support this).
       // delete self.performance;
@@ -127,6 +177,14 @@
 
       if (params.has('durationThreshold')) {
         self.__durationThreshold = Number(params.get('durationThreshold'));
+      }
+
+      if (params.has('lazyLoad')) {
+        self.__lazyLoad = Boolean(params.get('lazyLoad'));
+      }
+
+      if (params.has('loadAfterInput')) {
+        self.__loadAfterInput = Boolean(params.get('loadAfterInput'));
       }
 
       if (params.has('hidden')) {
@@ -150,11 +208,49 @@
       if (params.has('wasDiscarded')) {
         self.__stubWasDiscarded();
       }
+
+      // Push to this promise list if you need to wait for some condition in a test.
+      self.__readyPromises = [];
+
+      // If `__lazyLoad` is set, wait to import until after load and first paint.
+      if (self.__lazyLoad) {
+        self.__readyPromises.push(self.__afterLoad, self.__afterElementsRendered);
+      }
+
+      if (self.__loadAfterInput) {
+        self.__readyPromises.push(self.__afterFirstInput);
+      }
+
+      // Import a module and automatically add that to the list of ready promises.
+      self.__testImport = async (modulePath) => {
+        await Promise.all(self.__readyPromises);
+
+        const importPromise = import(modulePath);
+        self.__readyPromises.push(importPromise);
+
+        return await importPromise;
+      };
+
+      self.__toSafeObject = (oldObj) =>  {
+        if (typeof oldObj !== 'object') {
+          return oldObj;
+        } else if (oldObj instanceof EventTarget) {
+          return oldObj.toString();
+        }
+        const newObj = {};
+        for (let key in oldObj) {
+          const value = oldObj[key];
+          if (typeof value === 'function') continue;
+
+          newObj[key] = Array.isArray(value)
+            ? value.map(__toSafeObject)
+            : __toSafeObject(value);
+        }
+        return newObj;
+      };
+
     }());
   </script>
-  {% if polyfill %}
-    <script>{{ webVitalsPolyfill | safe }}</script>
-  {% endif %}
   {% block head %}{% endblock %}
   {% if renderBlocking %}
     <link rel="stylesheet" href="/test/css/styles.css?delay={{ renderBlocking }}">

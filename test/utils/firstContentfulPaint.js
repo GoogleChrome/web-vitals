@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2023 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,11 +14,22 @@
  * limitations under the License.
  */
 
-export {onCLS} from './attribution/onCLS.js';
-export {onFCP} from './attribution/onFCP.js';
-export {onFID} from './attribution/onFID.js';
-export {onINP} from './attribution/onINP.js';
-export {onLCP} from './attribution/onLCP.js';
-export {onTTFB} from './attribution/onTTFB.js';
-
-export * from './types.js';
+/**
+ * Returns a promise that resolves once the browser window has painted
+ * the first frame.
+ * @return {Promise<void>}
+ */
+export function firstContentfulPaint() {
+  return browser.executeAsync(async (done) => {
+    if (PerformanceObserver.supportedEntryTypes.includes('paint')) {
+      new PerformanceObserver(() => {
+        done();
+      }).observe({
+        type: 'paint',
+        buffered: true,
+      });
+    } else {
+      done();
+    }
+  });
+}

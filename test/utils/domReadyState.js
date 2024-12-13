@@ -14,22 +14,32 @@
  * limitations under the License.
  */
 
-
 /**
- * Returns a promise that resolves once the browser window has loaded and
- * all load callbacks have finished executing.
+ * Returns a promise that resolves once the browser window has loaded, all
+ * load callbacks have finished executing, and any pending `__readyPromises`
+ * have settled.
  * @return {Promise<void>}
  */
 export function domReadyState(state) {
-  return browser.executeAsync((state, done) => {
-    if (document.readyState === 'complete' || document.readyState === state) {
-      setTimeout(done, 0);
-    } else {
-      document.addEventListener('readystatechange', () => {
-        if (document.readyState === state) {
-          setTimeout(done, 0);
-        }
-      });
+  return browser.executeAsync(async (state, done) => {
+    await new Promise((resolve) => {
+      if (document.readyState === 'complete' || document.readyState === state) {
+        resolve();
+      } else {
+        document.addEventListener('readystatechange', () => {
+          if (
+            document.readyState === state ||
+            document.readyState === 'complete'
+          ) {
+            resolve();
+          }
+        });
+      }
+    });
+    if (state !== 'loading' && self.__readyPromises) {
+      await Promise.all(self.__readyPromises);
     }
+    // Queue a task so this resolves after any event callback run.
+    setTimeout(done, 0);
   }, state);
 }

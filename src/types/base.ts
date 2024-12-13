@@ -14,8 +14,12 @@
  * limitations under the License.
  */
 
-import {FirstInputPolyfillEntry, NavigationTimingPolyfillEntry} from './polyfills.js';
-
+import type {CLSMetric, CLSMetricWithAttribution} from './cls.js';
+import type {FCPMetric, FCPMetricWithAttribution} from './fcp.js';
+import type {FIDMetric, FIDMetricWithAttribution} from './fid.js';
+import type {INPMetric, INPMetricWithAttribution} from './inp.js';
+import type {LCPMetric, LCPMetricWithAttribution} from './lcp.js';
+import type {TTFBMetric, TTFBMetricWithAttribution} from './ttfb.js';
 
 export interface Metric {
   /**
@@ -56,7 +60,7 @@ export interface Metric {
    * The array may also be empty if the metric value was not based on any
    * entries (e.g. a CLS value of 0 given no layout shifts).
    */
-  entries: (PerformanceEntry | LayoutShift | FirstInputPolyfillEntry | NavigationTimingPolyfillEntry)[];
+  entries: PerformanceEntry[];
 
   /**
    * The type of navigation.
@@ -65,27 +69,60 @@ export interface Metric {
    * `undefined` if the browser doesn't support that API), with the following
    * exceptions:
    * - 'back-forward-cache': for pages that are restored from the bfcache.
+   * - 'back_forward' is renamed to 'back-forward' for consistency.
    * - 'prerender': for pages that were prerendered.
    * - 'restore': for pages that were discarded by the browser and then
    * restored by the user.
    */
-  navigationType:  'navigate' | 'reload' | 'back-forward' | 'back-forward-cache' | 'prerender' | 'restore';
+  navigationType:
+    | 'navigate'
+    | 'reload'
+    | 'back-forward'
+    | 'back-forward-cache'
+    | 'prerender'
+    | 'restore';
 }
+
+/** The union of supported metric types. */
+export type MetricType =
+  | CLSMetric
+  | FCPMetric
+  | FIDMetric
+  | INPMetric
+  | LCPMetric
+  | TTFBMetric;
+
+/** The union of supported metric attribution types. */
+export type MetricWithAttribution =
+  | CLSMetricWithAttribution
+  | FCPMetricWithAttribution
+  | FIDMetricWithAttribution
+  | INPMetricWithAttribution
+  | LCPMetricWithAttribution
+  | TTFBMetricWithAttribution;
 
 /**
- * A version of the `Metric` that is used with the attribution build.
+ * The thresholds of metric's "good", "needs improvement", and "poor" ratings.
+ *
+ * - Metric values up to and including [0] are rated "good"
+ * - Metric values up to and including [1] are rated "needs improvement"
+ * - Metric values above [1] are "poor"
+ *
+ * | Metric value    | Rating              |
+ * | --------------- | ------------------- |
+ * | ≦ [0]           | "good"              |
+ * | > [0] and ≦ [1] | "needs improvement" |
+ * | > [1]           | "poor"              |
  */
-export interface MetricWithAttribution extends Metric {
-  /**
-   * An object containing potentially-helpful debugging information that
-   * can be sent along with the metric value for the current page visit in
-   * order to help identify issues happening to real-users in the field.
-   */
-  attribution: {[key: string]: unknown};
-}
+export type MetricRatingThresholds = [number, number];
 
+/**
+ * @deprecated Use metric-specific function types instead, such as:
+ * `(metric: LCPMetric) => void`. If a single callback type is needed for
+ * multiple metrics, use `(metric: MetricType) => void`.
+ */
 export interface ReportCallback {
-  (metric: Metric): void;
+  (metric: MetricType): void;
 }
 
 export interface ReportOpts {
@@ -108,4 +145,8 @@ export interface ReportOpts {
  * - `complete`: the document and all of its sub-resources have finished
  *   loading. This is equivalent to the corresponding `readyState` value.
  */
-export type LoadState = 'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';
+export type LoadState =
+  | 'loading'
+  | 'dom-interactive'
+  | 'dom-content-loaded'
+  | 'complete';

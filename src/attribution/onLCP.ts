@@ -14,21 +14,33 @@
  * limitations under the License.
  */
 
-
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
-import {LCPAttribution, LCPMetric, LCPMetricWithAttribution, LCPReportCallback, LCPReportCallbackWithAttribution, ReportOpts} from '../types.js';
+import {
+  LCPAttribution,
+  LCPMetric,
+  LCPMetricWithAttribution,
+  ReportOpts,
+} from '../types.js';
 
+const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
+  // Use a default object if no other attribution has been set.
+  let attribution: LCPAttribution = {
+    timeToFirstByte: 0,
+    resourceLoadDelay: 0,
+    resourceLoadDuration: 0,
+    elementRenderDelay: metric.value,
+  };
 
-const attributeLCP = (metric: LCPMetric) => {
   if (metric.entries.length) {
     const navigationEntry = getNavigationEntry();
-
     if (navigationEntry) {
       const activationStart = navigationEntry.activationStart || 0;
       const lcpEntry = metric.entries[metric.entries.length - 1];
-      const lcpResourceEntry = lcpEntry.url &&performance
+      const lcpResourceEntry =
+        lcpEntry.url &&
+        performance
           .getEntriesByType('resource')
           .filter((e) => e.name === lcpEntry.url)[0];
 
@@ -37,23 +49,25 @@ const attributeLCP = (metric: LCPMetric) => {
       const lcpRequestStart = Math.max(
         ttfb,
         // Prefer `requestStart` (if TOA is set), otherwise use `startTime`.
-        lcpResourceEntry ? (lcpResourceEntry.requestStart ||
-            lcpResourceEntry.startTime) - activationStart : 0
+        lcpResourceEntry
+          ? (lcpResourceEntry.requestStart || lcpResourceEntry.startTime) -
+              activationStart
+          : 0,
       );
       const lcpResponseEnd = Math.max(
         lcpRequestStart,
-        lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0
+        lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
       );
       const lcpRenderTime = Math.max(
         lcpResponseEnd,
-        lcpEntry ? lcpEntry.startTime - activationStart : 0
+        lcpEntry.startTime - activationStart,
       );
 
-      const attribution: LCPAttribution = {
+      attribution = {
         element: getSelector(lcpEntry.element),
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
-        resourceLoadTime: lcpResponseEnd - lcpRequestStart,
+        resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
         elementRenderDelay: lcpRenderTime - lcpResponseEnd,
         navigationEntry,
         lcpEntry,
@@ -66,22 +80,19 @@ const attributeLCP = (metric: LCPMetric) => {
       if (lcpResourceEntry) {
         attribution.lcpResourceEntry = lcpResourceEntry;
       }
-
-      (metric as LCPMetricWithAttribution).attribution = attribution;
-      return;
     }
   }
-  // Set an empty object if no other attribution has been set.
-  (metric as LCPMetricWithAttribution).attribution = {
-    timeToFirstByte: 0,
-    resourceLoadDelay: 0,
-    resourceLoadTime: 0,
-    elementRenderDelay: metric.value,
-  };
+
+  // Use Object.assign to set property to keep tsc happy.
+  const metricWithAttribution: LCPMetricWithAttribution = Object.assign(
+    metric,
+    {attribution},
+  );
+  return metricWithAttribution;
 };
 
 /**
- * Calculates the [LCP](https://web.dev/lcp/) value for the current page and
+ * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and
  * calls the `callback` function once the value is ready (along with the
  * relevant `largest-contentful-paint` performance entry used to determine the
  * value). The reported value is a `DOMHighResTimeStamp`.
@@ -91,9 +102,12 @@ const attributeLCP = (metric: LCPMetric) => {
  * performance entry is dispatched, or once the final value of the metric has
  * been determined.
  */
-export const onLCP = (onReport: LCPReportCallbackWithAttribution, opts?: ReportOpts) => {
-  unattributedOnLCP(((metric: LCPMetricWithAttribution) => {
-    attributeLCP(metric);
-    onReport(metric);
-  }) as LCPReportCallback, opts);
+export const onLCP = (
+  onReport: (metric: LCPMetricWithAttribution) => void,
+  opts?: ReportOpts,
+) => {
+  unattributedOnLCP((metric: LCPMetric) => {
+    const metricWithAttribution = attributeLCP(metric);
+    onReport(metricWithAttribution);
+  }, opts);
 };

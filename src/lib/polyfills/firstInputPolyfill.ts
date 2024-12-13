@@ -14,16 +14,19 @@
  * limitations under the License.
  */
 
-import {FirstInputPolyfillEntry, FirstInputPolyfillCallback} from '../../types.js';
-
+import {
+  FirstInputPolyfillEntry,
+  FirstInputPolyfillCallback,
+} from '../../types.js';
 
 type addOrRemoveEventListener =
-    typeof addEventListener | typeof removeEventListener;
+  | typeof addEventListener
+  | typeof removeEventListener;
 
-let firstInputEvent: Event|null;
+let firstInputEvent: Event | null;
 let firstInputDelay: number;
 let firstInputTimeStamp: Date;
-let callbacks: FirstInputPolyfillCallback[]
+let callbacks: FirstInputPolyfillCallback[];
 
 const listenerOpts: AddEventListenerOptions = {passive: true, capture: true};
 const startTimeStamp: Date = new Date();
@@ -33,18 +36,18 @@ const startTimeStamp: Date = new Date();
  * are known.
  */
 export const firstInputPolyfill = (
-  onFirstInput: FirstInputPolyfillCallback
+  onFirstInput: FirstInputPolyfillCallback,
 ) => {
   callbacks.push(onFirstInput);
   reportFirstInputDelayIfRecordedAndValid();
-}
+};
 
 export const resetFirstInputPolyfill = () => {
   callbacks = [];
   firstInputDelay = -1;
   firstInputEvent = null;
   eachEventType(addEventListener);
-}
+};
 
 /**
  * Records the first input delay and event, so subsequent events can be
@@ -54,12 +57,12 @@ const recordFirstInputDelay = (delay: number, event: Event) => {
   if (!firstInputEvent) {
     firstInputEvent = event;
     firstInputDelay = delay;
-    firstInputTimeStamp = new Date;
+    firstInputTimeStamp = new Date();
 
     eachEventType(removeEventListener);
     reportFirstInputDelayIfRecordedAndValid();
   }
-}
+};
 
 /**
  * Reports the first input delay and event (if they're recorded and valid)
@@ -71,9 +74,11 @@ const reportFirstInputDelayIfRecordedAndValid = () => {
   // - https://github.com/GoogleChromeLabs/first-input-delay/issues/4
   // - https://github.com/GoogleChromeLabs/first-input-delay/issues/6
   // - https://github.com/GoogleChromeLabs/first-input-delay/issues/7
-  if (firstInputDelay >= 0 &&
-      // @ts-ignore (subtracting two dates always returns a number)
-      firstInputDelay < firstInputTimeStamp - startTimeStamp) {
+  if (
+    firstInputDelay >= 0 &&
+    // @ts-ignore (subtracting two dates always returns a number)
+    firstInputDelay < firstInputTimeStamp - startTimeStamp
+  ) {
     const entry = {
       entryType: 'first-input',
       name: firstInputEvent!.type,
@@ -82,12 +87,12 @@ const reportFirstInputDelayIfRecordedAndValid = () => {
       startTime: firstInputEvent!.timeStamp,
       processingStart: firstInputEvent!.timeStamp + firstInputDelay,
     } as FirstInputPolyfillEntry;
-    callbacks.forEach(function(callback) {
+    callbacks.forEach(function (callback) {
       callback(entry);
     });
     callbacks = [];
   }
-}
+};
 
 /**
  * Handles pointer down events, which are a special case.
@@ -106,7 +111,7 @@ const onPointerDown = (delay: number, event: Event) => {
   const onPointerUp = () => {
     recordFirstInputDelay(delay, event);
     removePointerEventListeners();
-  }
+  };
 
   /**
    * Responds to 'pointercancel' events and removes pointer listeners.
@@ -115,7 +120,7 @@ const onPointerDown = (delay: number, event: Event) => {
    */
   const onPointerCancel = () => {
     removePointerEventListeners();
-  }
+  };
 
   /**
    * Removes added pointer event listeners.
@@ -123,11 +128,11 @@ const onPointerDown = (delay: number, event: Event) => {
   const removePointerEventListeners = () => {
     removeEventListener('pointerup', onPointerUp, listenerOpts);
     removeEventListener('pointercancel', onPointerCancel, listenerOpts);
-  }
+  };
 
   addEventListener('pointerup', onPointerUp, listenerOpts);
   addEventListener('pointercancel', onPointerCancel, listenerOpts);
-}
+};
 
 /**
  * Handles all input events and records the time between when the event
@@ -145,11 +150,11 @@ const onInput = (event: Event) => {
     // the `Date` object rather than `performance.now()`.
     // - https://github.com/GoogleChromeLabs/first-input-delay/issues/4
     const isEpochTime = event.timeStamp > 1e12;
-    const now = isEpochTime ? new Date : performance.now();
+    const now = isEpochTime ? new Date() : performance.now();
 
     // Input delay is the delta between when the system received the event
     // (e.g. event.timeStamp) and when it could run the callback (e.g. `now`).
-    const delay = now as number - event.timeStamp;
+    const delay = (now as number) - event.timeStamp;
 
     if (event.type == 'pointerdown') {
       onPointerDown(delay, event);
@@ -157,18 +162,13 @@ const onInput = (event: Event) => {
       recordFirstInputDelay(delay, event);
     }
   }
-}
+};
 
 /**
  * Invokes the passed callback const for =  each event type with t =>he
  * `onInput` const and =  `listenerOpts =>`.
  */
 const eachEventType = (callback: addOrRemoveEventListener) => {
-  const eventTypes = [
-    'mousedown',
-    'keydown',
-    'touchstart',
-    'pointerdown',
-  ];
+  const eventTypes = ['mousedown', 'keydown', 'touchstart', 'pointerdown'];
   eventTypes.forEach((type) => callback(type, onInput, listenerOpts));
-}
+};

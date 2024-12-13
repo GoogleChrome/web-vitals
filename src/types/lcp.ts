@@ -14,9 +14,7 @@
  * limitations under the License.
  */
 
-import {Metric, ReportCallback} from './base.js';
-import {NavigationTimingPolyfillEntry} from './polyfills.js';
-
+import type {Metric} from './base.js';
 
 /**
  * An LCP-specific version of the Metric object.
@@ -35,41 +33,42 @@ export interface LCPAttribution {
   /**
    * The element corresponding to the largest contentful paint for the page.
    */
-  element?: string,
+  element?: string;
   /**
    * The URL (if applicable) of the LCP image resource. If the LCP element
    * is a text node, this value will not be set.
    */
-  url?: string,
+  url?: string;
   /**
    * The time from when the user initiates loading the page until when the
    * browser receives the first byte of the response (a.k.a. TTFB). See
-   * [Optimize LCP](https://web.dev/optimize-lcp/) for details.
+   * [Optimize LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   timeToFirstByte: number;
   /**
    * The delta between TTFB and when the browser starts loading the LCP
    * resource (if there is one, otherwise 0). See [Optimize
-   * LCP](https://web.dev/optimize-lcp/) for details.
+   * LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   resourceLoadDelay: number;
   /**
    * The total time it takes to load the LCP resource itself (if there is one,
-   * otherwise 0). See [Optimize LCP](https://web.dev/optimize-lcp/) for
+   * otherwise 0). See [Optimize LCP](https://web.dev/articles/optimize-lcp) for
    * details.
    */
-  resourceLoadTime: number;
+  resourceLoadDuration: number;
   /**
    * The delta between when the LCP resource finishes loading until the LCP
    * element is fully rendered. See [Optimize
-   * LCP](https://web.dev/optimize-lcp/) for details.
+   * LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   elementRenderDelay: number;
   /**
    * The `navigation` entry of the current page, which is useful for diagnosing
-   * general page load issues.
+   * general page load issues. This can be used to access `serverTiming` for example:
+   * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming | NavigationTimingPolyfillEntry;
+  navigationEntry?: PerformanceNavigationTiming;
   /**
    * The `resource` entry for the LCP resource (if applicable), which is useful
    * for diagnosing resource load issues.
@@ -86,18 +85,4 @@ export interface LCPAttribution {
  */
 export interface LCPMetricWithAttribution extends LCPMetric {
   attribution: LCPAttribution;
-}
-
-/**
- * An LCP-specific version of the ReportCallback function.
- */
-export interface LCPReportCallback extends ReportCallback {
-  (metric: LCPMetric): void;
-}
-
-/**
- * An LCP-specific version of the ReportCallback function with attribution.
- */
-export interface LCPReportCallbackWithAttribution extends LCPReportCallback {
-  (metric: LCPMetricWithAttribution): void;
 }

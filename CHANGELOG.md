@@ -1,5 +1,102 @@
 # Changelog
 
+See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
+
+### v4.2.4 (2024-10-22)
+
+- Fix memory leak in registering new event listeners on every keydown and click ([#554](https://github.com/GoogleChrome/web-vitals/pull/554))
+
+### v4.2.3 (2024-08-06)
+
+- Fix missing LoAF entries in INP attribution ([#512](https://github.com/GoogleChrome/web-vitals/pull/512))
+
+### v4.2.2 (2024-07-17)
+
+- Fix interaction count after bfcache restore ([#505](https://github.com/GoogleChrome/web-vitals/pull/505))
+
+### v4.2.1 (2024-06-30)
+
+- Fix compatibility issues with TypeScript v5.5 ([#497](https://github.com/GoogleChrome/web-vitals/pull/497))
+
+### v4.2.0 (2024-06-20)
+
+- Refactor INP attribution code to fix errors on Windows 10 ([#495](https://github.com/GoogleChrome/web-vitals/pull/495))
+
+### v4.1.1 (2024-06-10)
+
+- Fix pending LoAF cleanup logic ([#493](https://github.com/GoogleChrome/web-vitals/pull/493))
+
+### v4.1.0 (2024-06-06)
+
+- Move the support check to the top of the onINP() function ([#490](https://github.com/GoogleChrome/web-vitals/pull/490))
+- Fix missing LoAF attribution when entries are dispatched before event entries ([#487](https://github.com/GoogleChrome/web-vitals/pull/487))
+
+### v4.0.1 (2024-05-21)
+
+- Add the `ReportCallback` type back but deprecate it ([#483](https://github.com/GoogleChrome/web-vitals/pull/483))
+
+### v4.0.0 (2024-05-13)
+
+- **[BREAKING]** Update types to support more generic usage ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
+- **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
+- **[BREAKING]** Rename `TTFBAttribution` fields from `*Time` to `*Duration` ([#453](https://github.com/GoogleChrome/web-vitals/pull/453))
+- **[BREAKING]** Rename `resourceLoadTime` to `resourceLoadDuration` in LCP attribution ([#450](https://github.com/GoogleChrome/web-vitals/pull/450))
+- **[BREAKING]** Add INP breakdown timings and LoAF attribution ([#442](https://github.com/GoogleChrome/web-vitals/pull/442))
+- **[BREAKING]** Deprecate `onFID()` and remove previously deprecated APIs ([#435](https://github.com/GoogleChrome/web-vitals/pull/435))
+- Expose the target element in INP attribution ([#479](https://github.com/GoogleChrome/web-vitals/pull/479))
+- Save INP target after interactions to reduce null values when removed from the DOM ([#477](https://github.com/GoogleChrome/web-vitals/pull/477))
+- Cap TTFB in attribution ([#440](https://github.com/GoogleChrome/web-vitals/pull/440))
+- Fix `reportAllChanges` behavior for LCP when library is loaded late ([#468](https://github.com/GoogleChrome/web-vitals/pull/468))
+
+### v3.5.2 (2024-01-25)
+
+- Pick the first non-null `target` for INP attribution ([#421](https://github.com/GoogleChrome/web-vitals/pull/421))
+
+### v3.5.1 (2023-12-27)
+
+- Add extra guard for `PerformanceEventTiming` not existing ([#403](https://github.com/GoogleChrome/web-vitals/pull/403))
+
+### v3.5.0 (2023-09-28)
+
+- Run `onLCP` callback in separate task ([#386](https://github.com/GoogleChrome/web-vitals/pull/386))
+- Fix INP durationThreshold bug when set to 0 ([#372](https://github.com/GoogleChrome/web-vitals/pull/372))
+- Prevent FID entries being emitted as INP for non-supporting browsers ([#368](https://github.com/GoogleChrome/web-vitals/pull/368))
+
+### v3.4.0 (2023-07-11)
+
+- Make `bindReporter` generic over metric type ([#359](https://github.com/GoogleChrome/web-vitals/pull/359))
+- Update INP status in README ([#362](https://github.com/GoogleChrome/web-vitals/pull/362))
+- Fix Metric types for better TypeScript support ([#356](https://github.com/GoogleChrome/web-vitals/pull/356))
+- Fix selector for SVGs for attribution build ([#354](https://github.com/GoogleChrome/web-vitals/pull/354))
+
+### v3.3.2 (2023-05-29)
+
+- Fix attribution types ([#348](https://github.com/GoogleChrome/web-vitals/pull/348))
+- Safe access navigation entry type ([#290](https://github.com/GoogleChrome/web-vitals/pull/290))
+
+### v3.3.1 (2023-04-04)
+
+- Export metric rating thresholds in attribution build as well.
+
+### v3.3.0 (2023-03-09)
+
+- Export metric rating thresholds, add explicit `MetricRatingThresholds` type ([#323](https://github.com/GoogleChrome/web-vitals/pull/323))
+- Trim classname selector ([#328](https://github.com/GoogleChrome/web-vitals/pull/328))
+- Add link to CrUX versus RUM blog post ([#327](https://github.com/GoogleChrome/web-vitals/pull/327))
+- Prevent LCP being reported for hidden prerendered pages ([#326](https://github.com/GoogleChrome/web-vitals/pull/326))
+- Add Server Timing information to docs ([#324](https://github.com/GoogleChrome/web-vitals/pull/324))
+- Fix link in `onINP()` thresholds comment ([#318](https://github.com/GoogleChrome/web-vitals/pull/318))
+- Update web.dev link for `onINP()` ([#307](https://github.com/GoogleChrome/web-vitals/pull/307))
+- Add a note about when to load the library ([#305](https://github.com/GoogleChrome/web-vitals/pull/305))
+
+### v3.2.0
+
+- Version number skipped
+
+### v3.1.1 (2023-01-10)
+
+- Defer CLS logic until after `onFCP()` callback ([#297](https://github.com/GoogleChrome/web-vitals/pull/297))
+
 ### v3.1.0 (2022-11-15)
 
 - Add support for `'restore'` as a `navigationType` ([#284](https://github.com/GoogleChrome/web-vitals/pull/284))

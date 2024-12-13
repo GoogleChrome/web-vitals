@@ -18,10 +18,12 @@ import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {ReportCallback, ReportOpts} from './types.js';
+import {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {whenActivated} from './lib/whenActivated.js';
 
+/** Thresholds for TTFB. See https://web.dev/articles/ttfb#what_is_a_good_ttfb_score */
+export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
 
 /**
  * Runs in the next task after the page is done loading and/or prerendering.
@@ -36,10 +38,10 @@ const whenReady = (callback: () => void) => {
     // Queue a task so the callback runs after `loadEventEnd`.
     setTimeout(callback, 0);
   }
-}
+};
 
 /**
- * Calculates the [TTFB](https://web.dev/time-to-first-byte/) value for the
+ * Calculates the [TTFB](https://web.dev/articles/ttfb) value for the
  * current page and calls the `callback` function once the page has loaded,
  * along with the relevant `navigation` performance entry used to determine the
  * value. The reported value is a `DOMHighResTimeStamp`.
@@ -53,38 +55,35 @@ const whenReady = (callback: () => void) => {
  * includes time spent on DNS lookup, connection negotiation, network latency,
  * and server processing time.
  */
-export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
+export const onTTFB = (
+  onReport: (metric: TTFBMetric) => void,
+  opts?: ReportOpts,
+) => {
   // Set defaults
   opts = opts || {};
 
-  // https://web.dev/ttfb/#what-is-a-good-ttfb-score
-  const thresholds = [800, 1800];
-
   let metric = initMetric('TTFB');
   let report = bindReporter(
-      onReport, metric, thresholds, opts.reportAllChanges);
+    onReport,
+    metric,
+    TTFBThresholds,
+    opts.reportAllChanges,
+  );
 
   whenReady(() => {
-    const navEntry = getNavigationEntry();
+    const navigationEntry = getNavigationEntry();
 
-    if (navEntry) {
-      const responseStart = navEntry.responseStart;
-
-      // In some cases no value is reported by the browser (for
-      // privacy/security reasons), and in other cases (bugs) the value is
-      // negative or is larger than the current page time. Ignore these cases:
-      // https://github.com/GoogleChrome/web-vitals/issues/137
-      // https://github.com/GoogleChrome/web-vitals/issues/162
-      // https://github.com/GoogleChrome/web-vitals/issues/275
-      if (responseStart <= 0 || responseStart > performance.now()) return;
-
+    if (navigationEntry) {
       // The activationStart reference is used because TTFB should be
       // relative to page activation rather than navigation start if the
       // page was prerendered. But in cases where `activationStart` occurs
       // after the first byte is received, this time should be clamped at 0.
-      metric.value = Math.max(responseStart - getActivationStart(), 0);
+      metric.value = Math.max(
+        navigationEntry.responseStart - getActivationStart(),
+        0,
+      );
 
-      metric.entries = [navEntry];
+      metric.entries = [navigationEntry];
       report(true);
 
       // Only report TTFB after bfcache restores if a `navigation` entry
@@ -92,7 +91,11 @@ export const onTTFB = (onReport: ReportCallback, opts?: ReportOpts) => {
       onBFCacheRestore(() => {
         metric = initMetric('TTFB', 0);
         report = bindReporter(
-            onReport, metric, thresholds, opts!.reportAllChanges);
+          onReport,
+          metric,
+          TTFBThresholds,
+          opts!.reportAllChanges,
+        );
 
         report(true);
       });

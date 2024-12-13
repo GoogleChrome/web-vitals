@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,14 +14,13 @@
  * limitations under the License.
  */
 
-import {firstInputPolyfill, resetFirstInputPolyfill} from './lib/polyfills/firstInputPolyfill.js';
-import {getFirstHiddenTime} from './lib/polyfills/getFirstHiddenTimePolyfill.js';
+export {
+  /**
+   * @deprecated Use `onINP()` instead.
+   */
+  onFID,
+} from './onFID.js';
 
-resetFirstInputPolyfill();
-self.webVitals = {
-  firstInputPolyfill: firstInputPolyfill,
-  resetFirstInputPolyfill: resetFirstInputPolyfill,
-  get firstHiddenTime() {
-    return getFirstHiddenTime();
-  },
-};
+export {FIDThresholds} from '../onFID.js';
+
+export * from '../types.js';
