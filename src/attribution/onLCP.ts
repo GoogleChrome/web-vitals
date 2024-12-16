@@ -52,8 +52,8 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
         // bytes (firstInterimResponseStart) for consistency with other
         // browers, but only if non-zero (so use || rather than ??) as zero
         // indicates no early hints.
-        navigationEntry.firstInterimResponseStart ||
-          navigationEntry.responseStart - activationStart,
+        (navigationEntry.firstInterimResponseStart ||
+          navigationEntry.responseStart) - activationStart,
       );
 
       const lcpRequestStart = Math.max(
