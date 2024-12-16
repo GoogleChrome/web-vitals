@@ -351,7 +351,7 @@ function sendToGoogleAnalytics({name, delta, value, id, attribution}) {
       eventParams.debug_target = attribution.interactionTarget;
       break;
     case 'LCP':
-      eventParams.debug_target = attribution.target;
+      eventParams.debug_target = attribution.element;
       break;
   }
 
