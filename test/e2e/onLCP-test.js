@@ -465,7 +465,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
@@ -515,7 +515,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
 
       // Specifically check that resourceLoadDelay falls back to `startTime`.
       assert.equal(
@@ -565,7 +565,7 @@ describe('onLCP()', async function () {
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
       assert.equal(lcp.navigationType, 'prerender');
-      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
 
       // Assert each individual LCP sub-part accounts for `activationStart`
       assert.equal(
@@ -624,7 +624,7 @@ describe('onLCP()', async function () {
       const [lcp] = await getBeacons();
 
       assert.equal(lcp.attribution.url, undefined);
-      assert.equal(lcp.attribution.target, 'html>body>main>h1');
+      assert.equal(lcp.attribution.element, 'html>body>main>h1');
       assert.equal(lcp.attribution.resourceLoadDelay, 0);
       assert.equal(lcp.attribution.resourceLoadDuration, 0);
       assert.equal(
@@ -641,7 +641,7 @@ describe('onLCP()', async function () {
       // Deep equal won't work since some of the properties are removed before
       // sending to /collect, so just compare some.
       const lcpEntry = lcp.entries.slice(-1)[0];
-      assert.equal(lcp.attribution.lcpEntry.target, lcpEntry.target);
+      assert.equal(lcp.attribution.lcpEntry.element, lcpEntry.element);
       assert.equal(lcp.attribution.lcpEntry.size, lcpEntry.size);
       assert.equal(lcp.attribution.lcpEntry.startTime, lcpEntry.startTime);
     });
@@ -673,7 +673,7 @@ describe('onLCP()', async function () {
       assert.strictEqual(lcp2.entries.length, 0);
       assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
 
-      assert.equal(lcp2.attribution.target, undefined);
+      assert.equal(lcp2.attribution.element, undefined);
       assert.equal(lcp2.attribution.timeToFirstByte, 0);
       assert.equal(lcp2.attribution.resourceLoadDelay, 0);
       assert.equal(lcp2.attribution.resourceLoadDuration, 0);
@@ -683,7 +683,7 @@ describe('onLCP()', async function () {
       assert.equal(lcp2.attribution.lcpEntry, undefined);
     });
 
-    it('reports the target even when removed (reportAllChanges === false)', async function () {
+    it('reports the element even when removed (reportAllChanges === false)', async function () {
       if (!browserSupportsLCP) this.skip();
 
       await navigateTo('/test/lcp?attribution=1');
@@ -700,12 +700,12 @@ describe('onLCP()', async function () {
 
       const [lcp] = await getBeacons();
       assertStandardReportsAreCorrect([lcp]);
-      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
     });
 
-    it('reports the target (reportAllChanges === true)', async function () {
-      // We can't guarantee the order or reporting removed targets with
-      // reportAllChanges so don't even try. Just test the targets without
+    it('reports the element (reportAllChanges === true)', async function () {
+      // We can't guarantee the order or reporting removed element with
+      // reportAllChanges so don't even try. Just test the elements without
       // removal to compare to previous test
       if (!browserSupportsLCP) this.skip();
 
@@ -721,8 +721,8 @@ describe('onLCP()', async function () {
       const [lcp1, lcp2] = await getBeacons();
       assertFullReportsAreCorrect([lcp1, lcp2]);
       // Note these should be the full selectors with the full paths
-      assert.equal(lcp1.attribution.target, 'html>body>main>h1');
-      assert.equal(lcp2.attribution.target, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp1.attribution.element, 'html>body>main>h1');
+      assert.equal(lcp2.attribution.element, 'html>body>main>p>img.bar.foo');
     });
   });
 });
