@@ -721,14 +721,14 @@ describe('onINP()', async function () {
       );
       assert.equal(
         JSON.stringify(
-          inp1.attribution.longAnimationFrameSummary.slowestScriptEntry,
+          inp1.attribution.longAnimationFrameSummary.slowestScript.entry,
         ),
         JSON.stringify(
           inp1.attribution.longAnimationFrameEntries[0].scripts[0],
         ),
       );
       assert.equal(
-        inp1.attribution.longAnimationFrameSummary.slowestScriptSubpart,
+        inp1.attribution.longAnimationFrameSummary.slowestScript.subpart,
         'processingDuration',
       );
       assert.equal(

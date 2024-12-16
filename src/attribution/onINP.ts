@@ -291,28 +291,30 @@ const getLoAFSummary = (attribution: INPAttribution) => {
     });
   }
 
-  // Gather the summary information into the loafAttribution object
+  // Gather the loaf summary information into the loafAttribution object
   const loafSummary: LongAnimationFrameSummary = {
     numLongAnimationFrames: attribution.longAnimationFrameEntries.length,
     numIntersectingScripts: numScripts,
-    slowestScriptEntry: slowestScriptEntry,
-    slowestScriptSubpart: slowestScriptSubpart,
-    slowestScriptIntersectingDuration: slowestScriptDuration,
-    slowestScriptTotalDuration: slowestScriptEntry?.duration,
-    slowestScriptCompileDuration:
-      slowestScriptEntry?.executionStart - slowestScriptEntry?.startTime,
-    slowestScriptExecutionDuration:
-      slowestScriptEntry?.startTime +
-      slowestScriptEntry?.duration -
-      slowestScriptEntry?.executionStart,
-    slowestScriptForcedStyleAndLayoutDuration:
-      slowestScriptEntry?.forcedStyleAndLayoutDuration,
-    slowestScriptPauseDuration: slowestScriptEntry?.pauseDuration,
-    slowestScriptInvokerType: slowestScriptEntry?.invokerType,
-    slowestScriptInvoker: slowestScriptEntry?.invoker,
-    slowestScriptSourceURL: slowestScriptEntry?.sourceURL,
-    slowestScriptSourceFunctionName: slowestScriptEntry?.sourceFunctionName,
-    slowestScriptSourceCharPosition: slowestScriptEntry?.sourceCharPosition,
+    slowestScript: {
+      entry: slowestScriptEntry,
+      subpart: slowestScriptSubpart,
+      intersectingDuration: slowestScriptDuration,
+      totalDuration: slowestScriptEntry?.duration,
+      compileDuration:
+        slowestScriptEntry?.executionStart - slowestScriptEntry?.startTime,
+      executionDuration:
+        slowestScriptEntry?.startTime +
+        slowestScriptEntry?.duration -
+        slowestScriptEntry?.executionStart,
+      forcedStyleAndLayoutDuration:
+        slowestScriptEntry?.forcedStyleAndLayoutDuration,
+      pauseDuration: slowestScriptEntry?.pauseDuration,
+      invokerType: slowestScriptEntry?.invokerType,
+      invoker: slowestScriptEntry?.invoker,
+      sourceURL: slowestScriptEntry?.sourceURL,
+      sourceFunctionName: slowestScriptEntry?.sourceFunctionName,
+      sourceCharPosition: slowestScriptEntry?.sourceCharPosition,
+    },
     totalDurationsPerSubpart: subparts,
     totalForcedStyleAndLayoutDuration: totalForcedStyleAndLayout,
     totalNonForcedStyleAndLayoutDuration: totalNonForcedStyleAndLayoutDuration,
