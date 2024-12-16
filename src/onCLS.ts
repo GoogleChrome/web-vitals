@@ -26,6 +26,12 @@ import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 /** Thresholds for CLS. See https://web.dev/articles/cls#what_is_a_good_cls_score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
 
+interface EntryPreProcessingHook {
+  (entry: LayoutShift): void;
+}
+
+export const entryPreProcessingCallbacks: EntryPreProcessingHook[] = [];
+
 /**
  * Calculates the [CLS](https://web.dev/articles/cls) value for the current page and
  * calls the `callback` function once the value is ready to be reported, along
@@ -65,6 +71,9 @@ export const onCLS = (
         for (const entry of entries) {
           // Only count layout shifts without recent user input.
           if (!entry.hadRecentInput) {
+            for (const cb of entryPreProcessingCallbacks) {
+              cb(entry);
+            }
             const firstSessionEntry = sessionEntries[0];
             const lastSessionEntry = sessionEntries.at(-1);
 

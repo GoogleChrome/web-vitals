@@ -16,13 +16,19 @@
 
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
-import {onCLS as unattributedOnCLS} from '../onCLS.js';
+import {
+  onCLS as unattributedOnCLS,
+  entryPreProcessingCallbacks,
+} from '../onCLS.js';
 import {
   CLSAttribution,
   CLSMetric,
   CLSMetricWithAttribution,
   ReportOpts,
 } from '../types.js';
+
+// A reference to the layout shift target node in case it's removed before reporting.
+const layoutShiftTargetMap: WeakMap<LayoutShift, string> = new WeakMap();
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
   return entries.reduce((a, b) => (a.value > b.value ? a : b));
@@ -42,7 +48,9 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
       const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
       if (largestSource) {
         attribution = {
-          largestShiftTarget: getSelector(largestSource.node),
+          largestShiftTarget:
+            getSelector(largestSource.node) ||
+            layoutShiftTargetMap.get(largestEntry),
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
           largestShiftSource: largestSource,
@@ -60,6 +68,22 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
   );
   return metricWithAttribution;
 };
+
+// Get a reference to the layout shift target element in case it's removed from the DOM
+// later.
+const savelayoutShiftLargestTarget = (layoutShiftEntry: LayoutShift) => {
+  if (
+    layoutShiftEntry?.sources &&
+    !layoutShiftTargetMap.get(layoutShiftEntry)
+  ) {
+    layoutShiftTargetMap.set(
+      layoutShiftEntry,
+      getSelector(getLargestLayoutShiftSource(layoutShiftEntry.sources)?.node),
+    );
+  }
+};
+
+entryPreProcessingCallbacks.push(savelayoutShiftLargestTarget);
 
 /**
  * Calculates the [CLS](https://web.dev/articles/cls) value for the current page and

@@ -1,5 +1,9 @@
 # Changelog
 
+### v5.0.0-rc.1 (???)
+
+- **[BREAKING]** Change LCP selector from element to target. LCP and CLS attribution now saves the target selector for when the element is removed from the DOM ([#562](https://github.com/GoogleChrome/web-vitals/pull/562))
+
 ### v5.0.0-rc.0 (2024-10-03)
 
 - **[BREAKING]** Remove the deprecated `onFID()` function ([#519](https://github.com/GoogleChrome/web-vitals/pull/519))
