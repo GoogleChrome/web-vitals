@@ -28,8 +28,7 @@ import {
 } from '../types.js';
 
 // A reference to the layout shift target node in case it's removed before reporting.
-const layoutShiftTargetMap: WeakMap<LayoutShift, Node | undefined> =
-  new WeakMap();
+const layoutShiftTargetMap: WeakMap<LayoutShift, string> = new WeakMap();
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
   return entries.reduce((a, b) => (a.value > b.value ? a : b));
@@ -49,11 +48,10 @@ const attributeCLS = (metric: CLSMetric): CLSMetricWithAttribution => {
       const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
       if (largestSource) {
         attribution = {
-          largestShiftTarget: getSelector(
-            largestSource.node ?? layoutShiftTargetMap.get(largestEntry),
-          ),
-          largestShiftTargetElement:
-            largestSource.node ?? layoutShiftTargetMap.get(largestEntry),
+          largestShiftTarget:
+            getSelector(largestSource.node) ??
+            layoutShiftTargetMap.get(largestEntry),
+          largestShiftTargetElement: largestSource.node,
           largestShiftTime: largestEntry.startTime,
           largestShiftValue: largestEntry.value,
           largestShiftSource: largestSource,
@@ -81,7 +79,7 @@ const savelayoutShiftLargestTarget = (layoutShiftEntry: LayoutShift) => {
   ) {
     layoutShiftTargetMap.set(
       layoutShiftEntry,
-      getLargestLayoutShiftSource(layoutShiftEntry.sources)?.node,
+      getSelector(getLargestLayoutShiftSource(layoutShiftEntry.sources)?.node),
     );
   }
 };
