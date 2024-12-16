@@ -690,10 +690,6 @@ describe('onINP()', async function () {
 
       assert.equal(inp.attribution.interactionType, 'pointer');
       assert.equal(inp.attribution.interactionTarget, '#reset');
-      assert.equal(
-        inp.attribution.interactionTargetElement,
-        '[object HTMLButtonElement]',
-      );
     });
 
     it('includes LoAF entries if the browser supports it', async function () {

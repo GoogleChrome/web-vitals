@@ -36,14 +36,14 @@ export interface INPAttribution {
    * If this value is an empty string, that generally means the element was
    * removed from the DOM after the interaction.
    */
-  interactionTarget: string | undefined;
+  interactionTarget?: string;
   /**
    * A reference to the HTML element identified by `interactionTargetSelector`.
    * NOTE: for attribution purpose, a selector identifying the element is
    * typically more useful than the element itself. However, the element is
    * also made available in case additional context is needed.
    */
-  interactionTargetElement: Node | undefined;
+  interactionTargetElement?: Node;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred
