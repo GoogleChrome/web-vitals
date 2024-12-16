@@ -862,8 +862,7 @@ describe('onCLS()', async function () {
       await beaconCountIs(1);
 
       const [cls] = await getBeacons();
-      // Note this should be the reduced selector without the full path
-      assert.equal(cls.attribution.largestShiftTarget, 'h1');
+      assert.equal(cls.attribution.largestShiftTarget, 'html>body>main>h1');
     });
 
     it('reports the target (reportAllChanges === true)', async function () {

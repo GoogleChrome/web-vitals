@@ -700,8 +700,7 @@ describe('onLCP()', async function () {
 
       const [lcp] = await getBeacons();
       assertStandardReportsAreCorrect([lcp]);
-      // Note this should be the reduced selector without the full path
-      assert.equal(lcp.attribution.target, 'img.bar.foo');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
     });
 
     it('reports the target (reportAllChanges === true)', async function () {
