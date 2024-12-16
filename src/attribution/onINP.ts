@@ -73,8 +73,8 @@ const entryToEntriesGroupMap: WeakMap<
   pendingEntriesGroup
 > = new WeakMap();
 
-// A mapping of interactionIds to the target Node.
-export const interactionTargetMap: Map<number, Node> = new Map();
+// A mapping of interactionIds to the target selector.
+export const interactionTargetMap: Map<number, string> = new Map();
 
 // A boolean flag indicating whether or not a cleanup task has been queued.
 let cleanupPending = false;
@@ -95,7 +95,7 @@ const saveInteractionTarget = (entry: PerformanceEventTiming) => {
     entry.target &&
     !interactionTargetMap.has(entry.interactionId)
   ) {
-    interactionTargetMap.set(entry.interactionId, entry.target);
+    interactionTargetMap.set(entry.interactionId, getSelector(entry.target));
   }
 };
 
@@ -164,7 +164,7 @@ const queueCleanup = () => {
 };
 
 const cleanupEntries = () => {
-  // Delete any stored interaction target elements if they're not part of one
+  // Delete any stored interaction targets if they're not part of one
   // of the 10 longest interactions.
   if (interactionTargetMap.size > 10) {
     for (const [key] of interactionTargetMap) {
@@ -266,15 +266,15 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // first one found in the entry list.
   // TODO: when the following bug is fixed just use `firstInteractionEntry`.
   // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-  // As a fallback, also check the interactionTargetMap (to account for
-  // cases where the element is removed from the DOM before reporting happens).
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
-  const interactionTargetElement =
-    firstEntryWithTarget?.target ??
-    interactionTargetMap.get(firstEntry.interactionId);
+  const interactionTargetElement = firstEntryWithTarget?.target || undefined;
 
   const attribution: INPAttribution = {
-    interactionTarget: getSelector(interactionTargetElement),
+    // As a fallback, also check the interactionTargetMap (to account for
+    // cases where the element is removed from the DOM before reporting happens).
+    interactionTarget: interactionTargetElement
+      ? getSelector(interactionTargetElement)
+      : interactionTargetMap.get(firstEntry.interactionId),
     interactionTargetElement: interactionTargetElement,
     interactionType: firstEntry.name.startsWith('key') ? 'keyboard' : 'pointer',
     interactionTime: firstEntry.startTime,

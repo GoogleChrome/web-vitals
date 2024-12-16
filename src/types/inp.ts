@@ -36,7 +36,7 @@ export interface INPAttribution {
    * If this value is an empty string, that generally means the element was
    * removed from the DOM after the interaction.
    */
-  interactionTarget: string;
+  interactionTarget: string | undefined;
   /**
    * A reference to the HTML element identified by `interactionTargetSelector`.
    * NOTE: for attribution purpose, a selector identifying the element is
