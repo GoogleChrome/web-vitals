@@ -71,7 +71,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
       );
 
       attribution = {
-        element: lcpEntry.element
+        target: lcpEntry.element
           ? getSelector(lcpEntry.element)
           : lcpTargetMap.get(lcpEntry),
         timeToFirstByte: ttfb,
