@@ -714,6 +714,53 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
       assert(inp1.attribution.longAnimationFrameEntries.length > 0);
+      assert(inp1.attribution.longAnimationFrameSummary != {});
+      assert.equal(
+        inp1.attribution.longAnimationFrameSummary.numIntersectingScripts,
+        1,
+      );
+      assert.equal(
+        JSON.stringify(
+          inp1.attribution.longAnimationFrameSummary.slowestScript.entry,
+        ),
+        JSON.stringify(
+          inp1.attribution.longAnimationFrameEntries[0].scripts[0],
+        ),
+      );
+      assert.equal(
+        inp1.attribution.longAnimationFrameSummary.slowestScript.subpart,
+        'processingDuration',
+      );
+      assert.equal(
+        Object.keys(
+          inp1.attribution.longAnimationFrameSummary.totalDurationsPerSubpart,
+        ),
+        'processingDuration',
+      );
+      assert.equal(
+        Object.keys(
+          inp1.attribution.longAnimationFrameSummary.totalDurationsPerSubpart
+            .processingDuration,
+        ),
+        'event-listener',
+      );
+      assert(
+        inp1.attribution.longAnimationFrameSummary.totalDurationsPerSubpart
+          .processingDuration['event-listener'] >= 100,
+      );
+      assert.equal(
+        inp1.attribution.longAnimationFrameSummary
+          .totalForcedStyleAndLayoutDuration,
+        0,
+      );
+      assert(
+        inp1.attribution.longAnimationFrameSummary
+          .totalNonForcedStyleAndLayoutDuration <=
+          inp1.attribution.presentationDelay,
+      );
+      assert(
+        inp1.attribution.longAnimationFrameSummary.totalScriptDuration >= 100,
+      );
     });
   });
 });

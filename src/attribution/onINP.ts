@@ -28,6 +28,8 @@ import {
   INPAttribution,
   INPMetric,
   INPMetricWithAttribution,
+  INPSubpart,
+  LongAnimationFrameSummary,
   ReportOpts,
 } from '../types.js';
 
@@ -233,6 +235,95 @@ const getIntersectingLoAFs = (
   return intersectingLoAFs;
 };
 
+const getLoAFSummary = (attribution: INPAttribution) => {
+  // Stats across all LoAF entries and scripts.
+  const interactionTime = attribution.interactionTime;
+  const inputDelay = attribution.inputDelay;
+  const processingDuration = attribution.processingDuration;
+  let totalNonForcedStyleAndLayoutDuration = 0;
+  let totalForcedStyleAndLayout = 0;
+  let totalScriptTime = 0;
+  let numScripts = 0;
+  let slowestScriptDuration = 0;
+  let slowestScriptEntry!: PerformanceScriptTiming;
+  let slowestScriptSubpart!: INPSubpart;
+  const subparts: Partial<
+    Record<INPSubpart, Partial<Record<ScriptInvokerType, number>>>
+  > = {};
+
+  for (const loafEntry of attribution.longAnimationFrameEntries) {
+    totalNonForcedStyleAndLayoutDuration +=
+      loafEntry.startTime + loafEntry.duration - loafEntry.styleAndLayoutStart;
+    loafEntry.scripts.forEach((script) => {
+      const scriptEndTime = script.startTime + script.duration;
+      if (scriptEndTime < interactionTime) {
+        return;
+      }
+      const intersectingScriptDuration =
+        scriptEndTime - Math.max(interactionTime, script.startTime);
+      totalScriptTime += intersectingScriptDuration;
+      numScripts++;
+      totalForcedStyleAndLayout += script.forcedStyleAndLayoutDuration;
+      const invokerType = script.invokerType;
+      let subpart: INPSubpart = 'processingDuration';
+      if (script.startTime < interactionTime + inputDelay) {
+        subpart = 'inputDelay';
+      } else if (
+        script.startTime >
+        interactionTime + inputDelay + processingDuration
+      ) {
+        subpart = 'presentationDelay';
+      }
+
+      // Define the record if necessary. Annoyingly Typescript doesn't yet
+      // recognise this so need a few `!`s on the next two lines to convinced
+      // it is typed.
+      subparts[subpart] ??= {};
+      subparts[subpart]![invokerType] ??= 0;
+      // Increment it with this value
+      subparts[subpart]![invokerType]! += intersectingScriptDuration;
+
+      if (intersectingScriptDuration > slowestScriptDuration) {
+        slowestScriptEntry = script;
+        slowestScriptSubpart = subpart;
+        slowestScriptDuration = intersectingScriptDuration;
+      }
+    });
+  }
+
+  // Gather the loaf summary information into the loafAttribution object
+  const loafSummary: LongAnimationFrameSummary = {
+    numLongAnimationFrames: attribution.longAnimationFrameEntries.length,
+    numIntersectingScripts: numScripts,
+    slowestScript: {
+      entry: slowestScriptEntry,
+      subpart: slowestScriptSubpart,
+      intersectingDuration: slowestScriptDuration,
+      totalDuration: slowestScriptEntry?.duration,
+      compileDuration:
+        slowestScriptEntry?.executionStart - slowestScriptEntry?.startTime,
+      executionDuration:
+        slowestScriptEntry?.startTime +
+        slowestScriptEntry?.duration -
+        slowestScriptEntry?.executionStart,
+      forcedStyleAndLayoutDuration:
+        slowestScriptEntry?.forcedStyleAndLayoutDuration,
+      pauseDuration: slowestScriptEntry?.pauseDuration,
+      invokerType: slowestScriptEntry?.invokerType,
+      invoker: slowestScriptEntry?.invoker,
+      sourceURL: slowestScriptEntry?.sourceURL,
+      sourceFunctionName: slowestScriptEntry?.sourceFunctionName,
+      sourceCharPosition: slowestScriptEntry?.sourceCharPosition,
+    },
+    totalDurationsPerSubpart: subparts,
+    totalForcedStyleAndLayoutDuration: totalForcedStyleAndLayout,
+    totalNonForcedStyleAndLayoutDuration: totalNonForcedStyleAndLayoutDuration,
+    totalScriptDuration: totalScriptTime,
+  };
+
+  return loafSummary;
+};
+
 const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const firstEntry = metric.entries[0];
   const group = entryToEntriesGroupMap.get(firstEntry)!;
@@ -286,6 +377,8 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     presentationDelay: nextPaintTime - processingEnd,
     loadState: getLoadState(firstEntry.startTime),
   };
+
+  attribution.longAnimationFrameSummary = getLoAFSummary(attribution);
 
   // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: INPMetricWithAttribution = Object.assign(
