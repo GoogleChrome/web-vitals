@@ -368,6 +368,44 @@ describe('onTTFB()', async function () {
       assert.strictEqual(ttfb.attribution.requestDuration, 0);
       assert.strictEqual(ttfb.attribution.navigationEntry, undefined);
     });
+
+    it('reports the correct value for Early Hints', async function () {
+      await navigateTo(
+        // '/test/ttfb?responseStart=10&earlyHintsDelay=50&attribution=1',
+        '/test/ttfb?earlyHintsDelay=50&attribution=1',
+      );
+
+      const ttfb = await getTTFBBeacon();
+
+      if ('finalResponseHeadersStart' in ttfb.attribution.navigationEntry) {
+        assert.strictEqual(
+          ttfb.value,
+          ttfb.attribution.navigationEntry.responseStart,
+        );
+        assert.strictEqual(
+          ttfb.value,
+          ttfb.attribution.navigationEntry.firstInterimResponseStart,
+        );
+        assert(
+          ttfb.value <
+            ttfb.attribution.navigationEntry.finalResponseHeadersStart,
+        );
+      } else if (
+        'firstInterimResponseStart' in ttfb.attribution.navigationEntry
+      ) {
+        // TODO: Can remove these after Chrome 133 lands and above is used.
+        assert(ttfb.value < ttfb.attribution.navigationEntry.responseStart);
+        assert.strictEqual(
+          ttfb.value,
+          ttfb.attribution.navigationEntry.firstInterimResponseStart,
+        );
+      } else {
+        assert.strictEqual(
+          ttfb.value,
+          ttfb.attribution.navigationEntry.responseStart,
+        );
+      }
+    });
   });
 });
 

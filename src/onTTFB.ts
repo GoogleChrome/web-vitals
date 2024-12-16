@@ -71,14 +71,20 @@ export const onTTFB = (
     const navigationEntry = getNavigationEntry();
 
     if (navigationEntry) {
+      // From Chrome 115 until 133, Chrome reported responseStart as the
+      // document bytes, rather than Early Hint bytes. Prefer the Early Hint
+      // bytes (firstInterimResponseStart) for consistency with other
+      // browers, but only if non-zero (so use || rather than ??) as zero
+      // indicates no early hints.
+      const responseStart =
+        navigationEntry.firstInterimResponseStart ||
+        navigationEntry.responseStart;
+
       // The activationStart reference is used because TTFB should be
       // relative to page activation rather than navigation start if the
       // page was prerendered. But in cases where `activationStart` occurs
       // after the first byte is received, this time should be clamped at 0.
-      metric.value = Math.max(
-        navigationEntry.responseStart - getActivationStart(),
-        0,
-      );
+      metric.value = Math.max(responseStart - getActivationStart(), 0);
 
       metric.entries = [navigationEntry];
       report(true);
