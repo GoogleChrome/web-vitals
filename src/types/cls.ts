@@ -37,12 +37,6 @@ export interface CLSAttribution {
    */
   largestShiftTarget?: string;
   /**
-   * The first element (in document order) that  shifted when the single
-   * largest layout shift contributing to the page's
-   * CLS score occurred.
-   */
-  largestShiftTargetElement?: Node;
-  /**
    * The time when the single largest layout shift contributing to the page's
    * CLS score occurred.
    */
