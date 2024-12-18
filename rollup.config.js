@@ -42,8 +42,16 @@ const configurePlugins = ({module}) => {
     }),
     terser({
       module,
-      mangle: true,
       compress: true,
+      mangle: {
+        properties: {
+          // Any object properties beginning with the '$' character will be
+          // mangled. Use this prefix for any object properties that are not
+          // part of the public API and do that not match an existing build-in
+          // API names (e.g. `.entries`).
+          regex: /^\$/,
+        },
+      },
     }),
   ];
 };
