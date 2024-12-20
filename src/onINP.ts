@@ -18,7 +18,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
-import {InteractionManager} from './lib/interactions.js';
+import {InteractionManager} from './lib/InteractionManager.js';
 import {observe} from './lib/observe.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
