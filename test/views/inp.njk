@@ -115,6 +115,8 @@
     const {onINP} = await __testImport('{{ modulePath }}');
 
     onINP((inp) => {
+      inp.instance = 1;
+
       // Log for easier manual testing.
       console.log(inp);
 
@@ -124,5 +126,20 @@
       reportAllChanges: self.__reportAllChanges,
       durationThreshold: self.__durationThreshold,
     });
+
+    if (self.__doubleCall) {
+      onINP((inp) => {
+        inp.instance = 2;
+
+        // Log for easier manual testing.
+        console.log(inp);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+        durationThreshold: self.__durationThreshold2,
+      });
+    }
   </script>
 {% endblock %}

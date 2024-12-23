@@ -440,6 +440,70 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.navigationType, 'restore');
   });
 
+  it('works when calling the function twice with different options', async function () {
+    if (!browserSupportsINP) this.skip();
+
+    await navigateTo(
+      '/test/inp?click=100&keydown=200&doubleCall=1&reportAllChanges2=1',
+      {readyState: 'interactive'},
+    );
+
+    const textarea = await $('#textarea');
+    simulateUserLikeClick(textarea);
+
+    await beaconCountIs(1, {instance: 2});
+
+    const [inp2_1] = await getBeacons({instance: 2});
+
+    assert(inp2_1.value > 100 - 8);
+    assert(inp2_1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp2_1.name, 'INP');
+    assert.strictEqual(inp2_1.value, inp2_1.delta);
+    assert.strictEqual(inp2_1.rating, 'good');
+    assert(
+      containsEntry(inp2_1.entries, 'click', '[object HTMLTextAreaElement]'),
+    );
+    assert(allEntriesValid(inp2_1.entries));
+    assert.match(inp2_1.navigationType, /navigate|reload/);
+
+    // Assert no beacons for instance 1 were received.
+    assert.strictEqual((await getBeacons({instance: 1})).length, 0);
+
+    await browser.keys(['a']);
+
+    await beaconCountIs(2, {instance: 2});
+
+    const [, inp2_2] = await getBeacons({instance: 2});
+
+    assert.strictEqual(inp2_2.id, inp2_1.id);
+    assert.strictEqual(inp2_2.name, 'INP');
+    assert.strictEqual(inp2_2.value, inp2_2.delta + inp2_1.delta);
+    assert.strictEqual(inp2_2.delta, inp2_2.value - inp2_1.delta);
+    assert.strictEqual(inp2_2.rating, 'needs-improvement');
+    assert(
+      containsEntry(inp2_2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+    );
+    assert(allEntriesValid(inp2_2.entries));
+    assert.match(inp2_2.navigationType, /navigate|reload/);
+
+    await stubVisibilityChange('hidden');
+    await beaconCountIs(1, {instance: 1});
+
+    const [inp1] = await getBeacons({instance: 1});
+    assert(inp1.id.match(/^v5-\d+-\d+$/));
+    assert(inp1.id !== inp2_1.id);
+
+    assert.strictEqual(inp1.value, inp2_2.value);
+    assert.strictEqual(inp1.name, 'INP');
+    assert.strictEqual(inp1.value, inp1.delta);
+    assert.strictEqual(inp1.rating, 'needs-improvement');
+    assert(
+      containsEntry(inp1.entries, 'keydown', '[object HTMLTextAreaElement]'),
+    );
+    assert(allEntriesValid(inp1.entries));
+    assert.match(inp1.navigationType, /navigate|reload/);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsINP) this.skip();
@@ -722,9 +786,24 @@ const containsEntry = (entries, name, target) => {
   return entries.findIndex((e) => e.name === name && e.target === target) > -1;
 };
 
+const allEntriesValid = (entries) => {
+  const renderTimes = entries
+    .map((e) => e.startTime + e.duration)
+    .sort((a, b) => a - b);
+
+  const allEntriesHaveSameRenderTimes =
+    renderTimes.at(-1) - renderTimes.at(0) === 0;
+
+  const entryData = entries.map((e) => JSON.stringify(e));
+
+  const allEntriesAreUnique = entryData.length === new Set(entryData).size;
+
+  return allEntriesHaveSameRenderTimes && allEntriesAreUnique;
+};
+
 const allEntriesPresentTogether = (entries) => {
   const renderTimes = entries
-    .map((e) => Math.max(e.startTime + e.duration, e.processingEnd))
+    .map((e) => e.startTime + e.duration)
     .sort((a, b) => a - b);
 
   return renderTimes.at(-1) - renderTimes.at(0) <= 8;
