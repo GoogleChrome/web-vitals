@@ -34,11 +34,29 @@
     const {onCLS} = await __testImport('{{ modulePath }}');
 
     onCLS((cls) => {
+      cls.instance = 1;
+
       // Log for easier manual testing.
       console.log(cls);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
-    }, {reportAllChanges: self.__reportAllChanges});
+    }, {
+      reportAllChanges: self.__reportAllChanges,
+    });
+
+    if (self.__doubleCall) {
+      onCLS((cls) => {
+        cls.instance = 2;
+
+        // Log for easier manual testing.
+        console.log(cls);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+      });
+    }
   </script>
 {% endblock %}
