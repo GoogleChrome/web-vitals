@@ -436,6 +436,30 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp.navigationType, 'restore');
   });
 
+  it('works when calling the function twice with different options', async function () {
+    if (!browserSupportsLCP) this.skip();
+
+    await navigateTo('/test/lcp?doubleCall=1&reportAllChanges2=1');
+
+    await beaconCountIs(2, {instance: 2});
+
+    const beacons2 = await getBeacons({instance: 2});
+    assertFullReportsAreCorrect(beacons2);
+
+    assert.strictEqual((await getBeacons({instance: 1})).length, 0);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1, {instance: 1});
+
+    const beacons1 = await getBeacons({instance: 1});
+    assertStandardReportsAreCorrect(beacons1);
+
+    assert(beacons1[0].id !== beacons2[0].id);
+    assert(beacons1[0].id !== beacons2[1].id);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsLCP) this.skip();
