@@ -31,11 +31,29 @@
     const {onFCP} = await __testImport('{{ modulePath }}');
 
     onFCP((fcp) => {
+      fcp.instance = 1;
+
       // Log for easier manual testing.
       console.log(fcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
-    }, {reportAllChanges: self.__reportAllChanges});
+    }, {
+      reportAllChanges: self.__reportAllChanges,
+    });
+
+    if (self.__doubleCall) {
+      onFCP((fcp) => {
+        fcp.instance = 2;
+
+        // Log for easier manual testing.
+        console.log(fcp);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+      });
+    }
   </script>
 {% endblock %}
