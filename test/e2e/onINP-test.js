@@ -493,15 +493,14 @@ describe('onINP()', async function () {
     assert(inp1.id.match(/^v5-\d+-\d+$/));
     assert(inp1.id !== inp2_1.id);
 
+    assert(inp1.id.match(/^v5-\d+-\d+$/));
+    assert(inp1.id !== inp2_2.id);
     assert.strictEqual(inp1.value, inp2_2.value);
-    assert.strictEqual(inp1.name, 'INP');
-    assert.strictEqual(inp1.value, inp1.delta);
-    assert.strictEqual(inp1.rating, 'needs-improvement');
-    assert(
-      containsEntry(inp1.entries, 'keydown', '[object HTMLTextAreaElement]'),
-    );
-    assert(allEntriesValid(inp1.entries));
-    assert.match(inp1.navigationType, /navigate|reload/);
+    assert.strictEqual(inp1.delta, inp2_2.value);
+    assert.strictEqual(inp1.name, inp2_2.name);
+    assert.strictEqual(inp1.rating, inp2_2.rating);
+    assert.deepEqual(inp1.entries, inp2_2.entries);
+    assert.strictEqual(inp1.navigationType, inp2_2.navigationType);
   });
 
   describe('attribution', function () {

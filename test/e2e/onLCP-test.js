@@ -458,6 +458,7 @@ describe('onLCP()', async function () {
 
     assert(beacons1[0].id !== beacons2[0].id);
     assert(beacons1[0].id !== beacons2[1].id);
+    assert.deepEqual(beacons1[0].entries, beacons2[1].entries);
   });
 
   describe('attribution', function () {

@@ -292,7 +292,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp2.delta, fcp1.delta);
     assert.strictEqual(fcp2.name, fcp1.name);
     assert.strictEqual(fcp2.rating, fcp1.rating);
-    assert.strictEqual(fcp2.entries.length, fcp1.entries.length);
+    assert.deepEqual(fcp2.entries, fcp1.entries);
     assert.strictEqual(fcp2.navigationType, fcp1.navigationType);
   });
 

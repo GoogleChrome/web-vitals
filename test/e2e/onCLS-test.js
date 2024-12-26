@@ -803,13 +803,15 @@ describe('onCLS()', async function () {
     await beaconCountIs(1, {instance: 1});
 
     const [cls1_1] = await getBeacons();
-    assert(cls1_1.value > 0);
+
     assert(cls1_1.id.match(/^v5-\d+-\d+$/));
-    assert.strictEqual(cls1_1.name, 'CLS');
-    assert.strictEqual(cls1_1.value, cls1_1.delta);
-    assert.strictEqual(cls1_1.rating, 'good');
-    assert.strictEqual(cls1_1.entries.length, 2);
-    assert.match(cls1_1.navigationType, /navigate|reload/);
+    assert(cls1_1.id !== cls2_3.id);
+    assert.strictEqual(cls1_1.value, cls2_3.value);
+    assert.strictEqual(cls1_1.delta, cls2_3.value);
+    assert.strictEqual(cls1_1.name, cls2_3.name);
+    assert.strictEqual(cls1_1.rating, cls2_3.rating);
+    assert.deepEqual(cls1_1.entries, cls2_3.entries);
+    assert.strictEqual(cls1_1.navigationType, cls2_3.navigationType);
   });
 
   describe('attribution', function () {
