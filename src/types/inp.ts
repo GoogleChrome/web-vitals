@@ -31,19 +31,14 @@ export interface INPMetric extends Metric {
  */
 export interface INPAttribution {
   /**
-   * A selector identifying the element that the user first interacted with
-   * as part of the frame where the INP candidate interaction occurred.
-   * If this value is an empty string, that generally means the element was
-   * removed from the DOM after the interaction.
+   * By default, a selector identifying the element that the user first
+   * interacted with as part of the frame where the INP candidate interaction
+   * occurred. If this value is an empty string, that generally means the
+   * element was removed from the DOM after the interaction. If the
+   * `generateTarget` configuration option was passed, then this will instead
+   * be the return value of that function.
    */
-  interactionTarget: string;
-  /**
-   * A reference to the HTML element identified by `interactionTargetSelector`.
-   * NOTE: for attribution purpose, a selector identifying the element is
-   * typically more useful than the element itself. However, the element is
-   * also made available in case additional context is needed.
-   */
-  interactionTargetElement: Node | undefined;
+  interactionTarget: unknown;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred

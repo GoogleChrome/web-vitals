@@ -606,10 +606,6 @@ describe('onINP()', async function () {
       assert.match(inp2.navigationType, /navigate|reload/);
 
       assert.equal(inp2.attribution.interactionTarget, '#textarea');
-      assert.equal(
-        inp2.attribution.interactionTargetElement,
-        '[object HTMLTextAreaElement]',
-      );
       assert.equal(inp2.attribution.interactionType, 'keyboard');
       assert.equal(inp2.attribution.interactionTime, inp2.entries[0].startTime);
       assert.equal(inp2.attribution.loadState, 'complete');
@@ -664,6 +660,82 @@ describe('onINP()', async function () {
         inp2.attribution.nextPaintTime - inp2.attribution.presentationDelay,
         sortedEntries2.at(-1).processingEnd,
       );
+    });
+
+    it('supports generating a custom target', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo('/test/inp?click=100&attribution=1&generateTarget=1', {
+        readyState: 'complete',
+      });
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+
+      assert(inp1.value >= 100 - ROUNDING_ERROR);
+      assert(inp1.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp1.name, 'INP');
+      assert.strictEqual(inp1.value, inp1.delta);
+      assert.strictEqual(inp1.rating, 'good');
+      assert(
+        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+      assert(allEntriesPresentTogether(inp1.entries));
+      assert.match(inp1.navigationType, /navigate|reload/);
+
+      assert.equal(inp1.attribution.interactionTarget, 'main-heading');
+    });
+
+    it('supports multiple calls with different custom target generation functions', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo(
+        '/test/inp?click=100&attribution=1&doubleCall=1&generateTarget2=1',
+        {
+          readyState: 'complete',
+        },
+      );
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1, {instance: 1});
+      await beaconCountIs(1, {instance: 2});
+
+      const [inp1] = await getBeacons({instance: 1});
+
+      assert(inp1.value >= 100 - ROUNDING_ERROR);
+      assert(inp1.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp1.name, 'INP');
+      assert.strictEqual(inp1.value, inp1.delta);
+      assert.strictEqual(inp1.rating, 'good');
+      assert(
+        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+      assert(allEntriesPresentTogether(inp1.entries));
+      assert.match(inp1.navigationType, /navigate|reload/);
+
+      assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
+
+      const [inp2] = await getBeacons({instance: 2});
+
+      assert.strictEqual(inp2.name, inp1.name);
+      assert.strictEqual(inp2.value, inp1.value);
+      assert.strictEqual(inp2.delta, inp1.delta);
+      assert.strictEqual(inp2.rating, inp1.rating);
+      assert.strictEqual(inp2.navigationType, inp1.navigationType);
+      assert.deepEqual(inp2.entries, inp1.entries);
+      assert(inp2.id !== inp1.id);
+
+      assert.equal(inp2.attribution.interactionTarget, 'main-heading');
     });
 
     it('reports the domReadyState when input occurred', async function () {
@@ -725,10 +797,6 @@ describe('onINP()', async function () {
       // entry doesn't contain a target.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
-      assert.equal(
-        inp1.attribution.interactionTargetElement,
-        '[object HTMLHeadingElement]',
-      );
     });
 
     it('reports the interaction target when target is removed from the DOM', async function () {
@@ -753,10 +821,6 @@ describe('onINP()', async function () {
 
       assert.equal(inp.attribution.interactionType, 'pointer');
       assert.equal(inp.attribution.interactionTarget, '#reset');
-      assert.equal(
-        inp.attribution.interactionTargetElement,
-        '[object HTMLButtonElement]',
-      );
     });
 
     it('includes LoAF entries if the browser supports it', async function () {

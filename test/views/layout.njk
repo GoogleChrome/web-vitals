@@ -184,13 +184,14 @@
         }
       }
 
-      // Default the first call to not reporting all changes.
       self.__reportAllChanges = Boolean(infer('reportAllChanges'));
       self.__durationThreshold = infer('durationThreshold');
+      self.__generateTarget = infer('generateTarget');
 
       self.__doubleCall = Boolean(infer('doubleCall'));
       self.__reportAllChanges2 = Boolean(infer('reportAllChanges2'));
       self.__durationThreshold2 = infer('durationThreshold2');
+      self.__generateTarget2 = infer('generateTarget2');
 
       self.__lazyLoad = Boolean(infer('lazyLoad'));
       self.__loadAfterInput = Boolean(infer('loadAfterInput'));

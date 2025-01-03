@@ -125,6 +125,7 @@ export interface ReportCallback {
 export interface ReportOpts {
   reportAllChanges?: boolean;
   durationThreshold?: number;
+  generateTarget?: (el: Node | null | undefined) => unknown;
 }
 
 /**

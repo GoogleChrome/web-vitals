@@ -17,7 +17,7 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
-import {InteractionManager} from '../lib/InteractionManager.js';
+import {InteractionManager, Interaction} from '../lib/InteractionManager.js';
 import {observe} from '../lib/observe.js';
 import {whenIdleOrHidden} from '../lib/whenIdleOrHidden.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
@@ -108,7 +108,7 @@ export const onINP = (
   > = new WeakMap();
 
   // A mapping of interactionIds to the target Node.
-  const interactionTargetMap: Map<number, Node> = new Map();
+  const interactionTargetMap: WeakMap<Interaction, unknown> = new WeakMap();
 
   // A boolean flag indicating whether or not a cleanup task has been queued.
   let cleanupPending = false;
@@ -123,15 +123,11 @@ export const onINP = (
     queueCleanup();
   };
 
-  // Get a reference to the interaction target element in case it's removed
-  // from the DOM later.
-  const saveInteractionTarget = (entry: PerformanceEventTiming) => {
-    if (
-      entry.interactionId &&
-      entry.target &&
-      !interactionTargetMap.has(entry.interactionId)
-    ) {
-      interactionTargetMap.set(entry.interactionId, entry.target);
+  const saveInteractionTarget = (interaction: Interaction) => {
+    if (!interactionTargetMap.get(interaction)) {
+      const generateTargetFn = opts.generateTarget ?? getSelector;
+      const customTarget = generateTargetFn(interaction.entries[0].target);
+      interactionTargetMap.set(interaction, customTarget);
     }
   };
 
@@ -203,16 +199,6 @@ export const onINP = (
   };
 
   const cleanupEntries = () => {
-    // Delete any stored interaction target elements if they're not part of one
-    // of the 10 longest interactions.
-    if (interactionTargetMap.size > 10) {
-      for (const [key] of interactionTargetMap) {
-        if (!interactionManager.$longestInteractionMap.has(key)) {
-          interactionTargetMap.delete(key);
-        }
-      }
-    }
-
     // Keep all render times that are part of a pending INP candidate or
     // that occurred within the 50 most recently-dispatched groups of events.
     const longestInteractionGroups =
@@ -251,10 +237,8 @@ export const onINP = (
     cleanupPending = false;
   };
 
-  interactionManager.$entryPreProcessingCallbacks.push(
-    saveInteractionTarget,
-    groupEntriesByRenderTime,
-  );
+  interactionManager.$onBeforeProcessingEntry = groupEntriesByRenderTime;
+  interactionManager.$onAfterProcessingInteraction = saveInteractionTarget;
 
   const getIntersectingLoAFs = (
     start: DOMHighResTimeStamp,
@@ -305,20 +289,12 @@ export const onINP = (
     const longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[] =
       getIntersectingLoAFs(firstEntry.startTime, processingEnd);
 
-    // The first interaction entry may not have a target defined, so use the
-    // first one found in the entry list.
-    // TODO: when the following bug is fixed just use `firstInteractionEntry`.
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
-    // As a fallback, also check the interactionTargetMap (to account for
-    // cases where the element is removed from the DOM before reporting happens).
-    const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
-    const interactionTargetElement =
-      firstEntryWithTarget?.target ??
-      interactionTargetMap.get(firstEntry.interactionId);
+    const interaction = interactionManager.$longestInteractionMap.get(
+      firstEntry.interactionId,
+    );
 
     const attribution: INPAttribution = {
-      interactionTarget: getSelector(interactionTargetElement),
-      interactionTargetElement: interactionTargetElement,
+      interactionTarget: interactionTargetMap.get(interaction!),
       interactionType: firstEntry.name.startsWith('key')
         ? 'keyboard'
         : 'pointer',

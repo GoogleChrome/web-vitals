@@ -14,12 +14,14 @@
  * limitations under the License.
  */
 
+import {LCPEntryManager} from './lib/LCPEntryManager.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
+import {initUnique} from './lib/initUnique.js';
 import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
@@ -49,6 +51,8 @@ export const onLCP = (
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
 
+    const lcpEntryManager = initUnique(opts, LCPEntryManager);
+
     const handleEntries = (entries: LCPMetric['entries']) => {
       // If reportAllChanges is set then call this function for each entry,
       // otherwise only consider the last one.
@@ -57,6 +61,8 @@ export const onLCP = (
       }
 
       for (const entry of entries) {
+        lcpEntryManager.$processEntry(entry);
+
         // Only report if the page wasn't hidden prior to LCP.
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
           // The startTime attribute returns the value of the renderTime if it is
