@@ -252,7 +252,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'needs-improvement');
     assert.strictEqual(lcp1.entries.length, 1);
-    assert.strictEqual(lcp1.entries[0].target, '[object HTMLImageElement]');
+    assert.strictEqual(lcp1.entries[0].element, '[object HTMLImageElement]');
     assert.match(lcp1.navigationType, /navigate|reload/);
   });
 
@@ -289,7 +289,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'good');
     assert.strictEqual(lcp1.entries.length, 1);
-    assert.strictEqual(lcp1.entries[0].target, '[object HTMLHeadingElement]');
+    assert.strictEqual(lcp1.entries[0].element, '[object HTMLHeadingElement]');
     assert.match(lcp1.navigationType, /navigate|reload/);
   });
 
@@ -306,7 +306,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp.value, lcp.delta);
     assert.strictEqual(lcp.rating, 'good');
     assert.strictEqual(lcp.entries.length, 1);
-    assert.strictEqual(lcp.entries[0].target, '[object HTMLHeadingElement]');
+    assert.strictEqual(lcp.entries[0].element, '[object HTMLHeadingElement]');
     assert.match(lcp.navigationType, /navigate|reload/);
 
     await clearBeacons();
