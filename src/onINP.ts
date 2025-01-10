@@ -94,13 +94,13 @@ export const onINP = (
       // 123+ that if rolled out fully may make this no longer necessary.
       whenIdleOrHidden(() => {
         for (const entry of entries) {
-          interactionManager.$processEntry(entry);
+          interactionManager._processEntry(entry);
         }
 
-        const inp = interactionManager.$estimateP98LongestInteraction();
+        const inp = interactionManager._estimateP98LongestInteraction();
 
-        if (inp && inp.$latency !== metric.value) {
-          metric.value = inp.$latency;
+        if (inp && inp._latency !== metric.value) {
+          metric.value = inp._latency;
           metric.entries = inp.entries;
           report();
         }
@@ -139,7 +139,7 @@ export const onINP = (
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        interactionManager.$resetInteractions();
+        interactionManager._resetInteractions();
 
         metric = initMetric('INP');
         report = bindReporter(

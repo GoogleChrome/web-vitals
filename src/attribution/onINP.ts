@@ -207,7 +207,7 @@ export const onINP = (
     // of the 10 longest interactions.
     if (interactionTargetMap.size > 10) {
       for (const [key] of interactionTargetMap) {
-        if (!interactionManager.$longestInteractionMap.has(key)) {
+        if (!interactionManager._longestInteractionMap.has(key)) {
           interactionTargetMap.delete(key);
         }
       }
@@ -216,7 +216,7 @@ export const onINP = (
     // Keep all render times that are part of a pending INP candidate or
     // that occurred within the 50 most recently-dispatched groups of events.
     const longestInteractionGroups =
-      interactionManager.$longestInteractionList.map((i) => {
+      interactionManager._longestInteractionList.map((i) => {
         return entryToEntriesGroupMap.get(i.entries[0]);
       });
     const minIndex = pendingEntriesGroups.length - MAX_PREVIOUS_FRAMES;
@@ -251,7 +251,7 @@ export const onINP = (
     cleanupPending = false;
   };
 
-  interactionManager.$entryPreProcessingCallbacks.push(
+  interactionManager._entryPreProcessingCallbacks.push(
     saveInteractionTarget,
     groupEntriesByRenderTime,
   );
