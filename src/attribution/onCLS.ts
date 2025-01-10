@@ -60,8 +60,8 @@ export const onCLS = (
   opts: ReportOpts = {},
 ) => {
   // Clone the opts object to ensure it's unique, so we can initialize a
-  // single instance of the `LCPEntryManager` class that's shared only with
-  // this function invocation and the `unattributedOnLCP()` invocation below
+  // single instance of the `LayoutShiftManager` class that's shared only with
+  // this function invocation and the `unattributedOnCLS()` invocation below
   // (which is passed the same `opts` object).
   opts = Object.assign({}, opts);
 
