@@ -62,6 +62,42 @@ describe('onCLS()', async function () {
     assert.match(cls.navigationType, /navigate|reload/);
   });
 
+  it('reports the correct value on visibility hidden after shifts (reportAllChanges === true)', async function () {
+    if (!browserSupportsCLS) this.skip();
+
+    await navigateTo('/test/cls?reportAllChanges=1');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(3);
+
+    const [cls1, cls2, cls3] = await getBeacons();
+
+    assert.strictEqual(cls1.value, 0);
+    assert(cls1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls1.name, 'CLS');
+    assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.rating, 'good');
+    assert.strictEqual(cls1.entries.length, 0);
+    assert.match(cls1.navigationType, /navigate|reload/);
+
+    assert.strictEqual(cls2.value, cls1.value + cls2.delta);
+    assert.strictEqual(cls2.id, cls1.id);
+    assert.strictEqual(cls2.name, 'CLS');
+    assert.strictEqual(cls2.rating, 'good');
+    assert.strictEqual(cls2.entries.length, 1);
+    assert.match(cls2.navigationType, /navigate|reload/);
+
+    assert.strictEqual(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.id, cls2.id);
+    assert.strictEqual(cls3.name, 'CLS');
+    assert.strictEqual(cls3.rating, 'good');
+    assert.strictEqual(cls3.entries.length, 2);
+    assert.match(cls3.navigationType, /navigate|reload/);
+  });
+
   it('reports the correct value on page unload after shifts (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
@@ -724,6 +760,58 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 2);
     assert.strictEqual(cls.navigationType, 'restore');
+  });
+
+  it('works when calling the function twice with different options', async function () {
+    if (!browserSupportsCLS) this.skip();
+
+    await navigateTo('/test/cls?doubleCall=1&reportAllChanges2=1');
+
+    // Wait until all images are loaded and rendered.
+    await imagesPainted();
+
+    await beaconCountIs(3, {instance: 2});
+
+    const [cls2_1, cls2_2, cls2_3] = await getBeacons();
+
+    assert.strictEqual(cls2_1.value, 0);
+    assert(cls2_1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls2_1.name, 'CLS');
+    assert.strictEqual(cls2_1.value, cls2_1.delta);
+    assert.strictEqual(cls2_1.rating, 'good');
+    assert.strictEqual(cls2_1.entries.length, 0);
+    assert.match(cls2_1.navigationType, /navigate|reload/);
+
+    assert.strictEqual(cls2_2.value, cls2_1.value + cls2_2.delta);
+    assert.strictEqual(cls2_2.id, cls2_1.id);
+    assert.strictEqual(cls2_2.name, 'CLS');
+    assert.strictEqual(cls2_2.rating, 'good');
+    assert.strictEqual(cls2_2.entries.length, 1);
+    assert.match(cls2_2.navigationType, /navigate|reload/);
+
+    assert.strictEqual(cls2_3.value, cls2_2.value + cls2_3.delta);
+    assert.strictEqual(cls2_3.id, cls2_2.id);
+    assert.strictEqual(cls2_3.name, 'CLS');
+    assert.strictEqual(cls2_3.rating, 'good');
+    assert.strictEqual(cls2_3.entries.length, 2);
+    assert.match(cls2_3.navigationType, /navigate|reload/);
+
+    assert.strictEqual((await getBeacons({instance: 1})).length, 0);
+
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1, {instance: 1});
+
+    const [cls1_1] = await getBeacons();
+
+    assert(cls1_1.id.match(/^v5-\d+-\d+$/));
+    assert(cls1_1.id !== cls2_3.id);
+    assert.strictEqual(cls1_1.value, cls2_3.value);
+    assert.strictEqual(cls1_1.delta, cls2_3.value);
+    assert.strictEqual(cls1_1.name, cls2_3.name);
+    assert.strictEqual(cls1_1.rating, cls2_3.rating);
+    assert.deepEqual(cls1_1.entries, cls2_3.entries);
+    assert.strictEqual(cls1_1.navigationType, cls2_3.navigationType);
   });
 
   describe('attribution', function () {
