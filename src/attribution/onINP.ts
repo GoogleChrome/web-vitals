@@ -202,7 +202,7 @@ export const onINP = (
     // Keep all render times that are part of a pending INP candidate or
     // that occurred within the 50 most recently-dispatched groups of events.
     const longestInteractionGroups =
-      interactionManager.$longestInteractionList.map((i) => {
+      interactionManager._longestInteractionList.map((i) => {
         return entryToEntriesGroupMap.get(i.entries[0]);
       });
     const minIndex = pendingEntriesGroups.length - MAX_PREVIOUS_FRAMES;
@@ -237,8 +237,8 @@ export const onINP = (
     cleanupPending = false;
   };
 
-  interactionManager.$onBeforeProcessingEntry = groupEntriesByRenderTime;
-  interactionManager.$onAfterProcessingInteraction = saveInteractionTarget;
+  interactionManager._onBeforeProcessingEntry = groupEntriesByRenderTime;
+  interactionManager._onAfterProcessingInteraction = saveInteractionTarget;
 
   const getIntersectingLoAFs = (
     start: DOMHighResTimeStamp,
@@ -289,7 +289,7 @@ export const onINP = (
     const longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[] =
       getIntersectingLoAFs(firstEntry.startTime, processingEnd);
 
-    const interaction = interactionManager.$longestInteractionMap.get(
+    const interaction = interactionManager._longestInteractionMap.get(
       firstEntry.interactionId,
     );
 

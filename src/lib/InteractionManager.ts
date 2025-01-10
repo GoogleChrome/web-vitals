@@ -17,9 +17,13 @@
 import {getInteractionCount} from './polyfills/interactionCountPolyfill.js';
 
 export interface Interaction {
+  _latency: number;
+  // While the `id` and `entires` properties are also internal and could be
+  // mangled by prefixing with an underscore, since they correspond to public
+  // symbols there is no need to mangle them as the library will compress
+  // better if we reuse the existing names.
   id: number;
   entries: PerformanceEventTiming[];
-  $latency: number;
 }
 
 // To prevent unnecessary memory usage on pages with lots of interactions,
@@ -44,35 +48,35 @@ export class InteractionManager {
    * longest one is first. The list is at most MAX_INTERACTIONS_TO_CONSIDER
    * long.
    */
-  $longestInteractionList: Interaction[] = [];
+  _longestInteractionList: Interaction[] = [];
 
   /**
    * A mapping of longest interactions by their interaction ID.
    * This is used for faster lookup.
    */
-  $longestInteractionMap: Map<number, Interaction> = new Map();
+  _longestInteractionMap: Map<number, Interaction> = new Map();
 
-  $onBeforeProcessingEntry?: (entry: PerformanceEventTiming) => void;
+  _onBeforeProcessingEntry?: (entry: PerformanceEventTiming) => void;
 
-  $onAfterProcessingInteraction?: (interaction: Interaction) => void;
+  _onAfterProcessingInteraction?: (interaction: Interaction) => void;
 
-  $resetInteractions() {
+  _resetInteractions() {
     prevInteractionCount = getInteractionCount();
-    this.$longestInteractionList.length = 0;
-    this.$longestInteractionMap.clear();
+    this._longestInteractionList.length = 0;
+    this._longestInteractionMap.clear();
   }
 
   /**
    * Returns the estimated p98 longest interaction based on the stored
    * interaction candidates and the interaction count for the current page.
    */
-  $estimateP98LongestInteraction() {
+  _estimateP98LongestInteraction() {
     const candidateInteractionIndex = Math.min(
-      this.$longestInteractionList.length - 1,
+      this._longestInteractionList.length - 1,
       Math.floor(getInteractionCountForNavigation() / 50),
     );
 
-    return this.$longestInteractionList[candidateInteractionIndex];
+    return this._longestInteractionList[candidateInteractionIndex];
   }
 
   /**
@@ -81,34 +85,34 @@ export class InteractionManager {
    * entry is part of an existing interaction, it is merged and the latency
    * and entries list is updated as needed.
    */
-  $processEntry(entry: PerformanceEventTiming) {
-    this.$onBeforeProcessingEntry?.(entry);
+  _processEntry(entry: PerformanceEventTiming) {
+    this._onBeforeProcessingEntry?.(entry);
 
     // Skip further processing for entries that cannot be INP candidates.
     if (!(entry.interactionId || entry.entryType === 'first-input')) return;
 
     // The least-long of the 10 longest interactions.
-    const minLongestInteraction = this.$longestInteractionList.at(-1);
+    const minLongestInteraction = this._longestInteractionList.at(-1);
 
-    let interaction = this.$longestInteractionMap.get(entry.interactionId!);
+    let interaction = this._longestInteractionMap.get(entry.interactionId!);
 
     // Only process the entry if it's possibly one of the ten longest,
     // or if it's part of an existing interaction.
     if (
       interaction ||
-      this.$longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
+      this._longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
       // If the above conditions are false, `minLongestInteraction` will be set.
-      entry.duration > minLongestInteraction!.$latency
+      entry.duration > minLongestInteraction!._latency
     ) {
       // If the interaction already exists, update it. Otherwise create one.
       if (interaction) {
         // If the new entry has a longer duration, replace the old entries,
         // otherwise add to the array.
-        if (entry.duration > interaction.$latency) {
+        if (entry.duration > interaction._latency) {
           interaction.entries = [entry];
-          interaction.$latency = entry.duration;
+          interaction._latency = entry.duration;
         } else if (
-          entry.duration === interaction.$latency &&
+          entry.duration === interaction._latency &&
           entry.startTime === interaction.entries[0].startTime
         ) {
           interaction.entries.push(entry);
@@ -117,25 +121,25 @@ export class InteractionManager {
         interaction = {
           id: entry.interactionId!,
           entries: [entry],
-          $latency: entry.duration,
+          _latency: entry.duration,
         };
-        this.$longestInteractionMap.set(interaction.id, interaction);
-        this.$longestInteractionList.push(interaction);
+        this._longestInteractionMap.set(interaction.id, interaction);
+        this._longestInteractionList.push(interaction);
       }
 
       // Sort the entries by latency (descending) and keep only the top ten.
-      this.$longestInteractionList.sort((a, b) => b.$latency - a.$latency);
-      if (this.$longestInteractionList.length > MAX_INTERACTIONS_TO_CONSIDER) {
-        const removedInteractions = this.$longestInteractionList.splice(
+      this._longestInteractionList.sort((a, b) => b._latency - a._latency);
+      if (this._longestInteractionList.length > MAX_INTERACTIONS_TO_CONSIDER) {
+        const removedInteractions = this._longestInteractionList.splice(
           MAX_INTERACTIONS_TO_CONSIDER,
         );
 
         for (const interaction of removedInteractions) {
-          this.$longestInteractionMap.delete(interaction.id);
+          this._longestInteractionMap.delete(interaction.id);
         }
       }
     }
 
-    this.$onAfterProcessingInteraction?.(interaction!);
+    this._onAfterProcessingInteraction?.(interaction!);
   }
 }
