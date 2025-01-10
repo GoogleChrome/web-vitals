@@ -15,36 +15,36 @@
  */
 
 export class LayoutShiftManager {
-  $onAfterProcessingUnexpectedShift?: (entry: LayoutShift) => void;
+  _onAfterProcessingUnexpectedShift?: (entry: LayoutShift) => void;
 
-  $sessionValue = 0;
-  $sessionEntries: LayoutShift[] = [];
+  _sessionValue = 0;
+  _sessionEntries: LayoutShift[] = [];
 
-  $processEntry(entry: LayoutShift) {
+  _processEntry(entry: LayoutShift) {
     // Only count layout shifts without recent user input.
     if (entry.hadRecentInput) return;
 
-    const firstSessionEntry = this.$sessionEntries[0];
-    const lastSessionEntry = this.$sessionEntries.at(-1);
+    const firstSessionEntry = this._sessionEntries[0];
+    const lastSessionEntry = this._sessionEntries.at(-1);
 
     // If the entry occurred less than 1 second after the previous entry
     // and less than 5 seconds after the first entry in the session,
     // include the entry in the current session. Otherwise, start a new
     // session.
     if (
-      this.$sessionValue &&
+      this._sessionValue &&
       firstSessionEntry &&
       lastSessionEntry &&
       entry.startTime - lastSessionEntry.startTime < 1000 &&
       entry.startTime - firstSessionEntry.startTime < 5000
     ) {
-      this.$sessionValue += entry.value;
-      this.$sessionEntries.push(entry);
+      this._sessionValue += entry.value;
+      this._sessionEntries.push(entry);
     } else {
-      this.$sessionValue = entry.value;
-      this.$sessionEntries = [entry];
+      this._sessionValue = entry.value;
+      this._sessionEntries = [entry];
     }
 
-    this.$onAfterProcessingUnexpectedShift?.(entry);
+    this._onAfterProcessingUnexpectedShift?.(entry);
   }
 }

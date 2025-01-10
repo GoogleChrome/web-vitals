@@ -61,7 +61,7 @@ export const onLCP = (
       }
 
       for (const entry of entries) {
-        lcpEntryManager.$processEntry(entry);
+        lcpEntryManager._processEntry(entry);
 
         // Only report if the page wasn't hidden prior to LCP.
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {

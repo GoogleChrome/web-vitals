@@ -50,7 +50,7 @@ export const onLCP = (
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
   const lcpTargetMap: WeakMap<LargestContentfulPaint, unknown> = new WeakMap();
 
-  lcpEntryManager.$onBeforeProcessingEntry = (
+  lcpEntryManager._onBeforeProcessingEntry = (
     entry: LargestContentfulPaint,
   ) => {
     if (entry.element) {

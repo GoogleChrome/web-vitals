@@ -64,14 +64,14 @@ export const onCLS = (
 
       const handleEntries = (entries: LayoutShift[]) => {
         for (const entry of entries) {
-          layoutShiftManager.$processEntry(entry);
+          layoutShiftManager._processEntry(entry);
         }
 
         // If the current session value is larger than the current CLS value,
         // update CLS and the entries contributing to it.
-        if (layoutShiftManager.$sessionValue > metric.value) {
-          metric.value = layoutShiftManager.$sessionValue;
-          metric.entries = layoutShiftManager.$sessionEntries;
+        if (layoutShiftManager._sessionValue > metric.value) {
+          metric.value = layoutShiftManager._sessionValue;
+          metric.entries = layoutShiftManager._sessionEntries;
           report();
         }
       };
@@ -95,7 +95,7 @@ export const onCLS = (
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          layoutShiftManager.$sessionValue = 0;
+          layoutShiftManager._sessionValue = 0;
           metric = initMetric('CLS', 0);
           report = bindReporter(
             onReport,

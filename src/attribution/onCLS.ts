@@ -69,7 +69,7 @@ export const onCLS = (
   const layoutShiftTargetMap: WeakMap<LayoutShiftAttribution, unknown> =
     new WeakMap();
 
-  layoutShiftManager.$onAfterProcessingUnexpectedShift = (
+  layoutShiftManager._onAfterProcessingUnexpectedShift = (
     entry: LayoutShift,
   ) => {
     if (entry.sources.length) {
