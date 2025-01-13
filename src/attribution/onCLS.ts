@@ -23,7 +23,7 @@ import {
   CLSAttribution,
   CLSMetric,
   CLSMetricWithAttribution,
-  ReportOpts,
+  AttributionReportOpts,
 } from '../types.js';
 
 const getLargestLayoutShiftEntry = (entries: LayoutShift[]) => {
@@ -57,7 +57,7 @@ const getLargestLayoutShiftSource = (sources: LayoutShiftAttribution[]) => {
  */
 export const onCLS = (
   onReport: (metric: CLSMetricWithAttribution) => void,
-  opts: ReportOpts = {},
+  opts: AttributionReportOpts = {},
 ) => {
   // Clone the opts object to ensure it's unique, so we can initialize a
   // single instance of the `LayoutShiftManager` class that's shared only with
@@ -66,7 +66,7 @@ export const onCLS = (
   opts = Object.assign({}, opts);
 
   const layoutShiftManager = initUnique(opts, LayoutShiftManager);
-  const layoutShiftTargetMap: WeakMap<LayoutShiftAttribution, unknown> =
+  const layoutShiftTargetMap: WeakMap<LayoutShiftAttribution, string> =
     new WeakMap();
 
   layoutShiftManager._onAfterProcessingUnexpectedShift = (

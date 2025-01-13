@@ -25,7 +25,7 @@ import {
   INPAttribution,
   INPMetric,
   INPMetricWithAttribution,
-  ReportOpts,
+  INPAttributionReportOpts,
 } from '../types.js';
 
 interface pendingEntriesGroup {
@@ -76,7 +76,7 @@ const MAX_PREVIOUS_FRAMES = 50;
  */
 export const onINP = (
   onReport: (metric: INPMetricWithAttribution) => void,
-  opts: ReportOpts = {},
+  opts: INPAttributionReportOpts = {},
 ) => {
   // Clone the opts object to ensure it's unique, so we can initialize a
   // single instance of the `InteractionManager` class that's shared only with
@@ -108,7 +108,7 @@ export const onINP = (
   > = new WeakMap();
 
   // A mapping of interactionIds to the target Node.
-  const interactionTargetMap: WeakMap<Interaction, unknown> = new WeakMap();
+  const interactionTargetMap: WeakMap<Interaction, string> = new WeakMap();
 
   // A boolean flag indicating whether or not a cleanup task has been queued.
   let cleanupPending = false;
@@ -294,7 +294,10 @@ export const onINP = (
     );
 
     const attribution: INPAttribution = {
-      interactionTarget: interactionTargetMap.get(interaction!),
+      // TS flags the next line because `interactionTargetMap.get()` might
+      // return `undefined`, but we ignore this assuming the user knows what
+      // they are doing.
+      interactionTarget: interactionTargetMap.get(interaction!)!,
       interactionType: firstEntry.name.startsWith('key')
         ? 'keyboard'
         : 'pointer',

@@ -18,7 +18,7 @@ import {getInteractionCount} from './polyfills/interactionCountPolyfill.js';
 
 export interface Interaction {
   _latency: number;
-  // While the `id` and `entires` properties are also internal and could be
+  // While the `id` and `entries` properties are also internal and could be
   // mangled by prefixing with an underscore, since they correspond to public
   // symbols there is no need to mangle them as the library will compress
   // better if we reuse the existing names.

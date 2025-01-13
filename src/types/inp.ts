@@ -14,7 +14,20 @@
  * limitations under the License.
  */
 
-import type {LoadState, Metric} from './base.js';
+import type {
+  LoadState,
+  Metric,
+  ReportOpts,
+  AttributionReportOpts,
+} from './base.js';
+
+export interface INPReportOpts extends ReportOpts {
+  durationThreshold?: number;
+}
+
+export interface INPAttributionReportOpts extends AttributionReportOpts {
+  durationThreshold?: number;
+}
 
 /**
  * An INP-specific version of the Metric object.
@@ -38,7 +51,7 @@ export interface INPAttribution {
    * `generateTarget` configuration option was passed, then this will instead
    * be the return value of that function.
    */
-  interactionTarget: unknown;
+  interactionTarget: string;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred

@@ -36,7 +36,7 @@ export interface CLSAttribution {
    * page's CLS score occurred. If the `generateTarget` configuration option
    * was passed, then this will instead be the return value of that function.
    */
-  largestShiftTarget?: unknown;
+  largestShiftTarget?: string;
   /**
    * The time when the single largest layout shift contributing to the page's
    * CLS score occurred.

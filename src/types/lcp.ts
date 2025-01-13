@@ -36,7 +36,7 @@ export interface LCPAttribution {
    * configuration option was passed, then this will instead be the return
    * value of that function.
    */
-  target?: unknown;
+  target?: string;
   /**
    * The URL (if applicable) of the LCP image resource. If the LCP element
    * is a text node, this value will not be set.

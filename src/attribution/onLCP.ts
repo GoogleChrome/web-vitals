@@ -23,7 +23,7 @@ import {
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,
-  ReportOpts,
+  AttributionReportOpts,
 } from '../types.js';
 
 /**
@@ -39,7 +39,7 @@ import {
  */
 export const onLCP = (
   onReport: (metric: LCPMetricWithAttribution) => void,
-  opts: ReportOpts = {},
+  opts: AttributionReportOpts = {},
 ) => {
   // Clone the opts object to ensure it's unique, so we can initialize a
   // single instance of the `LCPEntryManager` class that's shared only with
@@ -48,7 +48,7 @@ export const onLCP = (
   opts = Object.assign({}, opts);
 
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
-  const lcpTargetMap: WeakMap<LargestContentfulPaint, unknown> = new WeakMap();
+  const lcpTargetMap: WeakMap<LargestContentfulPaint, string> = new WeakMap();
 
   lcpEntryManager._onBeforeProcessingEntry = (
     entry: LargestContentfulPaint,
