@@ -490,7 +490,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
@@ -502,6 +502,52 @@ describe('onLCP()', async function () {
       assert.deepEqual(lcp.attribution.navigationEntry, navEntry);
       assert.deepEqual(lcp.attribution.lcpResourceEntry, lcpResEntry);
       assert.deepEqual(lcp.attribution.lcpEntry, lcp.entries.slice(-1)[0]);
+    });
+
+    it('supports generating a custom target', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1&generateTarget=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp]);
+
+      assert.equal(lcp.attribution.target, 'main-image');
+    });
+
+    it('supports multiple calls with different custom target generation functions', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo(
+        '/test/lcp?attribution=1&doubleCall=1&generateTarget2=1',
+      );
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1, {instance: 1});
+      await beaconCountIs(1, {instance: 2});
+
+      const [lcp1] = await getBeacons({instance: 1});
+      assertStandardReportsAreCorrect([lcp1]);
+
+      assert.equal(lcp1.attribution.target, 'html>body>main>p>img.bar.foo');
+
+      const [lcp2] = await getBeacons({instance: 2});
+      assertStandardReportsAreCorrect([lcp2]);
+
+      assert.equal(lcp2.attribution.target, 'main-image');
     });
 
     it('handles image resources with incomplete timing data', async function () {
@@ -540,7 +586,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
 
       // Specifically check that resourceLoadDelay falls back to `startTime`.
       assert.equal(
@@ -590,7 +636,7 @@ describe('onLCP()', async function () {
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
       assert.equal(lcp.navigationType, 'prerender');
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
 
       // Assert each individual LCP sub-part accounts for `activationStart`
       assert.equal(
@@ -649,7 +695,7 @@ describe('onLCP()', async function () {
       const [lcp] = await getBeacons();
 
       assert.equal(lcp.attribution.url, undefined);
-      assert.equal(lcp.attribution.element, 'html>body>main>h1');
+      assert.equal(lcp.attribution.target, 'html>body>main>h1');
       assert.equal(lcp.attribution.resourceLoadDelay, 0);
       assert.equal(lcp.attribution.resourceLoadDuration, 0);
       assert.equal(
@@ -698,7 +744,7 @@ describe('onLCP()', async function () {
       assert.strictEqual(lcp2.entries.length, 0);
       assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
 
-      assert.equal(lcp2.attribution.element, undefined);
+      assert.equal(lcp2.attribution.target, undefined);
       assert.equal(lcp2.attribution.timeToFirstByte, 0);
       assert.equal(lcp2.attribution.resourceLoadDelay, 0);
       assert.equal(lcp2.attribution.resourceLoadDuration, 0);

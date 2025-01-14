@@ -856,6 +856,71 @@ describe('onCLS()', async function () {
       );
     });
 
+    it('supports generating a custom target', async function () {
+      if (!browserSupportsCLS) this.skip();
+
+      await navigateTo('/test/cls?attribution=1&generateTarget=1');
+
+      // Wait until all images are loaded and rendered, then change to hidden.
+      await imagesPainted();
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [cls] = await getBeacons();
+      assert(cls.value > 0);
+      assert(cls.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(cls.name, 'CLS');
+      assert.strictEqual(cls.value, cls.delta);
+      assert.strictEqual(cls.rating, 'good');
+      assert.strictEqual(cls.entries.length, 2);
+      assert.match(cls.navigationType, /navigate|reload/);
+
+      assert.equal(
+        cls.attribution.largestShiftTarget,
+        'secondary-image-wrapper',
+      );
+    });
+
+    it('supports multiple calls with different custom target generation functions', async function () {
+      if (!browserSupportsCLS) this.skip();
+
+      await navigateTo(
+        '/test/cls?attribution=1&doubleCall=1&generateTarget2=1',
+      );
+
+      // Wait until all images are loaded and rendered, then change to hidden.
+      await imagesPainted();
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1, {instance: 1});
+      await beaconCountIs(1, {instance: 2});
+
+      const [cls1] = await getBeacons({instance: 1});
+      assert(cls1.value > 0);
+      assert(cls1.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(cls1.name, 'CLS');
+      assert.strictEqual(cls1.value, cls1.delta);
+      assert.strictEqual(cls1.rating, 'good');
+      assert.strictEqual(cls1.entries.length, 2);
+      assert.match(cls1.navigationType, /navigate|reload/);
+
+      assert.equal(cls1.attribution.largestShiftTarget, '#p3');
+
+      const [cls2] = await getBeacons({instance: 2});
+      assert.strictEqual(cls2.name, cls1.name);
+      assert.strictEqual(cls2.value, cls1.value);
+      assert.strictEqual(cls2.delta, cls1.delta);
+      assert.strictEqual(cls2.rating, cls1.rating);
+      assert.deepEqual(cls2.entries, cls1.entries);
+      assert(cls2.id !== cls1.id);
+
+      assert.equal(
+        cls2.attribution.largestShiftTarget,
+        'secondary-image-wrapper',
+      );
+    });
+
     it('reports whether the largest shift was before or after load', async function () {
       if (!browserSupportsCLS) this.skip();
 

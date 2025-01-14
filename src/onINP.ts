@@ -24,7 +24,7 @@ import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPoly
 import {whenActivated} from './lib/whenActivated.js';
 import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
-import {INPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
+import {INPMetric, MetricRatingThresholds, INPReportOpts} from './types.js';
 
 /** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
@@ -64,7 +64,7 @@ const DEFAULT_DURATION_THRESHOLD = 40;
  */
 export const onINP = (
   onReport: (metric: INPMetric) => void,
-  opts: ReportOpts = {},
+  opts: INPReportOpts = {},
 ) => {
   // Return if the browser doesn't support all APIs needed to measure INP.
   if (

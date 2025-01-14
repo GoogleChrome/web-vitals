@@ -16,18 +16,14 @@
 
 import {getInteractionCount} from './polyfills/interactionCountPolyfill.js';
 
-interface Interaction {
+export interface Interaction {
   _latency: number;
-  // While the `id` and `entires` properties are also internal and could be
+  // While the `id` and `entries` properties are also internal and could be
   // mangled by prefixing with an underscore, since they correspond to public
   // symbols there is no need to mangle them as the library will compress
   // better if we reuse the existing names.
   id: number;
   entries: PerformanceEventTiming[];
-}
-
-interface EntryPreProcessingHook {
-  (entry: PerformanceEventTiming): void;
 }
 
 // To prevent unnecessary memory usage on pages with lots of interactions,
@@ -60,7 +56,9 @@ export class InteractionManager {
    */
   _longestInteractionMap: Map<number, Interaction> = new Map();
 
-  _entryPreProcessingCallbacks: EntryPreProcessingHook[] = [];
+  _onBeforeProcessingEntry?: (entry: PerformanceEventTiming) => void;
+
+  _onAfterProcessingInteraction?: (interaction: Interaction) => void;
 
   _resetInteractions() {
     prevInteractionCount = getInteractionCount();
@@ -88,9 +86,7 @@ export class InteractionManager {
    * and entries list is updated as needed.
    */
   _processEntry(entry: PerformanceEventTiming) {
-    for (const cb of this._entryPreProcessingCallbacks) {
-      cb(entry);
-    }
+    this._onBeforeProcessingEntry?.(entry);
 
     // Skip further processing for entries that cannot be INP candidates.
     if (!(entry.interactionId || entry.entryType === 'first-input')) return;
@@ -98,33 +94,31 @@ export class InteractionManager {
     // The least-long of the 10 longest interactions.
     const minLongestInteraction = this._longestInteractionList.at(-1);
 
-    const existingInteraction = this._longestInteractionMap.get(
-      entry.interactionId!,
-    );
+    let interaction = this._longestInteractionMap.get(entry.interactionId!);
 
     // Only process the entry if it's possibly one of the ten longest,
     // or if it's part of an existing interaction.
     if (
-      existingInteraction ||
+      interaction ||
       this._longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
       // If the above conditions are false, `minLongestInteraction` will be set.
       entry.duration > minLongestInteraction!._latency
     ) {
       // If the interaction already exists, update it. Otherwise create one.
-      if (existingInteraction) {
+      if (interaction) {
         // If the new entry has a longer duration, replace the old entries,
         // otherwise add to the array.
-        if (entry.duration > existingInteraction._latency) {
-          existingInteraction.entries = [entry];
-          existingInteraction._latency = entry.duration;
+        if (entry.duration > interaction._latency) {
+          interaction.entries = [entry];
+          interaction._latency = entry.duration;
         } else if (
-          entry.duration === existingInteraction._latency &&
-          entry.startTime === existingInteraction.entries[0].startTime
+          entry.duration === interaction._latency &&
+          entry.startTime === interaction.entries[0].startTime
         ) {
-          existingInteraction.entries.push(entry);
+          interaction.entries.push(entry);
         }
       } else {
-        const interaction = {
+        interaction = {
           id: entry.interactionId!,
           entries: [entry],
           _latency: entry.duration,
@@ -145,5 +139,7 @@ export class InteractionManager {
         }
       }
     }
+
+    this._onAfterProcessingInteraction?.(interaction!);
   }
 }

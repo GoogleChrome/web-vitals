@@ -92,7 +92,7 @@ Measuring the Web Vitals scores for your real users is a great first step toward
 
 The "attribution" build helps you do that by including additional diagnostic information with each metric to help you identify the root cause of poor performance as well as prioritize the most important things to fix.
 
-The "attribution" build is slightly larger than the "standard" build (by about 600 bytes, brotli'd), so while the code size is still small, it's only recommended if you're actually using these features.
+The "attribution" build is slightly larger than the "standard" build (by about 1.5K, brotli'd), so while the code size is still small, it's only recommended if you're actually using these features.
 
 To load the "attribution" build, change any `import` statements that reference `web-vitals` to `web-vitals/attribution`:
 
@@ -631,6 +631,35 @@ _See also [Rating Thresholds](#rating-thresholds)._
 ```ts
 interface ReportOpts {
   reportAllChanges?: boolean;
+}
+```
+
+Metric-specific subclasses:
+
+##### `INPReportOpts`
+
+```ts
+interface INPReportOpts extends ReportOpts {
+  durationThreshold?: number;
+}
+```
+
+#### `AttributionReportOpts`
+
+A subclass of `ReportOpts` used for each metric function exported in the [attribution build](#attribution).
+
+```ts
+interface AttributionReportOpts extends ReportOpts {
+  generateTarget?: (el: Node | null) => unknown;
+}
+```
+
+Metric-specific subclasses:
+
+##### `INPAttributionReportOpts`
+
+```ts
+interface INPAttributionReportOpts extends AttributionReportOpts {
   durationThreshold?: number;
 }
 ```
@@ -688,7 +717,10 @@ Calculates the [FCP](https://web.dev/articles/fcp) value for the current page an
 #### `onINP()`
 
 ```ts
-function onINP(callback: (metric: INPMetric) => void, opts?: ReportOpts): void;
+function onINP(
+  callback: (metric: INPMetric) => void,
+  opts?: INPReportOpts,
+): void;
 ```
 
 Calculates the [INP](https://web.dev/articles/inp) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
@@ -758,20 +790,29 @@ console.log(LCPThresholds); // [ 2500, 4000 ]
 
 ### Attribution:
 
-The following objects contain potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
+In the [attribution build](#attribution-build) each of the metric functions has two primary differences from their standard build counterparts:
 
-When using the attribution build, these objects are found as an `attribution` property on each metric.
+1. They accept an `AttributionReportOpts` objects instead of a `ReportOpts` object. The `AttributionReportOpts` object supports an additional, optional, `generateTarget()` function that lets developers customize how DOM elements are stringified for reporting purposes. When passed, the return value `generateTarget()` function will be used for any "target" properties in the following attribution objects: [`CLSAttribution`](#CLSAttribution), [`INPAttribution`](#INPAttribution), and [`LCPAttribution`](#LCPAttribution).
 
-See the [attribution build](#attribution-build) section for details on how to use this feature.
+```ts
+interface AttributionReportOpts extends ReportOpts {
+  generateTarget?: (el: Node | null) => string;
+}
+```
+
+2. Their callback is invoked with a `MetricWithAttribution` objects instead of a `Metric` object. Each `MetricWithAttribution` extends the `Metric` object and adds an additional `attribution` object, which contains potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
+
+The next sections document the shape of the `attribution` object for each of the metrics:
 
 #### `CLSAttribution`
 
 ```ts
 interface CLSAttribution {
   /**
-   * A selector identifying the first element (in document order) that
-   * shifted when the single largest layout shift contributing to the page's
-   * CLS score occurred.
+   * By default, a selector identifying the first element (in document order)
+   * that shifted when the single largest layout shift that contributed to the
+   * page's CLS score occurred. If the `generateTarget` configuration option
+   * was passed, then this will instead be the return value of that function.
    */
   largestShiftTarget?: string;
   /**
@@ -842,19 +883,14 @@ interface FCPAttribution {
 ```ts
 interface INPAttribution {
   /**
-   * A selector identifying the element that the user first interacted with
-   * as part of the frame where the INP candidate interaction occurred.
-   * If this value is an empty string, that generally means the element was
-   * removed from the DOM after the interaction.
+   * By default, a selector identifying the element that the user first
+   * interacted with as part of the frame where the INP candidate interaction
+   * occurred. If this value is an empty string, that generally means the
+   * element was removed from the DOM after the interaction. If the
+   * `generateTarget` configuration option was passed, then this will instead
+   * be the return value of that function.
    */
   interactionTarget: string;
-  /**
-   * A reference to the HTML element identified by `interactionTarget`.
-   * NOTE: for attribution purpose, a selector identifying the element is
-   * typically more useful than the element itself. However, the element is
-   * also made available in case additional context is needed.
-   */
-  interactionTargetElement: Node | undefined;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred
@@ -927,9 +963,12 @@ interface INPAttribution {
 ```ts
 interface LCPAttribution {
   /**
-   * The element corresponding to the largest contentful paint for the page.
+   * By default, a selector identifying the element corresponding to the
+   * largest contentful paint for the page. If the `generateTarget`
+   * configuration option was passed, then this will instead be the return
+   * value of that function.
    */
-  element?: string;
+  target?: string;
   /**
    * The URL (if applicable) of the LCP image resource. If the LCP element
    * is a text node, this value will not be set.
