@@ -792,7 +792,7 @@ console.log(LCPThresholds); // [ 2500, 4000 ]
 
 In the [attribution build](#attribution-build) each of the metric functions has two primary differences from their standard build counterparts:
 
-1. They accept an `AttributionReportOpts` objects instead of a `ReportOpts` object. The `AttributionReportOpts` object supports an additional `generateTarget()` function that lets developers customize how DOM elements are stringified for reporting purposes. When passed, the return value `generateTarget()` function will be used for any "target" properties in the following attribution objects: [`CLSAttribution`](#CLSAttribution), [`INPAttribution`](#INPAttribution), and [`LCPAttribution`](#LCPAttribution).
+1. They accept an `AttributionReportOpts` objects instead of a `ReportOpts` object. The `AttributionReportOpts` object supports an additional, optional, `generateTarget()` function that lets developers customize how DOM elements are stringified for reporting purposes. When passed, the return value `generateTarget()` function will be used for any "target" properties in the following attribution objects: [`CLSAttribution`](#CLSAttribution), [`INPAttribution`](#INPAttribution), and [`LCPAttribution`](#LCPAttribution).
 
 ```ts
 interface AttributionReportOpts extends ReportOpts {
