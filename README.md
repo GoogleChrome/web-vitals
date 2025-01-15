@@ -1042,7 +1042,7 @@ interface INPAttribution {
       /**
        * The total duration of Long Animation Frame scripts that intersect the INP
        * duration. Note, this includes forced style and layout within those
-       * scripts.
+       * scripts and is limited to scripts > 5 milliseconds.
        */
       totalIntersectingScriptsDuration: number;
     }

@@ -166,7 +166,7 @@ export interface LongAnimationFrameSummary {
   /**
    * The total duration of Long Animation Frame scripts that intersect the INP
    * duration. Note, this includes forced style and layout within those
-   * scripts.
+   * scriptsn and is limited to scripts > 5 milliseconds.
    */
   totalIntersectingScriptsDuration: number;
 }

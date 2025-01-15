@@ -886,7 +886,8 @@ describe('onINP()', async function () {
           inp1.attribution.presentationDelay,
       );
       assert(
-        inp1.attribution.longAnimationFrameSummary.totalScriptDuration >= 100,
+        inp1.attribution.longAnimationFrameSummary
+          .totalIntersectingScriptsDuration >= 100,
       );
     });
   });
