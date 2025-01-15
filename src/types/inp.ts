@@ -142,8 +142,8 @@ export interface LongAnimationFrameSummary {
    */
   slowestScript: SlowestScriptSummary;
   /**
-   * The total blocking durations in each sub-part by invoker for scripts that
-   * intersect the INP interaction.
+   * The total intersecting durations in each sub-part by invoker for
+   * scripts that intersect the INP interaction.
    * For example:
    * {
    *    'inputDelay': { 'event-listener': 185, 'user-callback': 28},
@@ -168,7 +168,7 @@ export interface LongAnimationFrameSummary {
    * duration. Note, this includes forced style and layout within those
    * scripts.
    */
-  totalScriptDuration: number;
+  totalIntersectingScriptsDuration: number;
 }
 
 /**

@@ -269,7 +269,7 @@ export const onINP = (
     const processingDuration = attribution.processingDuration;
     let totalNonForcedStyleAndLayoutDuration = 0;
     let totalForcedStyleAndLayout = 0;
-    let totalScriptTime = 0;
+    let totalIntersectingScriptsDuration = 0;
     let numScripts = 0;
     let slowestScriptDuration = 0;
     let slowestScriptEntry!: PerformanceScriptTiming;
@@ -283,14 +283,15 @@ export const onINP = (
         loafEntry.startTime +
         loafEntry.duration -
         loafEntry.styleAndLayoutStart;
-      loafEntry.scripts.forEach((script) => {
+
+      for (const script of loafEntry.scripts) {
         const scriptEndTime = script.startTime + script.duration;
         if (scriptEndTime < interactionTime) {
           return;
         }
         const intersectingScriptDuration =
           scriptEndTime - Math.max(interactionTime, script.startTime);
-        totalScriptTime += intersectingScriptDuration;
+        totalIntersectingScriptsDuration += intersectingScriptDuration;
         numScripts++;
         totalForcedStyleAndLayout += script.forcedStyleAndLayoutDuration;
         const invokerType = script.invokerType;
@@ -305,7 +306,7 @@ export const onINP = (
         }
 
         // Define the record if necessary. Annoyingly TypeScript doesn't yet
-        // recognise this so need a few `!`s on the next two lines to convinced
+        // recognize this so need a few `!`s on the next two lines to convinced
         // it is typed.
         subparts[subpart] ??= {};
         subparts[subpart]![invokerType] ??= 0;
@@ -317,7 +318,7 @@ export const onINP = (
           slowestScriptSubpart = subpart;
           slowestScriptDuration = intersectingScriptDuration;
         }
-      });
+      }
     }
 
     // Gather the loaf summary information into the loafAttribution object
@@ -348,7 +349,7 @@ export const onINP = (
       totalForcedStyleAndLayoutDuration: totalForcedStyleAndLayout,
       totalNonForcedStyleAndLayoutDuration:
         totalNonForcedStyleAndLayoutDuration,
-      totalScriptDuration: totalScriptTime,
+      totalIntersectingScriptsDuration: totalIntersectingScriptsDuration,
     };
 
     return loafSummary;
