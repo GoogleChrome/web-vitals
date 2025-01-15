@@ -16,7 +16,7 @@
 {% extends 'layout.njk' %}
 
 {% block content %}
-  <h1 elementtiming="main-heading">INP Test</h1>
+  <h1 elementtiming="main-heading" data-target="main-heading">INP Test</h1>
   <p>
     <label><input type="number" value="0" id="mousedown-blocking-time">
     <code>mousedown</code> blocking time</label>
@@ -115,6 +115,8 @@
     const {onINP} = await __testImport('{{ modulePath }}');
 
     onINP((inp) => {
+      inp.instance = 1;
+
       // Log for easier manual testing.
       console.log(inp);
 
@@ -123,6 +125,23 @@
     }, {
       reportAllChanges: self.__reportAllChanges,
       durationThreshold: self.__durationThreshold,
+      generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
+
+    if (self.__doubleCall) {
+      onINP((inp) => {
+        inp.instance = 2;
+
+        // Log for easier manual testing.
+        console.log(inp);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+        durationThreshold: self.__durationThreshold2,
+        generateTarget: self.__generateTarget2 && ((el) => el.dataset.target),
+      });
+    }
   </script>
 {% endblock %}

@@ -23,7 +23,7 @@ const getName = (node: Node) => {
 
 const MAX_LEN = 100;
 
-export const getSelector = (node: Node | null | undefined) => {
+export const getSelector = (node: Node | null) => {
   let sel = '';
 
   try {

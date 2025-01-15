@@ -440,6 +440,69 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.navigationType, 'restore');
   });
 
+  it('works when calling the function twice with different options', async function () {
+    if (!browserSupportsINP) this.skip();
+
+    await navigateTo(
+      '/test/inp?click=100&keydown=200&doubleCall=1&reportAllChanges2=1',
+      {readyState: 'interactive'},
+    );
+
+    const textarea = await $('#textarea');
+    simulateUserLikeClick(textarea);
+
+    await beaconCountIs(1, {instance: 2});
+
+    const [inp2_1] = await getBeacons({instance: 2});
+
+    assert(inp2_1.value > 100 - 8);
+    assert(inp2_1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp2_1.name, 'INP');
+    assert.strictEqual(inp2_1.value, inp2_1.delta);
+    assert.strictEqual(inp2_1.rating, 'good');
+    assert(
+      containsEntry(inp2_1.entries, 'click', '[object HTMLTextAreaElement]'),
+    );
+    assert(allEntriesValid(inp2_1.entries));
+    assert.match(inp2_1.navigationType, /navigate|reload/);
+
+    // Assert no beacons for instance 1 were received.
+    assert.strictEqual((await getBeacons({instance: 1})).length, 0);
+
+    await browser.keys(['a']);
+
+    await beaconCountIs(2, {instance: 2});
+
+    const [, inp2_2] = await getBeacons({instance: 2});
+
+    assert.strictEqual(inp2_2.id, inp2_1.id);
+    assert.strictEqual(inp2_2.name, 'INP');
+    assert.strictEqual(inp2_2.value, inp2_2.delta + inp2_1.delta);
+    assert.strictEqual(inp2_2.delta, inp2_2.value - inp2_1.delta);
+    assert.strictEqual(inp2_2.rating, 'needs-improvement');
+    assert(
+      containsEntry(inp2_2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+    );
+    assert(allEntriesValid(inp2_2.entries));
+    assert.match(inp2_2.navigationType, /navigate|reload/);
+
+    await stubVisibilityChange('hidden');
+    await beaconCountIs(1, {instance: 1});
+
+    const [inp1] = await getBeacons({instance: 1});
+    assert(inp1.id.match(/^v5-\d+-\d+$/));
+    assert(inp1.id !== inp2_1.id);
+
+    assert(inp1.id.match(/^v5-\d+-\d+$/));
+    assert(inp1.id !== inp2_2.id);
+    assert.strictEqual(inp1.value, inp2_2.value);
+    assert.strictEqual(inp1.delta, inp2_2.value);
+    assert.strictEqual(inp1.name, inp2_2.name);
+    assert.strictEqual(inp1.rating, inp2_2.rating);
+    assert.deepEqual(inp1.entries, inp2_2.entries);
+    assert.strictEqual(inp1.navigationType, inp2_2.navigationType);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsINP) this.skip();
@@ -543,10 +606,6 @@ describe('onINP()', async function () {
       assert.match(inp2.navigationType, /navigate|reload/);
 
       assert.equal(inp2.attribution.interactionTarget, '#textarea');
-      assert.equal(
-        inp2.attribution.interactionTargetElement,
-        '[object HTMLTextAreaElement]',
-      );
       assert.equal(inp2.attribution.interactionType, 'keyboard');
       assert.equal(inp2.attribution.interactionTime, inp2.entries[0].startTime);
       assert.equal(inp2.attribution.loadState, 'complete');
@@ -601,6 +660,82 @@ describe('onINP()', async function () {
         inp2.attribution.nextPaintTime - inp2.attribution.presentationDelay,
         sortedEntries2.at(-1).processingEnd,
       );
+    });
+
+    it('supports generating a custom target', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo('/test/inp?click=100&attribution=1&generateTarget=1', {
+        readyState: 'complete',
+      });
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+
+      assert(inp1.value >= 100 - ROUNDING_ERROR);
+      assert(inp1.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp1.name, 'INP');
+      assert.strictEqual(inp1.value, inp1.delta);
+      assert.strictEqual(inp1.rating, 'good');
+      assert(
+        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+      assert(allEntriesPresentTogether(inp1.entries));
+      assert.match(inp1.navigationType, /navigate|reload/);
+
+      assert.equal(inp1.attribution.interactionTarget, 'main-heading');
+    });
+
+    it('supports multiple calls with different custom target generation functions', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo(
+        '/test/inp?click=100&attribution=1&doubleCall=1&generateTarget2=1',
+        {
+          readyState: 'complete',
+        },
+      );
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1, {instance: 1});
+      await beaconCountIs(1, {instance: 2});
+
+      const [inp1] = await getBeacons({instance: 1});
+
+      assert(inp1.value >= 100 - ROUNDING_ERROR);
+      assert(inp1.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp1.name, 'INP');
+      assert.strictEqual(inp1.value, inp1.delta);
+      assert.strictEqual(inp1.rating, 'good');
+      assert(
+        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+      assert(allEntriesPresentTogether(inp1.entries));
+      assert.match(inp1.navigationType, /navigate|reload/);
+
+      assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
+
+      const [inp2] = await getBeacons({instance: 2});
+
+      assert.strictEqual(inp2.name, inp1.name);
+      assert.strictEqual(inp2.value, inp1.value);
+      assert.strictEqual(inp2.delta, inp1.delta);
+      assert.strictEqual(inp2.rating, inp1.rating);
+      assert.strictEqual(inp2.navigationType, inp1.navigationType);
+      assert.deepEqual(inp2.entries, inp1.entries);
+      assert(inp2.id !== inp1.id);
+
+      assert.equal(inp2.attribution.interactionTarget, 'main-heading');
     });
 
     it('reports the domReadyState when input occurred', async function () {
@@ -662,10 +797,6 @@ describe('onINP()', async function () {
       // entry doesn't contain a target.
       // See: https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
       assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
-      assert.equal(
-        inp1.attribution.interactionTargetElement,
-        '[object HTMLHeadingElement]',
-      );
     });
 
     it('reports the interaction target when target is removed from the DOM', async function () {
@@ -690,10 +821,6 @@ describe('onINP()', async function () {
 
       assert.equal(inp.attribution.interactionType, 'pointer');
       assert.equal(inp.attribution.interactionTarget, '#reset');
-      assert.equal(
-        inp.attribution.interactionTargetElement,
-        '[object HTMLButtonElement]',
-      );
     });
 
     it('includes LoAF entries if the browser supports it', async function () {
@@ -769,9 +896,24 @@ const containsEntry = (entries, name, target) => {
   return entries.findIndex((e) => e.name === name && e.target === target) > -1;
 };
 
+const allEntriesValid = (entries) => {
+  const renderTimes = entries
+    .map((e) => e.startTime + e.duration)
+    .sort((a, b) => a - b);
+
+  const allEntriesHaveSameRenderTimes =
+    renderTimes.at(-1) - renderTimes.at(0) === 0;
+
+  const entryData = entries.map((e) => JSON.stringify(e));
+
+  const allEntriesAreUnique = entryData.length === new Set(entryData).size;
+
+  return allEntriesHaveSameRenderTimes && allEntriesAreUnique;
+};
+
 const allEntriesPresentTogether = (entries) => {
   const renderTimes = entries
-    .map((e) => Math.max(e.startTime + e.duration, e.processingEnd))
+    .map((e) => e.startTime + e.duration)
     .sort((a, b) => a - b);
 
   return renderTimes.at(-1) - renderTimes.at(0) <= 8;

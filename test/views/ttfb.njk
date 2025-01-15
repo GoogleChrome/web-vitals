@@ -36,15 +36,33 @@
     }
   </script>
 
-  <script type="module">
-    const {onTTFB} = await __testImport('{{ modulePath }}');
+<script type="module">
+  const {onTTFB} = await __testImport('{{ modulePath }}');
 
+  onTTFB((ttfb) => {
+    ttfb.instance = 1;
+
+    // Log for easier manual testing.
+    console.log(ttfb);
+
+    // Test sending the metric to an analytics endpoint.
+    navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(ttfb)));
+  }, {
+    reportAllChanges: self.__reportAllChanges,
+  });
+
+  if (self.__doubleCall) {
     onTTFB((ttfb) => {
+      ttfb.instance = 2;
+
       // Log for easier manual testing.
       console.log(ttfb);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(ttfb)));
-    }, {reportAllChanges: self.__reportAllChanges});
-  </script>
+    }, {
+      reportAllChanges: self.__reportAllChanges2,
+    });
+  }
+</script>
 {% endblock %}

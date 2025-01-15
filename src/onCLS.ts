@@ -15,10 +15,12 @@
  */
 
 import {onBFCacheRestore} from './lib/bfcache.js';
-import {initMetric} from './lib/initMetric.js';
-import {observe} from './lib/observe.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
+import {initMetric} from './lib/initMetric.js';
+import {initUnique} from './lib/initUnique.js';
+import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
+import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
 import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
@@ -58,41 +60,18 @@ export const onCLS = (
       let metric = initMetric('CLS', 0);
       let report: ReturnType<typeof bindReporter>;
 
-      let sessionValue = 0;
-      let sessionEntries: LayoutShift[] = [];
+      const layoutShiftManager = initUnique(opts, LayoutShiftManager);
 
       const handleEntries = (entries: LayoutShift[]) => {
         for (const entry of entries) {
-          // Only count layout shifts without recent user input.
-          if (!entry.hadRecentInput) {
-            const firstSessionEntry = sessionEntries[0];
-            const lastSessionEntry = sessionEntries.at(-1);
-
-            // If the entry occurred less than 1 second after the previous entry
-            // and less than 5 seconds after the first entry in the session,
-            // include the entry in the current session. Otherwise, start a new
-            // session.
-            if (
-              sessionValue &&
-              firstSessionEntry &&
-              lastSessionEntry &&
-              entry.startTime - lastSessionEntry.startTime < 1000 &&
-              entry.startTime - firstSessionEntry.startTime < 5000
-            ) {
-              sessionValue += entry.value;
-              sessionEntries.push(entry);
-            } else {
-              sessionValue = entry.value;
-              sessionEntries = [entry];
-            }
-          }
+          layoutShiftManager._processEntry(entry);
         }
 
         // If the current session value is larger than the current CLS value,
         // update CLS and the entries contributing to it.
-        if (sessionValue > metric.value) {
-          metric.value = sessionValue;
-          metric.entries = sessionEntries;
+        if (layoutShiftManager._sessionValue > metric.value) {
+          metric.value = layoutShiftManager._sessionValue;
+          metric.entries = layoutShiftManager._sessionEntries;
           report();
         }
       };
@@ -116,7 +95,7 @@ export const onCLS = (
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          sessionValue = 0;
+          layoutShiftManager._sessionValue = 0;
           metric = initMetric('CLS', 0);
           report = bindReporter(
             onReport,
