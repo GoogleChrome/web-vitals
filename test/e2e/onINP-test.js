@@ -841,7 +841,7 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
       assert(inp1.attribution.longAnimationFrameEntries.length > 0);
-      assert(inp1.attribution.longAnimationFrameSummary != {});
+      assert(Object.keys(inp1.attribution.longAnimationFrameSummary).length !== 0);
       assert.equal(
         inp1.attribution.longAnimationFrameSummary.numIntersectingScripts,
         1,
