@@ -299,7 +299,7 @@ export const onINP = (
         if (script.startTime < interactionTime + inputDelay) {
           subpart = 'inputDelay';
         } else if (
-          script.startTime >
+          script.startTime >=
           interactionTime + inputDelay + processingDuration
         ) {
           subpart = 'presentationDelay';
