@@ -27,7 +27,6 @@ import {
   INPMetricWithAttribution,
   INPSubpart,
   INPAttributionReportOpts,
-  LongAnimationFrameSummary,
 } from '../types.js';
 
 interface pendingEntriesGroup {
@@ -262,27 +261,63 @@ export const onINP = (
     return intersectingLoAFs;
   };
 
-  const getLoAFSummary = (attribution: INPAttribution) => {
+  const attributeLoAFDetails = (attribution: INPAttribution, value: number) => {
     // Stats across all LoAF entries and scripts.
     const interactionTime = attribution.interactionTime;
-    const inputDelay = attribution.inputDelay;
-    const processingDuration = attribution.processingDuration;
-    let totalNonForcedStyleAndLayoutDuration = 0;
-    let totalForcedStyleAndLayout = 0;
-    let totalIntersectingScriptsDuration = 0;
-    let numScripts = 0;
-    let slowestScriptDuration = 0;
-    let slowestScriptEntry!: PerformanceScriptTiming;
-    let slowestScriptSubpart!: INPSubpart;
-    const subparts: Partial<
-      Record<INPSubpart, Partial<Record<ScriptInvokerType, number>>>
-    > = {};
+    const inputDelay = attribution.subparts.inputDelay.duration;
+    const processingDuration = attribution.subparts.processingDuration.duration;
+    let totalStyleAndLayoutDuration = 0;
+    let totalScriptThrashingDuration = 0;
+    let totalFramePresentationDelay = 0;
+    let totalScriptsDuration = 0;
+    let longestScriptDuration = 0;
+    let longestScriptEntry!: PerformanceScriptTiming;
+    let longestScriptSubpart!: INPSubpart;
+
+    attribution.subparts.inputDelay.scriptsDuration = 0;
+    attribution.subparts.inputDelay.scripts = [];
+    attribution.subparts.inputDelay.scriptThrashingDuration = 0;
+    attribution.subparts.inputDelay.styleAndLayoutDuration = 0;
+    attribution.subparts.inputDelay.framePresentationDuration = 0;
+
+    attribution.subparts.processingDuration.scriptsDuration = 0;
+    attribution.subparts.processingDuration.scripts = [];
+    attribution.subparts.processingDuration.scriptThrashingDuration = 0;
+
+    attribution.subparts.presentationDelay.scriptsDuration = 0;
+    attribution.subparts.presentationDelay.scripts = [];
+    attribution.subparts.presentationDelay.scriptThrashingDuration = 0;
+    attribution.subparts.presentationDelay.styleAndLayoutDuration = 0;
+    attribution.subparts.presentationDelay.framePresentationDuration = 0;
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
-      totalNonForcedStyleAndLayoutDuration +=
+      const styleAndLayoutDuration =
         loafEntry.startTime +
         loafEntry.duration -
         loafEntry.styleAndLayoutStart;
+      totalStyleAndLayoutDuration += styleAndLayoutDuration;
+
+      const framePresentationDuration =
+        attribution.interactionTime +
+        value -
+        (loafEntry.startTime + loafEntry.duration);
+      totalFramePresentationDelay += framePresentationDuration;
+
+      if (loafEntry.styleAndLayoutStart < attribution.interactionTime) {
+        attribution.subparts.inputDelay.styleAndLayoutDuration =
+          (attribution.subparts.inputDelay.styleAndLayoutDuration || 0) +
+          styleAndLayoutDuration;
+
+        attribution.subparts.inputDelay.framePresentationDuration +=
+          framePresentationDuration;
+      } else {
+        attribution.subparts.presentationDelay.styleAndLayoutDuration =
+          (attribution.subparts.presentationDelay.styleAndLayoutDuration || 0) +
+          styleAndLayoutDuration;
+
+        attribution.subparts.presentationDelay.framePresentationDuration +=
+          framePresentationDuration;
+      }
 
       for (const script of loafEntry.scripts) {
         const scriptEndTime = script.startTime + script.duration;
@@ -291,68 +326,51 @@ export const onINP = (
         }
         const intersectingScriptDuration =
           scriptEndTime - Math.max(interactionTime, script.startTime);
-        totalIntersectingScriptsDuration += intersectingScriptDuration;
-        numScripts++;
-        totalForcedStyleAndLayout += script.forcedStyleAndLayoutDuration;
-        const invokerType = script.invokerType;
+        totalScriptsDuration += intersectingScriptDuration;
+        totalScriptThrashingDuration += script.forcedStyleAndLayoutDuration;
         let subpart: INPSubpart = 'processingDuration';
         if (script.startTime < interactionTime + inputDelay) {
           subpart = 'inputDelay';
+          attribution.subparts.inputDelay.scriptsDuration +=
+            intersectingScriptDuration;
+          attribution.subparts.inputDelay.scripts.push(script);
+          attribution.subparts.inputDelay.scriptThrashingDuration +=
+            script.forcedStyleAndLayoutDuration;
         } else if (
           script.startTime >=
           interactionTime + inputDelay + processingDuration
         ) {
           subpart = 'presentationDelay';
+          attribution.subparts.presentationDelay.scriptsDuration +=
+            intersectingScriptDuration;
+          attribution.subparts.presentationDelay.scripts.push(script);
+          attribution.subparts.presentationDelay.scriptThrashingDuration +=
+            script.forcedStyleAndLayoutDuration;
+        } else {
+          attribution.subparts.processingDuration.scriptsDuration +=
+            intersectingScriptDuration;
+          attribution.subparts.processingDuration.scripts.push(script);
+          attribution.subparts.processingDuration.scriptThrashingDuration +=
+            script.forcedStyleAndLayoutDuration;
         }
 
-        // Define the record if necessary. Annoyingly TypeScript doesn't yet
-        // recognize this so need a few `!`s on the next two lines to convinced
-        // it is typed.
-        subparts[subpart] ??= {};
-        subparts[subpart]![invokerType] ??= 0;
-        // Increment it with this value
-        subparts[subpart]![invokerType]! += intersectingScriptDuration;
-
-        if (intersectingScriptDuration > slowestScriptDuration) {
-          slowestScriptEntry = script;
-          slowestScriptSubpart = subpart;
-          slowestScriptDuration = intersectingScriptDuration;
+        if (intersectingScriptDuration > longestScriptDuration) {
+          longestScriptEntry = script;
+          longestScriptSubpart = subpart;
+          longestScriptDuration = intersectingScriptDuration;
         }
       }
     }
 
-    // Gather the loaf summary information into the loafAttribution object
-    const loafSummary: LongAnimationFrameSummary = {
-      numLongAnimationFrames: attribution.longAnimationFrameEntries.length,
-      numIntersectingScripts: numScripts,
-      slowestScript: {
-        entry: slowestScriptEntry,
-        subpart: slowestScriptSubpart,
-        intersectingDuration: slowestScriptDuration,
-        totalDuration: slowestScriptEntry?.duration,
-        compileDuration:
-          slowestScriptEntry?.executionStart - slowestScriptEntry?.startTime,
-        executionDuration:
-          slowestScriptEntry?.startTime +
-          slowestScriptEntry?.duration -
-          slowestScriptEntry?.executionStart,
-        forcedStyleAndLayoutDuration:
-          slowestScriptEntry?.forcedStyleAndLayoutDuration,
-        pauseDuration: slowestScriptEntry?.pauseDuration,
-        invokerType: slowestScriptEntry?.invokerType,
-        invoker: slowestScriptEntry?.invoker,
-        sourceURL: slowestScriptEntry?.sourceURL,
-        sourceFunctionName: slowestScriptEntry?.sourceFunctionName,
-        sourceCharPosition: slowestScriptEntry?.sourceCharPosition,
-      },
-      totalDurationsPerSubpart: subparts,
-      totalForcedStyleAndLayoutDuration: totalForcedStyleAndLayout,
-      totalNonForcedStyleAndLayoutDuration:
-        totalNonForcedStyleAndLayoutDuration,
-      totalIntersectingScriptsDuration: totalIntersectingScriptsDuration,
+    attribution.longestScript = {
+      entry: longestScriptEntry,
+      subpart: longestScriptSubpart,
+      intersectingDuration: longestScriptDuration,
     };
-
-    return loafSummary;
+    attribution.totalScriptsDuration = totalScriptsDuration;
+    attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
+    attribution.totalScriptThrashingDuration = totalScriptThrashingDuration;
+    attribution.totalFramePresentationDelay = totalFramePresentationDelay;
   };
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
@@ -400,13 +418,21 @@ export const onINP = (
       nextPaintTime: nextPaintTime,
       processedEventEntries: processedEventEntries,
       longAnimationFrameEntries: longAnimationFrameEntries,
-      inputDelay: processingStart - firstEntry.startTime,
-      processingDuration: processingEnd - processingStart,
-      presentationDelay: nextPaintTime - processingEnd,
+      subparts: {
+        inputDelay: {
+          duration: processingStart - firstEntry.startTime,
+        },
+        processingDuration: {
+          duration: processingEnd - processingStart,
+        },
+        presentationDelay: {
+          duration: nextPaintTime - processingEnd,
+        },
+      },
       loadState: getLoadState(firstEntry.startTime),
     };
 
-    attribution.longAnimationFrameSummary = getLoAFSummary(attribution);
+    attributeLoAFDetails(attribution, metric.value);
 
     // Use `Object.assign()` to ensure the original metric object is returned.
     const metricWithAttribution: INPMetricWithAttribution = Object.assign(
