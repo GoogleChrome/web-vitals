@@ -331,7 +331,7 @@ export const onINP = (
   if (!loafObserver) {
     loafObserver = observe('long-animation-frame', handleLoAFEntries);
   }
-  unattributedOnINP((metric: INPMetric) => {
+  return unattributedOnINP((metric: INPMetric) => {
     const metricWithAttribution = attributeINP(metric);
     onReport(metricWithAttribution);
   }, opts);

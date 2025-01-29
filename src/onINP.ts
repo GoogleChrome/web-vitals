@@ -78,12 +78,24 @@ export const onINP = (
   // Set defaults
   opts = opts || {};
 
+  let metric = initMetric('INP');
+  let report: ReturnType<typeof bindReporter>;
+
+  const reset = () => {
+    resetInteractions();
+
+    metric = initMetric('INP');
+    report = bindReporter(
+      onReport,
+      metric,
+      INPThresholds,
+      opts!.reportAllChanges,
+    );
+  };
+
   whenActivated(() => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.
     initInteractionCountPolyfill();
-
-    let metric = initMetric('INP');
-    let report: ReturnType<typeof bindReporter>;
 
     const handleEntries = (entries: INPMetric['entries']) => {
       // Queue the `handleEntries()` callback in the next idle task.
@@ -147,4 +159,6 @@ export const onINP = (
       });
     }
   });
+
+  return {reset};
 };

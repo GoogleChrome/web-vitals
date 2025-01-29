@@ -55,16 +55,29 @@ export const onCLS = (
   // Set defaults
   opts = opts || {};
 
+  let metric = initMetric('CLS', 0);
+  let report: ReturnType<typeof bindReporter>;
+
+  let sessionValue = 0;
+  let sessionEntries: LayoutShift[] = [];
+
+  const reset = () => {
+    sessionValue = 0;
+    sessionEntries.length = 0;
+    metric = initMetric('CLS', 0);
+
+    report = bindReporter(
+      onReport,
+      metric,
+      CLSThresholds,
+      opts!.reportAllChanges,
+    );
+  };
+
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   onFCP(
     runOnce(() => {
-      let metric = initMetric('CLS', 0);
-      let report: ReturnType<typeof bindReporter>;
-
-      let sessionValue = 0;
-      let sessionEntries: LayoutShift[] = [];
-
       const handleEntries = (entries: LayoutShift[]) => {
         entries.forEach((entry) => {
           // Only count layout shifts without recent user input.
@@ -116,14 +129,7 @@ export const onCLS = (
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          sessionValue = 0;
-          metric = initMetric('CLS', 0);
-          report = bindReporter(
-            onReport,
-            metric,
-            CLSThresholds,
-            opts!.reportAllChanges,
-          );
+          reset();
 
           doubleRAF(() => report());
         });
@@ -135,4 +141,6 @@ export const onCLS = (
       }
     }),
   );
+
+  return {reset};
 };
