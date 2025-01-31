@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-export const onHidden = (cb: () => void) => {
+export const onHidden = (cb: () => void, options?: boolean | AddEventListenerOptions) => {
   document.addEventListener('visibilitychange', () => {
     if (document.visibilityState === 'hidden') {
       cb();
     }
-  });
+  }, options);
 };

@@ -110,7 +110,7 @@ export const onLCP = (
         });
       });
 
-      onHidden(stopListening);
+      onHidden(stopListening, {once: true});
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.

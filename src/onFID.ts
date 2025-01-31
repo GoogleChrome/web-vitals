@@ -85,7 +85,7 @@ export const onFID = (
           handleEntries(po.takeRecords() as FIDMetric['entries']);
           po.disconnect();
         }),
-      );
+        {once: true});
 
       onBFCacheRestore(() => {
         metric = initMetric('FID');
