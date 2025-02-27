@@ -25,6 +25,7 @@ import {
   INPAttribution,
   INPMetric,
   INPMetricWithAttribution,
+  INPSubpart,
   INPAttributionReportOpts,
 } from '../types.js';
 
@@ -260,6 +261,64 @@ export const onINP = (
     return intersectingLoAFs;
   };
 
+  const attributeLoAFDetails = (attribution: INPAttribution, value: number) => {
+    // Stats across all LoAF entries and scripts.
+    const interactionTime = attribution.interactionTime;
+    const inputDelay = attribution.inputDelay;
+    const processingDuration = attribution.processingDuration;
+    let totalScriptsDuration = 0;
+    let totalScriptThrashingDuration = 0;
+    let longestScriptDuration = 0;
+    let longestScriptEntry!: PerformanceScriptTiming;
+    let longestScriptSubpart!: INPSubpart;
+
+    for (const loafEntry of attribution.longAnimationFrameEntries) {
+      attribution.styleAndLayoutDuration =
+        loafEntry.startTime +
+        loafEntry.duration -
+        loafEntry.styleAndLayoutStart;
+
+      attribution.framePresentationDelay =
+        attribution.interactionTime +
+        value -
+        (loafEntry.startTime + loafEntry.duration);
+
+      for (const script of loafEntry.scripts) {
+        const scriptEndTime = script.startTime + script.duration;
+        if (scriptEndTime < interactionTime) {
+          return;
+        }
+        const intersectingScriptDuration =
+          scriptEndTime - Math.max(interactionTime, script.startTime);
+        totalScriptsDuration += intersectingScriptDuration;
+        totalScriptThrashingDuration += script.forcedStyleAndLayoutDuration;
+        let subpart: INPSubpart = 'processingDuration';
+        if (script.startTime < interactionTime + inputDelay) {
+          subpart = 'inputDelay';
+        } else if (
+          script.startTime >=
+          interactionTime + inputDelay + processingDuration
+        ) {
+          subpart = 'presentationDelay';
+        }
+
+        if (intersectingScriptDuration > longestScriptDuration) {
+          longestScriptEntry = script;
+          longestScriptSubpart = subpart;
+          longestScriptDuration = intersectingScriptDuration;
+        }
+      }
+    }
+
+    attribution.longestScript = {
+      entry: longestScriptEntry,
+      subpart: longestScriptSubpart,
+      intersectingDuration: longestScriptDuration,
+    };
+    attribution.scriptsDuration = totalScriptsDuration;
+    attribution.scriptThrashingDuration = totalScriptThrashingDuration;
+  };
+
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     const firstEntry = metric.entries[0];
     const group = entryToEntriesGroupMap.get(firstEntry)!;
@@ -310,6 +369,8 @@ export const onINP = (
       presentationDelay: nextPaintTime - processingEnd,
       loadState: getLoadState(firstEntry.startTime),
     };
+
+    attributeLoAFDetails(attribution, metric.value);
 
     // Use `Object.assign()` to ensure the original metric object is returned.
     const metricWithAttribution: INPMetricWithAttribution = Object.assign(

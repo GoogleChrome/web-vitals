@@ -37,6 +37,34 @@ export interface INPMetric extends Metric {
   entries: PerformanceEventTiming[];
 }
 
+export type INPSubpart =
+  | 'inputDelay'
+  | 'processingDuration'
+  | 'presentationDelay';
+
+/**
+ * Summary information about the slowest script intersecting the INP duration
+ * as provided by the Long Animation Frame API.
+ *
+ * NOTE: Only scripts above 5 milliseconds are included in long animation
+ * frames.
+ */
+export interface longestScriptSummary {
+  /**
+   * The slowest Long Animation Frame script that intersects the INP
+   * interaction.
+   */
+  entry: PerformanceScriptTiming;
+  /**
+   * The INP sub-part where the longest script ran.
+   */
+  subpart: INPSubpart; //'inputDelay' | 'processingDuration' | 'presentationDelay';
+  /**
+   * The amount of time the slowest script intersected the INP duration.
+   */
+  intersectingDuration: number;
+}
+
 /**
  * An object containing potentially-helpful debugging information that
  * can be sent along with the INP value for the current page visit in order
@@ -58,6 +86,11 @@ export interface INPAttribution {
    * within the frame, only the first time is reported).
    */
   interactionTime: DOMHighResTimeStamp;
+  /**
+   * The slowest Long Animation Frame script that intersects the INP
+   * interaction.
+   */
+  longestScript?: longestScriptSummary;
   /**
    * The best-guess timestamp of the next paint after the interaction.
    * In general, this timestamp is the same as the `startTime + duration` of
@@ -107,6 +140,7 @@ export interface INPAttribution {
    * `requestAnimationFrame()` callbacks, `ResizeObserver` and
    * `IntersectionObserver` callbacks, and style/layout calculation) as well
    * as off-main-thread work (such as compositor, GPU, and raster work).
+   * The subparts of INP
    */
   presentationDelay: number;
   /**
@@ -116,6 +150,26 @@ export interface INPAttribution {
    * (e.g. usually in the `dom-interactive` phase) it can result in long delays.
    */
   loadState: LoadState;
+  /**
+   * The total duration of Long Animation Frame scripts that intersect the INP
+   * duration. Note, this is limited to scripts > 5 milliseconds.
+   */
+  scriptsDuration?: number;
+  /**
+   * The total forced style and layout duration from any
+   * Long Animation Frames intersecting INP interaction.
+   */
+  scriptThrashingDuration?: number;
+  /**
+   * The non-forced (i.e. end-of-frame) style and layout duration from the last
+   * long animation frame intersecting the INP interaction.
+   */
+  styleAndLayoutDuration?: number;
+  /**
+   * The off main-thread presentation delay from the end of the last long
+   * animation frame until the INP end point.
+   */
+  framePresentationDelay?: number;
 }
 
 /**
