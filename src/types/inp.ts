@@ -159,7 +159,7 @@ export interface INPAttribution {
    * The total forced style and layout duration from any
    * Long Animation Frames intersecting INP interaction.
    */
-  scriptThrashingDuration?: number;
+  scriptForcedStyleAndLayoutDuration?: number;
   /**
    * The non-forced (i.e. end-of-frame) style and layout duration from the last
    * long animation frame intersecting the INP interaction.
