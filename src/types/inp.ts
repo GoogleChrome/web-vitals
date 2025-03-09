@@ -38,9 +38,9 @@ export interface INPMetric extends Metric {
 }
 
 export type INPSubpart =
-  | 'inputDelay'
-  | 'processingDuration'
-  | 'presentationDelay';
+  | 'input-delay'
+  | 'processing-duration'
+  | 'presentation-delay';
 
 /**
  * Summary information about the slowest script intersecting the INP duration
@@ -58,7 +58,7 @@ export interface longestScriptSummary {
   /**
    * The INP sub-part where the longest script ran.
    */
-  subpart: INPSubpart; //'inputDelay' | 'processingDuration' | 'presentationDelay';
+  subpart: INPSubpart; //'input-delay' | 'processing-duration' | 'presentation-delay';
   /**
    * The amount of time the slowest script intersected the INP duration.
    */
@@ -154,12 +154,12 @@ export interface INPAttribution {
    * The total duration of Long Animation Frame scripts that intersect the INP
    * duration. Note, this is limited to scripts > 5 milliseconds.
    */
-  scriptsDuration?: number;
+  totalScriptDuration?: number;
   /**
    * The total forced style and layout duration from any
    * Long Animation Frames intersecting INP interaction.
    */
-  scriptsForcedStyleAndLayoutDuration?: number;
+  totalForcedStyleAndLayoutDuration?: number;
   /**
    * The non-forced (i.e. end-of-frame) style and layout duration from the last
    * long animation frame intersecting the INP interaction.

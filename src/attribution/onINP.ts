@@ -266,8 +266,8 @@ export const onINP = (
     const interactionTime = attribution.interactionTime;
     const inputDelay = attribution.inputDelay;
     const processingDuration = attribution.processingDuration;
-    let totalScriptsDuration = 0;
-    let totalScriptsForcedStyleAndLayoutDuration = 0;
+    let totalScriptDuration = 0;
+    let totalForcedStyleAndLayoutDuration = 0;
     let longestScriptDuration = 0;
     let longestScriptEntry!: PerformanceScriptTiming;
     let longestScriptSubpart!: INPSubpart;
@@ -290,17 +290,17 @@ export const onINP = (
         }
         const intersectingScriptDuration =
           scriptEndTime - Math.max(interactionTime, script.startTime);
-        totalScriptsDuration += intersectingScriptDuration;
-        totalScriptsForcedStyleAndLayoutDuration +=
+        totalScriptDuration += intersectingScriptDuration;
+        totalForcedStyleAndLayoutDuration +=
           script.forcedStyleAndLayoutDuration;
-        let subpart: INPSubpart = 'processingDuration';
+        let subpart: INPSubpart = 'processing-duration';
         if (script.startTime < interactionTime + inputDelay) {
-          subpart = 'inputDelay';
+          subpart = 'input-delay';
         } else if (
           script.startTime >=
           interactionTime + inputDelay + processingDuration
         ) {
-          subpart = 'presentationDelay';
+          subpart = 'presentation-delay';
         }
 
         if (intersectingScriptDuration > longestScriptDuration) {
@@ -316,9 +316,9 @@ export const onINP = (
       subpart: longestScriptSubpart,
       intersectingDuration: longestScriptDuration,
     };
-    attribution.scriptsDuration = totalScriptsDuration;
-    attribution.scriptsForcedStyleAndLayoutDuration =
-      totalScriptsForcedStyleAndLayoutDuration;
+    attribution.totalScriptDuration = totalScriptDuration;
+    attribution.totalForcedStyleAndLayoutDuration =
+      totalForcedStyleAndLayoutDuration;
   };
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
