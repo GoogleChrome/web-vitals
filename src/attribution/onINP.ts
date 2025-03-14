@@ -267,21 +267,18 @@ export const onINP = (
     const inputDelay = attribution.inputDelay;
     const processingDuration = attribution.processingDuration;
     let totalScriptDuration = 0;
-    let totalForcedStyleAndLayoutDuration = 0;
+    let totalStyleAndLayoutDuration = 0;
+    let totalPaintDuration = 0;
     let longestScriptDuration = 0;
     let longestScriptEntry!: PerformanceScriptTiming;
     let longestScriptSubpart!: INPSubpart;
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
-      attribution.styleAndLayoutDuration =
+      totalStyleAndLayoutDuration =
+        totalStyleAndLayoutDuration +
         loafEntry.startTime +
         loafEntry.duration -
         loafEntry.styleAndLayoutStart;
-
-      attribution.framePresentationDelay =
-        attribution.interactionTime +
-        value -
-        (loafEntry.startTime + loafEntry.duration);
 
       for (const script of loafEntry.scripts) {
         const scriptEndTime = script.startTime + script.duration;
@@ -290,25 +287,48 @@ export const onINP = (
         }
         const intersectingScriptDuration =
           scriptEndTime - Math.max(interactionTime, script.startTime);
-        totalScriptDuration += intersectingScriptDuration;
-        totalForcedStyleAndLayoutDuration +=
-          script.forcedStyleAndLayoutDuration;
-        let subpart: INPSubpart = 'processing-duration';
-        if (script.startTime < interactionTime + inputDelay) {
-          subpart = 'input-delay';
-        } else if (
-          script.startTime >=
-          interactionTime + inputDelay + processingDuration
-        ) {
-          subpart = 'presentation-delay';
-        }
+        // Since forcedStyleAndLayoutDuration doesn't provide timestamps, we
+        // apportion the total based on the intersectingScriptDuration. Not
+        // strictly correct depending on when it occured but the best we can do.
+        const intersectingForceStyleAndLayoutDuration = script.duration
+          ? (intersectingScriptDuration / script.duration) *
+            script.forcedStyleAndLayoutDuration
+          : 0;
+        // For scripts we exclude forcedStyleAndLayout (same as DevTools does
+        // in it's summary totals) and instead include that in
+        // totalStyleAndLayoutDuration
+        totalScriptDuration +=
+          intersectingScriptDuration - intersectingForceStyleAndLayoutDuration;
+        totalStyleAndLayoutDuration += script.forcedStyleAndLayoutDuration;
 
         if (intersectingScriptDuration > longestScriptDuration) {
+          // Set the subpart this occured in.
+          let subpart: INPSubpart = 'processing-duration';
+          if (script.startTime < interactionTime + inputDelay) {
+            subpart = 'input-delay';
+          } else if (
+            script.startTime >=
+            interactionTime + inputDelay + processingDuration
+          ) {
+            subpart = 'presentation-delay';
+          }
+
           longestScriptEntry = script;
           longestScriptSubpart = subpart;
           longestScriptDuration = intersectingScriptDuration;
         }
       }
+    }
+
+    // Calculate the totalPaintDuration from the last LoAF after
+    // presentationDelay starts (where available)
+    const lastLoAF = attribution.longAnimationFrameEntries.at(-1);
+    const lastLoAFEndTime = lastLoAF
+      ? lastLoAF.startTime + lastLoAF.duration
+      : 0;
+    if (lastLoAFEndTime > interactionTime + inputDelay + processingDuration) {
+      totalPaintDuration =
+        attribution.interactionTime + value - lastLoAFEndTime;
     }
 
     attribution.longestScript = {
@@ -317,8 +337,13 @@ export const onINP = (
       intersectingDuration: longestScriptDuration,
     };
     attribution.totalScriptDuration = totalScriptDuration;
-    attribution.totalForcedStyleAndLayoutDuration =
-      totalForcedStyleAndLayoutDuration;
+    attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
+    attribution.totalPaintDuration = totalPaintDuration;
+    attribution.totalUnattributedDuration =
+      value -
+      totalScriptDuration -
+      totalStyleAndLayoutDuration -
+      totalPaintDuration;
   };
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {

@@ -152,24 +152,28 @@ export interface INPAttribution {
   loadState: LoadState;
   /**
    * The total duration of Long Animation Frame scripts that intersect the INP
-   * duration. Note, this is limited to scripts > 5 milliseconds.
+   * duration excluding any forced style and layout (that is included in
+   * totalStyleAndLayout). Note, this is limited to scripts > 5 milliseconds.
    */
   totalScriptDuration?: number;
   /**
-   * The total forced style and layout duration from any
-   * Long Animation Frames intersecting INP interaction.
+   * The total style and layout duration from any Long Animation Frames
+   * intersecting INP interaction. This includes any end-of-frame style and
+   * layout duration + any forced style and layout duration.
    */
-  totalForcedStyleAndLayoutDuration?: number;
+  totalStyleAndLayoutDuration?: number;
   /**
-   * The non-forced (i.e. end-of-frame) style and layout duration from the last
-   * long animation frame intersecting the INP interaction.
+   * The off main-thread presentation delay from the end of the last Long
+   * Animation Frame (where available) until the INP end point.
    */
-  styleAndLayoutDuration?: number;
+  totalPaintDuration?: number;
   /**
-   * The off main-thread presentation delay from the end of the last long
-   * animation frame until the INP end point.
+   * The total unattributed time not included in any of the previous totals.
+   * This includes scripts < 5 milliseconds and other timings not attributed
+   * by Long Animation Frame (including when a frame is < 50ms and so has no
+   * Long Animation Frame).
    */
-  framePresentationDelay?: number;
+  totalUnattributedDuration?: number;
 }
 
 /**
