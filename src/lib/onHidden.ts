@@ -15,11 +15,10 @@
  */
 
 export const onHidden = (cb: () => void) => {
-  const listener = () => {
+  document.addEventListener('visibilitychange', function onHiddenCB() {
     if (document.visibilityState === 'hidden') {
       cb();
-      document.removeEventListener('visibilitychange', listener);
+      document.removeEventListener('visibilitychange', onHiddenCB);
     }
-  };
-  document.addEventListener('visibilitychange', listener);
+  });
 };
