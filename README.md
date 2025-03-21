@@ -122,9 +122,8 @@ _**Important!** The [unpkg.com](https://unpkg.com), [jsDelivr](https://www.jsdel
 **Load the "standard" build** _(using a module script)_
 
 ```html
-<!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
-  import {onCLS, onINP, onLCP} from 'https://unpkg.com/web-vitals@4?module';
+  import {onCLS, onINP, onLCP} from 'https://unpkg.com/web-vitals@4/dist/web-vitals.js';
 
   onCLS(console.log);
   onINP(console.log);
@@ -154,13 +153,12 @@ _**Important!** The [unpkg.com](https://unpkg.com), [jsDelivr](https://www.jsdel
 **Load the "attribution" build** _(using a module script)_
 
 ```html
-<!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
   import {
     onCLS,
     onINP,
     onLCP,
-  } from 'https://unpkg.com/web-vitals@4/dist/web-vitals.attribution.js?module';
+  } from 'https://unpkg.com/web-vitals@4/dist/web-vitals.attribution.js';
 
   onCLS(console.log);
   onINP(console.log);
