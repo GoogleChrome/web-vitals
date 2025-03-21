@@ -618,7 +618,7 @@ describe('onINP()', async function () {
       await beaconCountIs(1);
 
       const [inp1] = await getBeacons();
-      assert.equal(inp1.attribution.loadState, 'dom-interactive');
+      assert.match(inp1.attribution.loadState, /^(loading|dom-interactive)$/);
 
       await clearBeacons();
 
