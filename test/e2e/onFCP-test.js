@@ -130,7 +130,7 @@ describe('onFCP()', async function () {
   it('does not report if the document changes to hidden before the first entry', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await navigateTo('/test/fcp?invisible=1', {readyState: 'interactive'});
+    await navigateTo('/test/fcp?invisible=1', {readyState: 'complete'});
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
@@ -211,7 +211,7 @@ describe('onFCP()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'});
+    await navigateTo('/test/fcp?hidden=1', {readyState: 'complete'});
 
     await stubVisibilityChange('visible');
 
