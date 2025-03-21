@@ -260,7 +260,7 @@ describe('onLCP()', async function () {
     if (!browserSupportsLCP) this.skip();
 
     await navigateTo('/test/lcp?imgDelay=0&imgHidden=1', {
-      readyState: 'interactive',
+      readyState: 'complete',
     });
 
     // Wait for a frame to be painted.
