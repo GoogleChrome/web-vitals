@@ -1005,6 +1005,9 @@ interface INPAttribution {
    * This includes scripts < 5 milliseconds and other timings not attributed
    * by Long Animation Frame (including when a frame is < 50ms and so has no
    * Long Animation Frame).
+   * When no Long Animation Frames are present this will be undefined, rather
+   * than everything being unattributed to make it clearer when it's expected
+   * to be small.
    */
   totalUnattributedDuration?: number;
 }
@@ -1071,7 +1074,7 @@ interface LCPAttribution {
 #### `TTFBAttribution`
 
 ```ts
-export interface TTFBAttribution {
+interface TTFBAttribution {
   /**
    * The total time from when the user initiates loading the page to when the
    * page starts to handle the request. Large values here are typically due

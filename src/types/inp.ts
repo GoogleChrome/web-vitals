@@ -172,6 +172,9 @@ export interface INPAttribution {
    * This includes scripts < 5 milliseconds and other timings not attributed
    * by Long Animation Frame (including when a frame is < 50ms and so has no
    * Long Animation Frame).
+   * When no Long Animation Frames are present this will be undefined, rather
+   * than everything being unattributed to make it clearer when it's expected
+   * to be small.
    */
   totalUnattributedDuration?: number;
 }
