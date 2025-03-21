@@ -30,15 +30,23 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+      - name: Set environment variable for log path
+        ## Use /tmp for beacon logging as less prone to delays
+        run: echo "LOG_PATH=/tmp/beacons.log" >> $GITHUB_ENV
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for chrome
         run: |
           for i in 1 2 3; do
-            npm run test:e2e -- --browsers=chrome && break
+            echo "Attempt #$i"
+            if npm run test:e2e -- --browsers=chrome; then
+              exit 0
+            fi
             echo "Retry #$i failed, retrying in 5 seconds..." >&2
             sleep 5
           done
+          echo "All attempts failed."
+          exit 1
   firefox-tests:
     name: Run Firefox e2e tests
     # Runs best on macos for CI as linux requires extra setup
@@ -50,15 +58,23 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+      - name: Set environment variable for log path
+        ## Use /tmp for beacon logging as less prone to delays
+        run: echo "LOG_PATH=/tmp/beacons.log" >> $GITHUB_ENV
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for firefox
         run: |
           for i in 1 2 3; do
-            npm run test:e2e -- --browsers=firefox && break
+            echo "Attempt #$i"
+            if npm run test:e2e -- --browsers=firefox; then
+              exit 0
+            fi
             echo "Retry #$i failed, retrying in 5 seconds..." >&2
             sleep 5
           done
+          echo "All attempts failed."
+          exit 1
   safari-tests:
     name: Run Safari e2e tests
     # Requires macos
@@ -70,12 +86,20 @@ jobs:
         run: npm install
       - name: Build
         run: npm run build
+      - name: Set environment variable for log path
+        ## Use /tmp for beacon logging as less prone to delays
+        run: echo "LOG_PATH=/tmp/beacons.log" >> $GITHUB_ENV
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for safari
         run: |
           for i in 1 2 3; do
-            npm run test:e2e -- --browsers=safari && break
-            echo "Retry #$i failed, retrying in 5 seconds..." >&2
+            echo "Attempt #$i"
+            if npm run test:e2e -- --browsers=safari; then
+              exit 0
+            fi
+            echo "Retry #$i failed" >&2
             sleep 5
           done
+          echo "All attempts failed."
+          exit 1

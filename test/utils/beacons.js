@@ -16,7 +16,7 @@
 
 import fs from 'fs-extra';
 
-const BEACON_FILE = './test/beacons.log';
+const BEACON_FILE = process.env.LOG_PATH || './test/beacons.log';
 
 /**
  * @param {Object} count
