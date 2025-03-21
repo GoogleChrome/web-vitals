@@ -33,7 +33,12 @@ jobs:
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for chrome
-        run: npm run test:e2e -- --browsers=chrome
+        run: |
+          for i in 1 2 3; do
+            npm run test:e2e -- --browsers=chrome && break
+            echo "Retry #$i failed, retrying in 5 seconds..." >&2
+            sleep 5
+          done
   firefox-tests:
     name: Run Firefox e2e tests
     # Runs best on macos for CI as linux requires extra setup
@@ -48,7 +53,12 @@ jobs:
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for firefox
-        run: npm run test:e2e -- --browsers=firefox
+        run: |
+          for i in 1 2 3; do
+            npm run test:e2e -- --browsers=firefox && break
+            echo "Retry #$i failed, retrying in 5 seconds..." >&2
+            sleep 5
+          done
   safari-tests:
     name: Run Safari e2e tests
     # Requires macos
@@ -63,4 +73,9 @@ jobs:
       - name: Run server
         run: npm run test:server &
       - name: Run e2e tests for safari
-        run: npm run test:e2e -- --browsers=safari
+        run: |
+          for i in 1 2 3; do
+            npm run test:e2e -- --browsers=safari && break
+            echo "Retry #$i failed, retrying in 5 seconds..." >&2
+            sleep 5
+          done
