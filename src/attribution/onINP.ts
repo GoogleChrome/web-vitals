@@ -262,16 +262,22 @@ export const onINP = (
   };
 
   const attributeLoAFDetails = (attribution: INPAttribution, value: number) => {
-    // Stats across all LoAF entries and scripts.
+    // If there is no LoAF data then nothing further to attribute
+    if (!attribution.longAnimationFrameEntries?.length) {
+      return;
+    }
+
     const interactionTime = attribution.interactionTime;
     const inputDelay = attribution.inputDelay;
     const processingDuration = attribution.processingDuration;
+
+    // Stats across all LoAF entries and scripts.
     let totalScriptDuration = 0;
     let totalStyleAndLayoutDuration = 0;
     let totalPaintDuration = 0;
     let longestScriptDuration = 0;
-    let longestScriptEntry!: PerformanceScriptTiming;
-    let longestScriptSubpart!: INPSubpart;
+    let longestScriptEntry: PerformanceScriptTiming | undefined;
+    let longestScriptSubpart: INPSubpart | undefined;
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
       totalStyleAndLayoutDuration =
@@ -289,7 +295,7 @@ export const onINP = (
           scriptEndTime - Math.max(interactionTime, script.startTime);
         // Since forcedStyleAndLayoutDuration doesn't provide timestamps, we
         // apportion the total based on the intersectingScriptDuration. Not
-        // strictly correct depending on when it occured but the best we can do.
+        // correct depending on when it occured, but the best we can do.
         const intersectingForceStyleAndLayoutDuration = script.duration
           ? (intersectingScriptDuration / script.duration) *
             script.forcedStyleAndLayoutDuration
@@ -299,22 +305,19 @@ export const onINP = (
         // totalStyleAndLayoutDuration
         totalScriptDuration +=
           intersectingScriptDuration - intersectingForceStyleAndLayoutDuration;
-        totalStyleAndLayoutDuration += script.forcedStyleAndLayoutDuration;
+        totalStyleAndLayoutDuration += intersectingForceStyleAndLayoutDuration;
 
         if (intersectingScriptDuration > longestScriptDuration) {
           // Set the subpart this occured in.
-          let subpart: INPSubpart = 'processing-duration';
-          if (script.startTime < interactionTime + inputDelay) {
-            subpart = 'input-delay';
-          } else if (
-            script.startTime >=
-            interactionTime + inputDelay + processingDuration
-          ) {
-            subpart = 'presentation-delay';
-          }
+          longestScriptSubpart =
+            script.startTime < interactionTime + inputDelay
+              ? 'input-delay'
+              : script.startTime >=
+                  interactionTime + inputDelay + processingDuration
+                ? 'presentation-delay'
+                : 'processing-duration';
 
           longestScriptEntry = script;
-          longestScriptSubpart = subpart;
           longestScriptDuration = intersectingScriptDuration;
         }
       }
@@ -326,16 +329,18 @@ export const onINP = (
     const lastLoAFEndTime = lastLoAF
       ? lastLoAF.startTime + lastLoAF.duration
       : 0;
-    if (lastLoAFEndTime > interactionTime + inputDelay + processingDuration) {
+    if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
       totalPaintDuration =
         attribution.interactionTime + value - lastLoAFEndTime;
     }
 
-    attribution.longestScript = {
-      entry: longestScriptEntry,
-      subpart: longestScriptSubpart,
-      intersectingDuration: longestScriptDuration,
-    };
+    if (longestScriptEntry && longestScriptSubpart) {
+      attribution.longestScript = {
+        entry: longestScriptEntry,
+        subpart: longestScriptSubpart,
+        intersectingDuration: longestScriptDuration,
+      };
+    }
     attribution.totalScriptDuration = totalScriptDuration;
     attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
     attribution.totalPaintDuration = totalPaintDuration;
