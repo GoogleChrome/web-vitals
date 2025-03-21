@@ -688,10 +688,10 @@ function onCLS(callback: (metric: CLSMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [CLS](https://web.dev/articles/cls) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/articles/cls#layout_shift_score)).
 
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every layout shift](#report-the-value-on-every-change)). This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production. Even without `reportAllChanges` the `onCLS()` function will monitor all CLS changes but only invoke the callback when needed.
-
 > [!IMPORTANT]
 > CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this).
+
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every layout shift](#report-the-value-on-every-change)). This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production. Even without `reportAllChanges`, the `onCLS()` function will monitor all CLS changes throughout the entire lifespan of a page, but only invoke the callback when needed.
 
 #### `onFCP()`
 
@@ -723,12 +723,12 @@ function onINP(callback: (metric: INPMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [INP](https://web.dev/articles/inp) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
-
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every interaction](#report-the-value-on-every-change)). This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production. Even without `reportAllChanges` the `onINP()` function will monitor all INP changes but only invoke the callback when needed.
-
 > [!IMPORTANT]
 > INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this).
+
+A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
+
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every interaction](#report-the-value-on-every-change)). This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production. Even without `reportAllChanges`, the `onINP()` function will monitor all INP changes throughout the entire lifespan of a page, but only invoke the callback when needed.
 
 #### `onLCP()`
 
@@ -738,7 +738,7 @@ function onLCP(callback: (metric: LCPMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and calls the `callback` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined. This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production. Even without `reportAllChanges` the `onLCP()` function will monitor all LCP changes but only invoke the callback when needed.
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined. This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production. Even without `reportAllChanges`, the `onLCP()` function will monitor all LCP changes but only invoke the callback when needed.
 
 #### `onTTFB()`
 
