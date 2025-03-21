@@ -266,8 +266,8 @@ describe('onLCP()', async function () {
       readyState: 'complete',
     });
 
-    // Wait for a frame to be painted.
-    await browser.executeAsync((done) => requestAnimationFrame(done));
+    // Wait a bit to ensurethe library it loaded as this test is flakey.
+    await browser.pause(1000);
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
