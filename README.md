@@ -123,7 +123,11 @@ _**Important!** The [unpkg.com](https://unpkg.com), [jsDelivr](https://www.jsdel
 
 ```html
 <script type="module">
-  import {onCLS, onINP, onLCP} from 'https://unpkg.com/web-vitals@4/dist/web-vitals.js';
+  import {
+    onCLS,
+    onINP,
+    onLCP,
+  } from 'https://unpkg.com/web-vitals@4/dist/web-vitals.js';
 
   onCLS(console.log);
   onINP(console.log);
