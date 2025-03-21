@@ -106,6 +106,9 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
+    // Wait a frame to give the library a chance to load and execute.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
+
     // Load a new page to trigger the hidden state.
     await navigateTo('about:blank');
 
