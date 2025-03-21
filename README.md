@@ -882,15 +882,15 @@ interface FCPAttribution {
 
 ```ts
 /**
- * Summary information about the slowest script intersecting the INP duration
+ * Summary information about the longest script intersecting the INP duration
  * as provided by the Long Animation Frame API.
  *
  * NOTE: Only scripts above 5 milliseconds are included in long animation
  * frames.
  */
-export interface longestScriptSummary {
+interface LongestScriptSummary {
   /**
-   * The slowest Long Animation Frame script that intersects the INP
+   * The longest Long Animation Frame script that intersects the INP
    * interaction.
    */
   entry: PerformanceScriptTiming;
@@ -899,7 +899,7 @@ export interface longestScriptSummary {
    */
   subpart: INPSubpart; //'input-delay' | 'processing-duration' | 'presentation-delay';
   /**
-   * The amount of time the slowest script intersected the INP duration.
+   * The amount of time the longest script intersected the INP duration.
    */
   intersectingDuration: number;
 }
@@ -979,7 +979,7 @@ interface INPAttribution {
    */
   longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
   /**
-   * The slowest Long Animation Frame script that intersects the INP
+   * The longest Long Animation Frame script that intersects the INP
    * interaction.
    */
   longestScript?: longestScriptSummary;
