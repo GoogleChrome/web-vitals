@@ -202,7 +202,7 @@ describe('onLCP()', async function () {
   it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateTo('/test/lcp?hidden=1', {readyState: 'interactive'});
+    await navigateTo('/test/lcp?hidden=1', {readyState: 'complete'});
 
     await stubVisibilityChange('visible');
 
@@ -370,7 +370,7 @@ describe('onLCP()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateTo('/test/lcp?hidden=1', {readyState: 'interactive'});
+    await navigateTo('/test/lcp?hidden=1', {readyState: 'complete'});
 
     await stubVisibilityChange('visible');
 

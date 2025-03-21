@@ -43,7 +43,7 @@ describe('onINP()', async function () {
   it('reports the correct value on visibility hidden after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100', {readyState: 'interactive'});
+    await navigateTo('/test/inp?click=100', {readyState: 'complete'});
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -67,7 +67,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP) this.skip();
 
     await navigateTo('/test/inp?click=100&reportAllChanges=1', {
-      readyState: 'interactive',
+      readyState: 'complete',
     });
 
     const h1 = await $('h1');
@@ -89,9 +89,9 @@ describe('onINP()', async function () {
   it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    // Don't await the `interactive` ready state because DCL is delayed until
+    // Don't await the `complete` ready state because DCL is delayed until
     // after user input.
-    await navigateTo('/test/inp?click=100&loadAfterInput=1');
+    await navigateTo('/test/inp?click=150&loadAfterInput=1');
 
     // Wait until
     await nextFrame();
@@ -117,9 +117,9 @@ describe('onINP()', async function () {
   it('reports the correct value when loaded late (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    // Don't await the `interactive` ready state because DCL is delayed until
+    // Don't await the `complete` ready state because DCL is delayed until
     // after user input.
-    await navigateTo('/test/inp?click=100&reportAllChanges=1&loadAfterInput=1');
+    await navigateTo('/test/inp?click=150&reportAllChanges=1&loadAfterInput=1');
 
     // Wait until
     await nextFrame();
@@ -143,7 +143,7 @@ describe('onINP()', async function () {
   it('reports the correct value on page unload after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100', {readyState: 'interactive'});
+    await navigateTo('/test/inp?click=100', {readyState: 'complete'});
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -167,7 +167,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP) this.skip();
 
     await navigateTo('/test/inp?click=100&reportAllChanges=1', {
-      readyState: 'interactive',
+      readyState: 'complete',
     });
 
     const h1 = await $('h1');
@@ -192,7 +192,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP) this.skip();
 
     await navigateTo('/test/inp?click=60&pointerdown=600', {
-      readyState: 'interactive',
+      readyState: 'complete',
     });
 
     const h1 = await $('h1');
@@ -254,7 +254,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP) this.skip();
 
     await navigateTo('/test/inp?click=60&pointerdown=600&reportAllChanges=1', {
-      readyState: 'interactive',
+      readyState: 'complete',
     });
 
     const h1 = await $('h1');
@@ -293,7 +293,7 @@ describe('onINP()', async function () {
   it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp', {readyState: 'interactive'});
+    await navigateTo('/test/inp', {readyState: 'complete'});
 
     await setBlockingTime('click', 100);
 
@@ -379,7 +379,7 @@ describe('onINP()', async function () {
   it('does not report if there were no interactions', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp', {readyState: 'interactive'});
+    await navigateTo('/test/inp', {readyState: 'complete'});
 
     await stubVisibilityChange('hidden');
 
@@ -394,7 +394,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP) this.skip();
 
     await navigateTo('/test/inp?click=100&prerender=1', {
-      readyState: 'interactive',
+      readyState: 'complete',
     });
 
     const h1 = await $('h1');
@@ -419,7 +419,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP) this.skip();
 
     await navigateTo('/test/inp?click=100&wasDiscarded=1', {
-      readyState: 'interactive',
+      readyState: 'complete',
     });
 
     const h1 = await $('h1');
@@ -646,7 +646,7 @@ describe('onINP()', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo('/test/inp?attribution=1&mouseup=100&click=50', {
-        readyState: 'interactive',
+        readyState: 'complete',
       });
 
       const h1 = await $('h1');
@@ -672,7 +672,7 @@ describe('onINP()', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo('/test/inp?attribution=1&mouseup=100&click=50', {
-        readyState: 'interactive',
+        readyState: 'complete',
       });
 
       const button = await $('#reset');
@@ -700,7 +700,7 @@ describe('onINP()', async function () {
       if (!browserSupportsLoAF) this.skip();
 
       await navigateTo('/test/inp?attribution=1&pointerdown=100', {
-        readyState: 'interactive',
+        readyState: 'complete',
       });
 
       // Click on the <textarea>.
