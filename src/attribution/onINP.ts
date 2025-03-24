@@ -400,6 +400,11 @@ export const onINP = (
       processingDuration: processingEnd - processingStart,
       presentationDelay: nextPaintTime - processingEnd,
       loadState: getLoadState(firstEntry.startTime),
+      longestScript: undefined,
+      totalScriptDuration: undefined,
+      totalStyleAndLayoutDuration: undefined,
+      totalPaintDuration: undefined,
+      totalUnattributedDuration: undefined,
     };
 
     attributeLoAFDetails(attribution, metric.value);
