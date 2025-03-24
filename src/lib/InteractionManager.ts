@@ -58,7 +58,7 @@ export class InteractionManager {
 
   _onBeforeProcessingEntry?: (entry: PerformanceEventTiming) => void;
 
-  _onAfterProcessingInteraction?: (interaction: Interaction) => void;
+  _onAfterProcessingINPCandidate?: (interaction: Interaction) => void;
 
   _resetInteractions() {
     prevInteractionCount = getInteractionCount();
@@ -138,10 +138,10 @@ export class InteractionManager {
           this._longestInteractionMap.delete(interaction.id);
         }
       }
-    } else {
-      return;
     }
 
-    this._onAfterProcessingInteraction?.(interaction!);
+    if (interaction) {
+      this._onAfterProcessingINPCandidate?.(interaction!);
+    }
   }
 }
