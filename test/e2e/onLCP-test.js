@@ -266,7 +266,7 @@ describe('onLCP()', async function () {
       readyState: 'complete',
     });
 
-    // Wait a bit to ensurethe library it loaded as this test is flakey.
+    // Wait a bit to ensure the library is loaded, as this test is flakey.
     await browser.pause(1000);
 
     await stubVisibilityChange('hidden');
