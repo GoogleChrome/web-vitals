@@ -289,7 +289,7 @@ export const onINP = (
       for (const script of loafEntry.scripts) {
         const scriptEndTime = script.startTime + script.duration;
         if (scriptEndTime < interactionTime) {
-          return;
+          continue;
         }
         const intersectingScriptDuration =
           scriptEndTime - Math.max(interactionTime, script.startTime);

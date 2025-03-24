@@ -138,6 +138,8 @@ export class InteractionManager {
           this._longestInteractionMap.delete(interaction.id);
         }
       }
+    } else {
+      return;
     }
 
     this._onAfterProcessingInteraction?.(interaction!);
