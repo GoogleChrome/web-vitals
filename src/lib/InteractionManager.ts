@@ -140,7 +140,7 @@ export class InteractionManager {
       }
 
       // Call any post-processing on the interaction
-      this._onAfterProcessingINPCandidate?.(interaction!);
+      this._onAfterProcessingINPCandidate?.(interaction);
     }
   }
 }
