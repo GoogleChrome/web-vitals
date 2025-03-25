@@ -17,10 +17,12 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 describe('onLCP()', async function () {
   // Retry all tests in this suite up to 2 times.
@@ -263,8 +265,11 @@ describe('onLCP()', async function () {
       readyState: 'interactive',
     });
 
-    // Wait for a frame to be painted.
-    await browser.executeAsync((done) => requestAnimationFrame(done));
+    // Wait until the library is loaded and the first paint occurs to ensure
+    // that an LCP entry can be dispatched prior to the document changing to
+    // hidden.
+    await webVitalsLoaded();
+    await firstContentfulPaint();
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
