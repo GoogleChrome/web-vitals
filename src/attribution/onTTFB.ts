@@ -18,7 +18,7 @@ import {onTTFB as unattributedOnTTFB} from '../onTTFB.js';
 import {
   TTFBMetric,
   TTFBMetricWithAttribution,
-  ReportOpts,
+  AttributionReportOpts,
   TTFBAttribution,
 } from '../types.js';
 
@@ -98,7 +98,7 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
  */
 export const onTTFB = (
   onReport: (metric: TTFBMetricWithAttribution) => void,
-  opts: ReportOpts = {},
+  opts: AttributionReportOpts = {},
 ) => {
   unattributedOnTTFB((metric: TTFBMetric) => {
     const metricWithAttribution = attributeTTFB(metric);

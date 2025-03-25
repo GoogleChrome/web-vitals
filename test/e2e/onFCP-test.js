@@ -267,6 +267,35 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp.navigationType, 'restore');
   });
 
+  it('works when calling the function twice with different options', async function () {
+    if (!browserSupportsFCP) this.skip();
+
+    await navigateTo('/test/fcp?doubleCall=1&reportAllChanges2=1');
+
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [fcp1] = await getBeacons({instance: 1});
+    const [fcp2] = await getBeacons({instance: 2});
+
+    assert(fcp1.value >= 0);
+    assert(fcp1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(fcp1.name, 'FCP');
+    assert.strictEqual(fcp1.value, fcp1.delta);
+    assert.strictEqual(fcp1.rating, 'good');
+    assert.strictEqual(fcp1.entries.length, 1);
+    assert.match(fcp1.navigationType, /navigate|reload/);
+
+    assert(fcp2.id.match(/^v5-\d+-\d+$/));
+    assert(fcp2.id !== fcp1.id);
+    assert.strictEqual(fcp2.value, fcp1.value);
+    assert.strictEqual(fcp2.delta, fcp1.delta);
+    assert.strictEqual(fcp2.name, fcp1.name);
+    assert.strictEqual(fcp2.rating, fcp1.rating);
+    assert.deepEqual(fcp2.entries, fcp1.entries);
+    assert.strictEqual(fcp2.navigationType, fcp1.navigationType);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsFCP) this.skip();

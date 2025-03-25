@@ -22,7 +22,7 @@ import {
   FCPAttribution,
   FCPMetric,
   FCPMetricWithAttribution,
-  ReportOpts,
+  AttributionReportOpts,
 } from '../types.js';
 
 const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
@@ -67,7 +67,7 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
  */
 export const onFCP = (
   onReport: (metric: FCPMetricWithAttribution) => void,
-  opts: ReportOpts = {},
+  opts: AttributionReportOpts = {},
 ) => {
   unattributedOnFCP((metric: FCPMetric) => {
     const metricWithAttribution = attributeFCP(metric);

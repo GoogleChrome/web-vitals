@@ -66,7 +66,7 @@ declare global {
 
   // https://wicg.github.io/layout-instability/#sec-layout-shift-attribution
   interface LayoutShiftAttribution {
-    node?: Node;
+    node: Node | null;
     previousRect: DOMRectReadOnly;
     currentRect: DOMRectReadOnly;
   }

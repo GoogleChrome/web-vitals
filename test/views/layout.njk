@@ -171,21 +171,30 @@
 
       const params = new URL(location.href).searchParams;
 
-      if (params.has('reportAllChanges')) {
-        self.__reportAllChanges = Boolean(params.get('reportAllChanges'));
+      function infer(param) {
+        const val = params.get(param);
+
+        if (val) {
+          if (val.match(/^\d+$/)) {
+            return Number(val);
+          } else if (val.match(/^(true|false)$/)) {
+            return val === 'false' ? false : true;
+          }
+          return val;
+        }
       }
 
-      if (params.has('durationThreshold')) {
-        self.__durationThreshold = Number(params.get('durationThreshold'));
-      }
+      self.__reportAllChanges = Boolean(infer('reportAllChanges'));
+      self.__durationThreshold = infer('durationThreshold');
+      self.__generateTarget = infer('generateTarget');
 
-      if (params.has('lazyLoad')) {
-        self.__lazyLoad = Boolean(params.get('lazyLoad'));
-      }
+      self.__doubleCall = Boolean(infer('doubleCall'));
+      self.__reportAllChanges2 = Boolean(infer('reportAllChanges2'));
+      self.__durationThreshold2 = infer('durationThreshold2');
+      self.__generateTarget2 = infer('generateTarget2');
 
-      if (params.has('loadAfterInput')) {
-        self.__loadAfterInput = Boolean(params.get('loadAfterInput'));
-      }
+      self.__lazyLoad = Boolean(infer('lazyLoad'));
+      self.__loadAfterInput = Boolean(infer('loadAfterInput'));
 
       if (params.has('hidden')) {
         // Stub the page being loaded in the hidden state, but defer to the
@@ -228,11 +237,15 @@
         const importPromise = import(modulePath);
         self.__readyPromises.push(importPromise);
 
+        importPromise.then(() => {
+          self.__isWebVitalsLoaded = true;
+        });
+
         return await importPromise;
       };
 
       self.__toSafeObject = (oldObj) =>  {
-        if (typeof oldObj !== 'object') {
+        if (oldObj === null || typeof oldObj !== 'object') {
           return oldObj;
         } else if (oldObj instanceof EventTarget) {
           return oldObj.toString();

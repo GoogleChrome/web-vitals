@@ -17,10 +17,12 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 describe('onLCP()', async function () {
   // Retry all tests in this suite up to 2 times.
@@ -263,8 +265,11 @@ describe('onLCP()', async function () {
       readyState: 'interactive',
     });
 
-    // Wait for a frame to be painted.
-    await browser.executeAsync((done) => requestAnimationFrame(done));
+    // Wait until the library is loaded and the first paint occurs to ensure
+    // that an LCP entry can be dispatched prior to the document changing to
+    // hidden.
+    await webVitalsLoaded();
+    await firstContentfulPaint();
 
     await stubVisibilityChange('hidden');
     await stubVisibilityChange('visible');
@@ -436,6 +441,31 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp.navigationType, 'restore');
   });
 
+  it('works when calling the function twice with different options', async function () {
+    if (!browserSupportsLCP) this.skip();
+
+    await navigateTo('/test/lcp?doubleCall=1&reportAllChanges2=1');
+
+    await beaconCountIs(2, {instance: 2});
+
+    const beacons2 = await getBeacons({instance: 2});
+    assertFullReportsAreCorrect(beacons2);
+
+    assert.strictEqual((await getBeacons({instance: 1})).length, 0);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1, {instance: 1});
+
+    const beacons1 = await getBeacons({instance: 1});
+    assertStandardReportsAreCorrect(beacons1);
+
+    assert(beacons1[0].id !== beacons2[0].id);
+    assert(beacons1[0].id !== beacons2[1].id);
+    assert.deepEqual(beacons1[0].entries, beacons2[1].entries);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsLCP) this.skip();
@@ -465,7 +495,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
       assert.equal(
         lcp.attribution.timeToFirstByte +
           lcp.attribution.resourceLoadDelay +
@@ -477,6 +507,52 @@ describe('onLCP()', async function () {
       assert.deepEqual(lcp.attribution.navigationEntry, navEntry);
       assert.deepEqual(lcp.attribution.lcpResourceEntry, lcpResEntry);
       assert.deepEqual(lcp.attribution.lcpEntry, lcp.entries.slice(-1)[0]);
+    });
+
+    it('supports generating a custom target', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1&generateTarget=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp]);
+
+      assert.equal(lcp.attribution.target, 'main-image');
+    });
+
+    it('supports multiple calls with different custom target generation functions', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo(
+        '/test/lcp?attribution=1&doubleCall=1&generateTarget2=1',
+      );
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1, {instance: 1});
+      await beaconCountIs(1, {instance: 2});
+
+      const [lcp1] = await getBeacons({instance: 1});
+      assertStandardReportsAreCorrect([lcp1]);
+
+      assert.equal(lcp1.attribution.target, 'html>body>main>p>img.bar.foo');
+
+      const [lcp2] = await getBeacons({instance: 2});
+      assertStandardReportsAreCorrect([lcp2]);
+
+      assert.equal(lcp2.attribution.target, 'main-image');
     });
 
     it('handles image resources with incomplete timing data', async function () {
@@ -515,7 +591,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
 
       // Specifically check that resourceLoadDelay falls back to `startTime`.
       assert.equal(
@@ -565,7 +641,7 @@ describe('onLCP()', async function () {
 
       assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
       assert.equal(lcp.navigationType, 'prerender');
-      assert.equal(lcp.attribution.element, 'html>body>main>p>img.bar.foo');
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
 
       // Assert each individual LCP sub-part accounts for `activationStart`
       assert.equal(
@@ -624,7 +700,7 @@ describe('onLCP()', async function () {
       const [lcp] = await getBeacons();
 
       assert.equal(lcp.attribution.url, undefined);
-      assert.equal(lcp.attribution.element, 'html>body>main>h1');
+      assert.equal(lcp.attribution.target, 'html>body>main>h1');
       assert.equal(lcp.attribution.resourceLoadDelay, 0);
       assert.equal(lcp.attribution.resourceLoadDuration, 0);
       assert.equal(
@@ -673,7 +749,7 @@ describe('onLCP()', async function () {
       assert.strictEqual(lcp2.entries.length, 0);
       assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
 
-      assert.equal(lcp2.attribution.element, undefined);
+      assert.equal(lcp2.attribution.target, undefined);
       assert.equal(lcp2.attribution.timeToFirstByte, 0);
       assert.equal(lcp2.attribution.resourceLoadDelay, 0);
       assert.equal(lcp2.attribution.resourceLoadDuration, 0);
