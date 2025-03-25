@@ -24,7 +24,7 @@
       <img id="img1" elementtiming="main-image" src="/test/img/square.png?delay=500" alt="Gray square" />
       [text node contents]
     </p>
-    <p id="p3"><img id="img3" elementtiming="secondary-image"  src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
+    <p id="p3" data-target="secondary-image-wrapper"><img id="img3" elementtiming="secondary-image"  src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
     <p id="p4">Text below the images that will get pushed down.</p>
   {% endif %}
 
@@ -34,11 +34,31 @@
     const {onCLS} = await __testImport('{{ modulePath }}');
 
     onCLS((cls) => {
+      cls.instance = 1;
+
       // Log for easier manual testing.
       console.log(cls);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
-    }, {reportAllChanges: self.__reportAllChanges});
+    }, {
+      reportAllChanges: self.__reportAllChanges,
+      generateTarget: self.__generateTarget && ((el) => el.dataset.target),
+    });
+
+    if (self.__doubleCall) {
+      onCLS((cls) => {
+        cls.instance = 2;
+
+        // Log for easier manual testing.
+        console.log(cls);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+        generateTarget: self.__generateTarget2 && ((el) => el.dataset.target),
+      });
+    }
   </script>
 {% endblock %}

@@ -241,6 +241,36 @@ describe('onTTFB()', async function () {
     assertValidEntry(ttfb.entries[0]);
   });
 
+  it('works when calling the function twice with different options', async function () {
+    await navigateTo('/test/ttfb?doubleCall=1&reportAllChanges2=1');
+
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [ttfb1] = await getBeacons({instance: 1});
+    const [ttfb2] = await getBeacons({instance: 2});
+
+    assert(ttfb1.value >= 0);
+    assert(ttfb1.value >= ttfb1.entries[0].requestStart);
+    assert(ttfb1.value <= ttfb1.entries[0].loadEventEnd);
+    assert(ttfb1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(ttfb1.name, 'TTFB');
+    assert.strictEqual(ttfb1.value, ttfb1.delta);
+    assert.strictEqual(ttfb1.rating, 'good');
+    assert.strictEqual(ttfb1.navigationType, 'navigate');
+    assert.strictEqual(ttfb1.entries.length, 1);
+    assertValidEntry(ttfb1.entries[0]);
+
+    assert(ttfb2.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb2.id !== ttfb1.id);
+    assert.strictEqual(ttfb2.value, ttfb1.value);
+    assert.strictEqual(ttfb2.delta, ttfb1.delta);
+    assert.strictEqual(ttfb2.name, ttfb1.name);
+    assert.strictEqual(ttfb2.rating, ttfb1.rating);
+    assert.deepEqual(ttfb2.entries, ttfb1.entries);
+    assert.strictEqual(ttfb2.navigationType, ttfb1.navigationType);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       await navigateTo('/test/ttfb?attribution=1');

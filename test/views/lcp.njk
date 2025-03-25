@@ -20,7 +20,7 @@
     {% if not imgDelay %}
       {% set imgDelay = 500 %}
     {% endif %}
-    <img class="foo bar" elementtiming="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
+    <img class="foo bar" elementtiming="main-image" data-target="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 
@@ -35,11 +35,31 @@
     const {onLCP} = await __testImport('{{ modulePath }}');
 
     onLCP((lcp) => {
+      lcp.instance = 1;
+
       // Log for easier manual testing.
       console.log(lcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
-    }, {reportAllChanges: self.__reportAllChanges});
+    }, {
+      reportAllChanges: self.__reportAllChanges,
+      generateTarget: self.__generateTarget && ((el) => el.dataset.target),
+    });
+
+    if (self.__doubleCall) {
+      onLCP((lcp) => {
+        lcp.instance = 2;
+
+        // Log for easier manual testing.
+        console.log(lcp);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+        generateTarget: self.__generateTarget2 && ((el) => el.dataset.target),
+      });
+    }
   </script>
 {% endblock %}

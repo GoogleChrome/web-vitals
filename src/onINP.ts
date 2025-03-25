@@ -17,21 +17,21 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
-import {
-  DEFAULT_DURATION_THRESHOLD,
-  processInteractionEntry,
-  estimateP98LongestInteraction,
-  resetInteractions,
-} from './lib/interactions.js';
+import {initUnique} from './lib/initUnique.js';
+import {InteractionManager} from './lib/InteractionManager.js';
 import {observe} from './lib/observe.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
-import {INPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
+import {INPMetric, MetricRatingThresholds, INPReportOpts} from './types.js';
 
 /** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
+
+// The default `durationThreshold` used across this library for observing
+// `event` entries via PerformanceObserver.
+const DEFAULT_DURATION_THRESHOLD = 40;
 
 /**
  * Calculates the [INP](https://web.dev/articles/inp) value for the current
@@ -64,7 +64,7 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
  */
 export const onINP = (
   onReport: (metric: INPMetric) => void,
-  opts: ReportOpts = {},
+  opts: INPReportOpts = {},
 ) => {
   // Return if the browser doesn't support all APIs needed to measure INP.
   if (
@@ -83,6 +83,8 @@ export const onINP = (
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
 
+    const interactionManager = initUnique(opts, InteractionManager);
+
     const handleEntries = (entries: INPMetric['entries']) => {
       // Queue the `handleEntries()` callback in the next idle task.
       // This is needed to increase the chances that all event entries that
@@ -92,13 +94,13 @@ export const onINP = (
       // 123+ that if rolled out fully may make this no longer necessary.
       whenIdleOrHidden(() => {
         for (const entry of entries) {
-          processInteractionEntry(entry);
+          interactionManager._processEntry(entry);
         }
 
-        const inp = estimateP98LongestInteraction();
+        const inp = interactionManager._estimateP98LongestInteraction();
 
-        if (inp && inp.latency !== metric.value) {
-          metric.value = inp.latency;
+        if (inp && inp._latency !== metric.value) {
+          metric.value = inp._latency;
           metric.entries = inp.entries;
           report();
         }
@@ -112,14 +114,14 @@ export const onINP = (
       // and performance. Running this callback for any interaction that spans
       // just one or two frames is likely not worth the insight that could be
       // gained.
-      durationThreshold: opts!.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
+      durationThreshold: opts.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
     });
 
     report = bindReporter(
       onReport,
       metric,
       INPThresholds,
-      opts!.reportAllChanges,
+      opts.reportAllChanges,
     );
 
     if (po) {
@@ -137,14 +139,14 @@ export const onINP = (
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        resetInteractions();
+        interactionManager._resetInteractions();
 
         metric = initMetric('INP');
         report = bindReporter(
           onReport,
           metric,
           INPThresholds,
-          opts!.reportAllChanges,
+          opts.reportAllChanges,
         );
       });
     }
