@@ -237,6 +237,10 @@
         const importPromise = import(modulePath);
         self.__readyPromises.push(importPromise);
 
+        importPromise.then(() => {
+          self.__isWebVitalsLoaded = true;
+        });
+
         return await importPromise;
       };
 
