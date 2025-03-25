@@ -701,10 +701,10 @@ function onCLS(callback: (metric: CLSMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [CLS](https://web.dev/articles/cls) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/articles/cls#layout_shift_score)).
 
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every layout shift](#report-the-value-on-every-change)).
-
 > [!IMPORTANT]
 > CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this).
+
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (though [not necessarily for every layout shift](#report-the-value-on-every-change)). Note that regardless of whether `reportAllChanges` is used, the final reported value will be the same.
 
 #### `onFCP()`
 
@@ -725,12 +725,12 @@ function onINP(
 
 Calculates the [INP](https://web.dev/articles/inp) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control the minimum duration filter for `event-timing`. Events which are faster than this threshold are not reported. Note that the `first-input` entry is always observed, regardless of duration, to ensure you always have some INP score. The default threshold, after the library is initialized, is `40` milliseconds (the `event-timing` default of `104` milliseconds applies to all events emitted before the library is initialised). This default threshold of `40` is chosen to strike a balance between usefulness and performance. Running this callback for any interaction that spans just one or two frames is likely not worth the insight that could be gained.
-
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every interaction](#report-the-value-on-every-change)).
-
 > [!IMPORTANT]
 > INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this).
+
+A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control the minimum duration filter for `event-timing`. Events which are faster than this threshold are not reported. Note that the `first-input` entry is always observed, regardless of duration, to ensure you always have some INP score. The default threshold, after the library is initialized, is `40` milliseconds (the `event-timing` default of `104` milliseconds applies to all events emitted before the library is initialised). This default threshold of `40` is chosen to strike a balance between usefulness and performance. Running this callback for any interaction that spans just one or two frames is likely not worth the insight that could be gained.
+
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (though [not necessarily for every interaction](#report-the-value-on-every-change)). Note that regardless of whether `reportAllChanges` is used, the final reported value will be the same.
 
 #### `onLCP()`
 
@@ -740,7 +740,7 @@ function onLCP(callback: (metric: LCPMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and calls the `callback` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined. Note that regardless of whether `reportAllChanges` is used, the final reported value will be the same.
 
 #### `onTTFB()`
 
