@@ -344,8 +344,8 @@ export const onINP = (
     attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
     attribution.totalPaintDuration = totalPaintDuration;
     attribution.totalUnattributedDuration =
-      interactionTime +
       attribution.nextPaintTime -
+      interactionTime -
       totalScriptDuration -
       totalStyleAndLayoutDuration -
       totalPaintDuration;
