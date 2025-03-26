@@ -841,6 +841,32 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
       assert(inp1.attribution.longAnimationFrameEntries.length > 0);
+      assert.equal(
+        inp1.attribution.longestScript.entry.invokerType,
+        'event-listener',
+      );
+      assert.equal(
+        inp1.attribution.longestScript.entry.invoker,
+        'DOMWindow.onpointerdown',
+      );
+      assert.equal(
+        inp1.attribution.longestScript.subpart,
+        'processing-duration',
+      );
+      assert.equal(inp1.attribution.longestScript.intersectingDuration, 100);
+      assert(inp1.attribution.totalScriptDuration > 0);
+      assert(inp1.attribution.totalStyleAndLayoutDuration >= 0);
+      assert(inp1.attribution.totalPaintDuration >= 0);
+      assert(inp1.attribution.totalUnattributedDuration >= 0);
+      assert(
+        Math.abs(
+          inp1.value -
+            (inp1.attribution.totalScriptDuration +
+              inp1.attribution.totalStyleAndLayoutDuration +
+              inp1.attribution.totalPaintDuration +
+              inp1.attribution.totalUnattributedDuration),
+        ) < 0.1,
+      );
     });
   });
 });
