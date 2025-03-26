@@ -261,7 +261,7 @@ export const onINP = (
     return intersectingLoAFs;
   };
 
-  const attributeLoAFDetails = (attribution: INPAttribution, value: number) => {
+  const attributeLoAFDetails = (attribution: INPAttribution) => {
     // If there is no LoAF data then nothing further to attribute
     if (!attribution.longAnimationFrameEntries?.length) {
       return;
@@ -330,8 +330,7 @@ export const onINP = (
       ? lastLoAF.startTime + lastLoAF.duration
       : 0;
     if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
-      totalPaintDuration =
-        attribution.interactionTime + value - lastLoAFEndTime;
+      totalPaintDuration = attribution.nextPaintTime - lastLoAFEndTime;
     }
 
     if (longestScriptEntry && longestScriptSubpart) {
@@ -345,7 +344,8 @@ export const onINP = (
     attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
     attribution.totalPaintDuration = totalPaintDuration;
     attribution.totalUnattributedDuration =
-      value -
+      interactionTime +
+      attribution.nextPaintTime -
       totalScriptDuration -
       totalStyleAndLayoutDuration -
       totalPaintDuration;
@@ -407,7 +407,7 @@ export const onINP = (
       totalUnattributedDuration: undefined,
     };
 
-    attributeLoAFDetails(attribution, metric.value);
+    attributeLoAFDetails(attribution);
 
     // Use `Object.assign()` to ensure the original metric object is returned.
     const metricWithAttribution: INPMetricWithAttribution = Object.assign(
