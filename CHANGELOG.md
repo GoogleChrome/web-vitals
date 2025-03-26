@@ -1,5 +1,9 @@
 # Changelog
 
+### v5.0.0-rc.1 (???)
+
+- **[BREAKING]** Add interoperable TTFB to measure Early Hints consistently ([#566](https://github.com/GoogleChrome/web-vitals/pull/566))
+
 ### v5.0.0-rc.0 (2024-10-03)
 
 - **[BREAKING]** Remove the deprecated `onFID()` function ([#519](https://github.com/GoogleChrome/web-vitals/pull/519))

@@ -83,7 +83,13 @@ export const onLCP = (
 
         const ttfb = Math.max(
           0,
-          navigationEntry.responseStart - activationStart,
+          // From Chrome 115 until 133, Chrome reported responseStart as the
+          // document bytes, rather than Early Hint bytes. Prefer the Early
+          // Hint bytes (firstInterimResponseStart) for consistency with other
+          // browers, but only if non-zero (so use || rather than ??) as zero
+          // indicates no early hints.
+          (navigationEntry.firstInterimResponseStart ||
+            navigationEntry.responseStart) - activationStart,
         );
 
         const lcpRequestStart = Math.max(
