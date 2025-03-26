@@ -239,7 +239,7 @@ export const onINP = (
   };
 
   interactionManager._onBeforeProcessingEntry = groupEntriesByRenderTime;
-  interactionManager._onAfterProcessingInteraction = saveInteractionTarget;
+  interactionManager._onAfterProcessingINPCandidate = saveInteractionTarget;
 
   const getIntersectingLoAFs = (
     start: DOMHighResTimeStamp,
