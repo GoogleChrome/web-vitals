@@ -37,28 +37,16 @@ export interface INPMetric extends Metric {
   entries: PerformanceEventTiming[];
 }
 
-export type INPSubpart =
-  | 'input-delay'
-  | 'processing-duration'
-  | 'presentation-delay';
-
-/**
- * Summary information about the longest script intersecting the INP duration
- * as provided by the Long Animation Frame API.
- *
- * NOTE: Only scripts above 5 milliseconds are included in long animation
- * frames.
- */
-export interface longestScriptSummary {
+export interface INPLongestScriptSummary {
   /**
-   * The longest Long Animation Frame script that intersects the INP
+   * The longest Long Animation Frame script entry that intersects the INP
    * interaction.
    */
   entry: PerformanceScriptTiming;
   /**
    * The INP sub-part where the longest script ran.
    */
-  subpart: INPSubpart; //'input-delay' | 'processing-duration' | 'presentation-delay';
+  subpart: 'input-delay' | 'processing-duration' | 'presentation-delay';
   /**
    * The amount of time the longest script intersected the INP duration.
    */
@@ -87,10 +75,13 @@ export interface INPAttribution {
    */
   interactionTime: DOMHighResTimeStamp;
   /**
-   * The longest Long Animation Frame script that intersects the INP
-   * interaction.
+   * The type of interaction, based on the event type of the `event` entry
+   * that corresponds to the interaction (i.e. the first `event` entry
+   * containing an `interactionId` dispatched in a given animation frame).
+   * For "pointerdown", "pointerup", or "click" events this will be "pointer",
+   * and for "keydown" or "keyup" events this will be "keyboard".
    */
-  longestScript?: longestScriptSummary;
+  interactionType: 'pointer' | 'keyboard';
   /**
    * The best-guess timestamp of the next paint after the interaction.
    * In general, this timestamp is the same as the `startTime + duration` of
@@ -100,27 +91,10 @@ export interface INPAttribution {
    */
   nextPaintTime: DOMHighResTimeStamp;
   /**
-   * The type of interaction, based on the event type of the `event` entry
-   * that corresponds to the interaction (i.e. the first `event` entry
-   * containing an `interactionId` dispatched in a given animation frame).
-   * For "pointerdown", "pointerup", or "click" events this will be "pointer",
-   * and for "keydown" or "keyup" events this will be "keyboard".
-   */
-  interactionType: 'pointer' | 'keyboard';
-  /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
    */
   processedEventEntries: PerformanceEventTiming[];
-  /**
-   * If the browser supports the Long Animation Frame API, this array will
-   * include any `long-animation-frame` entries that intersect with the INP
-   * candidate interaction's `startTime` and the `processingEnd` time of the
-   * last event processed within that animation frame. If the browser does not
-   * support the Long Animation Frame API or no `long-animation-frame` entries
-   * are detect, this array will be empty.
-   */
-  longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
   /**
    * The time from when the user interacted with the page until when the
    * browser was first able to start processing event listeners for that
@@ -140,7 +114,6 @@ export interface INPAttribution {
    * `requestAnimationFrame()` callbacks, `ResizeObserver` and
    * `IntersectionObserver` callbacks, and style/layout calculation) as well
    * as off-main-thread work (such as compositor, GPU, and raster work).
-   * The subparts of INP
    */
   presentationDelay: number;
   /**
@@ -151,6 +124,21 @@ export interface INPAttribution {
    */
   loadState: LoadState;
   /**
+   * If the browser supports the Long Animation Frame API, this array will
+   * include any `long-animation-frame` entries that intersect with the INP
+   * candidate interaction's `startTime` and the `processingEnd` time of the
+   * last event processed within that animation frame. If the browser does not
+   * support the Long Animation Frame API or no `long-animation-frame` entries
+   * are detected, this array will be empty.
+   */
+  longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
+  /**
+   * Summary information about the longest script entry intersecting the INP
+   * duration. Note, only script entries above 5 milliseconds are reported by
+   * the Long Animation Frame API.
+   */
+  longestScript?: INPLongestScriptSummary;
+  /**
    * The total duration of Long Animation Frame scripts that intersect the INP
    * duration excluding any forced style and layout (that is included in
    * totalStyleAndLayout). Note, this is limited to scripts > 5 milliseconds.
@@ -158,7 +146,7 @@ export interface INPAttribution {
   totalScriptDuration?: number;
   /**
    * The total style and layout duration from any Long Animation Frames
-   * intersecting INP interaction. This includes any end-of-frame style and
+   * intersecting the INP interaction. This includes any end-of-frame style and
    * layout duration + any forced style and layout duration.
    */
   totalStyleAndLayoutDuration?: number;

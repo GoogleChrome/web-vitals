@@ -23,10 +23,10 @@ import {whenIdleOrHidden} from '../lib/whenIdleOrHidden.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
 import {
   INPAttribution,
+  INPAttributionReportOpts,
   INPMetric,
   INPMetricWithAttribution,
-  INPSubpart,
-  INPAttributionReportOpts,
+  INPLongestScriptSummary,
 } from '../types.js';
 
 interface pendingEntriesGroup {
@@ -277,7 +277,7 @@ export const onINP = (
     let totalPaintDuration = 0;
     let longestScriptDuration = 0;
     let longestScriptEntry: PerformanceScriptTiming | undefined;
-    let longestScriptSubpart: INPSubpart | undefined;
+    let longestScriptSubpart: INPLongestScriptSummary['subpart'] | undefined;
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
       totalStyleAndLayoutDuration =
@@ -295,7 +295,7 @@ export const onINP = (
           scriptEndTime - Math.max(interactionTime, script.startTime);
         // Since forcedStyleAndLayoutDuration doesn't provide timestamps, we
         // apportion the total based on the intersectingScriptDuration. Not
-        // correct depending on when it occured, but the best we can do.
+        // correct depending on when it occurred, but the best we can do.
         const intersectingForceStyleAndLayoutDuration = script.duration
           ? (intersectingScriptDuration / script.duration) *
             script.forcedStyleAndLayoutDuration
@@ -308,7 +308,7 @@ export const onINP = (
         totalStyleAndLayoutDuration += intersectingForceStyleAndLayoutDuration;
 
         if (intersectingScriptDuration > longestScriptDuration) {
-          // Set the subpart this occured in.
+          // Set the subpart this occurred in.
           longestScriptSubpart =
             script.startTime < interactionTime + inputDelay
               ? 'input-delay'

@@ -881,29 +881,6 @@ interface FCPAttribution {
 #### `INPAttribution`
 
 ```ts
-/**
- * Summary information about the longest script intersecting the INP duration
- * as provided by the Long Animation Frame API.
- *
- * NOTE: Only scripts above 5 milliseconds are included in long animation
- * frames.
- */
-interface LongestScriptSummary {
-  /**
-   * The longest Long Animation Frame script that intersects the INP
-   * interaction.
-   */
-  entry: PerformanceScriptTiming;
-  /**
-   * The INP sub-part where the longest script ran.
-   */
-  subpart: INPSubpart; //'input-delay' | 'processing-duration' | 'presentation-delay';
-  /**
-   * The amount of time the longest script intersected the INP duration.
-   */
-  intersectingDuration: number;
-}
-
 interface INPAttribution {
   /**
    * By default, a selector identifying the element that the user first
@@ -975,14 +952,15 @@ interface INPAttribution {
    * candidate interaction's `startTime` and the `processingEnd` time of the
    * last event processed within that animation frame. If the browser does not
    * support the Long Animation Frame API or no `long-animation-frame` entries
-   * are detect, this array will be empty.
+   * are detected, this array will be empty.
    */
   longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
   /**
-   * The longest Long Animation Frame script that intersects the INP
-   * interaction.
+   * Summary information about the longest script entry intersecting the INP
+   * duration. Note, only script entries above 5 milliseconds are reported by
+   * the Long Animation Frame API.
    */
-  longestScript?: longestScriptSummary;
+  longestScript?: INPLongestScriptSummary;
   /**
    * The total duration of Long Animation Frame scripts that intersect the INP
    * duration excluding any forced style and layout (that is included in
@@ -991,7 +969,7 @@ interface INPAttribution {
   totalScriptDuration?: number;
   /**
    * The total style and layout duration from any Long Animation Frames
-   * intersecting INP interaction. This includes any end-of-frame style and
+   * intersecting the INP interaction. This includes any end-of-frame style and
    * layout duration + any forced style and layout duration.
    */
   totalStyleAndLayoutDuration?: number;
@@ -1010,6 +988,26 @@ interface INPAttribution {
    * to be small.
    */
   totalUnattributedDuration?: number;
+}
+```
+
+#### `INPLongestScriptSummary`
+
+```ts
+interface INPLongestScriptSummary {
+  /**
+   * The longest Long Animation Frame script entry that intersects the INP
+   * interaction.
+   */
+  entry: PerformanceScriptTiming;
+  /**
+   * The INP sub-part where the longest script ran.
+   */
+  subpart: 'input-delay' | 'processing-duration' | 'presentation-delay';
+  /**
+   * The amount of time the longest script intersected the INP duration.
+   */
+  intersectingDuration: number;
 }
 ```
 
