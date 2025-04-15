@@ -44,7 +44,7 @@ export interface INPLongestScriptSummary {
    */
   entry: PerformanceScriptTiming;
   /**
-   * The INP sub-part where the longest script ran.
+   * The INP subpart where the longest script ran.
    */
   subpart: 'input-delay' | 'processing-duration' | 'presentation-delay';
   /**

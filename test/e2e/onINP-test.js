@@ -550,7 +550,7 @@ describe('onINP()', async function () {
           inp1.attribution.interactionTime +
             (inp1.attribution.inputDelay + inp1.attribution.processingDuration),
       );
-      // Assert that the INP phase durations adds up to the total duration.
+      // Assert that the INP subpart durations adds up to the total duration.
       assert.equal(
         inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
         inp1.attribution.inputDelay +
@@ -558,7 +558,7 @@ describe('onINP()', async function () {
           inp1.attribution.presentationDelay,
       );
 
-      // Assert that the INP phases timestamps match the values in
+      // Assert that the INP subparts timestamps match the values in
       // the `processedEventEntries` array.
       const sortedEntries1 = inp1.attribution.processedEventEntries.sort(
         (a, b) => {
@@ -631,7 +631,7 @@ describe('onINP()', async function () {
           inp2.attribution.interactionTime +
             (inp2.attribution.inputDelay + inp2.attribution.processingDuration),
       );
-      // Assert that the INP phase durations adds up to the total duration.
+      // Assert that the INP subpart durations adds up to the total duration.
       assert.equal(
         inp2.attribution.nextPaintTime - inp2.attribution.interactionTime,
         inp2.attribution.inputDelay +
@@ -639,7 +639,7 @@ describe('onINP()', async function () {
           inp2.attribution.presentationDelay,
       );
 
-      // Assert that the INP phases timestamps match the values in
+      // Assert that the INP subparts timestamps match the values in
       // the `processedEventEntries` array.
       const sortedEntries2 = inp2.attribution.processedEventEntries.sort(
         (a, b) => {
