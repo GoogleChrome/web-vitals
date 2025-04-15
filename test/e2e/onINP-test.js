@@ -550,7 +550,7 @@ describe('onINP()', async function () {
           inp1.attribution.interactionTime +
             (inp1.attribution.inputDelay + inp1.attribution.processingDuration),
       );
-      // Assert that the INP phase durations adds up to the total duration.
+      // Assert that the INP subpart durations adds up to the total duration.
       assert.equal(
         inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
         inp1.attribution.inputDelay +
@@ -558,7 +558,7 @@ describe('onINP()', async function () {
           inp1.attribution.presentationDelay,
       );
 
-      // Assert that the INP phases timestamps match the values in
+      // Assert that the INP subparts timestamps match the values in
       // the `processedEventEntries` array.
       const sortedEntries1 = inp1.attribution.processedEventEntries.sort(
         (a, b) => {
@@ -631,7 +631,7 @@ describe('onINP()', async function () {
           inp2.attribution.interactionTime +
             (inp2.attribution.inputDelay + inp2.attribution.processingDuration),
       );
-      // Assert that the INP phase durations adds up to the total duration.
+      // Assert that the INP subpart durations adds up to the total duration.
       assert.equal(
         inp2.attribution.nextPaintTime - inp2.attribution.interactionTime,
         inp2.attribution.inputDelay +
@@ -639,7 +639,7 @@ describe('onINP()', async function () {
           inp2.attribution.presentationDelay,
       );
 
-      // Assert that the INP phases timestamps match the values in
+      // Assert that the INP subparts timestamps match the values in
       // the `processedEventEntries` array.
       const sortedEntries2 = inp2.attribution.processedEventEntries.sort(
         (a, b) => {
@@ -841,6 +841,32 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
       assert(inp1.attribution.longAnimationFrameEntries.length > 0);
+      assert.equal(
+        inp1.attribution.longestScript.entry.invokerType,
+        'event-listener',
+      );
+      assert.equal(
+        inp1.attribution.longestScript.entry.invoker,
+        'DOMWindow.onpointerdown',
+      );
+      assert.equal(
+        inp1.attribution.longestScript.subpart,
+        'processing-duration',
+      );
+      assert.equal(inp1.attribution.longestScript.intersectingDuration, 100);
+      assert(inp1.attribution.totalScriptDuration > 0);
+      assert(inp1.attribution.totalStyleAndLayoutDuration >= 0);
+      assert(inp1.attribution.totalPaintDuration >= 0);
+      assert(inp1.attribution.totalUnattributedDuration >= 0);
+      assert(
+        Math.abs(
+          inp1.value -
+            (inp1.attribution.totalScriptDuration +
+              inp1.attribution.totalStyleAndLayoutDuration +
+              inp1.attribution.totalPaintDuration +
+              inp1.attribution.totalUnattributedDuration),
+        ) < 0.1,
+      );
     });
   });
 });

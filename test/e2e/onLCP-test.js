@@ -643,7 +643,7 @@ describe('onLCP()', async function () {
       assert.equal(lcp.navigationType, 'prerender');
       assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
 
-      // Assert each individual LCP sub-part accounts for `activationStart`
+      // Assert each individual LCP subpart accounts for `activationStart`
       assert.equal(
         lcp.attribution.timeToFirstByte,
         Math.max(0, navEntry.responseStart - navEntry.activationStart),
