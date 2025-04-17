@@ -91,9 +91,11 @@ describe('onINP()', async function () {
   it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    // Don't await the `interactive` ready state because DCL is delayed until
-    // after user input.
     await navigateTo('/test/inp?click=150&loadAfterInput=1');
+
+    // Wait until the first contentful paint to make sure the
+    // heading is there.
+    await firstContentfulPaint();
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -695,7 +697,8 @@ describe('onINP()', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo(
-        '/test/inp?click=100&attribution=1&doubleCall=1&generateTarget2=1',
+        '/test/inp?click=150&attribution=1&doubleCall=1&generateTarget2=1' +
+          '&reportAllChanges=1&reportAllChanges2=1',
       );
 
       // Wait until the library is loaded and the first paint occurs to ensure
@@ -705,8 +708,6 @@ describe('onINP()', async function () {
 
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
-
-      await stubVisibilityChange('hidden');
 
       await beaconCountIs(1, {instance: 1});
       await beaconCountIs(1, {instance: 2});

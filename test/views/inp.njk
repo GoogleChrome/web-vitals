@@ -118,7 +118,7 @@
       inp.instance = 1;
 
       // Log for easier manual testing.
-      console.log(inp);
+      console.log('INP1', inp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
@@ -133,7 +133,7 @@
         inp.instance = 2;
 
         // Log for easier manual testing.
-        console.log(inp);
+        console.log('INP2', inp);
 
         // Test sending the metric to an analytics endpoint.
         navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
