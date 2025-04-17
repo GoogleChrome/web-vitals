@@ -126,8 +126,11 @@ describe('onINP()', async function () {
     // after user input.
     await navigateTo('/test/inp?click=100&reportAllChanges=1&loadAfterInput=1');
 
-    // Wait until
-    await nextFrame();
+    // Wait until the library is loaded and the first paint occurs to ensure
+    // that an LCP entry can be dispatched prior to the document changing to
+    // hidden.
+    await webVitalsLoaded();
+    await firstContentfulPaint();
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -702,10 +705,13 @@ describe('onINP()', async function () {
 
       await navigateTo(
         '/test/inp?click=100&attribution=1&doubleCall=1&generateTarget2=1',
-        {
-          readyState: 'complete',
-        },
       );
+
+      // Wait until the library is loaded and the first paint occurs to ensure
+      // that an LCP entry can be dispatched prior to the document changing to
+      // hidden.
+      await webVitalsLoaded();
+      await firstContentfulPaint();
 
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
