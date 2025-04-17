@@ -17,10 +17,12 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 const ROUNDING_ERROR = 8;
 
@@ -93,8 +95,11 @@ describe('onINP()', async function () {
     // after user input.
     await navigateTo('/test/inp?click=100&loadAfterInput=1');
 
-    // Wait until
-    await nextFrame();
+    // Wait until the library is loaded and the first paint occurs to ensure
+    // that an LCP entry can be dispatched prior to the document changing to
+    // hidden.
+    await webVitalsLoaded();
+    await firstContentfulPaint();
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
