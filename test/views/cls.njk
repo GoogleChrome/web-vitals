@@ -37,7 +37,7 @@
       cls.instance = 1;
 
       // Log for easier manual testing.
-      console.log(cls);
+      console.log('CLS:', cls);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
@@ -51,7 +51,7 @@
         cls.instance = 2;
 
         // Log for easier manual testing.
-        console.log(cls);
+        console.log('CLS2:', cls);
 
         // Test sending the metric to an analytics endpoint.
         navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));

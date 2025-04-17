@@ -38,7 +38,7 @@
       lcp.instance = 1;
 
       // Log for easier manual testing.
-      console.log(lcp);
+      console.log('LCP:', lcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
@@ -52,7 +52,7 @@
         lcp.instance = 2;
 
         // Log for easier manual testing.
-        console.log(lcp);
+        console.log('LCP2:', lcp);
 
         // Test sending the metric to an analytics endpoint.
         navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
