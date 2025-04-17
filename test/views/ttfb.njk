@@ -56,7 +56,7 @@
       ttfb.instance = 2;
 
       // Log for easier manual testing.
-      console.log('TTFB3:', ttfb);
+      console.log('TTFB2:', ttfb);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(ttfb)));
