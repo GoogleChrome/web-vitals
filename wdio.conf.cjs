@@ -92,12 +92,11 @@ module.exports.config = {
       capability['moz:firefoxOptions'] = {
         args: [],
         prefs: {
-          // Temporarily disable interactionid on Firefox nightly as unstable
-          // See: https://bugzilla.mozilla.org/show_bug.cgi?id=1960645
-          // TODO: Remove this once this hits stable
+          // Uncomment to disable interactionid on Firefox nightly if unstable
           // 'dom.performance.event_timing.enable_interactionid': false,
         },
         // Uncomment to test on Firefox Nightly (now with INP support)
+        // CI uses Nightly but local testing will use production without this
         // binary: '/Applications/Firefox Nightly.app/Contents/MacOS/firefox'
       };
     }
