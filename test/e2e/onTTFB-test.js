@@ -401,7 +401,6 @@ describe('onTTFB()', async function () {
 
     it('reports the correct value for Early Hints', async function () {
       await navigateTo(
-        // '/test/ttfb?responseStart=10&earlyHintsDelay=50&attribution=1',
         '/test/ttfb?earlyHintsDelay=50&attribution=1',
       );
 
