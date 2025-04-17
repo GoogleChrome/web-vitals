@@ -17,10 +17,12 @@
 import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
+import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 const ROUNDING_ERROR = 8;
 
@@ -89,15 +91,17 @@ describe('onINP()', async function () {
   it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    // Don't await the `interactive` ready state because DCL is delayed until
-    // after user input.
-    await navigateTo('/test/inp?click=100&loadAfterInput=1');
+    await navigateTo('/test/inp?click=150&loadAfterInput=1');
 
-    // Wait until
-    await nextFrame();
+    // Wait until the first contentful paint to make sure the
+    // heading is there.
+    await firstContentfulPaint();
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
 
     await stubVisibilityChange('hidden');
 
@@ -119,10 +123,7 @@ describe('onINP()', async function () {
 
     // Don't await the `interactive` ready state because DCL is delayed until
     // after user input.
-    await navigateTo('/test/inp?click=100&reportAllChanges=1&loadAfterInput=1');
-
-    // Wait until
-    await nextFrame();
+    await navigateTo('/test/inp?click=150&reportAllChanges=1&loadAfterInput=1');
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -293,9 +294,12 @@ describe('onINP()', async function () {
   it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp', {readyState: 'interactive'});
+    await navigateTo('/test/inp?click=100');
 
-    await setBlockingTime('click', 100);
+    // Wait until the library is loaded and the first paint occurs to ensure
+    // The 40ms event duration is set
+    await webVitalsLoaded();
+    await firstContentfulPaint();
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -511,8 +515,16 @@ describe('onINP()', async function () {
         readyState: 'complete',
       });
 
+      // Wait until the library is loaded and the first paint occurs to ensure
+      // The 40ms event duration is set
+      await webVitalsLoaded();
+      await firstContentfulPaint();
+
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
+
+      // Wait until a frame so INP can be counted.
+      await nextFrame();
 
       await stubVisibilityChange('hidden');
 
@@ -696,16 +708,17 @@ describe('onINP()', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo(
-        '/test/inp?click=100&attribution=1&doubleCall=1&generateTarget2=1',
-        {
-          readyState: 'complete',
-        },
+        '/test/inp?click=150&attribution=1&doubleCall=1&generateTarget2=1' +
+          '&reportAllChanges=1&reportAllChanges2=1',
       );
+
+      // Wait until the library is loaded and the first paint occurs to ensure
+      // The 40ms event duration is set
+      await webVitalsLoaded();
+      await firstContentfulPaint();
 
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
-
-      await stubVisibilityChange('hidden');
 
       await beaconCountIs(1, {instance: 1});
       await beaconCountIs(1, {instance: 2});
