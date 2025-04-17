@@ -868,6 +868,14 @@ describe('onINP()', async function () {
         ) < 0.1,
       );
     });
+    it('should print the Firefox version', async () => {
+      const capabilities = await browser.getCapabilities();
+      const browserName = capabilities.get('browserName');
+      const browserVersion = capabilities.get('browserVersion');
+
+      console.log(`Browser Name: ${browserName}`);
+      console.log(`Browser Version: ${browserVersion}`);
+    });
   });
 });
 
