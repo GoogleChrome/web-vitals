@@ -289,7 +289,12 @@ describe('onINP()', async function () {
   it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=150', {readyState: 'interactive'});
+    await navigateTo('/test/inp?click=100');
+
+    // Wait until the library is loaded and the first paint occurs to ensure
+    // The 40ms event duration is set
+    await webVitalsLoaded();
+    await firstContentfulPaint();
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -694,8 +699,7 @@ describe('onINP()', async function () {
       );
 
       // Wait until the library is loaded and the first paint occurs to ensure
-      // that an LCP entry can be dispatched prior to the document changing to
-      // hidden.
+      // The 40ms event duration is set
       await webVitalsLoaded();
       await firstContentfulPaint();
 
