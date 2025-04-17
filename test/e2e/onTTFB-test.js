@@ -400,9 +400,7 @@ describe('onTTFB()', async function () {
     });
 
     it('reports the correct value for Early Hints', async function () {
-      await navigateTo(
-        '/test/ttfb?earlyHintsDelay=50&attribution=1',
-      );
+      await navigateTo('/test/ttfb?earlyHintsDelay=50&attribution=1');
 
       const ttfb = await getTTFBBeacon();
 
