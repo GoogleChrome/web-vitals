@@ -100,6 +100,9 @@ describe('onINP()', async function () {
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
@@ -512,8 +515,16 @@ describe('onINP()', async function () {
         readyState: 'complete',
       });
 
+      // Wait until the library is loaded and the first paint occurs to ensure
+      // The 40ms event duration is set
+      await webVitalsLoaded();
+      await firstContentfulPaint();
+
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
+
+      // Wait until a frame so INP can be counted.
+      await nextFrame();
 
       await stubVisibilityChange('hidden');
 
