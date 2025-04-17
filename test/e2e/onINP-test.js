@@ -40,16 +40,6 @@ describe('onINP()', async function () {
     await clearBeacons();
   });
 
-  it('should print Firefox detailed capabilities', async function () {
-    const capabilities = browser.capabilities;
-
-    console.log('Browser Name:', capabilities.browserName);
-    console.log('Browser Version:', capabilities.browserVersion);
-    console.log('Firefox Build ID:', capabilities['moz:buildID']);
-    console.log('Geckodriver Version:', capabilities['moz:geckodriverVersion']);
-    console.log('Is Headless:', capabilities['moz:headless']);
-  });
-
   it('reports the correct value on visibility hidden after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
