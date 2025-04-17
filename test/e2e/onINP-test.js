@@ -93,13 +93,7 @@ describe('onINP()', async function () {
 
     // Don't await the `interactive` ready state because DCL is delayed until
     // after user input.
-    await navigateTo('/test/inp?click=100&loadAfterInput=1');
-
-    // Wait until the library is loaded and the first paint occurs to ensure
-    // that an LCP entry can be dispatched prior to the document changing to
-    // hidden.
-    await webVitalsLoaded();
-    await firstContentfulPaint();
+    await navigateTo('/test/inp?click=150&loadAfterInput=1');
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -124,13 +118,7 @@ describe('onINP()', async function () {
 
     // Don't await the `interactive` ready state because DCL is delayed until
     // after user input.
-    await navigateTo('/test/inp?click=100&reportAllChanges=1&loadAfterInput=1');
-
-    // Wait until the library is loaded and the first paint occurs to ensure
-    // that an LCP entry can be dispatched prior to the document changing to
-    // hidden.
-    await webVitalsLoaded();
-    await firstContentfulPaint();
+    await navigateTo('/test/inp?click=150&reportAllChanges=1&loadAfterInput=1');
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -301,9 +289,7 @@ describe('onINP()', async function () {
   it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp', {readyState: 'interactive'});
-
-    await setBlockingTime('click', 100);
+    await navigateTo('/test/inp?click=150', {readyState: 'interactive'});
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
