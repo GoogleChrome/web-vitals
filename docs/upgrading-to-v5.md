@@ -27,7 +27,6 @@ For those sites wishing to bundle the `web-vitals` library code within their own
 
 ## 🚀 New features
 
-- **Added** additional cappings have been added to LCP ([#527](https://github.com/GoogleChrome/web-vitals/pull/527)) and INP ([#528](https://github.com/GoogleChrome/web-vitals/pull/528)) breakdowns to handle edge cases.
 - **Added** support for generating custom targets in the attribution build ([#585](https://github.com/GoogleChrome/web-vitals/pull/585))
 - **Added** extended INP attribution with extra LoAF information: longest script and buckets ([#592](https://github.com/GoogleChrome/web-vitals/pull/592))
 - **Changed** event listeners to run less often ([#538](https://github.com/GoogleChrome/web-vitals/pull/538))
