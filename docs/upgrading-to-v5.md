@@ -1,6 +1,6 @@
 # Upgrading to v5
 
-This document lists the full set of changes between version 4 and version 5 that are relevant to anyone wanting to upgrade to the new version. These update documents groups changes into "breaking changes", "new features", and "deprecations" across both the "standard" and "attribution" builds (see [build options](/#build-options) for details).
+This document lists the full set of changes between version 4 and version 5 that are relevant to anyone wanting to upgrade to the new version. This document groups changes into "breaking changes", "new features", and "deprecations" across both the "standard" and "attribution" builds (see [build options](/#build-options) for details).
 
 ## ❌ Breaking changes
 
@@ -17,7 +17,7 @@ The pre-built [packages of the `web-vitals` library available on CDNs](/README#l
 
 For basic use of the library we recommend loading the `web-vitals` library in its own `<script type="module">` tag, regardless of whether loading this library [from a CDN](README.md#from-a-cdn) or hosted locally on your site. This will allow this library to fail without affecting other code if unsupported syntax or features are used on very old browsers.
 
-For those sites wishing to bundle the `web-vitals` library code within their own code, developers should ensure the `web-vitals` code is transpiled to the support requirements of their user base. Note that most of the metrics will still not be available to older browsers. Developers may notice a small increase in bundle size when transpiling to older syntax.
+If you do choose to include the `web-vitals` library code in your main application bundle—and you also need to support very old browsers—it's critical that you configure your bundler to transpile the `web-vitals` code along with the rest of you application JavaScript. This is important because most bundlers do not transpile `node_modules` by default.
 
 ### Attribution build
 
@@ -33,4 +33,4 @@ For those sites wishing to bundle the `web-vitals` library code within their own
 
 ## ⚠️ Deprecations
 
-There are no deprecations in v5.
+There were no deprecations in v5.
