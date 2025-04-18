@@ -13,7 +13,9 @@ This document lists the full set of changes between version 4 and version 5 that
 
 ##### More details on the Baseline Widely available change:
 
-The pre-built [packages of the `web-vitals` library available on CDNs](/README#load-web-vitals-from-a-cdn) are built with this Baseline Widely available support in mind. This should not be an issue for modern browsers released in the last few years, which are usually required in order to measure the metrics this library is designed for.
+All of the [builds](README#build-options) in `web-vitals` v5 use only [Baseline Widely available](https://web.dev/baseline) APIs, which means they should run without error in all browsers released in the last few years. Note that the Core Web Vitals metrics are only available in modern browsers, so legacy browser support is unnecessary for this library.
+
+If your site needs to support legacy browsers, you can still use the `web-vitals` library without causing errors in those browsers by adhering to the following recommendations:
 
 For basic use of the library we recommend loading the `web-vitals` library in its own `<script type="module">` tag, regardless of whether loading this library [from a CDN](README.md#from-a-cdn) or hosted locally on your site. This will allow this library to fail without affecting other code if unsupported syntax or features are used on very old browsers.
 
