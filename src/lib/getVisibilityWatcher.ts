@@ -63,11 +63,18 @@ const removeChangeListeners = () => {
 
 export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
-    // If the document is hidden when this code runs, assume it was hidden
-    // since navigation start. This isn't a perfect heuristic, but it's the
-    // best we can do until an API is available to support querying past
-    // visibilityState.
-    firstHiddenTime = initHiddenTime();
+    // Check if we have a previous hidden `visibility-state` performance entry.
+    const firstVisibilityStateHiddenTime =
+      PerformanceObserver.supportedEntryTypes.includes('visibility-state')
+        ? performance
+          .getEntriesByType('visibility-state')
+          .filter((e) => e.name === 'hidden')[0]?.startTime
+        : undefined;
+    // Prefer that, but if it's not available and the document is hidden when
+    // this code runs, assume it was hidden since navigation start. This isn't
+    // a perfect heuristic, but it's the best we can do until the
+    // `visibility-state` performance entry becomes available in all browsers.
+    firstHiddenTime = firstVisibilityStateHiddenTime ?? initHiddenTime();
     addChangeListeners();
 
     // Reset the time on bfcache restores.
