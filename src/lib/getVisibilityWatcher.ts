@@ -65,6 +65,7 @@ export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
     // Check if we have a previous hidden `visibility-state` performance entry.
     const firstVisibilityStateHiddenTime =
+      !document.prerendering &&
       PerformanceObserver.supportedEntryTypes.includes('visibility-state')
         ? performance
           .getEntriesByType('visibility-state')
