@@ -64,11 +64,12 @@ const removeChangeListeners = () => {
 export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
     // Check if we have a previous hidden `visibility-state` performance entry.
-    const firstVisibilityStateHiddenTime =
-      !document.prerendering &&
-      performance
+    // prettier-ignore - Prettier and eslint disagree on this line!
+    const firstVisibilityStateHiddenTime = !document.prerendering
+      ? globalThis.performance
         .getEntriesByType('visibility-state')
-        .filter((e) => e.name === 'hidden')[0]?.startTime;
+        .filter((e) => e.name === 'hidden')[0]?.startTime
+      : undefined;
     // Prefer that, but if it's not available and the document is hidden when
     // this code runs, assume it was hidden since navigation start. This isn't
     // a perfect heuristic, but it's the best we can do until the
