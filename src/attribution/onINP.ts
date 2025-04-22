@@ -68,7 +68,7 @@ const MAX_PREVIOUS_FRAMES = 50;
  *
  * _**Important:** INP should be continually monitored for changes throughout
  * the entire lifespan of a page—including if the user returns to the page after
- * it's been hidden/backgrounded. However, since browsers often [will not fire
+ * it has been hidden/backgrounded. However, since browsers often [will not fire
  * additional callbacks once the user has backgrounded a
  * page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden),
  * `callback` is always called when the page's visibility state changes to
@@ -301,7 +301,7 @@ export const onINP = (
             script.forcedStyleAndLayoutDuration
           : 0;
         // For scripts we exclude forcedStyleAndLayout (same as DevTools does
-        // in it's summary totals) and instead include that in
+        // in its summary totals) and instead include that in
         // totalStyleAndLayoutDuration
         totalScriptDuration +=
           intersectingScriptDuration - intersectingForceStyleAndLayoutDuration;
