@@ -1,5 +1,16 @@
 # Changelog
 
+### v5.0.0-rc.2 (2024-04-23)
+
+- Add upgrading to v5 doc ([#558](https://github.com/GoogleChrome/web-vitals/pull/558))
+- Use visibility-state performance entries ([#612](https://github.com/GoogleChrome/web-vitals/pull/612))
+- Extend INP attribution with extra LoAF information: longest script and buckets ([#592](https://github.com/GoogleChrome/web-vitals/pull/592))
+- Add support for generating custom targets in the attribution build ([#585](https://github.com/GoogleChrome/web-vitals/pull/585))
+- Support multiple calls to `onINP()` with different config options ([#583](https://github.com/GoogleChrome/web-vitals/pull/583))
+- Add unit tests to bindReporter ([#546](https://github.com/GoogleChrome/web-vitals/pull/546))
+- Ensure idle callbacks don't run twice ([#541](https://github.com/GoogleChrome/web-vitals/pull/541)) and ([#548](https://github.com/GoogleChrome/web-vitals/pull/548))
+- Cap `nextPaintTime` at `processingStart` ([#540](https://github.com/GoogleChrome/web-vitals/pull/540)) and ([#546](https://github.com/GoogleChrome/web-vitals/pull/546))
+
 ### v5.0.0-rc.0 (2024-10-03)
 
 - **[BREAKING]** Remove the deprecated `onFID()` function ([#519](https://github.com/GoogleChrome/web-vitals/pull/519))
