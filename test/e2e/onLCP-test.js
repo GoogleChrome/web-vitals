@@ -33,6 +33,12 @@ describe('onLCP()', async function () {
     browserSupportsLCP = await browserSupportsEntry('largest-contentful-paint');
   });
 
+  let browserSupportsVisibilityState;
+  before(async function () {
+    browserSupportsVisibilityState =
+      await browserSupportsEntry('visibility-state');
+  });
+
   beforeEach(async function () {
     await navigateTo('about:blank');
     await clearBeacons();
@@ -210,6 +216,38 @@ describe('onLCP()', async function () {
 
     // Click on the h1.
     const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('does not report if the document was hidden before library loaded', async function () {
+    if (!browserSupportsLCP) this.skip();
+    if (!browserSupportsVisibilityState) this.skip();
+
+    // Don't load the library until we click
+    await navigateTo('/test/lcp?loadAfterInput=1');
+
+    // Can't mock visibility-state entries so switch to a blank tab and back
+    // to emit real entries:
+    const handle1 = await browser.getWindowHandle();
+    await browser.newWindow('https://example.com');
+    await browser.pause(500);
+    await browser.closeWindow();
+    await browser.switchToWindow(handle1);
+
+    // Click on the h1 to load the library
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait until web-vitals is loaded
+    await webVitalsLoaded();
+
+    // Click on the h1 again not it's loaded to trigger LCP
     await h1.click();
 
     // Wait a bit to ensure no beacons were sent.
