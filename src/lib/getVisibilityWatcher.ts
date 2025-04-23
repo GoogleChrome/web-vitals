@@ -77,6 +77,9 @@ export const getVisibilityWatcher = () => {
     // a perfect heuristic, but it's the best we can do until the
     // `visibility-state` performance entry becomes available in all browsers.
     firstHiddenTime = firstVisibilityStateHiddenTime ?? initHiddenTime();
+    // We're still going to listen to for changes so we can handle things like
+    // bfcache restores and/or prerender without having to examine individual
+    // timestamps in detail.
     addChangeListeners();
 
     // Reset the time on bfcache restores.
