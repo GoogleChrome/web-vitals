@@ -2,8 +2,8 @@
 
 ### v5.0.0-rc.2 (2024-04-22)
 
-- Use visibility-state performance entries ([#612](https://github.com/GoogleChrome/web-vitals/pull/612))
 - Add upgrading to v5 doc ([#558](https://github.com/GoogleChrome/web-vitals/pull/558))
+- Use visibility-state performance entries ([#612](https://github.com/GoogleChrome/web-vitals/pull/612))
 - Extend INP attribution with extra LoAF information: longest script and buckets ([#592](https://github.com/GoogleChrome/web-vitals/pull/592))
 - Add support for generating custom targets in the attribution build ([#585](https://github.com/GoogleChrome/web-vitals/pull/585))
 - Support multiple calls to `onINP()` with different config options ([#583](https://github.com/GoogleChrome/web-vitals/pull/583))
