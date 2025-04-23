@@ -233,7 +233,7 @@ describe('onLCP()', async function () {
     await navigateTo('/test/lcp?loadAfterInput=1');
 
     // Can't mock visibility-state entries so switch to a blank tab and back
-    // To emit real entries:
+    // to emit real entries:
     const handle1 = await browser.getWindowHandle();
     await browser.newWindow('https://example.com');
     await browser.pause(500);
