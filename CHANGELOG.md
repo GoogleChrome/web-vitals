@@ -1,5 +1,9 @@
 # Changelog
 
+### v5.0.0-rc.2 (2024-04-24)
+
+- Release to republish to npm. No changes.
+
 ### v5.0.0-rc.1 (2024-04-23)
 
 - Add upgrading to v5 doc ([#558](https://github.com/GoogleChrome/web-vitals/pull/558))
