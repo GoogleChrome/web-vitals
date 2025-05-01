@@ -43,12 +43,12 @@ The library supports all of the [Core Web Vitals](https://web.dev/articles/vital
 - [First Contentful Paint (FCP)](https://web.dev/articles/fcp)
 - [Time to First Byte (TTFB)](https://web.dev/articles/ttfb)
 
-<a name="installation"><a>
-<a name="load-the-library"><a>
+<a name="installation"></a>
+<a name="load-the-library"></a>
 
 ## Install and load the library
 
-<a name="import-web-vitals-from-npm"><a>
+<a name="import-web-vitals-from-npm"></a>
 
 The `web-vitals` library uses the `buffered` flag for [PerformanceObserver](https://developer.mozilla.org/docs/Web/API/PerformanceObserver/observe), allowing it to access performance entries that occurred before the library was loaded.
 
@@ -74,17 +74,22 @@ For details on the difference between the builds, see <a href="#which-build-is-r
 To load the "standard" build, import modules from the `web-vitals` package in your application code (as you would with any npm package and node-based build tool):
 
 ```js
-import {onLCP, onINP, onCLS} from 'web-vitals';
-
-onCLS(console.log);
-onINP(console.log);
-onLCP(console.log);
+import('web-vitals')
+  .then(({onCLS, onINP, onLCP}) => {
+    onCLS(console.log);
+    onINP(console.log);
+    onLCP(console.log);
+  })
+  .catch((error) => {
+    console.error('Failed to load web-vitals library:', error);
+  });
 ```
 
-> [!NOTE]
-> In version 2, these functions were named `getXXX()` rather than `onXXX()`. They've [been renamed](https://github.com/GoogleChrome/web-vitals/pull/222) in version 3 to reduce confusion (see [#217](https://github.com/GoogleChrome/web-vitals/pull/217) for details) and will continue to be available using the `getXXX()` until at least version 4. Users are encouraged to switch to the new names, though, for future compatibility.
+<a name="dynamic-imports"></a>
 
-<a name="attribution-build"><a>
+_Note that this code example uses a [dynamic import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import). This is recommended for importing third-party libraries which may have different browser support requirements that your application so that it can fail gracefully without affecting the rest of your code. The alternative is to transpile the code to your required browser support level, but be aware that [many bundlers exclude the `node_modules` for transpiling by default](https://philipwalton.com/articles/the-state-of-es5-on-the-web/). For brevity, the remainder of this README shows static imports._
+
+<a name="attribution-build"></a>
 
 **2. The "attribution" build**
 
@@ -97,15 +102,15 @@ The "attribution" build is slightly larger than the "standard" build (by about 1
 To load the "attribution" build, change any `import` statements that reference `web-vitals` to `web-vitals/attribution`:
 
 ```diff
-- import {onLCP, onINP, onCLS} from 'web-vitals';
-+ import {onLCP, onINP, onCLS} from 'web-vitals/attribution';
+- import('web-vitals').then({onCLS, onINP, onLCP}) => {
++ import('web-vitals/attribution').then({onCLS, onINP, onLCP}) => {
 ```
 
 Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [metric](#metric) objects will contain an additional [`attribution`](#attribution) property.
 
 See [Send attribution data](#send-attribution-data) for usage examples, and the [`attribution` reference](#attribution) for details on what values are added for each metric.
 
-<a name="load-web-vitals-from-a-cdn"><a>
+<a name="load-web-vitals-from-a-cdn"></a>
 
 ### From a CDN
 
@@ -127,6 +132,8 @@ _**Important!** The [unpkg.com](https://unpkg.com), [jsDelivr](https://www.jsdel
   onLCP(console.log);
 </script>
 ```
+
+Note: When the web-vitals code is isolated from the application code in this way, there is less need to depend on dynamic imports so this code uses a regular `import` line.
 
 **Load the "standard" build** _(using a classic script)_
 
@@ -221,8 +228,7 @@ In other cases, a metric callback may be called more than once:
 
 In most cases, you only want the `callback` function to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each larger layout shift as it happens) by setting `reportAllChanges` to `true` in the optional, [configuration object](#reportopts) (second parameter).
 
-> [!IMPORTANT]
-> `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP.
+> [!IMPORTANT] > `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP.
 
 This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production.
 
@@ -415,7 +421,7 @@ addEventListener('visibilitychange', () => {
 > [!NOTE]
 > See [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`.
 
-<a name="bundle-versions"><a>
+<a name="bundle-versions"></a>
 
 ## Build options
 
@@ -477,7 +483,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
   </tr>
 </table>
 
-<a name="which-build-is-right-for-you"><a>
+<a name="which-build-is-right-for-you"></a>
 
 ### Which build is right for you?
 
