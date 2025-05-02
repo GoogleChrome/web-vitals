@@ -294,7 +294,7 @@ describe('onINP()', async function () {
   it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100');
+    await navigateTo('/test/inp?click=150');
 
     // Wait until the library is loaded and the first paint occurs to ensure
     // The 40ms event duration is set
@@ -768,7 +768,7 @@ describe('onINP()', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo(
-        '/test/inp?attribution=1&reportAllChanges=1&click=100&delayDCL=1000',
+        '/test/inp?attribution=1&reportAllChanges=1&click=150&delayDCL=1000',
       );
 
       // Click on the <h1>.
