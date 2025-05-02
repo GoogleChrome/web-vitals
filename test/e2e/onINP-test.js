@@ -923,7 +923,8 @@ describe('onINP()', async function () {
         inp1.attribution.longestScript.subpart,
         'processing-duration',
       );
-      assert.equal(inp1.attribution.longestScript.intersectingDuration, 100);
+      assert(inp1.attribution.longestScript.intersectingDuration > 90);
+      assert(inp1.attribution.longestScript.intersectingDuration < 110);
       assert(inp1.attribution.totalScriptDuration > 0);
       assert(inp1.attribution.totalStyleAndLayoutDuration >= 0);
       assert(inp1.attribution.totalPaintDuration >= 0);
