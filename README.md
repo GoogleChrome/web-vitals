@@ -274,9 +274,9 @@ The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://dev
 import {onCLS, onINP, onLCP} from 'web-vitals';
 
 function sendToAnalytics(metric) {
-  // Replace with whatever serialization method you prefer.
-  // Note: JSON.stringify will likely include more data than you need.
-  const body = JSON.stringify(metric);
+  // Replace with whatever serialization method you prefer including
+  // whatever attributes you want to include.
+  const body = JSON.stringify({[metric.name]: metric.value});
 
   // Use `navigator.sendBeacon()` to send the data, which supports
   // sending while the page is unloading.
