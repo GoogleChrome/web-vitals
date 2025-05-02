@@ -125,9 +125,6 @@ describe('onINP()', async function () {
 
     await stubVisibilityChange('hidden');
 
-    // Wait a bit to ensure the PerformanceObserver logs to the console.
-    await browser.pause(1000);
-
     const logs = await browser.execute(() => window._logMessages || []);
     console.log('Browser logs:');
     logs.forEach((log) => {
@@ -591,34 +588,47 @@ describe('onINP()', async function () {
           inp1.attribution.interactionTime +
             (inp1.attribution.inputDelay + inp1.attribution.processingDuration),
       );
-      // Assert that the INP subpart durations adds up to the total duration.
+      // Assert that the INP subpart durations adds up to the total duration
+      // with a tolerance of 1 for rounding error issues
       assert.equal(
-        inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
-        inp1.attribution.inputDelay +
-          inp1.attribution.processingDuration +
-          inp1.attribution.presentationDelay,
+        Math.abs(
+          inp1.attribution.nextPaintTime -
+            inp1.attribution.interactionTime -
+            inp1.attribution.inputDelay +
+            inp1.attribution.processingDuration +
+            inp1.attribution.presentationDelay,
+        ) <= 1,
       );
 
       // Assert that the INP subparts timestamps match the values in
-      // the `processedEventEntries` array.
+      // the `processedEventEntries` array
+      // with a tolerance of 1 for rounding error issues
       const sortedEntries1 = inp1.attribution.processedEventEntries.sort(
         (a, b) => {
           return a.processingStart - b.processingStart;
         },
       );
-      assert.equal(
-        inp1.attribution.interactionTime + inp1.attribution.inputDelay,
-        sortedEntries1[0].processingStart,
+      assert.ok(
+        Math.abs(
+          inp1.attribution.interactionTime +
+            inp1.attribution.inputDelay -
+            sortedEntries1[0].processingStart,
+        ) <= 1,
       );
-      assert.equal(
-        inp1.attribution.interactionTime +
-          inp1.attribution.inputDelay +
-          inp1.attribution.processingDuration,
-        sortedEntries1.at(-1).processingEnd,
+      assert.ok(
+        Math.abs(
+          inp1.attribution.interactionTime +
+            inp1.attribution.inputDelay +
+            inp1.attribution.processingDuration -
+            sortedEntries1.at(-1).processingEnd,
+        ) <= 1,
       );
-      assert.equal(
-        inp1.attribution.nextPaintTime - inp1.attribution.presentationDelay,
-        sortedEntries1.at(-1).processingEnd,
+      assert.ok(
+        Math.abs(
+          inp1.attribution.nextPaintTime -
+            inp1.attribution.presentationDelay -
+            sortedEntries1.at(-1).processingEnd,
+        ) <= 1,
       );
 
       await clearBeacons();
