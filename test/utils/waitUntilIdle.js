@@ -21,7 +21,7 @@
  */
 export function waitUntilIdle() {
   return browser.executeAsync((done) => {
-    if ('requestIdleCallback' in window) {
+    if ('requestIdleCallback' in self) {
       requestIdleCallback(() => {
         done();
       });

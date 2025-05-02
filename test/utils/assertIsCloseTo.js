@@ -20,6 +20,6 @@ import assert from 'assert';
  * Returns if two numbers are within a maxDelta of each other
  * @return Bool
  */
-export function isCloseTo(actual, expected, maxDelta) {
+export function assertIsCloseTo(actual, expected, maxDelta) {
   return assert.ok(Math.abs(actual - expected) <= maxDelta);
 }

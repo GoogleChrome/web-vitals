@@ -15,10 +15,10 @@
  */
 
 import assert from 'assert';
+import {assertIsCloseTo} from '../utils/assertIsCloseTo.js';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
-import {isCloseTo} from '../utils/isCloseTo.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
@@ -611,7 +611,7 @@ describe('onINP()', async function () {
       );
       // Assert that the INP subpart durations adds up to the total duration
       // with a tolerance of 1 for rounding error issues
-      isCloseTo(
+      assertIsCloseTo(
         inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
         inp1.attribution.inputDelay +
           inp1.attribution.processingDuration +
@@ -627,19 +627,19 @@ describe('onINP()', async function () {
           return a.processingStart - b.processingStart;
         },
       );
-      isCloseTo(
+      assertIsCloseTo(
         inp1.attribution.interactionTime + inp1.attribution.inputDelay,
         sortedEntries1[0].processingStart,
         1,
       );
-      isCloseTo(
+      assertIsCloseTo(
         inp1.attribution.interactionTime +
           inp1.attribution.inputDelay +
           inp1.attribution.processingDuration,
         sortedEntries1.at(-1).processingEnd,
         1,
       );
-      isCloseTo(
+      assertIsCloseTo(
         inp1.attribution.nextPaintTime - inp1.attribution.presentationDelay,
         sortedEntries1.at(-1).processingEnd,
         1,
@@ -939,12 +939,16 @@ describe('onINP()', async function () {
         inp1.attribution.longestScript.subpart,
         'processing-duration',
       );
-      isCloseTo(inp1.attribution.longestScript.intersectingDuration, 100, 10);
+      assertIsCloseTo(
+        inp1.attribution.longestScript.intersectingDuration,
+        100,
+        10,
+      );
       assert(inp1.attribution.totalScriptDuration > 0);
       assert(inp1.attribution.totalStyleAndLayoutDuration >= 0);
       assert(inp1.attribution.totalPaintDuration >= 0);
       assert(inp1.attribution.totalUnattributedDuration >= 0);
-      isCloseTo(
+      assertIsCloseTo(
         inp1.value,
         inp1.attribution.totalScriptDuration +
           inp1.attribution.totalStyleAndLayoutDuration +
