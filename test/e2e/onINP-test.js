@@ -91,7 +91,7 @@ describe('onINP()', async function () {
   it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=150&loadAfterInput=1');
+    await navigateTo('/test/inp?pointerup=150&click=150&loadAfterInput=1');
 
     // Wait until the first contentful paint to make sure the
     // heading is there.
