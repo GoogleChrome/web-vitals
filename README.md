@@ -43,12 +43,12 @@ The library supports all of the [Core Web Vitals](https://web.dev/articles/vital
 - [First Contentful Paint (FCP)](https://web.dev/articles/fcp)
 - [Time to First Byte (TTFB)](https://web.dev/articles/ttfb)
 
-<a name="installation"><a>
-<a name="load-the-library"><a>
+<a name="installation"></a>
+<a name="load-the-library"></a>
 
 ## Install and load the library
 
-<a name="import-web-vitals-from-npm"><a>
+<a name="import-web-vitals-from-npm"></a>
 
 The `web-vitals` library uses the `buffered` flag for [PerformanceObserver](https://developer.mozilla.org/docs/Web/API/PerformanceObserver/observe), allowing it to access performance entries that occurred before the library was loaded.
 
@@ -75,16 +75,9 @@ To load the "standard" build, import modules from the `web-vitals` package in yo
 
 ```js
 import {onLCP, onINP, onCLS} from 'web-vitals';
-
-onCLS(console.log);
-onINP(console.log);
-onLCP(console.log);
 ```
 
-> [!NOTE]
-> In version 2, these functions were named `getXXX()` rather than `onXXX()`. They've [been renamed](https://github.com/GoogleChrome/web-vitals/pull/222) in version 3 to reduce confusion (see [#217](https://github.com/GoogleChrome/web-vitals/pull/217) for details) and will continue to be available using the `getXXX()` until at least version 4. Users are encouraged to switch to the new names, though, for future compatibility.
-
-<a name="attribution-build"><a>
+<a name="attribution-build"></a>
 
 **2. The "attribution" build**
 
@@ -97,15 +90,15 @@ The "attribution" build is slightly larger than the "standard" build (by about 1
 To load the "attribution" build, change any `import` statements that reference `web-vitals` to `web-vitals/attribution`:
 
 ```diff
-- import {onLCP, onINP, onCLS} from 'web-vitals';
-+ import {onLCP, onINP, onCLS} from 'web-vitals/attribution';
+import {onLCP, onINP, onCLS} from 'web-vitals';
+import {onLCP, onINP, onCLS} from 'web-vitals/attribution';
 ```
 
 Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [metric](#metric) objects will contain an additional [`attribution`](#attribution) property.
 
 See [Send attribution data](#send-attribution-data) for usage examples, and the [`attribution` reference](#attribution) for details on what values are added for each metric.
 
-<a name="load-web-vitals-from-a-cdn"><a>
+<a name="load-web-vitals-from-a-cdn"></a>
 
 ### From a CDN
 
@@ -127,6 +120,8 @@ _**Important!** The [unpkg.com](https://unpkg.com), [jsDelivr](https://www.jsdel
   onLCP(console.log);
 </script>
 ```
+
+Note: When the web-vitals code is isolated from the application code in this way, there is less need to depend on dynamic imports so this code uses a regular `import` line.
 
 **Load the "standard" build** _(using a classic script)_
 
@@ -221,8 +216,7 @@ In other cases, a metric callback may be called more than once:
 
 In most cases, you only want the `callback` function to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each larger layout shift as it happens) by setting `reportAllChanges` to `true` in the optional, [configuration object](#reportopts) (second parameter).
 
-> [!IMPORTANT]
-> `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP.
+> [!IMPORTANT] > `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP.
 
 This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production.
 
@@ -268,9 +262,13 @@ The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://dev
 import {onCLS, onINP, onLCP} from 'web-vitals';
 
 function sendToAnalytics(metric) {
-  // Replace with whatever serialization method you prefer.
-  // Note: JSON.stringify will likely include more data than you need.
-  const body = JSON.stringify(metric);
+  const body = JSON.stringify({
+    name: metric.name,
+    value: metric.value,
+    id: metric.id,
+
+    // Include additional data as needed...
+  });
 
   // Use `navigator.sendBeacon()` to send the data, which supports
   // sending while the page is unloading.
@@ -415,7 +413,7 @@ addEventListener('visibilitychange', () => {
 > [!NOTE]
 > See [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`.
 
-<a name="bundle-versions"><a>
+<a name="bundle-versions"></a>
 
 ## Build options
 
@@ -477,7 +475,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
   </tr>
 </table>
 
-<a name="which-build-is-right-for-you"><a>
+<a name="which-build-is-right-for-you"></a>
 
 ### Which build is right for you?
 
