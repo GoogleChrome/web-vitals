@@ -423,7 +423,7 @@ describe('onINP()', async function () {
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100&prerender=1', {
+    await navigateTo('/test/inp?click=150&prerender=1', {
       readyState: 'interactive',
     });
 
