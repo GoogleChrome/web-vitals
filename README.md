@@ -74,20 +74,8 @@ For details on the difference between the builds, see <a href="#which-build-is-r
 To load the "standard" build, import modules from the `web-vitals` package in your application code (as you would with any npm package and node-based build tool):
 
 ```js
-import('web-vitals')
-  .then(({onCLS, onINP, onLCP}) => {
-    onCLS(console.log);
-    onINP(console.log);
-    onLCP(console.log);
-  })
-  .catch((error) => {
-    console.error('Failed to load web-vitals library:', error);
-  });
+import {onLCP, onINP, onCLS} from 'web-vitals';
 ```
-
-<a name="dynamic-imports"></a>
-
-_Note that this code example uses a [dynamic import](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/import). This is recommended for importing third-party libraries which may have different browser support requirements that your application so that it can fail gracefully without affecting the rest of your code. The alternative is to transpile the code to your required browser support level, but be aware that [many bundlers exclude the `node_modules` for transpiling by default](https://philipwalton.com/articles/the-state-of-es5-on-the-web/). For brevity, the remainder of this README shows static imports._
 
 <a name="attribution-build"></a>
 
@@ -102,8 +90,8 @@ The "attribution" build is slightly larger than the "standard" build (by about 1
 To load the "attribution" build, change any `import` statements that reference `web-vitals` to `web-vitals/attribution`:
 
 ```diff
-- import('web-vitals').then({onCLS, onINP, onLCP}) => {
-+ import('web-vitals/attribution').then({onCLS, onINP, onLCP}) => {
+import {onLCP, onINP, onCLS} from 'web-vitals';
+import {onLCP, onINP, onCLS} from 'web-vitals/attribution';
 ```
 
 Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [metric](#metric) objects will contain an additional [`attribution`](#attribution) property.
@@ -274,9 +262,13 @@ The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://dev
 import {onCLS, onINP, onLCP} from 'web-vitals';
 
 function sendToAnalytics(metric) {
-  // Replace with whatever serialization method you prefer including
-  // whatever attributes you want to include.
-  const body = JSON.stringify({[metric.name]: metric.value});
+  const body = JSON.stringify({
+    name: metric.name,
+    value: metric.value,
+    id: metric.id,
+
+    // Include additional data as needed...
+  });
 
   // Use `navigator.sendBeacon()` to send the data, which supports
   // sending while the page is unloading.
