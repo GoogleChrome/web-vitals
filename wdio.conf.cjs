@@ -87,9 +87,6 @@ module.exports.config = {
         // Uncomment to test on Chrome Canary.
         // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
       };
-      capability['goog:loggingPrefs'] = {
-        browser: 'ALL', // this enables browser logs
-      };
     }
     if (browserName === 'firefox') {
       capability['moz:firefoxOptions'] = {
