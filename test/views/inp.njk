@@ -121,7 +121,7 @@
       console.log('INP:', inp);
 
       // Test sending the metric to an analytics endpoint.
-      beacon = navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
+      navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
     }, {
       reportAllChanges: self.__reportAllChanges,
       durationThreshold: self.__durationThreshold,

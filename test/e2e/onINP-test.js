@@ -296,8 +296,7 @@ describe('onINP()', async function () {
 
     await navigateTo('/test/inp?click=150');
 
-    // Wait until the library is loaded and the first paint occurs to ensure
-    // The 40ms event duration is set
+    // Wait until the library is loaded and the first paint occurs
     await webVitalsLoaded();
     await firstContentfulPaint();
 
@@ -774,6 +773,8 @@ describe('onINP()', async function () {
       // Click on the <h1>.
       const h1 = await $('h1');
       await h1.click();
+
+      await webVitalsLoaded();
 
       await stubVisibilityChange('visible');
       await beaconCountIs(1);
