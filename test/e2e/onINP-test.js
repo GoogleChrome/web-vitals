@@ -18,6 +18,7 @@ import assert from 'assert';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
+import {isCloseTo} from '../utils/isCloseTo.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
@@ -381,9 +382,22 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
     assert.strictEqual(inp2.rating, 'good');
-    assert(
-      containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
-    );
+    JSON.stringify(inp2.entries);
+    inp2.entries.forEach((entry) => {
+      console.log(entry.name, entry.target);
+    });
+    console.log(JSON.stringify(inp2.entries));
+    try {
+      assert(
+        containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+      );
+    } catch (err) {
+      inp2.entries.forEach((entry) => {
+        console.log(entry.name, entry.target);
+      });
+      console.log(JSON.stringify(inp2.entries));
+      throw err; // rethrow to ensure the test still fails
+    }
     assert(allEntriesPresentTogether(inp1.entries));
     assert(inp2.entries[0].startTime > inp1.entries[0].startTime);
     assert.strictEqual(inp2.navigationType, 'back-forward-cache');
@@ -614,14 +628,12 @@ describe('onINP()', async function () {
       );
       // Assert that the INP subpart durations adds up to the total duration
       // with a tolerance of 1 for rounding error issues
-      assert.ok(
-        Math.abs(
-          inp1.attribution.nextPaintTime -
-            inp1.attribution.interactionTime -
-            (inp1.attribution.inputDelay +
-              inp1.attribution.processingDuration +
-              inp1.attribution.presentationDelay),
-        ) <= 1,
+      isCloseTo(
+        inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
+        inp1.attribution.inputDelay +
+          inp1.attribution.processingDuration +
+          inp1.attribution.presentationDelay,
+        1,
       );
 
       // Assert that the INP subparts timestamps match the values in
@@ -632,27 +644,22 @@ describe('onINP()', async function () {
           return a.processingStart - b.processingStart;
         },
       );
-      assert.ok(
-        Math.abs(
-          inp1.attribution.interactionTime +
-            inp1.attribution.inputDelay -
-            sortedEntries1[0].processingStart,
-        ) <= 1,
+      isCloseTo(
+        inp1.attribution.interactionTime + inp1.attribution.inputDelay,
+        sortedEntries1[0].processingStart,
+        1,
       );
-      assert.ok(
-        Math.abs(
-          inp1.attribution.interactionTime +
-            inp1.attribution.inputDelay +
-            inp1.attribution.processingDuration -
-            sortedEntries1.at(-1).processingEnd,
-        ) <= 1,
+      isCloseTo(
+        inp1.attribution.interactionTime +
+          inp1.attribution.inputDelay +
+          inp1.attribution.processingDuration,
+        sortedEntries1.at(-1).processingEnd,
+        1,
       );
-      assert.ok(
-        Math.abs(
-          inp1.attribution.nextPaintTime -
-            inp1.attribution.presentationDelay -
-            sortedEntries1.at(-1).processingEnd,
-        ) <= 1,
+      isCloseTo(
+        inp1.attribution.nextPaintTime - inp1.attribution.presentationDelay,
+        sortedEntries1.at(-1).processingEnd,
+        1,
       );
 
       await clearBeacons();
@@ -949,14 +956,13 @@ describe('onINP()', async function () {
       assert(inp1.attribution.totalStyleAndLayoutDuration >= 0);
       assert(inp1.attribution.totalPaintDuration >= 0);
       assert(inp1.attribution.totalUnattributedDuration >= 0);
-      assert(
-        Math.abs(
-          inp1.value -
-            (inp1.attribution.totalScriptDuration +
-              inp1.attribution.totalStyleAndLayoutDuration +
-              inp1.attribution.totalPaintDuration +
-              inp1.attribution.totalUnattributedDuration),
-        ) < 0.1,
+      isCloseTo(
+        inp1.value,
+        inp1.attribution.totalScriptDuration +
+          inp1.attribution.totalStyleAndLayoutDuration +
+          inp1.attribution.totalPaintDuration +
+          inp1.attribution.totalUnattributedDuration,
+        0.1,
       );
     });
   });
