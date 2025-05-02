@@ -130,7 +130,6 @@ export const onINP = (
       po.observe({type: 'first-input', buffered: true});
 
       document.addEventListener('visibilitychange', () => {
-        console.log('Visibilty change. Emitting INP');
         if (document.visibilityState === 'hidden') {
           handleEntries(po.takeRecords() as INPMetric['entries']);
           report(true);
