@@ -785,7 +785,7 @@ describe('onINP()', async function () {
 
       await navigateTo(
         '/test/inp' +
-          '?attribution=1&reportAllChanges=1&click=100&delayResponse=2000',
+          '?attribution=1&reportAllChanges=1&click=150&delayResponse=2000',
       );
 
       // Wait a bit to ensure the page elements are available.
