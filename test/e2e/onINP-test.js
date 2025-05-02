@@ -590,7 +590,7 @@ describe('onINP()', async function () {
       );
       // Assert that the INP subpart durations adds up to the total duration
       // with a tolerance of 1 for rounding error issues
-      assert.equal(
+      assert.ok(
         Math.abs(
           inp1.attribution.nextPaintTime -
             inp1.attribution.interactionTime -
