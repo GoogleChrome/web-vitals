@@ -339,7 +339,6 @@ describe('onINP()', async function () {
     await waitUntilIdle();
 
     await stubForwardBack();
-
     await beaconCountIs(1);
 
     const [inp1] = await getBeacons();
@@ -368,7 +367,6 @@ describe('onINP()', async function () {
     await waitUntilIdle();
 
     await stubForwardBack();
-
     await beaconCountIs(1);
 
     const [inp2] = await getBeacons();
@@ -400,7 +398,6 @@ describe('onINP()', async function () {
     await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
-
     await beaconCountIs(1);
 
     const [inp3] = await getBeacons();
