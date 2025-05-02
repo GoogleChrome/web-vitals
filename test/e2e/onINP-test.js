@@ -45,13 +45,16 @@ describe('onINP()', async function () {
   it('reports the correct value on visibility hidden after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
+    await navigateTo('/test/inp?click=100', {readyState: 'interactive'});
+
     // Wait until the library is loaded
     await webVitalsLoaded();
 
-    await navigateTo('/test/inp?click=100', {readyState: 'interactive'});
-
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
 
     await stubVisibilityChange('hidden');
 
@@ -213,6 +216,9 @@ describe('onINP()', async function () {
 
     await setBlockingTime('pointerdown', 0);
 
+    // Ensure the interaction completes.
+    await nextFrame();
+
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -230,6 +236,9 @@ describe('onINP()', async function () {
       count++;
     }
 
+    // Ensure the interaction completes.
+    await nextFrame();
+
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -246,6 +255,9 @@ describe('onINP()', async function () {
       await h1.click(); // Use .click() because it's faster.
       count++;
     }
+
+    // Ensure the interaction completes.
+    await nextFrame();
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -409,6 +421,9 @@ describe('onINP()', async function () {
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
+    // Ensure the interaction completes.
+    await nextFrame();
+
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
@@ -433,6 +448,9 @@ describe('onINP()', async function () {
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
 
     await stubVisibilityChange('hidden');
 
@@ -702,6 +720,9 @@ describe('onINP()', async function () {
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
 
+      // Ensure the interaction completes.
+      await nextFrame();
+
       await stubVisibilityChange('hidden');
 
       await beaconCountIs(1);
@@ -819,6 +840,9 @@ describe('onINP()', async function () {
 
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
+
+      // Ensure the interaction completes.
+      await nextFrame();
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
