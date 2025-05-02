@@ -114,25 +114,23 @@
 
   <script type="module">
     // Overrides console to get more info
-    await browser.execute(() => {
-      window._logMessages = [];
-      const originalLog = console.log;
-      const originalWarn = console.warn;
-      const originalError = console.error;
+    window._logMessages = [];
+    const originalLog = console.log;
+    const originalWarn = console.warn;
+    const originalError = console.error;
 
-      console.log = (...args) => {
-        window._logMessages.push({level: 'log', message: args.join(' ')});
-        originalLog(...args);
-      };
-      console.warn = (...args) => {
-        window._logMessages.push({level: 'warn', message: args.join(' ')});
-        originalWarn(...args);
-      };
-      console.error = (...args) => {
-        window._logMessages.push({level: 'error', message: args.join(' ')});
-        originalError(...args);
-      };
-    });
+    console.log = (...args) => {
+      window._logMessages.push({level: 'log', message: args.join(' ')});
+      originalLog(...args);
+    };
+    console.warn = (...args) => {
+      window._logMessages.push({level: 'warn', message: args.join(' ')});
+      originalWarn(...args);
+    };
+    console.error = (...args) => {
+      window._logMessages.push({level: 'error', message: args.join(' ')});
+      originalError(...args);
+    };
   </script>
   <script type="module">
     const {onINP} = await __testImport('{{ modulePath }}');
