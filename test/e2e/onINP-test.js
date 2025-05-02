@@ -45,6 +45,9 @@ describe('onINP()', async function () {
   it('reports the correct value on visibility hidden after interactions (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
     await navigateTo('/test/inp?click=100', {readyState: 'interactive'});
 
     const h1 = await $('h1');
@@ -102,6 +105,9 @@ describe('onINP()', async function () {
 
     // Wait until the library is loaded
     await webVitalsLoaded();
+
+    // Ensure the interaction completes.
+    await nextFrame();
 
     await stubVisibilityChange('hidden');
 
