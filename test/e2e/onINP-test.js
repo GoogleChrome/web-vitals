@@ -23,6 +23,7 @@ import {navigateTo} from '../utils/navigateTo.js';
 import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {waitUntilIdle} from '../utils/waitUntilIdle.js';
 import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 const ROUNDING_ERROR = 8;
@@ -56,6 +57,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -112,6 +115,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -219,6 +224,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -239,6 +246,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -259,6 +268,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -324,6 +335,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubForwardBack();
 
@@ -351,6 +364,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubForwardBack();
 
@@ -381,6 +396,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -427,6 +444,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -455,6 +474,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -550,8 +571,10 @@ describe('onINP()', async function () {
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
 
-      // Wait until a frame so INP can be counted.
+      // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       await stubVisibilityChange('hidden');
 
@@ -634,8 +657,10 @@ describe('onINP()', async function () {
       await textarea.click();
       await browser.keys(['x']);
 
-      // Wait a bit to ensure the click event has time to dispatch.
+      // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
@@ -719,6 +744,8 @@ describe('onINP()', async function () {
 
       // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       await stubVisibilityChange('hidden');
 
@@ -840,6 +867,8 @@ describe('onINP()', async function () {
 
       // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
@@ -863,7 +892,10 @@ describe('onINP()', async function () {
       const button = await $('#reset');
       await simulateUserLikeClick(button);
 
+      // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       // Remove the element after the interaction.
       await browser.execute('document.querySelector("#reset").remove()');
@@ -888,7 +920,10 @@ describe('onINP()', async function () {
       const textarea = await $('#textarea');
       await textarea.click();
 
+      // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
