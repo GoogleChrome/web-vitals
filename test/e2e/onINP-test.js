@@ -91,7 +91,7 @@ describe('onINP()', async function () {
   it('reports the correct value when script is loaded late (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?pointerup=150&click=150&loadAfterInput=1');
+    await navigateTo('/test/inp?click=150&loadAfterInput=1');
 
     // Wait until the first contentful paint to make sure the
     // heading is there.
@@ -99,6 +99,16 @@ describe('onINP()', async function () {
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    // Wait a bit to ensure the PerformanceObserver logs to the console.
+    await browser.pause(1000);
+
+    const logs = await browser.getLogs('browser');
+
+    console.log('Browser logs:');
+    logs.forEach((log) => {
+      console.log(`[${log.level}] ${log.message}`);
+    });
 
     // Wait until the library is loaded
     await webVitalsLoaded();
