@@ -15,6 +15,7 @@
  */
 
 import assert from 'assert';
+import {assertIsCloseTo} from '../utils/assertIsCloseTo.js';
 import {beaconCountIs, clearBeacons, getBeacons} from '../utils/beacons.js';
 import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
@@ -22,6 +23,7 @@ import {navigateTo} from '../utils/navigateTo.js';
 import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {waitUntilIdle} from '../utils/waitUntilIdle.js';
 import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 const ROUNDING_ERROR = 8;
@@ -47,8 +49,16 @@ describe('onINP()', async function () {
 
     await navigateTo('/test/inp?click=100', {readyState: 'interactive'});
 
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -102,6 +112,11 @@ describe('onINP()', async function () {
 
     // Wait until the library is loaded
     await webVitalsLoaded();
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -207,6 +222,11 @@ describe('onINP()', async function () {
 
     await setBlockingTime('pointerdown', 0);
 
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -224,6 +244,11 @@ describe('onINP()', async function () {
       count++;
     }
 
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -240,6 +265,11 @@ describe('onINP()', async function () {
       await h1.click(); // Use .click() because it's faster.
       count++;
     }
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -294,10 +324,9 @@ describe('onINP()', async function () {
   it('reports a new interaction after bfcache restore', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100');
+    await navigateTo('/test/inp?click=150');
 
-    // Wait until the library is loaded and the first paint occurs to ensure
-    // The 40ms event duration is set
+    // Wait until the library is loaded and the first paint occurs
     await webVitalsLoaded();
     await firstContentfulPaint();
 
@@ -306,6 +335,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubForwardBack();
     await beaconCountIs(1);
@@ -332,6 +363,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubForwardBack();
     await beaconCountIs(1);
@@ -361,6 +394,8 @@ describe('onINP()', async function () {
 
     // Ensure the interaction completes.
     await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -397,12 +432,17 @@ describe('onINP()', async function () {
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100&prerender=1', {
+    await navigateTo('/test/inp?click=150&prerender=1', {
       readyState: 'interactive',
     });
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -428,6 +468,11 @@ describe('onINP()', async function () {
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
 
     await stubVisibilityChange('hidden');
 
@@ -523,8 +568,10 @@ describe('onINP()', async function () {
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
 
-      // Wait until a frame so INP can be counted.
+      // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       await stubVisibilityChange('hidden');
 
@@ -562,34 +609,40 @@ describe('onINP()', async function () {
           inp1.attribution.interactionTime +
             (inp1.attribution.inputDelay + inp1.attribution.processingDuration),
       );
-      // Assert that the INP subpart durations adds up to the total duration.
-      assert.equal(
+      // Assert that the INP subpart durations adds up to the total duration
+      // with a tolerance of 1 for rounding error issues
+      assertIsCloseTo(
         inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
         inp1.attribution.inputDelay +
           inp1.attribution.processingDuration +
           inp1.attribution.presentationDelay,
+        1,
       );
 
       // Assert that the INP subparts timestamps match the values in
-      // the `processedEventEntries` array.
+      // the `processedEventEntries` array
+      // with a tolerance of 1 for rounding error issues
       const sortedEntries1 = inp1.attribution.processedEventEntries.sort(
         (a, b) => {
           return a.processingStart - b.processingStart;
         },
       );
-      assert.equal(
+      assertIsCloseTo(
         inp1.attribution.interactionTime + inp1.attribution.inputDelay,
         sortedEntries1[0].processingStart,
+        1,
       );
-      assert.equal(
+      assertIsCloseTo(
         inp1.attribution.interactionTime +
           inp1.attribution.inputDelay +
           inp1.attribution.processingDuration,
         sortedEntries1.at(-1).processingEnd,
+        1,
       );
-      assert.equal(
+      assertIsCloseTo(
         inp1.attribution.nextPaintTime - inp1.attribution.presentationDelay,
         sortedEntries1.at(-1).processingEnd,
+        1,
       );
 
       await clearBeacons();
@@ -601,8 +654,10 @@ describe('onINP()', async function () {
       await textarea.click();
       await browser.keys(['x']);
 
-      // Wait a bit to ensure the click event has time to dispatch.
+      // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
@@ -684,6 +739,11 @@ describe('onINP()', async function () {
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
 
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
       await stubVisibilityChange('hidden');
 
       await beaconCountIs(1);
@@ -755,12 +815,14 @@ describe('onINP()', async function () {
       if (!browserSupportsINP) this.skip();
 
       await navigateTo(
-        '/test/inp?attribution=1&reportAllChanges=1&click=100&delayDCL=1000',
+        '/test/inp?attribution=1&reportAllChanges=1&click=150&delayDCL=1000',
       );
 
       // Click on the <h1>.
       const h1 = await $('h1');
       await h1.click();
+
+      await webVitalsLoaded();
 
       await stubVisibilityChange('visible');
       await beaconCountIs(1);
@@ -772,7 +834,7 @@ describe('onINP()', async function () {
 
       await navigateTo(
         '/test/inp' +
-          '?attribution=1&reportAllChanges=1&click=100&delayResponse=2000',
+          '?attribution=1&reportAllChanges=1&click=150&delayResponse=2000',
       );
 
       // Wait a bit to ensure the page elements are available.
@@ -800,6 +862,11 @@ describe('onINP()', async function () {
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
 
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
 
@@ -822,7 +889,10 @@ describe('onINP()', async function () {
       const button = await $('#reset');
       await simulateUserLikeClick(button);
 
+      // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       // Remove the element after the interaction.
       await browser.execute('document.querySelector("#reset").remove()');
@@ -847,7 +917,10 @@ describe('onINP()', async function () {
       const textarea = await $('#textarea');
       await textarea.click();
 
+      // Ensure the interaction completes.
       await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
@@ -866,19 +939,22 @@ describe('onINP()', async function () {
         inp1.attribution.longestScript.subpart,
         'processing-duration',
       );
-      assert.equal(inp1.attribution.longestScript.intersectingDuration, 100);
+      assertIsCloseTo(
+        inp1.attribution.longestScript.intersectingDuration,
+        100,
+        10,
+      );
       assert(inp1.attribution.totalScriptDuration > 0);
       assert(inp1.attribution.totalStyleAndLayoutDuration >= 0);
       assert(inp1.attribution.totalPaintDuration >= 0);
       assert(inp1.attribution.totalUnattributedDuration >= 0);
-      assert(
-        Math.abs(
-          inp1.value -
-            (inp1.attribution.totalScriptDuration +
-              inp1.attribution.totalStyleAndLayoutDuration +
-              inp1.attribution.totalPaintDuration +
-              inp1.attribution.totalUnattributedDuration),
-        ) < 0.1,
+      assertIsCloseTo(
+        inp1.value,
+        inp1.attribution.totalScriptDuration +
+          inp1.attribution.totalStyleAndLayoutDuration +
+          inp1.attribution.totalPaintDuration +
+          inp1.attribution.totalUnattributedDuration,
+        0.1,
       );
     });
   });

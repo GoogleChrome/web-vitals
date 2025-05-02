@@ -85,7 +85,7 @@ module.exports.config = {
         // Can remove next line after puppeteer 21.2.1 lands
         args: ['disable-search-engine-choice-screen'],
         // Uncomment to test on Chrome Canary.
-        // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary'
+        // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
       };
     }
     if (browserName === 'firefox') {
@@ -97,7 +97,7 @@ module.exports.config = {
         },
         // Uncomment to test on Firefox Nightly (now with INP support)
         // CI uses Nightly but local testing will use production without this
-        // binary: '/Applications/Firefox Nightly.app/Contents/MacOS/firefox'
+        // binary: '/Applications/Firefox Nightly.app/Contents/MacOS/firefox',
       };
     }
     return capability;
