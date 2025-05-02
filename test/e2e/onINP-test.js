@@ -93,26 +93,6 @@ describe('onINP()', async function () {
 
     await navigateTo('/test/inp?click=150&loadAfterInput=1');
 
-    await browser.execute(() => {
-      window._logMessages = [];
-      const originalLog = console.log;
-      const originalWarn = console.warn;
-      const originalError = console.error;
-
-      console.log = (...args) => {
-        window._logMessages.push({level: 'log', message: args.join(' ')});
-        originalLog(...args);
-      };
-      console.warn = (...args) => {
-        window._logMessages.push({level: 'warn', message: args.join(' ')});
-        originalWarn(...args);
-      };
-      console.error = (...args) => {
-        window._logMessages.push({level: 'error', message: args.join(' ')});
-        originalError(...args);
-      };
-    });
-
     // Wait until the first contentful paint to make sure the
     // heading is there.
     await firstContentfulPaint();
@@ -124,12 +104,6 @@ describe('onINP()', async function () {
     await webVitalsLoaded();
 
     await stubVisibilityChange('hidden');
-
-    const logs = await browser.execute(() => window._logMessages || []);
-    console.log('Browser logs:');
-    logs.forEach((log) => {
-      console.log(`[${log.level}] ${log.message}`);
-    });
 
     await beaconCountIs(1);
 
