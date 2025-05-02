@@ -17,7 +17,7 @@ All of the [builds](README#build-options) in `web-vitals` v5 use only [Baseline 
 
 If your site needs to support legacy browsers, you can still use the `web-vitals` library without causing errors in those browsers by adhering to the following recommendations:
 
-We recommend loading the `web-vitals` library in a separate script file from your site's main application bundle(s), either via `<script type="module">` and `import` statements or via your bundler's code splitting feature (for example, [rollup](https://rollupjs.org/tutorial/#code-splitting), [escbuild](https://esbuild.github.io/api/#splitting), and [webpack](https://webpack.js.org/guides/code-splitting/)). This ensures that any errors encountered while loading the library do not impact other code on your site.
+We recommend loading the `web-vitals` library in a separate script file from your site's main application bundle(s), either via `<script type="module">` and `import` statements or via your bundler's code splitting feature (for example, [rollup](https://rollupjs.org/tutorial/#code-splitting), [esbuild](https://esbuild.github.io/api/#splitting), and [webpack](https://webpack.js.org/guides/code-splitting/)). This ensures that any errors encountered while loading the library do not impact other code on your site.
 
 If you do choose to include the `web-vitals` library code in your main application bundle—and you also need to support very old browsers—it's critical that you configure your bundler to transpile the `web-vitals` code along with the rest of you application JavaScript. This is important because most bundlers do not transpile `node_modules` by default.
 
