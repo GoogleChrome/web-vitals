@@ -327,12 +327,6 @@ describe('onINP()', async function () {
 
     await stubForwardBack();
 
-    let logs = await browser.execute(() => window._logMessages || []);
-    console.log('Browser logs:');
-    logs.forEach((log) => {
-      console.log(`[${log.level}] ${log.message}`);
-    });
-
     await beaconCountIs(1);
 
     const [inp1] = await getBeacons();
@@ -360,18 +354,6 @@ describe('onINP()', async function () {
 
     await stubForwardBack();
 
-    logs = await browser.execute(() => window._logMessages || []);
-    console.log('Browser logs:');
-    logs.forEach((log) => {
-      console.log(`[${log.level}] ${log.message}`);
-    });
-
-    logs = await browser.execute(() => window._logMessages || []);
-    console.log('Browser logs:');
-    logs.forEach((log) => {
-      console.log(`[${log.level}] ${log.message}`);
-    });
-
     await beaconCountIs(1);
 
     const [inp2] = await getBeacons();
@@ -382,22 +364,9 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
     assert.strictEqual(inp2.rating, 'good');
-    JSON.stringify(inp2.entries);
-    inp2.entries.forEach((entry) => {
-      console.log(entry.name, entry.target);
-    });
-    console.log(JSON.stringify(inp2.entries));
-    try {
-      assert(
-        containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
-      );
-    } catch (err) {
-      inp2.entries.forEach((entry) => {
-        console.log(entry.name, entry.target);
-      });
-      console.log(JSON.stringify(inp2.entries));
-      throw err; // rethrow to ensure the test still fails
-    }
+    assert(
+      containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+    );
     assert(allEntriesPresentTogether(inp1.entries));
     assert(inp2.entries[0].startTime > inp1.entries[0].startTime);
     assert.strictEqual(inp2.navigationType, 'back-forward-cache');
@@ -414,12 +383,6 @@ describe('onINP()', async function () {
     await nextFrame();
 
     await stubVisibilityChange('hidden');
-
-    logs = await browser.execute(() => window._logMessages || []);
-    console.log('Browser logs:');
-    logs.forEach((log) => {
-      console.log(`[${log.level}] ${log.message}`);
-    });
 
     await beaconCountIs(1);
 
@@ -673,12 +636,6 @@ describe('onINP()', async function () {
 
       // Wait a bit to ensure the click event has time to dispatch.
       await nextFrame();
-
-      const logs = await browser.execute(() => window._logMessages || []);
-      console.log('Browser logs:');
-      logs.forEach((log) => {
-        console.log(`[${log.level}] ${log.message}`);
-      });
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
