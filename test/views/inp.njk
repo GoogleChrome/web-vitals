@@ -124,6 +124,8 @@
     // Register the observer for events
     observer.observe({ type: 'event', buffered: true });
     observer.observe({ type: 'first-input', buffered: true });
+
+    addEventListener("visibilitychange", (event) => {console.log('visibilitychange event');});
   </script>
   <script type="module">
     const {onINP} = await __testImport('{{ modulePath }}');

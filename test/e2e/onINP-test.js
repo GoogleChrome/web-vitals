@@ -120,20 +120,19 @@ describe('onINP()', async function () {
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
-    // Wait a bit to ensure the PerformanceObserver logs to the console.
-    await browser.pause(1000);
-
-    const logs = await browser.execute(() => window._logMessages || []);
-
-    console.log('Browser logs:');
-    logs.forEach((log) => {
-      console.log(`[${log.level}] ${log.message}`);
-    });
-
     // Wait until the library is loaded
     await webVitalsLoaded();
 
     await stubVisibilityChange('hidden');
+
+    // Wait a bit to ensure the PerformanceObserver logs to the console.
+    await browser.pause(1000);
+
+    const logs = await browser.execute(() => window._logMessages || []);
+    console.log('Browser logs:');
+    logs.forEach((log) => {
+      console.log(`[${log.level}] ${log.message}`);
+    });
 
     await beaconCountIs(1);
 
