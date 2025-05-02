@@ -325,6 +325,13 @@ describe('onINP()', async function () {
     await nextFrame();
 
     await stubForwardBack();
+
+    const logs = await browser.execute(() => window._logMessages || []);
+    console.log('Browser logs:');
+    logs.forEach((log) => {
+      console.log(`[${log.level}] ${log.message}`);
+    });
+
     await beaconCountIs(1);
 
     const [inp1] = await getBeacons();
@@ -639,6 +646,12 @@ describe('onINP()', async function () {
 
       // Wait a bit to ensure the click event has time to dispatch.
       await nextFrame();
+
+      const logs = await browser.execute(() => window._logMessages || []);
+      console.log('Browser logs:');
+      logs.forEach((log) => {
+        console.log(`[${log.level}] ${log.message}`);
+      });
 
       await stubVisibilityChange('hidden');
       await beaconCountIs(1);
