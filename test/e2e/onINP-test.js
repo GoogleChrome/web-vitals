@@ -594,9 +594,9 @@ describe('onINP()', async function () {
         Math.abs(
           inp1.attribution.nextPaintTime -
             inp1.attribution.interactionTime -
-            inp1.attribution.inputDelay +
-            inp1.attribution.processingDuration +
-            inp1.attribution.presentationDelay,
+            (inp1.attribution.inputDelay +
+              inp1.attribution.processingDuration +
+              inp1.attribution.presentationDelay),
         ) <= 1,
       );
 
