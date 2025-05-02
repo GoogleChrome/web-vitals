@@ -365,6 +365,12 @@ describe('onINP()', async function () {
       console.log(`[${log.level}] ${log.message}`);
     });
 
+    logs = await browser.execute(() => window._logMessages || []);
+    console.log('Browser logs:');
+    logs.forEach((log) => {
+      console.log(`[${log.level}] ${log.message}`);
+    });
+
     await beaconCountIs(1);
 
     const [inp2] = await getBeacons();
