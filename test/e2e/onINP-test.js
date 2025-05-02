@@ -326,7 +326,7 @@ describe('onINP()', async function () {
 
     await stubForwardBack();
 
-    const logs = await browser.execute(() => window._logMessages || []);
+    let logs = await browser.execute(() => window._logMessages || []);
     console.log('Browser logs:');
     logs.forEach((log) => {
       console.log(`[${log.level}] ${log.message}`);
@@ -358,6 +358,13 @@ describe('onINP()', async function () {
     await nextFrame();
 
     await stubForwardBack();
+
+    logs = await browser.execute(() => window._logMessages || []);
+    console.log('Browser logs:');
+    logs.forEach((log) => {
+      console.log(`[${log.level}] ${log.message}`);
+    });
+
     await beaconCountIs(1);
 
     const [inp2] = await getBeacons();
@@ -387,6 +394,13 @@ describe('onINP()', async function () {
     await nextFrame();
 
     await stubVisibilityChange('hidden');
+
+    logs = await browser.execute(() => window._logMessages || []);
+    console.log('Browser logs:');
+    logs.forEach((log) => {
+      console.log(`[${log.level}] ${log.message}`);
+    });
+
     await beaconCountIs(1);
 
     const [inp3] = await getBeacons();
