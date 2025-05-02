@@ -403,9 +403,6 @@ onINP(addToQueue);
 onLCP(addToQueue);
 
 // Report all available metrics whenever the page is backgrounded or unloaded.
-// NOTE: do not use `document.addEventListener('visibilitychange'..)` since
-// web-vitals itself will report on that event, and you want to include those
-// entires so wait until this bubbles up to window.
 addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     flushQueue();
