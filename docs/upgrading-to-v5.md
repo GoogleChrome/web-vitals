@@ -26,6 +26,8 @@ If you do choose to include the `web-vitals` library code in your main applicati
 #### `INPAttribution`, `LCPAttribution`, and `CLSAttribution`
 
 - **Changed** to sort the classes that appear in attribution selectors to reduce cardinality. While not a breaking change in the API, this may result in a short term difference in reports based on the selector during the change over from v4 to v5, but longer term should result in few selectors that are more easily grouped in reporting. ([#518](https://github.com/GoogleChrome/web-vitals/pull/518))
+- **Changed** `LCPAttribution.element` to `LCPAttribution.target` as part of ([#585](https://github.com/GoogleChrome/web-vitals/pull/585)) for consistency.
+- **Removed** `INPAttribution.interactionTargetElement` by default. If needed this can be generated as part of support for generating custom targets in the attribution build ([#585](https://github.com/GoogleChrome/web-vitals/pull/585))
 
 ## 🚀 New features
 
