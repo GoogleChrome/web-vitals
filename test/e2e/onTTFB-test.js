@@ -151,14 +151,21 @@ describe('onTTFB()', async function () {
   it('reports the correct value when run while prerendering', async function () {
     if (!browserSupportsPrerender) this.skip();
 
-    // Use 500 so prerendering finishes before load but after the module runs.
-    await navigateTo('/test/ttfb?prerender=500&imgDelay=1000');
+    await navigateTo('/test/ttfb?prerender=1&imgDelay=1000');
+
+    await getTTFBBeacon();
+    await clearBeacons();
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
 
     const ttfb = await getTTFBBeacon();
 
-    // Assert that prerendering finished after responseStart and before load.
+    // Assert that prerendering finished after responseStart.
     assert(ttfb.entries[0].activationStart >= ttfb.entries[0].responseStart);
-    assert(ttfb.entries[0].activationStart <= ttfb.entries[0].loadEventEnd);
 
     assert(ttfb.value >= 0);
     assert.strictEqual(ttfb.value, ttfb.delta);

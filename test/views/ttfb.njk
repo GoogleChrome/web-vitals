@@ -23,7 +23,7 @@
   <p>Text below the image</p>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
-  <p><a id="prerender-link" href="/test/ttfb{% if attribution %}?attribution=1{% endif %}">Prerender link</a></p>
+  <p><a id="prerender-link" href="/test/ttfb{% if imgDelay %}?imgDelay={{ imgDelay }}{% endif %}">Prerender link</a></p>
 
   <script>
     // Set the blocking values based on query params if present.
@@ -71,7 +71,7 @@
   {
     "prerender": [
       {
-        "urls": ["/test/ttfb{% if attribution %}?attribution=1{% endif %}"]
+        "urls": ["/test/ttfb{% if imgDelay %}?imgDelay={{ imgDelay }}{% endif %}"]
       }
     ]
   }

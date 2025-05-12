@@ -730,17 +730,18 @@ describe('onCLS()', async function () {
 
     await navigateTo('/test/cls?prerender=1');
 
-    await beaconCountIs(1);
-    await clearBeacons();
-
     // Wait a bit to allow the prerender to happen
     await browser.pause(1000);
 
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();
 
+    await beaconCountIs(1);
+    await clearBeacons();
+
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();
+
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);

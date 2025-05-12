@@ -445,8 +445,6 @@ describe('onINP()', async function () {
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();
 
-    await beaconCountIs(1);
-
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 

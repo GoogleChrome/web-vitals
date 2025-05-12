@@ -154,8 +154,8 @@ describe('onLCP()', async function () {
 
     await navigateTo('/test/lcp?prerender=1');
 
-    await beaconCountIs(1);
-    await clearBeacons();
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
 
     // Wait a bit to allow the prerender to happen
     await browser.pause(1000);
@@ -163,7 +163,9 @@ describe('onLCP()', async function () {
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();
 
+    // Check the beacon has come in
     await beaconCountIs(1);
+    await clearBeacons();
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
