@@ -59,10 +59,12 @@ describe('onTTFB()', async function () {
   this.retries(2);
 
   let browserSupportsPrerender;
-  beforeEach(async function () {
+  before(async function () {
     browserSupportsPrerender = await browser.execute(() => {
       return 'onprerenderingchange' in document;
     });
+  });
+  beforeEach(async function () {
     // In Safari when navigating to 'about:blank' between tests the
     // Navigation Timing data is consistently negative, so the tests fail.
     if (browser.capabilities.browserName !== 'Safari') {

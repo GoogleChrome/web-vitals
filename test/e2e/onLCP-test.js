@@ -38,7 +38,9 @@ describe('onLCP()', async function () {
     browserSupportsPrerender = await browser.execute(() => {
       return 'onprerenderingchange' in document;
     });
+  });
 
+  beforeEach(async function () {
     await navigateTo('about:blank');
     await clearBeacons();
   });
@@ -129,7 +131,12 @@ describe('onLCP()', async function () {
     await imagesPainted();
 
     await beaconCountIs(2);
-    const [lcp1, lcp2] = await getBeacons();
+    const beacons = await getBeacons();
+    // Firefox sometimes sents <p>, then <h1>
+    // so grab last two
+    assert(beacons.length >= 2);
+    const lcp1 = beacons.at(-2);
+    const lcp2 = beacons.at(-1);
 
     assert(lcp1.value > 0);
     assert(lcp1.id.match(/^v5-\d+-\d+$/));
@@ -157,15 +164,24 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
+    // Wait until web-vitals is loaded
+    await webVitalsLoaded();
+
+    // Click on the h1.
+    const h1 = await $('h1');
+    await h1.click();
+
+    await beaconCountIs(1);
+    await clearBeacons();
+
     // Wait a bit to allow the prerender to happen
     await browser.pause(1000);
 
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();
 
-    // Check the beacon has come in
-    await beaconCountIs(1);
-    await clearBeacons();
+    // Wait a bit for the navigation to start
+    await browser.pause(500);
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
@@ -183,6 +199,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp.rating, 'good');
     assert.strictEqual(lcp.entries[0].startTime - activationStart, lcp.value);
     assert.strictEqual(lcp.navigationType, 'prerender');
+    await clearBeacons();
   });
 
   it('does not report if the browser does not support LCP (including bfcache restores)', async function () {
@@ -223,9 +240,19 @@ describe('onLCP()', async function () {
   it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateTo('/test/lcp?hidden=1', {readyState: 'interactive'});
-
-    await stubVisibilityChange('visible');
+    // Can't mock visibility-state entries so load in a new blank tab:
+    const originalHandle = await browser.getWindowHandle();
+    await browser.execute(
+      "window.open('http://localhost:9090/test/lcp', '_blank')",
+    );
+    // immediately switch back before page load starts—annoyingly you can't
+    // open in a hidden tab as ChromeDriver foregrounds it, but this works.
+    await browser.switchToWindow(originalHandle);
+    await browser.pause(500);
+    // Then switch to the new tab to do our tests
+    const handles = await browser.getWindowHandles();
+    const newTabHandle = handles.find((h) => h !== originalHandle);
+    await browser.switchToWindow(newTabHandle);
 
     // Click on the h1.
     const h1 = await $('h1');
@@ -236,11 +263,47 @@ describe('onLCP()', async function () {
 
     const beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
+
+    // Reset everything
+    await browser.closeWindow();
+    await browser.switchToWindow(originalHandle);
   });
 
-  it('does not report if the document was hidden before library loaded', async function () {
+  it('does not report if hidden before library loaded and visibilitystate supported', async function () {
     if (!browserSupportsLCP) this.skip();
     if (!browserSupportsVisibilityState) this.skip();
+
+    // Don't load the library until we click
+    await navigateTo('/test/lcp?loadAfterInput=1&imgDelay=500');
+
+    // Can't mock visibility-state entries so switch to a blank tab and back
+    // to emit real entries:
+    const handle1 = await browser.getWindowHandle();
+    await browser.newWindow('https://example.com');
+    await browser.pause(500);
+    await browser.closeWindow();
+    await browser.switchToWindow(handle1);
+
+    // Click on the h1 to load the library
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait until web-vitals is loaded
+    await webVitalsLoaded();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    // Click on the h1 again now it's loaded to trigger LCP
+    await h1.click();
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('does report if hidden before library loaded and visibilitystate not supported', async function () {
+    if (!browserSupportsLCP) this.skip();
+    if (browserSupportsVisibilityState) this.skip();
 
     // Don't load the library until we click
     await navigateTo('/test/lcp?loadAfterInput=1');
@@ -260,14 +323,14 @@ describe('onLCP()', async function () {
     // Wait until web-vitals is loaded
     await webVitalsLoaded();
 
-    // Click on the h1 again not it's loaded to trigger LCP
+    // Click on the h1 again now it's loaded to trigger LCP
     await h1.click();
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
 
-    const beacons = await getBeacons();
-    assert.strictEqual(beacons.length, 0);
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
   });
 
   it('does not report if the document changes to hidden before the first render', async function () {
@@ -333,11 +396,7 @@ describe('onLCP()', async function () {
     const h1 = await $('h1');
     await h1.click();
 
-    // Wait a bit to ensure no additional beacons were sent.
-    await browser.pause(1000);
-
     await beaconCountIs(1);
-
     const [lcp1] = await getBeacons();
 
     assert(lcp1.value > 0);
@@ -355,7 +414,9 @@ describe('onLCP()', async function () {
     await navigateTo('/test/lcp?reportAllChanges=1&imgDelay=0&imgHidden=1');
 
     await beaconCountIs(1);
-    const [lcp] = await getBeacons();
+    // Firefox sometimes sends a <p> and then <h1> beacon, so grab last one
+    let beacons = await getBeacons();
+    const lcp = beacons.at(-1);
 
     assert(lcp.value > 0);
     assert.strictEqual(lcp.name, 'LCP');
@@ -376,7 +437,7 @@ describe('onLCP()', async function () {
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
 
-    const beacons = await getBeacons();
+    beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
   });
 
@@ -426,7 +487,19 @@ describe('onLCP()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateTo('/test/lcp?hidden=1', {readyState: 'interactive'});
+    // Can't mock visibility-state entries so load in a new blank tab:
+    const originalHandle = await browser.getWindowHandle();
+    await browser.execute(
+      "window.open('http://localhost:9090/test/lcp', '_blank')",
+    );
+    // immediately switch back before page load starts—annoyingly you can't
+    // open in a hidden tab as ChromeDriver foregrounds it, but this works.
+    await browser.switchToWindow(originalHandle);
+    await browser.pause(500);
+    // Then switch to the new tab to do our tests
+    const handles = await browser.getWindowHandles();
+    const newTabHandle = handles.find((h) => h !== originalHandle);
+    await browser.switchToWindow(newTabHandle);
 
     await stubVisibilityChange('visible');
 
@@ -466,6 +539,10 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp2.rating, 'good');
     assert.strictEqual(lcp2.entries.length, 0);
     assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
+
+    // Reset everything
+    await browser.closeWindow();
+    await browser.switchToWindow(originalHandle);
   });
 
   it('reports restore as nav type for wasDiscarded', async function () {
@@ -669,6 +746,13 @@ describe('onLCP()', async function () {
 
       await navigateTo('/test/lcp?attribution=1&prerender=1');
 
+      // Wait until web-vitals is loaded
+      await webVitalsLoaded();
+
+      // Click on the h1.
+      const h1 = await $('h1');
+      await h1.click();
+
       await beaconCountIs(1);
       await clearBeacons();
 
@@ -678,7 +762,8 @@ describe('onLCP()', async function () {
       const prerenderLink = await $('#prerender-link');
       await prerenderLink.click();
 
-      await beaconCountIs(1);
+      // Wait a bit for the navigation to start
+      await browser.pause(500);
 
       // Wait until all images are loaded and fully rendered.
       await imagesPainted();
@@ -837,7 +922,11 @@ const assertStandardReportsAreCorrect = (beacons) => {
 };
 
 const assertFullReportsAreCorrect = (beacons) => {
-  const [lcp1, lcp2] = beacons;
+  // Firefox sometimes sents <p>, then <h1>
+  // so grab last two
+  assert(beacons.length >= 2);
+  const lcp1 = beacons.at(-2);
+  const lcp2 = beacons.at(-1);
 
   assert(lcp1.value < 500); // Less than the image load delay.
   assert(lcp1.id.match(/^v5-\d+-\d+$/));
