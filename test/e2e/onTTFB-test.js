@@ -130,6 +130,15 @@ describe('onTTFB()', async function () {
 
     await navigateTo('/test/ttfb?prerender=1');
 
+    await getTTFBBeacon();
+    await clearBeacons();
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
+
     const ttfb = await getTTFBBeacon();
 
     assert(ttfb.value >= 0);
@@ -331,6 +340,8 @@ describe('onTTFB()', async function () {
     });
 
     it('accounts for time prerendering the page', async function () {
+      if (!browserSupportsPrerender) this.skip();
+
       await navigateTo('/test/ttfb?attribution=1&prerender=1');
 
       const ttfb = await getTTFBBeacon();

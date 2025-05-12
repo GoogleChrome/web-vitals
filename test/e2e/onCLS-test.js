@@ -724,14 +724,14 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
   });
 
-  it('reports prerender as nav type for prerender', async function () {
+  it('reports excludes shifts that happen in prerender state', async function () {
     if (!browserSupportsCLS) this.skip();
     if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/cls?prerender=1');
 
-    // Wait a bit to allow the prerender to happen
-    await browser.pause(1000);
+    // Wait a bit to allow the prerender to happen and first shift to report
+    await browser.pause(2000);
 
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();
@@ -741,18 +741,17 @@ describe('onCLS()', async function () {
 
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();
-
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
     const [cls] = await getBeacons();
 
-    assert(cls.value > 0);
+    assert.strictEqual(cls.value, 0);
     assert(cls.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.rating, 'good');
-    assert.strictEqual(cls.entries.length, 2);
+    assert.strictEqual(cls.entries.length, 0);
     assert.strictEqual(cls.navigationType, 'prerender');
   });
 
