@@ -26,8 +26,12 @@ describe('onFCP()', async function () {
   this.retries(2);
 
   let browserSupportsFCP;
+  let browserSupportsPrerender;
   before(async function () {
     browserSupportsFCP = await browserSupportsEntry('paint');
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
   });
 
   beforeEach(async function () {
@@ -71,11 +75,20 @@ describe('onFCP()', async function () {
 
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsFCP) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/fcp?prerender=1');
 
     await beaconCountIs(1);
+    await clearBeacons();
 
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
+
+    await beaconCountIs(1);
     const [fcp] = await getBeacons();
 
     const activationStart = await browser.execute(() => {
@@ -346,10 +359,20 @@ describe('onFCP()', async function () {
 
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsFCP) this.skip();
+      if (!browserSupportsPrerender) this.skip();
 
       await navigateTo(`/test/fcp?attribution=1&prerender=1`, {
         readyState: 'complete',
       });
+
+      await beaconCountIs(1);
+      await clearBeacons();
+
+      // Wait a bit to allow the prerender to happen
+      await browser.pause(1000);
+
+      const prerenderLink = await $('#prerender-link');
+      await prerenderLink.click();
 
       await beaconCountIs(1);
 

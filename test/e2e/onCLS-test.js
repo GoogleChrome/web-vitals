@@ -29,8 +29,12 @@ describe('onCLS()', async function () {
   this.retries(2);
 
   let browserSupportsCLS;
+  let browserSupportsPrerender;
   before(async function () {
     browserSupportsCLS = await browserSupportsEntry('layout-shift');
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
 
     // Set a standard screen size so thresholds are the same
     browser.setWindowSize(1280, 1024);
@@ -722,8 +726,18 @@ describe('onCLS()', async function () {
 
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsCLS) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/cls?prerender=1');
+
+    await beaconCountIs(1);
+    await clearBeacons();
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
 
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();

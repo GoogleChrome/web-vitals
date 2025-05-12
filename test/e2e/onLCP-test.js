@@ -29,17 +29,16 @@ describe('onLCP()', async function () {
   this.retries(2);
 
   let browserSupportsLCP;
+  let browserSupportsVisibilityState;
+  let browserSupportsPrerender;
   before(async function () {
     browserSupportsLCP = await browserSupportsEntry('largest-contentful-paint');
-  });
-
-  let browserSupportsVisibilityState;
-  before(async function () {
     browserSupportsVisibilityState =
       await browserSupportsEntry('visibility-state');
-  });
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
 
-  beforeEach(async function () {
     await navigateTo('about:blank');
     await clearBeacons();
   });
@@ -151,8 +150,20 @@ describe('onLCP()', async function () {
 
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsLCP) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/lcp?prerender=1');
+
+    await beaconCountIs(1);
+    await clearBeacons();
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
+
+    await beaconCountIs(1);
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
@@ -652,8 +663,20 @@ describe('onLCP()', async function () {
 
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsLCP) this.skip();
+      if (!browserSupportsPrerender) this.skip();
 
       await navigateTo('/test/lcp?attribution=1&prerender=1');
+
+      await beaconCountIs(1);
+      await clearBeacons();
+
+      // Wait a bit to allow the prerender to happen
+      await browser.pause(1000);
+
+      const prerenderLink = await $('#prerender-link');
+      await prerenderLink.click();
+
+      await beaconCountIs(1);
 
       // Wait until all images are loaded and fully rendered.
       await imagesPainted();

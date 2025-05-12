@@ -58,7 +58,11 @@ describe('onTTFB()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
+  let browserSupportsPrerender;
   beforeEach(async function () {
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
     // In Safari when navigating to 'about:blank' between tests the
     // Navigation Timing data is consistently negative, so the tests fail.
     if (browser.capabilities.browserName !== 'Safari') {
@@ -122,6 +126,8 @@ describe('onTTFB()', async function () {
   });
 
   it('accounts for time prerendering the page', async function () {
+    if (!browserSupportsPrerender) this.skip();
+
     await navigateTo('/test/ttfb?prerender=1');
 
     const ttfb = await getTTFBBeacon();
@@ -143,6 +149,8 @@ describe('onTTFB()', async function () {
   });
 
   it('reports the correct value when run while prerendering', async function () {
+    if (!browserSupportsPrerender) this.skip();
+
     // Use 500 so prerendering finishes before load but after the module runs.
     await navigateTo('/test/ttfb?prerender=500&imgDelay=1000');
 

@@ -29,6 +29,7 @@
   {% endif %}
 
   <p id="p5"><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+  <p><a id="prerender-link" href="/test/cls{% if attribution %}?attribution=1{% endif %}">Prerender link</a></p>
 
   <script type="module">
     const {onCLS} = await __testImport('{{ modulePath }}');
@@ -61,4 +62,15 @@
       });
     }
   </script>
+  {% if prerender %}
+  <script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "urls": ["/test/cls{% if attribution %}?attribution=1{% endif %}"]
+      }
+    ]
+  }
+  </script>
+{% endif %}
 {% endblock %}

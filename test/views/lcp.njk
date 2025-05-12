@@ -25,6 +25,7 @@
   <p>Text below the image</p>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+  <p><a id="prerender-link" href="/test/lcp{% if attribution %}?attribution=1{% endif %}">Prerender link</a></p>
 
   <!-- Include a tall element to ensure scrolling is possible. -->
   <div style="height: 100vh"></div>
@@ -62,4 +63,15 @@
       });
     }
   </script>
+  {% if prerender %}
+  <script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "urls": ["/test/lcp{% if attribution %}?attribution=1{% endif %}"]
+      }
+    ]
+  }
+  </script>
+{% endif %}
 {% endblock %}
