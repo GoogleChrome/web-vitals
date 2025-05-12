@@ -44,6 +44,14 @@ describe('onINP()', async function () {
   });
 
   beforeEach(async function () {
+    // Keep the first tab open, close all others
+    const handles = await browser.getWindowHandles();
+    for (let i = 1; i < handles.length; i++) {
+      await browser.switchToWindow(handles[i]);
+      await browser.closeWindow();
+    }
+    await browser.switchToWindow(handles[0]);
+
     await navigateTo('about:blank');
     await clearBeacons();
   });
@@ -451,14 +459,12 @@ describe('onINP()', async function () {
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();
 
-    // After navigation starts we should get a
     await beaconCountIs(1);
     await clearBeacons();
     await webVitalsLoaded();
 
     h1 = await $('h1');
     await simulateUserLikeClick(h1);
-    await firstContentfulPaint();
 
     // Ensure the interaction completes.
     await nextFrame();

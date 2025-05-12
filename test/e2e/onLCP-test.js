@@ -41,6 +41,14 @@ describe('onLCP()', async function () {
   });
 
   beforeEach(async function () {
+    // Keep the first tab open, close all others
+    const handles = await browser.getWindowHandles();
+    for (let i = 1; i < handles.length; i++) {
+      await browser.switchToWindow(handles[i]);
+      await browser.closeWindow();
+    }
+    await browser.switchToWindow(handles[0]);
+
     await navigateTo('about:blank');
     await clearBeacons();
   });
@@ -134,6 +142,7 @@ describe('onLCP()', async function () {
     const beacons = await getBeacons();
     // Firefox sometimes sents <p>, then <h1>
     // so grab last two
+    await browser.pause(500);
     assert(beacons.length >= 2);
     const lcp1 = beacons.at(-2);
     const lcp2 = beacons.at(-1);
@@ -240,18 +249,18 @@ describe('onLCP()', async function () {
   it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    // Can't mock visibility-state entries so load in a new blank tab:
-    const originalHandle = await browser.getWindowHandle();
-    await browser.execute(
-      "window.open('http://localhost:9090/test/lcp', '_blank')",
-    );
+    const originalTab = await browser.getWindowHandle();
+    const targetUrl = `${browser.options.baseUrl}/test/lcp`;
+    await browser.execute((url) => {
+      window.open(url, '_blank');
+    }, targetUrl);
     // immediately switch back before page load starts—annoyingly you can't
     // open in a hidden tab as ChromeDriver foregrounds it, but this works.
-    await browser.switchToWindow(originalHandle);
+    await browser.switchToWindow(originalTab);
     await browser.pause(500);
     // Then switch to the new tab to do our tests
     const handles = await browser.getWindowHandles();
-    const newTabHandle = handles.find((h) => h !== originalHandle);
+    const newTabHandle = handles.find((h) => h !== originalTab);
     await browser.switchToWindow(newTabHandle);
 
     // Click on the h1.
@@ -264,9 +273,9 @@ describe('onLCP()', async function () {
     const beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
 
-    // Reset everything
+    // Close the tabs we opened and return to new tab
     await browser.closeWindow();
-    await browser.switchToWindow(originalHandle);
+    await browser.switchToWindow(originalTab);
   });
 
   it('does not report if hidden before library loaded and visibilitystate supported', async function () {
@@ -415,6 +424,7 @@ describe('onLCP()', async function () {
 
     await beaconCountIs(1);
     // Firefox sometimes sends a <p> and then <h1> beacon, so grab last one
+    await browser.pause(500);
     let beacons = await getBeacons();
     const lcp = beacons.at(-1);
 
@@ -487,18 +497,18 @@ describe('onLCP()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    // Can't mock visibility-state entries so load in a new blank tab:
-    const originalHandle = await browser.getWindowHandle();
-    await browser.execute(
-      "window.open('http://localhost:9090/test/lcp', '_blank')",
-    );
+    const originalTab = await browser.getWindowHandle();
+    const targetUrl = `${browser.options.baseUrl}/test/lcp`;
+    await browser.execute((url) => {
+      window.open(url, '_blank');
+    }, targetUrl);
     // immediately switch back before page load starts—annoyingly you can't
     // open in a hidden tab as ChromeDriver foregrounds it, but this works.
-    await browser.switchToWindow(originalHandle);
+    await browser.switchToWindow(originalTab);
     await browser.pause(500);
     // Then switch to the new tab to do our tests
     const handles = await browser.getWindowHandles();
-    const newTabHandle = handles.find((h) => h !== originalHandle);
+    const newTabHandle = handles.find((h) => h !== originalTab);
     await browser.switchToWindow(newTabHandle);
 
     await stubVisibilityChange('visible');
@@ -540,9 +550,9 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp2.entries.length, 0);
     assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
 
-    // Reset everything
+    // Close the tabs we opened and return to new tab
     await browser.closeWindow();
-    await browser.switchToWindow(originalHandle);
+    await browser.switchToWindow(originalTab);
   });
 
   it('reports restore as nav type for wasDiscarded', async function () {
