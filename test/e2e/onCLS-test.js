@@ -26,7 +26,7 @@ import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
 describe('onCLS()', async function () {
   // Retry all tests in this suite up to 2 times.
-  this.retries(0);
+  this.retries(2);
 
   let browserSupportsCLS;
   let browserSupportsPrerender;
