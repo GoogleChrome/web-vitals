@@ -762,13 +762,14 @@ describe('onCLS()', async function () {
     await browser.switchToWindow(originalHandle);
   });
 
-  it('reports excludes shifts that happen in prerender state', async function () {
+  it('reports prerender as nav type and excludes shifts that happen in prerender state', async function () {
     if (!browserSupportsCLS) this.skip();
     if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/cls?prerender=1');
 
-    // Wait a bit to allow the prerender to happen and first shift to report
+    // Wait a bit to allow the prerender to happen
+    // and all loading shifts to complete
     await browser.pause(2000);
 
     const prerenderLink = await $('#prerender-link');

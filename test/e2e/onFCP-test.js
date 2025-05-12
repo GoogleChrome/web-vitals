@@ -20,6 +20,7 @@ import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 describe('onFCP()', async function () {
   // Retry all tests in this suite up to 2 times.
@@ -160,6 +161,7 @@ describe('onFCP()', async function () {
     await navigateTo('/test/fcp?invisible=1', {readyState: 'interactive'});
 
     await stubVisibilityChange('hidden');
+    await webVitalsLoaded();
     await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
