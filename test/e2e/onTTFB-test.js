@@ -344,7 +344,7 @@ describe('onTTFB()', async function () {
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsPrerender) this.skip();
 
-      await navigateTo('/test/ttfb?prerender=1');
+      await navigateTo('/test/ttfb?attribution=1&prerender=1');
 
       await getTTFBBeacon();
       await clearBeacons();
