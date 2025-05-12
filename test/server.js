@@ -70,6 +70,7 @@ app.get('/test/:view', function (req, res, next) {
 
   const data = {
     ...req.query,
+    queryString: new URLSearchParams(req.query).toString(),
     modulePath: modulePath,
   };
 

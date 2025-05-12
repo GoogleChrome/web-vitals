@@ -26,7 +26,7 @@
   <p>Text below the image</p>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
-  <p><a id="prerender-link" href="/test/fcp{% if attribution %}?attribution=1{% endif %}">Prerender link</a></p>
+  <p><a id="prerender-link" href="/test/fcp{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>
 
   <script type="module">
     const {onFCP} = await __testImport('{{ modulePath }}');
@@ -62,7 +62,7 @@
   {
     "prerender": [
       {
-        "urls": ["/test/fcp{% if attribution %}?attribution=1{% endif %}"]
+        "urls": ["/test/fcp{% if queryString %}?{{ queryString | safe }}{% endif %}"]
       }
     ]
   }
