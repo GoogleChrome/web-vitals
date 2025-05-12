@@ -439,13 +439,21 @@ describe('onINP()', async function () {
 
     await navigateTo('/test/inp?click=150&prerender=1');
 
+    let h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+    await beaconCountIs(1);
+    await clearBeacons();
+
     // Wait a bit to allow the prerender to happen
-    await browser.pause(1000);
+    await browser.pause(500);
 
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();
 
-    const h1 = await $('h1');
+    // Wait to ensure the navigation starts
+    await browser.pause(500);
+
+    h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
