@@ -42,7 +42,7 @@
        * @return {void}
        */
       self.__stubVisibilityChange = (visibilityState) => {
-        self.__stubVisibilityState(visibilityState)
+        self.__stubVisibilityState(visibilityState);
         document.dispatchEvent(new Event('visibilitychange'));
       }
 
@@ -74,6 +74,28 @@
        * @return {Promise<void>}
        */
       self.__stubPrerender = () => {
+
+        // We need to overload getEntriesByType to return an initial hidden
+        // state for prerender.
+        // We should also really add entries on visibiltychange, but we
+        // only use iniitial entries, so no need.
+        const originalGetEntriesByType =
+          window.performance.getEntriesByType.bind(performance);
+        window.performance.getEntriesByType = function(type) {
+          const entries = originalGetEntriesByType(type);
+          if (type === 'visibility-state' && entries.length > 0) {
+            const modifiedEntries = [...entries];
+            modifiedEntries[0] = {
+              name: 'hidden',
+              entryType: 'visibility-state',
+              startTime: 0,
+              duration: 0
+            };
+            return modifiedEntries;
+          }
+          return entries;
+        };
+
         return new Promise((resolve) => {
           const navEntry = performance.getEntriesByType('navigation')[0];
           // Only stub if the page isn't actually prerendered.
@@ -210,10 +232,6 @@
         }, true);
       }
 
-      if (params.has('prerender')) {
-        self.__stubPrerender();
-      }
-
       if (params.has('wasDiscarded')) {
         self.__stubWasDiscarded();
       }
@@ -228,6 +246,11 @@
 
       if (self.__loadAfterInput) {
         self.__readyPromises.push(self.__afterFirstInput);
+      }
+
+      if (params.has('prerender')) {
+        self.__stubPrerender();
+        self.__readyPromises.push(self.__stubPrerender);
       }
 
       // Import a module and automatically add that to the list of ready promises.

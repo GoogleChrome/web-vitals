@@ -34,7 +34,7 @@
       fcp.instance = 1;
 
       // Log for easier manual testing.
-      console.log('FCP"', fcp);
+      console.log('FCP:', fcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
