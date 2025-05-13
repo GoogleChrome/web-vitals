@@ -256,7 +256,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('does not report if hidden before library loaded and visibilitystate supported', async function () {
+  it('does not report if hidden before library loaded and visibility-state supported', async function () {
     if (!browserSupportsLCP) this.skip();
     if (!browserSupportsVisibilityState) this.skip();
 
@@ -288,7 +288,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(beacons.length, 0);
   });
 
-  it('does report if hidden before library loaded and visibilitystate not supported', async function () {
+  it('does report if hidden before library loaded and visibility-state not supported', async function () {
     if (!browserSupportsLCP) this.skip();
     if (browserSupportsVisibilityState) this.skip();
 
@@ -898,7 +898,7 @@ const assertStandardReportsAreCorrect = (beacons) => {
 };
 
 const assertFullReportsAreCorrect = (beacons) => {
-  // Firefox sometimes sents <p>, then <h1>
+  // Firefox sometimes sends <p>, then <h1>
   // so grab last two
   assert(beacons.length >= 2);
   const lcp1 = beacons.at(-2);

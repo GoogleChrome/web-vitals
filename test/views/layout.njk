@@ -176,7 +176,7 @@
         // We need to overload getEntriesByType to return an initial hidden
         // state for prerender.
         // We should also really add entries on visibiltychange, but we
-        // only use iniitial entries, so no need.
+        // only use initial entries, so no need.
         const originalGetEntriesByType =
           window.performance.getEntriesByType.bind(performance);
         window.performance.getEntriesByType = function(type) {
