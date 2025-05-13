@@ -350,7 +350,7 @@ describe('onFCP()', async function () {
 
       // TODO Firefox has a bug causing this to fail. Remove once fixed
       // https://bugzilla.mozilla.org/show_bug.cgi?id=1965441
-      if (browser.capabilities.browserName !== 'Firefox') {
+      if (browser.capabilities.browserName !== 'firefox') {
         assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
       }
 
