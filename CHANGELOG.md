@@ -1,5 +1,9 @@
 # Changelog
 
+### v5.0.1 (2025-05-13)
+
+- Fix missing FCP and LCP for prerendered pages ([#621](https://github.com/GoogleChrome/web-vitals/pull/621))
+
 ### v5.0.0 (2025-05-07)
 
 [!NOTE]
