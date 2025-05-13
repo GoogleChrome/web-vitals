@@ -348,7 +348,11 @@ describe('onFCP()', async function () {
         /^(loading|dom-(interactive|content-loaded)|complete)$/,
       );
 
-      assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
+      // TODO Firefox has a bug causing this to fail. Remove once fixed
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1965441
+      if (browser.capabilities.browserName !== 'Firefox') {
+        assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
+      }
 
       // When FCP is reported, not all values on the NavigationTiming entry
       // are finalized, so just check some keys that should be set before FCP.

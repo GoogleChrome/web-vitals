@@ -29,8 +29,7 @@
   {% endif %}
 
   <p id="p5"><a id="navigate-away" href="https://example.com">Navigate away</a></p>
-  <p id="p6"><a id="new-tab-link" href="/test/cls?newtab=true{% if queryString %}&{{ queryString | safe }}{% endif %}" target="_blank">New tab link</a></p>
-  <p id="p7"><a id="prerender-link" href="/test/cls{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>
+  {% if prerender %}<p id="p6"><a id="prerender-link" href="/test/cls{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
   <script type="module">
     const {onCLS} = await __testImport('{{ modulePath }}');

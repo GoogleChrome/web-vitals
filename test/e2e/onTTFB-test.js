@@ -65,14 +65,6 @@ describe('onTTFB()', async function () {
     });
   });
   beforeEach(async function () {
-    // Keep the first tab open, close all others
-    const handles = await browser.getWindowHandles();
-    for (let i = 1; i < handles.length; i++) {
-      await browser.switchToWindow(handles[i]);
-      await browser.closeWindow();
-    }
-    await browser.switchToWindow(handles[0]);
-
     // In Safari when navigating to 'about:blank' between tests the
     // Navigation Timing data is consistently negative, so the tests fail.
     if (browser.capabilities.browserName !== 'Safari') {

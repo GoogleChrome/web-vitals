@@ -383,7 +383,11 @@ describe('onLCP()', async function () {
     const h1 = await $('h1');
     await h1.click();
 
+    // Wait a bit to ensure no additional beacons were sent.
+    await browser.pause(1000);
+
     await beaconCountIs(1);
+
     const [lcp1] = await getBeacons();
 
     assert(lcp1.value > 0);
