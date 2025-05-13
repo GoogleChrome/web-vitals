@@ -34,9 +34,13 @@ describe('onINP()', async function () {
 
   let browserSupportsINP;
   let browserSupportsLoAF;
+  let browserSupportsPrerender;
   before(async function () {
     browserSupportsINP = await browserSupportsEntry('event');
     browserSupportsLoAF = await browserSupportsEntry('long-animation-frame');
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
   });
 
   beforeEach(async function () {
@@ -431,12 +435,27 @@ describe('onINP()', async function () {
 
   it('reports prerender as nav type for prerender', async function () {
     if (!browserSupportsINP) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
-    await navigateTo('/test/inp?click=150&prerender=1', {
-      readyState: 'interactive',
-    });
+    await navigateTo('/test/inp?click=150&prerender=1');
 
-    const h1 = await $('h1');
+    await webVitalsLoaded();
+    await firstContentfulPaint();
+
+    let h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(500);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
+
+    await beaconCountIs(1);
+    await clearBeacons();
+    await webVitalsLoaded();
+
+    h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.

@@ -29,6 +29,7 @@
   {% endif %}
 
   <p id="p5"><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+  {% if prerender %}<p id="p6"><a id="prerender-link" href="/test/cls{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
   <script type="module">
     const {onCLS} = await __testImport('{{ modulePath }}');
@@ -61,4 +62,15 @@
       });
     }
   </script>
+  {% if prerender %}
+  <script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "urls": ["/test/cls{% if queryString %}?{{ queryString | safe }}{% endif %}"]
+      }
+    ]
+  }
+  </script>
+{% endif %}
 {% endblock %}

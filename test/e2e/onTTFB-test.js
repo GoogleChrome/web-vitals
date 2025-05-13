@@ -58,6 +58,12 @@ describe('onTTFB()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
+  let browserSupportsPrerender;
+  before(async function () {
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
+  });
   beforeEach(async function () {
     // In Safari when navigating to 'about:blank' between tests the
     // Navigation Timing data is consistently negative, so the tests fail.
@@ -122,7 +128,18 @@ describe('onTTFB()', async function () {
   });
 
   it('accounts for time prerendering the page', async function () {
+    if (!browserSupportsPrerender) this.skip();
+
     await navigateTo('/test/ttfb?prerender=1');
+
+    await getTTFBBeacon();
+    await clearBeacons();
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
 
     const ttfb = await getTTFBBeacon();
 
@@ -143,14 +160,23 @@ describe('onTTFB()', async function () {
   });
 
   it('reports the correct value when run while prerendering', async function () {
-    // Use 500 so prerendering finishes before load but after the module runs.
-    await navigateTo('/test/ttfb?prerender=500&imgDelay=1000');
+    if (!browserSupportsPrerender) this.skip();
+
+    await navigateTo('/test/ttfb?prerender=1&imgDelay=1000');
+
+    await getTTFBBeacon();
+    await clearBeacons();
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
 
     const ttfb = await getTTFBBeacon();
 
-    // Assert that prerendering finished after responseStart and before load.
+    // Assert that prerendering finished after responseStart.
     assert(ttfb.entries[0].activationStart >= ttfb.entries[0].responseStart);
-    assert(ttfb.entries[0].activationStart <= ttfb.entries[0].loadEventEnd);
 
     assert(ttfb.value >= 0);
     assert.strictEqual(ttfb.value, ttfb.delta);
@@ -316,7 +342,18 @@ describe('onTTFB()', async function () {
     });
 
     it('accounts for time prerendering the page', async function () {
+      if (!browserSupportsPrerender) this.skip();
+
       await navigateTo('/test/ttfb?attribution=1&prerender=1');
+
+      await getTTFBBeacon();
+      await clearBeacons();
+
+      // Wait a bit to allow the prerender to happen
+      await browser.pause(1000);
+
+      const prerenderLink = await $('#prerender-link');
+      await prerenderLink.click();
 
       const ttfb = await getTTFBBeacon();
 

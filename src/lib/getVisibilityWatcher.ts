@@ -15,6 +15,7 @@
  */
 
 import {onBFCacheRestore} from './bfcache.js';
+import {getActivationStart} from './getActivationStart.js';
 
 let firstHiddenTime = -1;
 
@@ -64,11 +65,14 @@ const removeChangeListeners = () => {
 export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
     // Check if we have a previous hidden `visibility-state` performance entry.
+    const activationStart = getActivationStart();
     /* eslint-disable indent */
     const firstVisibilityStateHiddenTime = !document.prerendering
       ? globalThis.performance
           .getEntriesByType('visibility-state')
-          .filter((e) => e.name === 'hidden')[0]?.startTime
+          .filter(
+            (e) => e.name === 'hidden' && e.startTime > activationStart,
+          )[0]?.startTime
       : undefined;
     /* eslint-enable indent */
 

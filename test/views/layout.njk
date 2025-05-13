@@ -42,7 +42,7 @@
        * @return {void}
        */
       self.__stubVisibilityChange = (visibilityState) => {
-        self.__stubVisibilityState(visibilityState)
+        self.__stubVisibilityState(visibilityState);
         document.dispatchEvent(new Event('visibilitychange'));
       }
 
@@ -67,36 +67,6 @@
               resolve();
             });
           });
-        });
-      }
-
-      /**
-       * @return {Promise<void>}
-       */
-      self.__stubPrerender = () => {
-        return new Promise((resolve) => {
-          const navEntry = performance.getEntriesByType('navigation')[0];
-          // Only stub if the page isn't actually prerendered.
-          if (!(document.prerendering || navEntry.activationStart > 0)) {
-            self.__stubVisibilityState('hidden');
-            Object.defineProperty(document, 'prerendering', {
-              value: true,
-              configurable: true,
-            });
-            setTimeout(() => {
-              const time = self.performance ? performance.now() : 0;
-              const fcpEntry = performance.getEntriesByName('first-contentful-paint')[0];
-              Object.defineProperty(navEntry, 'activationStart', {
-                configurable: true,
-                enumerable: true,
-                value: Math.min(time, fcpEntry?.startTime ?? time),
-              });
-              self.__stubVisibilityChange('visible');
-              delete document.prerendering;
-              document.dispatchEvent(new Event('prerenderingchange'));
-              resolve();
-            }, Number(params.get('prerender')) || 0);
-          }
         });
       }
 
@@ -203,15 +173,32 @@
           value: 'hidden',
           configurable: true,
         });
+        // We need to overload getEntriesByType to return an initial hidden
+        // state for prerender.
+        // We should also really add entries on visibiltychange, but we
+        // only use initial entries, so no need.
+        const originalGetEntriesByType =
+          window.performance.getEntriesByType.bind(performance);
+
+        window.performance.getEntriesByType = function(type) {
+          const entries = originalGetEntriesByType(type);
+          if (type === 'visibility-state' && entries.length > 0) {
+            const modifiedEntries = [...entries];
+            modifiedEntries[0] = {
+              name: 'hidden',
+              entryType: 'visibility-state',
+              startTime: 0,
+              duration: 0
+            };
+            return modifiedEntries;
+          }
+          return entries;
+        };
         addEventListener('visibilitychange', (event) => {
           if (event.isTrusted) {
             delete document.visibilityState;
           }
         }, true);
-      }
-
-      if (params.has('prerender')) {
-        self.__stubPrerender();
       }
 
       if (params.has('wasDiscarded')) {

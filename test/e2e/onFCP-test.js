@@ -20,14 +20,19 @@ import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 describe('onFCP()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
   let browserSupportsFCP;
+  let browserSupportsPrerender;
   before(async function () {
     browserSupportsFCP = await browserSupportsEntry('paint');
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
   });
 
   beforeEach(async function () {
@@ -71,11 +76,20 @@ describe('onFCP()', async function () {
 
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsFCP) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/fcp?prerender=1');
 
     await beaconCountIs(1);
+    await clearBeacons();
 
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
+
+    await beaconCountIs(1);
     const [fcp] = await getBeacons();
 
     const activationStart = await browser.execute(() => {
@@ -133,6 +147,7 @@ describe('onFCP()', async function () {
     await navigateTo('/test/fcp?invisible=1', {readyState: 'interactive'});
 
     await stubVisibilityChange('hidden');
+    await webVitalsLoaded();
     await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
@@ -333,7 +348,11 @@ describe('onFCP()', async function () {
         /^(loading|dom-(interactive|content-loaded)|complete)$/,
       );
 
-      assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
+      // TODO Firefox has a bug causing this to fail. Remove once fixed
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1965441
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
+      }
 
       // When FCP is reported, not all values on the NavigationTiming entry
       // are finalized, so just check some keys that should be set before FCP.
@@ -346,10 +365,20 @@ describe('onFCP()', async function () {
 
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsFCP) this.skip();
+      if (!browserSupportsPrerender) this.skip();
 
       await navigateTo(`/test/fcp?attribution=1&prerender=1`, {
         readyState: 'complete',
       });
+
+      await beaconCountIs(1);
+      await clearBeacons();
+
+      // Wait a bit to allow the prerender to happen
+      await browser.pause(1000);
+
+      const prerenderLink = await $('#prerender-link');
+      await prerenderLink.click();
 
       await beaconCountIs(1);
 
