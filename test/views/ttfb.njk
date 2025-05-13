@@ -23,7 +23,8 @@
   <p>Text below the image</p>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
-  <p><a id="prerender-link" href="/test/ttfb{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>
+  <p id="p6"><a id="new-tab-link" href="/test/ttfb?newtab=true{% if queryString %}&{{ queryString | safe }}{% endif %}" target="_blank">New tab link</a></p>
+  <p id="p7"><a id="prerender-link" href="/test/ttfb{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>
 
   <script>
     // Set the blocking values based on query params if present.

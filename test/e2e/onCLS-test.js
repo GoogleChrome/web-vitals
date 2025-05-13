@@ -41,14 +41,6 @@ describe('onCLS()', async function () {
   });
 
   beforeEach(async function () {
-    // Keep the first tab open, close all others
-    const handles = await browser.getWindowHandles();
-    for (let i = 1; i < handles.length; i++) {
-      await browser.switchToWindow(handles[i]);
-      await browser.closeWindow();
-    }
-    await browser.switchToWindow(handles[0]);
-
     await navigateTo('about:blank');
     await clearBeacons();
   });
@@ -695,64 +687,33 @@ describe('onCLS()', async function () {
   });
 
   it('does not report if the document was hidden at page load time', async function () {
-    if (!browserSupportsCLS) this.skip();
+    await navigateTo('/test/cls?hidden=1');
 
-    const originalTab = await browser.getWindowHandle();
-    const targetUrl = `${browser.options.baseUrl}/test/cls`;
-    await browser.execute((url) => {
-      window.open(url, '_blank');
-    }, targetUrl);
-    // immediately switch back before page load starts—annoyingly you can't
-    // open in a hidden tab as ChromeDriver foregrounds it, but this works.
-    await browser.switchToWindow(originalTab);
-    await browser.pause(500);
-    // Then switch to the new tab to do our tests
-    const handles = await browser.getWindowHandles();
-    const newTabHandle = handles.find((h) => h !== originalTab);
-    await browser.switchToWindow(newTabHandle);
+    await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
 
     const beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
-
-    // Close the tabs we opened and return to new tab
-    await browser.closeWindow();
-    await browser.switchToWindow(originalTab);
   });
 
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    const originalTab = await browser.getWindowHandle();
-    const targetUrl = `${browser.options.baseUrl}/test/cls`;
-    await browser.execute((url) => {
-      window.open(url, '_blank');
-    }, targetUrl);
-    // immediately switch back before page load starts—annoyingly you can't
-    // open in a hidden tab as ChromeDriver foregrounds it, but this works.
-    await browser.switchToWindow(originalTab);
-    // Wait for all shifts to be compelted.
-    await browser.pause(2000);
-    // Then switch to the new tab to do our tests
-    const handles = await browser.getWindowHandles();
-    const newTabHandle = handles.find((h) => h !== originalTab);
-    await browser.switchToWindow(newTabHandle);
-    // Wait to ensure page is fully loaded
-    await imagesPainted();
+    await navigateTo('/test/cls?hidden=1', {readyState: 'complete'});
 
     await stubForwardBack();
 
     // Give it time for beacons to come in
-    await browser.pause(1000);
+    await browser.pause(2000);
 
     // clear any beacons from page load.
     await clearBeacons();
 
     await triggerLayoutShift();
 
-    await browser.switchToWindow(originalTab);
+    await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
     const [cls] = await getBeacons();
@@ -764,11 +725,6 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 1);
     assert.strictEqual(cls.navigationType, 'back-forward-cache');
-
-    // Close the tabs we opened and return to new tab
-    await browser.switchToWindow(newTabHandle);
-    await browser.closeWindow();
-    await browser.switchToWindow(originalTab);
   });
 
   it('reports prerender as nav type and excludes shifts that happen in prerender state', async function () {

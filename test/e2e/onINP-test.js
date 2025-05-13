@@ -44,14 +44,6 @@ describe('onINP()', async function () {
   });
 
   beforeEach(async function () {
-    // Keep the first tab open, close all others
-    const handles = await browser.getWindowHandles();
-    for (let i = 1; i < handles.length; i++) {
-      await browser.switchToWindow(handles[i]);
-      await browser.closeWindow();
-    }
-    await browser.switchToWindow(handles[0]);
-
     await navigateTo('about:blank');
     await clearBeacons();
   });

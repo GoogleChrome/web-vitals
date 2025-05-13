@@ -36,14 +36,6 @@ describe('onFCP()', async function () {
   });
 
   beforeEach(async function () {
-    // Keep the first tab open, close all others
-    const handles = await browser.getWindowHandles();
-    for (let i = 1; i < handles.length; i++) {
-      await browser.switchToWindow(handles[i]);
-      await browser.closeWindow();
-    }
-    await browser.switchToWindow(handles[0]);
-
     await navigateTo('about:blank');
     await clearBeacons();
   });
@@ -138,29 +130,15 @@ describe('onFCP()', async function () {
   it('does not report if the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    const originalTab = await browser.getWindowHandle();
-    const targetUrl = `${browser.options.baseUrl}/test/fcp`;
-    await browser.execute((url) => {
-      window.open(url, '_blank');
-    }, targetUrl);
-    // immediately switch back before page load starts—annoyingly you can't
-    // open in a hidden tab as ChromeDriver foregrounds it, but this works.
-    await browser.switchToWindow(originalTab);
-    await browser.pause(500);
-    // Then switch to the new tab to do our tests
-    const handles = await browser.getWindowHandles();
-    const newTabHandle = handles.find((h) => h !== originalTab);
-    await browser.switchToWindow(newTabHandle);
+    await navigateTo('/test/fcp?hidden=1', {readyState: 'complete'});
+
+    await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
 
     const beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
-
-    // Close the tabs we opened and return to new tab
-    await browser.closeWindow();
-    await browser.switchToWindow(originalTab);
   });
 
   it('does not report if the document changes to hidden before the first entry', async function () {
@@ -248,19 +226,9 @@ describe('onFCP()', async function () {
   it('reports if the page is restored from bfcache even when the document was hidden at page load time', async function () {
     if (!browserSupportsFCP) this.skip();
 
-    const originalTab = await browser.getWindowHandle();
-    const targetUrl = `${browser.options.baseUrl}/test/fcp`;
-    await browser.execute((url) => {
-      window.open(url, '_blank');
-    }, targetUrl);
-    // immediately switch back before page load starts—annoyingly you can't
-    // open in a hidden tab as ChromeDriver foregrounds it, but this works.
-    await browser.switchToWindow(originalTab);
-    await browser.pause(1000);
-    // Then switch to the new tab to do our tests
-    const handles = await browser.getWindowHandles();
-    const newTabHandle = handles.find((h) => h !== originalTab);
-    await browser.switchToWindow(newTabHandle);
+    await navigateTo('/test/fcp?hidden=1', {readyState: 'interactive'});
+
+    await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
@@ -295,10 +263,6 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp2.rating, 'good');
     assert.strictEqual(fcp2.entries.length, 0);
     assert.strictEqual(fcp2.navigationType, 'back-forward-cache');
-
-    // Close the tabs we opened and return to new tab
-    await browser.closeWindow();
-    await browser.switchToWindow(originalTab);
   });
 
   it('reports restore as nav type for wasDiscarded', async function () {

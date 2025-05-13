@@ -13,7 +13,7 @@
  See the License for the specific language governing permissions and
  limitations under the License.
 -->
-<html lang="en" {% if invisible %}hidden{% endif %}>
+<html lang="en" {% if invisible or hidden %}hidden{% endif %}>
 <head>
   <meta charset="utf-8">
   <title>Web Vitals Test</title>
@@ -102,7 +102,7 @@
       self.__afterElementsRendered = new Promise((resolve) => {
         addEventListener('DOMContentLoaded', () => {
           if (PerformanceObserver.supportedEntryTypes.includes('element')) {
-            const nodes = new Set([...document.querySelectorAll('[elementtiming]')]);
+            const nodes = new Set([...document.querySelectorAll('[elementtiming]:not([hidden])')]);
             if (nodes.size === 0 || !PerformanceObserver.supportedEntryTypes.includes('element')) {
               resolve();
             }
@@ -166,6 +166,40 @@
       self.__lazyLoad = Boolean(infer('lazyLoad'));
       self.__loadAfterInput = Boolean(infer('loadAfterInput'));
 
+      if (params.has('hidden')) {
+        // Stub the page being loaded in the hidden state, but defer to the
+        // native state if the `visibilitychange` event fires.
+        Object.defineProperty(document, 'visibilityState', {
+          value: 'hidden',
+          configurable: true,
+        });
+        // We need to overload getEntriesByType to return an initial hidden
+        // state for prerender.
+        // We should also really add entries on visibiltychange, but we
+        // only use iniitial entries, so no need.
+        const originalGetEntriesByType =
+          window.performance.getEntriesByType.bind(performance);
+        window.performance.getEntriesByType = function(type) {
+          const entries = originalGetEntriesByType(type);
+          if (type === 'visibility-state' && entries.length > 0) {
+            const modifiedEntries = [...entries];
+            modifiedEntries[0] = {
+              name: 'hidden',
+              entryType: 'visibility-state',
+              startTime: 0,
+              duration: 0
+            };
+            return modifiedEntries;
+          }
+          return entries;
+        };
+        addEventListener('visibilitychange', (event) => {
+          if (event.isTrusted) {
+            delete document.visibilityState;
+          }
+        }, true);
+      }
+
       if (params.has('wasDiscarded')) {
         self.__stubWasDiscarded();
       }
@@ -223,6 +257,9 @@
   <style>
     * {
       box-sizing: border-box;
+    }
+    *[hidden] {
+      visibility: hidden;
     }
     body {
       font: 1em/1.5 sans-serif;
