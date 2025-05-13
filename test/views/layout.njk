@@ -179,6 +179,7 @@
         // only use initial entries, so no need.
         const originalGetEntriesByType =
           window.performance.getEntriesByType.bind(performance);
+
         window.performance.getEntriesByType = function(type) {
           const entries = originalGetEntriesByType(type);
           if (type === 'visibility-state' && entries.length > 0) {
