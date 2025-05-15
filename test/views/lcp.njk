@@ -20,11 +20,12 @@
     {% if not imgDelay %}
       {% set imgDelay = 500 %}
     {% endif %}
-    <img elementtiming="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
+    <img class="foo bar" elementtiming="main-image" data-target="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+  {% if prerender %}<p><a id="prerender-link" href="/test/lcp{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
   <!-- Include a tall element to ensure scrolling is possible. -->
   <div style="height: 100vh"></div>
@@ -35,11 +36,42 @@
     const {onLCP} = await __testImport('{{ modulePath }}');
 
     onLCP((lcp) => {
+      lcp.instance = 1;
+
       // Log for easier manual testing.
-      console.log(lcp);
+      console.log('LCP:', lcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
-    }, {reportAllChanges: self.__reportAllChanges});
+    }, {
+      reportAllChanges: self.__reportAllChanges,
+      generateTarget: self.__generateTarget && ((el) => el.dataset.target),
+    });
+
+    if (self.__doubleCall) {
+      onLCP((lcp) => {
+        lcp.instance = 2;
+
+        // Log for easier manual testing.
+        console.log('LCP2:', lcp);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+        generateTarget: self.__generateTarget2 && ((el) => el.dataset.target),
+      });
+    }
   </script>
+  {% if prerender %}
+  <script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "urls": ["/test/lcp{% if queryString %}?{{ queryString | safe }}{% endif %}"]
+      }
+    ]
+  }
+  </script>
+{% endif %}
 {% endblock %}

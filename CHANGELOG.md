@@ -1,6 +1,29 @@
 # Changelog
 
-See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete list of all API changes in version 4.
+### v5.0.1 (2025-05-13)
+
+- Fix missing FCP and LCP for prerendered pages ([#621](https://github.com/GoogleChrome/web-vitals/pull/621))
+
+### v5.0.0 (2025-05-07)
+
+[!NOTE]
+See the [upgrading to v5](/docs/upgrading-to-v5.md) guide for a complete list of all API changes in version 5.
+
+- **[BREAKING]** Remove the deprecated `onFID()` function ([#519](https://github.com/GoogleChrome/web-vitals/pull/519))
+- **[BREAKING]** Change browser support policy to Baseline Widely available ([#525](https://github.com/GoogleChrome/web-vitals/pull/525))
+- **[BREAKING]** Sort the classes that appear in attribution selectors to reduce cardinality ([#518](https://github.com/GoogleChrome/web-vitals/pull/518))
+- Extend INP attribution with extra LoAF information: longest script and buckets ([#592](https://github.com/GoogleChrome/web-vitals/pull/592))
+- Add support for generating custom targets in the attribution build ([#585](https://github.com/GoogleChrome/web-vitals/pull/585))
+- Support multiple calls to `onINP()` with different config options ([#583](https://github.com/GoogleChrome/web-vitals/pull/583))
+- Use visibility-state performance entries ([#612](https://github.com/GoogleChrome/web-vitals/pull/612))
+- Ensure idle callbacks don't run twice ([#541](https://github.com/GoogleChrome/web-vitals/pull/541)) and ([#548](https://github.com/GoogleChrome/web-vitals/pull/548))
+- Cap `nextPaintTime` at `processingStart` ([#540](https://github.com/GoogleChrome/web-vitals/pull/540)) and ([#546](https://github.com/GoogleChrome/web-vitals/pull/546))
+- Cap INP breakdowns to INP duration ([#528](https://github.com/GoogleChrome/web-vitals/pull/528))
+- Cap LCP load duration to LCP time ([#527](https://github.com/GoogleChrome/web-vitals/pull/527))
+
+### v4.2.4 (2024-10-22)
+
+- Fix memory leak in registering new event listeners on every keydown and click ([#554](https://github.com/GoogleChrome/web-vitals/pull/554))
 
 ### v4.2.3 (2024-08-06)
 
@@ -32,6 +55,9 @@ See the [upgrading to v4](/docs/upgrading-to-v4.md) documentation for a complete
 - Add the `ReportCallback` type back but deprecate it ([#483](https://github.com/GoogleChrome/web-vitals/pull/483))
 
 ### v4.0.0 (2024-05-13)
+
+[!NOTE]
+See the [upgrading to v4](/docs/upgrading-to-v4.md) guide for a complete list of all API changes in version 4.
 
 - **[BREAKING]** Update types to support more generic usage ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
 - **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))

@@ -22,7 +22,7 @@ import {MetricType} from '../types.js';
 
 export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
-  value?: number,
+  value: number = -1,
   navigation?: MetricType['navigationType'],
   navigationId?: string,
 ) => {
@@ -53,7 +53,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
 
   return {
     name,
-    value: typeof value === 'undefined' ? -1 : value,
+    value,
     rating: 'good' as const, // If needed, will be updated when reported. `const` to keep the type from widening to `string`.
     delta: 0,
     entries,

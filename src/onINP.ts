@@ -17,29 +17,28 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {initMetric} from './lib/initMetric.js';
-import {
-  DEFAULT_DURATION_THRESHOLD,
-  processInteractionEntry,
-  estimateP98LongestInteraction,
-  resetInteractions,
-} from './lib/interactions.js';
-import {observe} from './lib/observe.js';
-import {onHidden} from './lib/onHidden.js';
-import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {initMetric} from './lib/initMetric.js';
+import {initUnique} from './lib/initUnique.js';
+import {InteractionManager} from './lib/InteractionManager.js';
+import {observe} from './lib/observe.js';
+import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {whenIdle} from './lib/whenIdle.js';
+import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
 import {
   INPMetric,
   Metric,
   MetricRatingThresholds,
-  ReportOpts,
+  INPReportOpts,
 } from './types.js';
 
 /** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
+
+// The default `durationThreshold` used across this library for observing
+// `event` entries via PerformanceObserver.
+const DEFAULT_DURATION_THRESHOLD = 40;
 
 /**
  * Calculates the [INP](https://web.dev/articles/inp) value for the current
@@ -47,11 +46,13 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
  * the `event` performance entries reported for that interaction. The reported
  * value is a `DOMHighResTimeStamp`.
  *
- * A custom `durationThreshold` configuration option can optionally be passed to
- * control what `event-timing` entries are considered for INP reporting. The
- * default threshold is `40`, which means INP scores of less than 40 are
- * reported as 0. Note that this will not affect your 75th percentile INP value
- * unless that value is also less than 40 (well below the recommended
+ * A custom `durationThreshold` configuration option can optionally be passed
+ * to control what `event-timing` entries are considered for INP reporting. The
+ * default threshold is `40`, which means INP scores of less than 40 will not
+ * be reported. To avoid reporting no interactions in these cases, the library
+ * will fall back to the input delay of the first interaction. Note that this
+ * will not affect your 75th percentile INP value unless that value is also
+ * less than 40 (well below the recommended
  * [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
@@ -70,23 +71,20 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
  */
 export const onINP = (
   onReport: (metric: INPMetric) => void,
-  opts?: ReportOpts,
+  opts: INPReportOpts = {},
 ) => {
+  const softNavsEnabled = softNavs(opts);
+  let reportedMetric = false;
+  let metricNavStartTime = 0;
   // Return if the browser doesn't support all APIs needed to measure INP.
   if (
     !(
-      'PerformanceEventTiming' in self &&
+      globalThis.PerformanceEventTiming &&
       'interactionId' in PerformanceEventTiming.prototype
     )
   ) {
     return;
   }
-
-  // Set defaults
-  opts = opts || {};
-  const softNavsEnabled = softNavs(opts);
-  let reportedMetric = false;
-  let metricNavStartTime = 0;
 
   whenActivated(() => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.
@@ -95,11 +93,13 @@ export const onINP = (
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
 
+    const interactionManager = initUnique(opts, InteractionManager);
+
     const initNewINPMetric = (
       navigation?: Metric['navigationType'],
       navigationId?: string,
     ) => {
-      resetInteractions();
+      interactionManager._resetInteractions();
       metric = initMetric('INP', 0, navigation, navigationId);
       report = bindReporter(
         onReport,
@@ -116,13 +116,13 @@ export const onINP = (
     };
 
     const updateINPMetric = () => {
-      const inp = estimateP98LongestInteraction();
+      const inp = interactionManager._estimateP98LongestInteraction();
 
       if (
         inp &&
-        (inp.latency !== metric.value || (opts && opts.reportAllChanges))
+        (inp._latency !== metric.value || (opts && opts.reportAllChanges))
       ) {
-        metric.value = inp.latency;
+        metric.value = inp._latency;
         metric.entries = inp.entries;
       }
     };
@@ -134,8 +134,10 @@ export const onINP = (
       // have been dispatched. Note: there is currently an experiment
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
-      whenIdle(() => {
-        entries.forEach(processInteractionEntry);
+      whenIdleOrHidden(() => {
+        for (const entry of entries) {
+          interactionManager._processEntry(entry);
+        }
 
         updateINPMetric();
         report();
@@ -149,7 +151,7 @@ export const onINP = (
       // and performance. Running this callback for any interaction that spans
       // just one or two frames is likely not worth the insight that could be
       // gained.
-      durationThreshold: opts!.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
+      durationThreshold: opts.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
       opts,
     } as PerformanceObserverInit);
 
@@ -157,7 +159,7 @@ export const onINP = (
       onReport,
       metric,
       INPThresholds,
-      opts!.reportAllChanges,
+      opts.reportAllChanges,
     );
 
     if (po) {
@@ -169,17 +171,27 @@ export const onINP = (
         includeSoftNavigationObservations: softNavsEnabled,
       });
 
-      onHidden(() => {
-        handleEntries(po.takeRecords() as INPMetric['entries']);
-        report(true);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          handleEntries(po.takeRecords() as INPMetric['entries']);
+          report(true);
+        }
       });
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        resetInteractions();
+        interactionManager._resetInteractions();
         initNewINPMetric('back-forward-cache', metric.navigationId);
         doubleRAF(() => report());
+
+        metric = initMetric('INP');
+        report = bindReporter(
+          onReport,
+          metric,
+          INPThresholds,
+          opts.reportAllChanges,
+        );
       });
 
       // Soft navs may be detected by navigationId changes in metrics above

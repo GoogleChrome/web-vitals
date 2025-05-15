@@ -42,7 +42,7 @@ export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
  */
 export const onFCP = (
   onReport: (metric: FCPMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   // Set defaults
   opts = opts || {};
@@ -76,7 +76,7 @@ export const onFCP = (
     };
 
     const handleEntries = (entries: FCPMetric['entries']) => {
-      entries.forEach((entry) => {
+      for (const entry of entries) {
         if (entry.name === 'first-contentful-paint') {
           if (!softNavsEnabled) {
             // If we're not using soft navs monitoring, we should not see
@@ -134,7 +134,7 @@ export const onFCP = (
             report(true);
           }
         }
-      });
+      }
     };
 
     const po = observe('paint', handleEntries, opts);

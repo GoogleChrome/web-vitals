@@ -1,5 +1,5 @@
 /*
- * Copyright 2022 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,12 @@
  * limitations under the License.
  */
 
-export {
-  /**
-   * @deprecated Use `onINP()` instead.
-   */
-  onFID,
-  FIDThresholds,
-} from './onFID.js';
+import assert from 'assert';
+
+/**
+ * Returns if two numbers are within a maxDelta of each other
+ * @return Bool
+ */
+export function assertIsCloseTo(actual, expected, maxDelta) {
+  return assert.ok(Math.abs(actual - expected) <= maxDelta);
+}

@@ -26,16 +26,46 @@
   <p>Text below the image</p>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+  {% if prerender %}<p><a id="prerender-link" href="/test/fcp{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
   <script type="module">
     const {onFCP} = await __testImport('{{ modulePath }}');
 
     onFCP((fcp) => {
+      fcp.instance = 1;
+
       // Log for easier manual testing.
-      console.log(fcp);
+      console.log('FCP:', fcp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
-    }, {reportAllChanges: self.__reportAllChanges});
+    }, {
+      reportAllChanges: self.__reportAllChanges,
+    });
+
+    if (self.__doubleCall) {
+      onFCP((fcp) => {
+        fcp.instance = 2;
+
+        // Log for easier manual testing.
+        console.log('FCP2:', fcp);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+      });
+    }
   </script>
+  {% if prerender %}
+  <script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "urls": ["/test/fcp{% if queryString %}?{{ queryString | safe }}{% endif %}"]
+      }
+    ]
+  }
+  </script>
+{% endif %}
 {% endblock %}

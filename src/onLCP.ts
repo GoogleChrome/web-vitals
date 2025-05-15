@@ -14,18 +14,19 @@
  * limitations under the License.
  */
 
+import {LCPEntryManager} from './lib/LCPEntryManager.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {initMetric} from './lib/initMetric.js';
-import {observe} from './lib/observe.js';
-import {onHidden} from './lib/onHidden.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
+import {initMetric} from './lib/initMetric.js';
+import {initUnique} from './lib/initUnique.js';
+import {observe} from './lib/observe.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {whenIdle} from './lib/whenIdle.js';
+import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 import {
   LCPMetric,
   Metric,
@@ -49,11 +50,9 @@ export const LCPThresholds: MetricRatingThresholds = [2500, 4000];
  */
 export const onLCP = (
   onReport: (metric: LCPMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
-  // Set defaults
   let reportedMetric = false;
-  opts = opts || {};
   const softNavsEnabled = softNavs(opts);
   let metricNavStartTime = 0;
   const hardNavId = getNavigationEntry()?.navigationId || '1';
@@ -63,6 +62,8 @@ export const onLCP = (
     let visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
+
+    const lcpEntryManager = initUnique(opts, LCPEntryManager);
 
     const initNewLCPMetric = (
       navigation?: Metric['navigationType'],
@@ -86,7 +87,13 @@ export const onLCP = (
     };
 
     const handleEntries = (entries: LCPMetric['entries']) => {
-      entries.forEach((entry) => {
+      // If reportAllChanges is set then call this function for each entry,
+      // otherwise only consider the last one.
+      if (!opts!.reportAllChanges) {
+        entries = entries.slice(-1);
+      }
+
+      for (const entry of entries) {
         if (entry) {
           if (
             softNavsEnabled &&
@@ -119,16 +126,22 @@ export const onLCP = (
             value = Math.max(entry.startTime - softNavEntryStartTime, 0);
           }
 
+          lcpEntryManager._processEntry(entry);
+
           // Only report if the page wasn't hidden prior to LCP.
-          // We do allow soft navs to be reported, even if hard nav was not.
           if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+            // The startTime attribute returns the value of the renderTime if it is
+            // not 0, and the value of the loadTime otherwise. The activationStart
+            // reference is used because LCP should be relative to page activation
+            // rather than navigation start if the page was prerendered. But in cases
+            // where `activationStart` occurs after the LCP, this time should be
+            // clamped at 0.
             metric.value = value;
             metric.entries = [entry];
-            metric.navigationId = entry.navigationId || hardNavId;
             report();
           }
         }
-      });
+      }
     };
 
     const finalizeLCPs = () => {
@@ -170,7 +183,7 @@ export const onLCP = (
       // Wrap in a setTimeout so the callback is run in a separate task
       // to avoid extending the keyboard/click handler to reduce INP impact
       // https://github.com/GoogleChrome/web-vitals/issues/383
-      whenIdle(finalizeLCPs);
+      whenIdleOrHidden(finalizeLCPs);
     };
 
     const handleHidden = () => {
@@ -194,12 +207,30 @@ export const onLCP = (
 
       addInputListeners();
 
-      onHidden(handleHidden);
+      // Stop listening after input or visibilitychange.
+      // Note: while scrolling is an input that stops LCP observation, it's
+      // unreliable since it can be programmatically generated.
+      // See: https://github.com/GoogleChrome/web-vitals/issues/75
+      for (const type of ['keydown', 'click', 'visibilitychange']) {
+        // Wrap the listener in an idle callback so it's run in a separate
+        // task to reduce potential INP impact.
+        // https://github.com/GoogleChrome/web-vitals/issues/383
+        addEventListener(type, () => whenIdleOrHidden(handleHidden), {
+          capture: true,
+          once: true,
+        });
+      }
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore((event) => {
         initNewLCPMetric('back-forward-cache', metric.navigationId);
+        report = bindReporter(
+          onReport,
+          metric,
+          LCPThresholds,
+          opts!.reportAllChanges,
+        );
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;

@@ -23,7 +23,7 @@ import {
   FCPAttribution,
   FCPMetric,
   FCPMetricWithAttribution,
-  ReportOpts,
+  AttributionReportOpts,
 } from '../types.js';
 
 const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
@@ -37,7 +37,7 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
 
   if (metric.entries.length) {
     let navigationEntry;
-    const fcpEntry = metric.entries[metric.entries.length - 1];
+    const fcpEntry = metric.entries.at(-1);
 
     let ttfb = 0;
     let softNavStart = 0;
@@ -66,7 +66,7 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
     }
   }
 
-  // Use Object.assign to set property to keep tsc happy.
+  // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: FCPMetricWithAttribution = Object.assign(
     metric,
     {attribution},
@@ -82,7 +82,7 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
  */
 export const onFCP = (
   onReport: (metric: FCPMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: AttributionReportOpts = {},
 ) => {
   unattributedOnFCP((metric: FCPMetric) => {
     const metricWithAttribution = attributeFCP(metric);

@@ -14,13 +14,16 @@
  * limitations under the License.
  */
 
-export {
-  /**
-   * @deprecated Use `onINP()` instead.
-   */
-  onFID,
-} from './onFID.js';
+const instanceMap: WeakMap<object, unknown> = new WeakMap();
 
-export {FIDThresholds} from '../onFID.js';
-
-export * from '../types.js';
+/**
+ * A function that accepts and identity object and a class object and returns
+ * either a new instance of that class or an existing instance, if the
+ * identity object was previously used.
+ */
+export function initUnique<T>(identityObj: object, ClassObj: new () => T): T {
+  if (!instanceMap.get(identityObj)) {
+    instanceMap.set(identityObj, new ClassObj());
+  }
+  return instanceMap.get(identityObj)! as T;
+}

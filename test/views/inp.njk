@@ -16,7 +16,7 @@
 {% extends 'layout.njk' %}
 
 {% block content %}
-  <h1 elementtiming="main-heading">INP Test</h1>
+  <h1 elementtiming="main-heading" data-target="main-heading">INP Test</h1>
   <p>
     <label><input type="number" value="0" id="mousedown-blocking-time">
     <code>mousedown</code> blocking time</label>
@@ -58,7 +58,7 @@
     const params = new URLSearchParams(location.search);
     for (const [key, value] of params) {
       const el = document.getElementById(`${key}-blocking-time`);
-      if (el && el.nodeName.toLowerCase() === 'input') {
+      if (el?.nodeName.toLowerCase() === 'input') {
         el.value = value;
       }
     }
@@ -108,6 +108,7 @@
   </script>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
+  {% if prerender %}<p><a id="prerender-link" href="/test/inp{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
   <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nec porta orci, ac sagittis augue. Nullam orci tellus, suscipit sed magna id, mattis iaculis ex. Etiam felis lectus, accumsan eu magna lacinia, lobortis tempus lacus. Donec nulla metus, blandit eget ullamcorper in, placerat eu massa. Curabitur vitae elementum orci, ac tincidunt neque. Maecenas accumsan odio sit amet arcu elementum, non vestibulum enim finibus. Phasellus malesuada lacinia suscipit. Cras ac gravida urna. In et mauris non tellus pretium ultrices. Fusce mattis a risus at tincidunt. Donec ac fringilla magna, nec suscipit lectus. Sed risus massa, rutrum ut leo quis, tempor dapibus dui. Proin in mauris non risus maximus tincidunt quis a mauris.</p>
 
@@ -115,14 +116,44 @@
     const {onINP} = await __testImport('{{ modulePath }}');
 
     onINP((inp) => {
+      inp.instance = 1;
+
       // Log for easier manual testing.
-      console.log(inp);
+      console.log('INP:', inp);
 
       // Test sending the metric to an analytics endpoint.
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
     }, {
       reportAllChanges: self.__reportAllChanges,
       durationThreshold: self.__durationThreshold,
+      generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
+
+    if (self.__doubleCall) {
+      onINP((inp) => {
+        inp.instance = 2;
+
+        // Log for easier manual testing.
+        console.log('INP2:', inp);
+
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
+      }, {
+        reportAllChanges: self.__reportAllChanges2,
+        durationThreshold: self.__durationThreshold2,
+        generateTarget: self.__generateTarget2 && ((el) => el.dataset.target),
+      });
+    }
   </script>
+  {% if prerender %}
+  <script type="speculationrules">
+  {
+    "prerender": [
+      {
+        "urls": ["/test/inp{% if queryString %}?{{ queryString | safe }}{% endif %}"]
+      }
+    ]
+  }
+  </script>
+{% endif %}
 {% endblock %}

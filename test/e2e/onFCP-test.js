@@ -20,14 +20,19 @@ import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {navigateTo} from '../utils/navigateTo.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
+import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
 
 describe('onFCP()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
   let browserSupportsFCP;
+  let browserSupportsPrerender;
   before(async function () {
     browserSupportsFCP = await browserSupportsEntry('paint');
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
   });
 
   beforeEach(async function () {
@@ -44,7 +49,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v4-\d+-\d+$/));
+    assert(fcp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -61,7 +66,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v4-\d+-\d+$/));
+    assert(fcp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -71,11 +76,20 @@ describe('onFCP()', async function () {
 
   it('accounts for time prerendering the page', async function () {
     if (!browserSupportsFCP) this.skip();
+    if (!browserSupportsPrerender) this.skip();
 
     await navigateTo('/test/fcp?prerender=1');
 
     await beaconCountIs(1);
+    await clearBeacons();
 
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
+
+    await beaconCountIs(1);
     const [fcp] = await getBeacons();
 
     const activationStart = await browser.execute(() => {
@@ -83,7 +97,7 @@ describe('onFCP()', async function () {
     });
 
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v4-\d+-\d+$/));
+    assert(fcp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -133,6 +147,7 @@ describe('onFCP()', async function () {
     await navigateTo('/test/fcp?invisible=1', {readyState: 'interactive'});
 
     await stubVisibilityChange('hidden');
+    await webVitalsLoaded();
     await stubVisibilityChange('visible');
 
     // Wait a bit to ensure no beacons were sent.
@@ -153,7 +168,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v4-\d+-\d+$/));
+    assert(fcp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'needs-improvement');
@@ -170,7 +185,7 @@ describe('onFCP()', async function () {
 
     const [fcp1] = await getBeacons();
     assert(fcp1.value >= 0);
-    assert(fcp1.id.match(/^v4-\d+-\d+$/));
+    assert(fcp1.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
     assert.strictEqual(fcp1.rating, 'good');
@@ -184,7 +199,7 @@ describe('onFCP()', async function () {
 
     const [fcp2] = await getBeacons();
     assert(fcp2.value >= 0);
-    assert(fcp2.id.match(/^v4-\d+-\d+$/));
+    assert(fcp2.id.match(/^v5-\d+-\d+$/));
     assert(fcp2.id !== fcp1.id);
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
@@ -199,7 +214,7 @@ describe('onFCP()', async function () {
 
     const [fcp3] = await getBeacons();
     assert(fcp3.value >= 0);
-    assert(fcp3.id.match(/^v4-\d+-\d+$/));
+    assert(fcp3.id.match(/^v5-\d+-\d+$/));
     assert(fcp3.id !== fcp2.id);
     assert.strictEqual(fcp3.name, 'FCP');
     assert.strictEqual(fcp3.value, fcp3.delta);
@@ -227,7 +242,7 @@ describe('onFCP()', async function () {
 
     const [fcp1] = await getBeacons();
     assert(fcp1.value >= 0);
-    assert(fcp1.id.match(/^v4-\d+-\d+$/));
+    assert(fcp1.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
     assert.strictEqual(fcp1.rating, 'good');
@@ -241,7 +256,7 @@ describe('onFCP()', async function () {
 
     const [fcp2] = await getBeacons();
     assert(fcp2.value >= 0);
-    assert(fcp2.id.match(/^v4-\d+-\d+$/));
+    assert(fcp2.id.match(/^v5-\d+-\d+$/));
     assert(fcp2.id !== fcp1.id);
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
@@ -259,12 +274,41 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v4-\d+-\d+$/));
+    assert(fcp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
     assert.strictEqual(fcp.entries.length, 1);
     assert.strictEqual(fcp.navigationType, 'restore');
+  });
+
+  it('works when calling the function twice with different options', async function () {
+    if (!browserSupportsFCP) this.skip();
+
+    await navigateTo('/test/fcp?doubleCall=1&reportAllChanges2=1');
+
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [fcp1] = await getBeacons({instance: 1});
+    const [fcp2] = await getBeacons({instance: 2});
+
+    assert(fcp1.value >= 0);
+    assert(fcp1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(fcp1.name, 'FCP');
+    assert.strictEqual(fcp1.value, fcp1.delta);
+    assert.strictEqual(fcp1.rating, 'good');
+    assert.strictEqual(fcp1.entries.length, 1);
+    assert.match(fcp1.navigationType, /navigate|reload/);
+
+    assert(fcp2.id.match(/^v5-\d+-\d+$/));
+    assert(fcp2.id !== fcp1.id);
+    assert.strictEqual(fcp2.value, fcp1.value);
+    assert.strictEqual(fcp2.delta, fcp1.delta);
+    assert.strictEqual(fcp2.name, fcp1.name);
+    assert.strictEqual(fcp2.rating, fcp1.rating);
+    assert.deepEqual(fcp2.entries, fcp1.entries);
+    assert.strictEqual(fcp2.navigationType, fcp1.navigationType);
   });
 
   describe('attribution', function () {
@@ -287,7 +331,7 @@ describe('onFCP()', async function () {
       const [fcp] = await getBeacons();
 
       assert(fcp.value >= 0);
-      assert(fcp.id.match(/^v4-\d+-\d+$/));
+      assert(fcp.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
       assert.strictEqual(fcp.rating, 'good');
@@ -304,7 +348,11 @@ describe('onFCP()', async function () {
         /^(loading|dom-(interactive|content-loaded)|complete)$/,
       );
 
-      assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
+      // TODO Firefox has a bug causing this to fail. Remove once fixed
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1965441
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.deepEqual(fcp.attribution.fcpEntry, fcpEntry);
+      }
 
       // When FCP is reported, not all values on the NavigationTiming entry
       // are finalized, so just check some keys that should be set before FCP.
@@ -317,10 +365,20 @@ describe('onFCP()', async function () {
 
     it('accounts for time prerendering the page', async function () {
       if (!browserSupportsFCP) this.skip();
+      if (!browserSupportsPrerender) this.skip();
 
       await navigateTo(`/test/fcp?attribution=1&prerender=1`, {
         readyState: 'complete',
       });
+
+      await beaconCountIs(1);
+      await clearBeacons();
+
+      // Wait a bit to allow the prerender to happen
+      await browser.pause(1000);
+
+      const prerenderLink = await $('#prerender-link');
+      await prerenderLink.click();
 
       await beaconCountIs(1);
 
@@ -335,7 +393,7 @@ describe('onFCP()', async function () {
 
       const [fcp] = await getBeacons();
       assert(fcp.value >= 0);
-      assert(fcp.id.match(/^v4-\d+-\d+$/));
+      assert(fcp.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
       assert.strictEqual(fcp.rating, 'good');
@@ -378,7 +436,7 @@ describe('onFCP()', async function () {
 
       const [fcp] = await getBeacons();
       assert(fcp.value >= 0);
-      assert(fcp.id.match(/^v4-\d+-\d+$/));
+      assert(fcp.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
       assert.strictEqual(fcp.rating, 'good');

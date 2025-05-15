@@ -39,7 +39,7 @@ interface PerformanceEntryMap {
 export const observe = <K extends keyof PerformanceEntryMap>(
   type: K,
   callback: (entries: PerformanceEntryMap[K]) => void,
-  opts?: PerformanceObserverInit,
+  opts: PerformanceObserverInit = {},
 ): PerformanceObserver | undefined => {
   const includeSoftNavigationObservations = softNavs(opts);
   try {
@@ -59,13 +59,14 @@ export const observe = <K extends keyof PerformanceEntryMap>(
             buffered: true,
             includeSoftNavigationObservations:
               includeSoftNavigationObservations,
+            ...opts,
           },
           opts || {},
         ) as PerformanceObserverInit,
       );
       return po;
     }
-  } catch (e) {
+  } catch {
     // Do nothing.
   }
   return;

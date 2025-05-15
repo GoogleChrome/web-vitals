@@ -58,6 +58,12 @@ describe('onTTFB()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
 
+  let browserSupportsPrerender;
+  before(async function () {
+    browserSupportsPrerender = await browser.execute(() => {
+      return 'onprerenderingchange' in document;
+    });
+  });
   beforeEach(async function () {
     // In Safari when navigating to 'about:blank' between tests the
     // Navigation Timing data is consistently negative, so the tests fail.
@@ -75,7 +81,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v4-\d+-\d+$/));
+    assert(ttfb.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -93,7 +99,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v4-\d+-\d+$/));
+    assert(ttfb.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -111,7 +117,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 1000);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v4-\d+-\d+$/));
+    assert(ttfb.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'needs-improvement');
@@ -122,7 +128,18 @@ describe('onTTFB()', async function () {
   });
 
   it('accounts for time prerendering the page', async function () {
+    if (!browserSupportsPrerender) this.skip();
+
     await navigateTo('/test/ttfb?prerender=1');
+
+    await getTTFBBeacon();
+    await clearBeacons();
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
 
     const ttfb = await getTTFBBeacon();
 
@@ -143,14 +160,23 @@ describe('onTTFB()', async function () {
   });
 
   it('reports the correct value when run while prerendering', async function () {
-    // Use 500 so prerendering finishes before load but after the module runs.
-    await navigateTo('/test/ttfb?prerender=500&imgDelay=1000');
+    if (!browserSupportsPrerender) this.skip();
+
+    await navigateTo('/test/ttfb?prerender=1&imgDelay=1000');
+
+    await getTTFBBeacon();
+    await clearBeacons();
+
+    // Wait a bit to allow the prerender to happen
+    await browser.pause(1000);
+
+    const prerenderLink = await $('#prerender-link');
+    await prerenderLink.click();
 
     const ttfb = await getTTFBBeacon();
 
-    // Assert that prerendering finished after responseStart and before load.
+    // Assert that prerendering finished after responseStart.
     assert(ttfb.entries[0].activationStart >= ttfb.entries[0].responseStart);
-    assert(ttfb.entries[0].activationStart <= ttfb.entries[0].loadEventEnd);
 
     assert(ttfb.value >= 0);
     assert.strictEqual(ttfb.value, ttfb.delta);
@@ -176,7 +202,7 @@ describe('onTTFB()', async function () {
     assert(ttfb1.value >= 0);
     assert(ttfb1.value >= ttfb1.entries[0].requestStart);
     assert(ttfb1.value <= ttfb1.entries[0].loadEventEnd);
-    assert(ttfb1.id.match(/^v4-\d+-\d+$/));
+    assert(ttfb1.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(ttfb1.name, 'TTFB');
     assert.strictEqual(ttfb1.rating, 'good');
     assert.strictEqual(ttfb1.value, ttfb1.delta);
@@ -190,7 +216,7 @@ describe('onTTFB()', async function () {
 
     const ttfb2 = await getTTFBBeacon();
 
-    assert(ttfb2.id.match(/^v4-\d+-\d+$/));
+    assert(ttfb2.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(ttfb2.value, 0);
     assert.strictEqual(ttfb2.name, 'TTFB');
     assert.strictEqual(ttfb2.value, ttfb2.delta);
@@ -231,7 +257,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v4-\d+-\d+$/));
+    assert(ttfb.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -239,6 +265,36 @@ describe('onTTFB()', async function () {
     assert.strictEqual(ttfb.entries.length, 1);
 
     assertValidEntry(ttfb.entries[0]);
+  });
+
+  it('works when calling the function twice with different options', async function () {
+    await navigateTo('/test/ttfb?doubleCall=1&reportAllChanges2=1');
+
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [ttfb1] = await getBeacons({instance: 1});
+    const [ttfb2] = await getBeacons({instance: 2});
+
+    assert(ttfb1.value >= 0);
+    assert(ttfb1.value >= ttfb1.entries[0].requestStart);
+    assert(ttfb1.value <= ttfb1.entries[0].loadEventEnd);
+    assert(ttfb1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(ttfb1.name, 'TTFB');
+    assert.strictEqual(ttfb1.value, ttfb1.delta);
+    assert.strictEqual(ttfb1.rating, 'good');
+    assert.strictEqual(ttfb1.navigationType, 'navigate');
+    assert.strictEqual(ttfb1.entries.length, 1);
+    assertValidEntry(ttfb1.entries[0]);
+
+    assert(ttfb2.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb2.id !== ttfb1.id);
+    assert.strictEqual(ttfb2.value, ttfb1.value);
+    assert.strictEqual(ttfb2.delta, ttfb1.delta);
+    assert.strictEqual(ttfb2.name, ttfb1.name);
+    assert.strictEqual(ttfb2.rating, ttfb1.rating);
+    assert.deepEqual(ttfb2.entries, ttfb1.entries);
+    assert.strictEqual(ttfb2.navigationType, ttfb1.navigationType);
   });
 
   describe('attribution', function () {
@@ -250,7 +306,7 @@ describe('onTTFB()', async function () {
       assert(ttfb.value >= 0);
       assert(ttfb.value >= ttfb.entries[0].requestStart);
       assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-      assert(ttfb.id.match(/^v4-\d+-\d+$/));
+      assert(ttfb.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
       assert.strictEqual(ttfb.rating, 'good');
@@ -286,7 +342,18 @@ describe('onTTFB()', async function () {
     });
 
     it('accounts for time prerendering the page', async function () {
+      if (!browserSupportsPrerender) this.skip();
+
       await navigateTo('/test/ttfb?attribution=1&prerender=1');
+
+      await getTTFBBeacon();
+      await clearBeacons();
+
+      // Wait a bit to allow the prerender to happen
+      await browser.pause(1000);
+
+      const prerenderLink = await $('#prerender-link');
+      await prerenderLink.click();
 
       const ttfb = await getTTFBBeacon();
 
@@ -354,7 +421,7 @@ describe('onTTFB()', async function () {
       const ttfb = await getTTFBBeacon();
 
       assert(ttfb.value >= 0);
-      assert(ttfb.id.match(/^v4-\d+-\d+$/));
+      assert(ttfb.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
       assert.strictEqual(ttfb.rating, 'good');
@@ -367,6 +434,32 @@ describe('onTTFB()', async function () {
       assert.strictEqual(ttfb.attribution.connectionDuration, 0);
       assert.strictEqual(ttfb.attribution.requestDuration, 0);
       assert.strictEqual(ttfb.attribution.navigationEntry, undefined);
+    });
+
+    it('reports the correct value for Early Hints', async function () {
+      await navigateTo('/test/ttfb?earlyHintsDelay=50&attribution=1');
+
+      const ttfb = await getTTFBBeacon();
+
+      if ('finalResponseHeadersStart' in ttfb.attribution.navigationEntry) {
+        assert.strictEqual(
+          ttfb.value,
+          ttfb.attribution.navigationEntry.responseStart,
+        );
+        assert.strictEqual(
+          ttfb.value,
+          ttfb.attribution.navigationEntry.firstInterimResponseStart,
+        );
+        assert(
+          ttfb.value <
+            ttfb.attribution.navigationEntry.finalResponseHeadersStart,
+        );
+      } else {
+        assert.strictEqual(
+          ttfb.value,
+          ttfb.attribution.navigationEntry.responseStart,
+        );
+      }
     });
   });
 });

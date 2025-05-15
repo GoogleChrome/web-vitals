@@ -15,6 +15,7 @@
  */
 
 import {onBFCacheRestore} from './bfcache.js';
+import {getActivationStart} from './getActivationStart.js';
 
 let firstHiddenTime = -1;
 
@@ -66,11 +67,26 @@ export const getVisibilityWatcher = (reset = false) => {
     firstHiddenTime = -1;
   }
   if (firstHiddenTime < 0) {
-    // If the document is hidden when this code runs, assume it was hidden
-    // since navigation start. This isn't a perfect heuristic, but it's the
-    // best we can do until an API is available to support querying past
-    // visibilityState.
-    firstHiddenTime = initHiddenTime();
+    // Check if we have a previous hidden `visibility-state` performance entry.
+    const activationStart = getActivationStart();
+    /* eslint-disable indent */
+    const firstVisibilityStateHiddenTime = !document.prerendering
+      ? globalThis.performance
+          .getEntriesByType('visibility-state')
+          .filter(
+            (e) => e.name === 'hidden' && e.startTime > activationStart,
+          )[0]?.startTime
+      : undefined;
+    /* eslint-enable indent */
+
+    // Prefer that, but if it's not available and the document is hidden when
+    // this code runs, assume it was hidden since navigation start. This isn't
+    // a perfect heuristic, but it's the best we can do until the
+    // `visibility-state` performance entry becomes available in all browsers.
+    firstHiddenTime = firstVisibilityStateHiddenTime ?? initHiddenTime();
+    // We're still going to listen to for changes so we can handle things like
+    // bfcache restores and/or prerender without having to examine individual
+    // timestamps in detail.
     addChangeListeners();
 
     // Reset the time on bfcache restores.
@@ -81,7 +97,7 @@ export const getVisibilityWatcher = (reset = false) => {
       setTimeout(() => {
         firstHiddenTime = initHiddenTime();
         addChangeListeners();
-      }, 0);
+      });
     });
   }
   return {

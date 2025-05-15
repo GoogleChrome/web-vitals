@@ -24,17 +24,34 @@ const configurePlugins = ({module}) => {
         [
           '@babel/preset-env',
           {
-            targets: {
-              browsers: ['ie 11'],
-            },
+            bugfixes: true,
+            targets: [
+              // Match browsers supporting "Baseline Widely Available" features:
+              // https://web.dev/baseline
+              'chrome >0 and last 2.5 years',
+              'edge >0 and last 2.5 years',
+              'safari >0 and last 2.5 years',
+              'firefox >0 and last 2.5 years',
+              'and_chr >0 and last 2.5 years',
+              'and_ff >0 and last 2.5 years',
+              'ios >0 and last 2.5 years',
+            ],
           },
         ],
       ],
     }),
     terser({
       module,
-      mangle: true,
       compress: true,
+      mangle: {
+        properties: {
+          // Any object properties beginning with the '_' character will be
+          // mangled. Use this prefix for any object properties that are not
+          // part of the public API and do that not match an existing build-in
+          // API names (e.g. `.id` or `.entries`).
+          regex: /^_/,
+        },
+      },
     }),
   ];
 };

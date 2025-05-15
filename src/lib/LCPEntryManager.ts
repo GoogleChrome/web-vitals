@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-export {onCLS, CLSThresholds} from './onCLS.js';
-export {onFCP, FCPThresholds} from './onFCP.js';
-export {onINP, INPThresholds} from './onINP.js';
-export {onLCP, LCPThresholds} from './onLCP.js';
-export {onTTFB, TTFBThresholds} from './onTTFB.js';
+export class LCPEntryManager {
+  _onBeforeProcessingEntry?: (entry: LargestContentfulPaint) => void;
 
-export * from './types.js';
+  _processEntry(entry: LargestContentfulPaint) {
+    this._onBeforeProcessingEntry?.(entry);
+  }
+}

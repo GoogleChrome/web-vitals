@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-export const onHidden = (cb: () => void) => {
-  document.addEventListener('visibilitychange', () => {
-    if (document.visibilityState === 'hidden') {
-      cb();
+/**
+ * Returns a promise that resolves once the browser has run a rIC
+ * (or a setTimeout for non-supporting browsers).
+ * @return {Promise<void>}
+ */
+export function waitUntilIdle() {
+  return browser.executeAsync((done) => {
+    if ('requestIdleCallback' in self) {
+      requestIdleCallback(() => {
+        done();
+      });
+    } else {
+      setTimeout(() => {
+        done();
+      });
     }
   });
-};
+}

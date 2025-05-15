@@ -18,5 +18,5 @@ import {getNavigationEntry} from './getNavigationEntry.js';
 
 export const getActivationStart = (): number => {
   const hardNavEntry = getNavigationEntry();
-  return (hardNavEntry && hardNavEntry.activationStart) || 0;
+  return hardNavEntry?.activationStart ?? 0;
 };

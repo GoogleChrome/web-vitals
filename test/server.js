@@ -39,6 +39,19 @@ app.use((req, res, next) => {
   }
 });
 
+// Allow the use of a `earlyHintsDelay` query param to delay any response
+// after sending an early hints
+app.use((req, res, next) => {
+  if (req.query && req.query.earlyHintsDelay) {
+    res.writeEarlyHints({
+      'link': '</styles.css>; rel=preload; as=style',
+    });
+    setTimeout(next, req.query.earlyHintsDelay);
+  } else {
+    next();
+  }
+});
+
 // Add a "collect" endpoint to simulate analytics beacons.
 app.post('/collect', bodyParser.text(), (req, res) => {
   // Uncomment to log the metric when manually testing.
@@ -57,6 +70,7 @@ app.get('/test/:view', function (req, res, next) {
 
   const data = {
     ...req.query,
+    queryString: new URLSearchParams(req.query).toString(),
     modulePath: modulePath,
   };
 

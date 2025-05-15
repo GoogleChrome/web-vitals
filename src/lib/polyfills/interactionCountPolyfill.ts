@@ -31,26 +31,32 @@ let softNavsEnabled = false;
 
 const updateEstimate = (entries: PerformanceEventTiming[]) => {
   if (!currentNavId) currentNavId = getNavigationEntry()?.navigationId || '1';
-  entries.forEach((e) => {
-    if (e.interactionId) {
+  for (const entry of entries) {
+    if (entry.interactionId) {
       if (
         softNavsEnabled &&
-        e.navigationId &&
-        e.navigationId !== currentNavId
+        entry.navigationId &&
+        entry.navigationId !== currentNavId
       ) {
-        currentNavId = e.navigationId;
+        currentNavId = entry.navigationId;
         interactionCountEstimate = 0;
         minKnownInteractionId = Infinity;
         maxKnownInteractionId = 0;
       }
-      minKnownInteractionId = Math.min(minKnownInteractionId, e.interactionId);
-      maxKnownInteractionId = Math.max(maxKnownInteractionId, e.interactionId);
+      minKnownInteractionId = Math.min(
+        minKnownInteractionId,
+        entry.interactionId,
+      );
+      maxKnownInteractionId = Math.max(
+        maxKnownInteractionId,
+        entry.interactionId,
+      );
 
       interactionCountEstimate = maxKnownInteractionId
         ? (maxKnownInteractionId - minKnownInteractionId) / 7 + 1
         : 0;
     }
-  });
+  }
 };
 
 let po: PerformanceObserver | undefined;
@@ -60,7 +66,7 @@ let po: PerformanceObserver | undefined;
  * or the polyfill estimate in this module.
  */
 export const getInteractionCount = () => {
-  return po ? interactionCountEstimate : performance.interactionCount || 0;
+  return po ? interactionCountEstimate : performance.interactionCount ?? 0;
 };
 
 /**

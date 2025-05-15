@@ -21,27 +21,27 @@ const getName = (node: Node) => {
     : name.toUpperCase().replace(/^#/, '');
 };
 
-export const getSelector = (node: Node | null | undefined, maxLen?: number) => {
+const MAX_LEN = 100;
+
+export const getSelector = (node: Node | null) => {
   let sel = '';
 
   try {
-    while (node && node.nodeType !== 9) {
+    while (node?.nodeType !== 9) {
       const el: Element = node as Element;
       const part = el.id
         ? '#' + el.id
-        : getName(el) +
-          (el.classList &&
-          el.classList.value &&
-          el.classList.value.trim() &&
-          el.classList.value.trim().length
-            ? '.' + el.classList.value.trim().replace(/\s+/g, '.')
-            : '');
-      if (sel.length + part.length > (maxLen || 100) - 1) return sel || part;
+        : [getName(el), ...Array.from(el.classList).sort()].join('.');
+      if (sel.length + part.length > MAX_LEN - 1) {
+        return sel || part;
+      }
       sel = sel ? part + '>' + sel : part;
-      if (el.id) break;
+      if (el.id) {
+        break;
+      }
       node = el.parentNode;
     }
-  } catch (err) {
+  } catch {
     // Do nothing...
   }
   return sel;

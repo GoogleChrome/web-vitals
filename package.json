@@ -1,6 +1,6 @@
 {
   "name": "web-vitals",
-  "version": "4.2.3-soft-navs",
+  "version": "5.0.1-soft-navs",
   "description": "Easily measure performance metrics in JavaScript",
   "type": "module",
   "typings": "dist/modules/index.d.ts",
@@ -31,10 +31,6 @@
       "types": "./dist/modules/onFCP.d.ts",
       "default": "./dist/modules/onFCP.js"
     },
-    "./onFID.js": {
-      "types": "./dist/modules/onFID.d.ts",
-      "default": "./dist/modules/onFID.js"
-    },
     "./onINP.js": {
       "types": "./dist/modules/onINP.d.ts",
       "default": "./dist/modules/onINP.js"
@@ -54,10 +50,6 @@
     "./attribution/onFCP.js": {
       "types": "./dist/modules/attribution/onFCP.d.ts",
       "default": "./dist/modules/attribution/onFCP.js"
-    },
-    "./attribution/onFID.js": {
-      "types": "./dist/modules/attribution/onFID.d.ts",
-      "default": "./dist/modules/attribution/onFID.js"
     },
     "./attribution/onINP.js": {
       "types": "./dist/modules/attribution/onINP.d.ts",
@@ -92,6 +84,9 @@
     "release:major": "npm version major -m 'Release v%s' && npm publish",
     "release:minor": "npm version minor -m 'Release v%s' && npm publish",
     "release:patch": "npm version patch -m 'Release v%s' && npm publish",
+    "release:alpha": "npm version prerelease --preid=alpha -m 'Release v%s' && npm publish --tag next",
+    "release:beta": "npm version prerelease --preid=beta -m 'Release v%s' && npm publish --tag next",
+    "release:rc": "npm version prerelease --preid=rc -m 'Release v%s' && npm publish --tag next",
     "test": "npm-run-all build test:unit -p -r test:e2e test:server",
     "test:e2e": "wdio wdio.conf.cjs",
     "test:server": "node test/server.js",
@@ -110,7 +105,6 @@
     "Core Web Vitals",
     "CLS",
     "FCP",
-    "FID",
     "INP",
     "LCP",
     "TTFB"

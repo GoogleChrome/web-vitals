@@ -42,17 +42,13 @@ The library supports all of the [Core Web Vitals](https://web.dev/articles/vital
 
 - [First Contentful Paint (FCP)](https://web.dev/articles/fcp)
 - [Time to First Byte (TTFB)](https://web.dev/articles/ttfb)
-- [First Input Delay (FID)](https://web.dev/articles/fid)
 
-> [!CAUTION]
-> FID is deprecated and will be removed in the next major release.
-
-<a name="installation"><a>
-<a name="load-the-library"><a>
+<a name="installation"></a>
+<a name="load-the-library"></a>
 
 ## Install and load the library
 
-<a name="import-web-vitals-from-npm"><a>
+<a name="import-web-vitals-from-npm"></a>
 
 The `web-vitals` library uses the `buffered` flag for [PerformanceObserver](https://developer.mozilla.org/docs/Web/API/PerformanceObserver/observe), allowing it to access performance entries that occurred before the library was loaded.
 
@@ -79,16 +75,9 @@ To load the "standard" build, import modules from the `web-vitals` package in yo
 
 ```js
 import {onLCP, onINP, onCLS} from 'web-vitals';
-
-onCLS(console.log);
-onINP(console.log);
-onLCP(console.log);
 ```
 
-> [!NOTE]
-> In version 2, these functions were named `getXXX()` rather than `onXXX()`. They've [been renamed](https://github.com/GoogleChrome/web-vitals/pull/222) in version 3 to reduce confusion (see [#217](https://github.com/GoogleChrome/web-vitals/pull/217) for details) and will continue to be available using the `getXXX()` until at least version 4. Users are encouraged to switch to the new names, though, for future compatibility.
-
-<a name="attribution-build"><a>
+<a name="attribution-build"></a>
 
 **2. The "attribution" build**
 
@@ -96,20 +85,20 @@ Measuring the Web Vitals scores for your real users is a great first step toward
 
 The "attribution" build helps you do that by including additional diagnostic information with each metric to help you identify the root cause of poor performance as well as prioritize the most important things to fix.
 
-The "attribution" build is slightly larger than the "standard" build (by about 600 bytes, brotli'd), so while the code size is still small, it's only recommended if you're actually using these features.
+The "attribution" build is slightly larger than the "standard" build (by about 1.5K, brotli'd), so while the code size is still small, it's only recommended if you're actually using these features.
 
 To load the "attribution" build, change any `import` statements that reference `web-vitals` to `web-vitals/attribution`:
 
 ```diff
-- import {onLCP, onINP, onCLS} from 'web-vitals';
-+ import {onLCP, onINP, onCLS} from 'web-vitals/attribution';
+import {onLCP, onINP, onCLS} from 'web-vitals';
+import {onLCP, onINP, onCLS} from 'web-vitals/attribution';
 ```
 
 Usage for each of the imported function is identical to the standard build, but when importing from the attribution build, the [metric](#metric) objects will contain an additional [`attribution`](#attribution) property.
 
 See [Send attribution data](#send-attribution-data) for usage examples, and the [`attribution` reference](#attribution) for details on what values are added for each metric.
 
-<a name="load-web-vitals-from-a-cdn"><a>
+<a name="load-web-vitals-from-a-cdn"></a>
 
 ### From a CDN
 
@@ -131,6 +120,8 @@ _**Important!** The [unpkg.com](https://unpkg.com), [jsDelivr](https://www.jsdel
   onLCP(console.log);
 </script>
 ```
+
+Note: When the web-vitals code is isolated from the application code in this way, there is less need to depend on dynamic imports so this code uses a regular `import` line.
 
 **Load the "standard" build** _(using a classic script)_
 
@@ -210,8 +201,8 @@ Note that some of these metrics will not report until the user has interacted wi
 
 Also, in some cases a metric callback may never be called:
 
-- FID and INP are not reported if the user never interacts with the page.
-- CLS, FCP, FID, and LCP are not reported if the page was loaded in the background.
+- INP is not reported if the user never interacts with the page.
+- CLS, FCP, and LCP are not reported if the page was loaded in the background.
 
 In other cases, a metric callback may be called more than once:
 
@@ -225,8 +216,7 @@ In other cases, a metric callback may be called more than once:
 
 In most cases, you only want the `callback` function to be called when the metric is ready to be reported. However, it is possible to report every change (e.g. each larger layout shift as it happens) by setting `reportAllChanges` to `true` in the optional, [configuration object](#reportopts) (second parameter).
 
-> [!IMPORTANT]
-> `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP.
+> [!IMPORTANT] > `reportAllChanges` only reports when the **metric changes**, not for each **input to the metric**. For example, a new layout shift that does not increase the CLS metric will not be reported even with `reportAllChanges` set to `true` because the CLS metric has not changed. Similarly, for INP, each interaction is not reported even with `reportAllChanges` set to `true`—just when an interaction causes an increase to INP.
 
 This can be useful when debugging, but in general using `reportAllChanges` is not needed (or recommended) for measuring these metrics in production.
 
@@ -327,19 +317,23 @@ onLCP(doSoftNavProcessing, {reportSoftNavs: true});
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
 
-The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/docs/Web/API/Fetch_API) API when not.
+The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method, which is widely available across browsers, and supports sending data as the page is being unloaded.
 
 ```js
 import {onCLS, onINP, onLCP} from 'web-vitals';
 
 function sendToAnalytics(metric) {
-  // Replace with whatever serialization method you prefer.
-  // Note: JSON.stringify will likely include more data than you need.
-  const body = JSON.stringify(metric);
+  const body = JSON.stringify({
+    name: metric.name,
+    value: metric.value,
+    id: metric.id,
 
-  // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-  (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-    fetch('/analytics', {body, method: 'POST', keepalive: true});
+    // Include additional data as needed...
+  });
+
+  // Use `navigator.sendBeacon()` to send the data, which supports
+  // sending while the page is unloading.
+  navigator.sendBeacon('/analytics', body);
 }
 
 onCLS(sendToAnalytics);
@@ -457,9 +451,9 @@ function flushQueue() {
     // Note: JSON.stringify will likely include more data than you need.
     const body = JSON.stringify([...queue]);
 
-    // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-    (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-      fetch('/analytics', {body, method: 'POST', keepalive: true});
+    // Use `navigator.sendBeacon()` to send the data, which supports
+    // sending while the page is unloading.
+    navigator.sendBeacon('/analytics', body);
 
     queue.clear();
   }
@@ -480,7 +474,7 @@ addEventListener('visibilitychange', () => {
 > [!NOTE]
 > See [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`.
 
-<a name="bundle-versions"><a>
+<a name="bundle-versions"></a>
 
 ## Build options
 
@@ -542,7 +536,7 @@ The following table lists all the builds distributed with the `web-vitals` packa
   </tr>
 </table>
 
-<a name="which-build-is-right-for-you"><a>
+<a name="which-build-is-right-for-you"></a>
 
 ### Which build is right for you?
 
@@ -565,7 +559,7 @@ interface Metric {
   /**
    * The name of the metric (in acronym form).
    */
-  name: 'CLS' | 'FCP' | 'FID' | 'INP' | 'LCP' | 'TTFB';
+  name: 'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB';
 
   /**
    * The current value of the metric.
@@ -652,18 +646,6 @@ interface FCPMetric extends Metric {
 }
 ```
 
-##### `FIDMetric`
-
-> [!CAUTION]
-> This interface is deprecated and will be removed in the next major release.
-
-```ts
-interface FIDMetric extends Metric {
-  name: 'FID';
-  entries: PerformanceEventTiming[];
-}
-```
-
 ##### `INPMetric`
 
 ```ts
@@ -716,6 +698,35 @@ _See also [Rating Thresholds](#rating-thresholds)._
 ```ts
 interface ReportOpts {
   reportAllChanges?: boolean;
+}
+```
+
+Metric-specific subclasses:
+
+##### `INPReportOpts`
+
+```ts
+interface INPReportOpts extends ReportOpts {
+  durationThreshold?: number;
+}
+```
+
+#### `AttributionReportOpts`
+
+A subclass of `ReportOpts` used for each metric function exported in the [attribution build](#attribution).
+
+```ts
+interface AttributionReportOpts extends ReportOpts {
+  generateTarget?: (el: Node | null) => string;
+}
+```
+
+Metric-specific subclasses:
+
+##### `INPAttributionReportOpts`
+
+```ts
+interface INPAttributionReportOpts extends AttributionReportOpts {
   durationThreshold?: number;
   reportSoftNavs?: boolean;
 }
@@ -758,10 +769,10 @@ function onCLS(callback: (metric: CLSMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [CLS](https://web.dev/articles/cls) value for the current page and calls the `callback` function once the value is ready to be reported, along with all `layout-shift` performance entries that were used in the metric value calculation. The reported value is a [double](https://heycam.github.io/webidl/#idl-double) (corresponding to a [layout shift score](https://web.dev/articles/cls#layout_shift_score)).
 
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every layout shift](#report-the-value-on-every-change)).
-
 > [!IMPORTANT]
 > CLS should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this).
+
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (though [not necessarily for every layout shift](#report-the-value-on-every-change)). Note that regardless of whether `reportAllChanges` is used, the final reported value will be the same.
 
 #### `onFCP()`
 
@@ -771,34 +782,23 @@ function onFCP(callback: (metric: FCPMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [FCP](https://web.dev/articles/fcp) value for the current page and calls the `callback` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-#### `onFID()`
-
-> [!CAUTION]
-> This function is deprecated and will be removed in the next major release.
-
-```ts
-function onFID(callback: (metric: FIDMetric) => void, opts?: ReportOpts): void;
-```
-
-Calculates the [FID](https://web.dev/articles/fid) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
-
-> [!IMPORTANT]
-> Since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads.
-
 #### `onINP()`
 
 ```ts
-function onINP(callback: (metric: INPMetric) => void, opts?: ReportOpts): void;
+function onINP(
+  callback: (metric: INPMetric) => void,
+  opts?: INPReportOpts,
+): void;
 ```
 
 Calculates the [INP](https://web.dev/articles/inp) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
-
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every interaction](#report-the-value-on-every-change)).
-
 > [!IMPORTANT]
 > INP should be continually monitored for changes throughout the entire lifespan of a page—including if the user returns to the page after it's been hidden/backgrounded. However, since browsers often [will not fire additional callbacks once the user has backgrounded a page](https://developer.chrome.com/blog/page-lifecycle-api/#advice-hidden), `callback` is always called when the page's visibility state changes to hidden. As a result, the `callback` function might be called multiple times during the same page load (see [Reporting only the delta of changes](#report-only-the-delta-of-changes) for how to manage this).
+
+A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control the minimum duration filter for `event-timing`. Events which are faster than this threshold are not reported. Note that the `first-input` entry is always observed, regardless of duration, to ensure you always have some INP score. The default threshold, after the library is initialized, is `40` milliseconds (the `event-timing` default of `104` milliseconds applies to all events emitted before the library is initialised). This default threshold of `40` is chosen to strike a balance between usefulness and performance. Running this callback for any interaction that spans just one or two frames is likely not worth the insight that could be gained.
+
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (though [not necessarily for every interaction](#report-the-value-on-every-change)). Note that regardless of whether `reportAllChanges` is used, the final reported value will be the same.
 
 #### `onLCP()`
 
@@ -808,7 +808,7 @@ function onLCP(callback: (metric: LCPMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and calls the `callback` function once the value is ready (along with the relevant `largest-contentful-paint` performance entry used to determine the value). The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined.
+If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called any time a new `largest-contentful-paint` performance entry is dispatched, or once the final value of the metric has been determined. Note that regardless of whether `reportAllChanges` is used, the final reported value will be the same.
 
 #### `onTTFB()`
 
@@ -858,20 +858,43 @@ console.log(LCPThresholds); // [ 2500, 4000 ]
 
 ### Attribution:
 
-The following objects contain potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
+In the [attribution build](#attribution-build) each of the metric functions has two primary differences from their standard build counterparts:
 
-When using the attribution build, these objects are found as an `attribution` property on each metric.
+1. Their callback is invoked with a `MetricWithAttribution` objects instead of a `Metric` object. Each `MetricWithAttribution` extends the `Metric` object and adds an additional `attribution` object, which contains potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
 
-See the [attribution build](#attribution-build) section for details on how to use this feature.
+2. They accept an `AttributionReportOpts` objects instead of a `ReportOpts` object. The `AttributionReportOpts` object supports an additional, optional, `generateTarget()` function that lets developers customize how DOM elements are stringified for reporting purposes. When passed, the return value of the `generateTarget()` function will be used for any "target" properties in the following attribution objects: [`CLSAttribution`](#CLSAttribution), [`INPAttribution`](#INPAttribution), and [`LCPAttribution`](#LCPAttribution).
+
+   ```ts
+   interface AttributionReportOpts extends ReportOpts {
+     generateTarget?: (el: Node | null) => string;
+   }
+   ```
+
+   For example, if a web page has unique `data-name` attibute on many elements, you may prefer to use those over the built-in selector-style strings that are generated by default.
+
+   ```js
+   function customGenerateTarget(el) {
+     if (el.dataset.name) {
+       return el.dataset.name;
+     }
+
+     // Do some other fallback when data-name doesn't exist (not-shown).
+   }
+
+   onLCP(sendToAnalytics, {generateTarget: customGenerateTarget});
+   ```
+
+The next sections document the shape of the `attribution` object for each of the metrics:
 
 #### `CLSAttribution`
 
 ```ts
 interface CLSAttribution {
   /**
-   * A selector identifying the first element (in document order) that
-   * shifted when the single largest layout shift contributing to the page's
-   * CLS score occurred.
+   * By default, a selector identifying the first element (in document order)
+   * that shifted when the single largest layout shift that contributed to the
+   * page's CLS score occurred. If the `generateTarget` configuration option
+   * was passed, then this will instead be the return value of that function.
    */
   largestShiftTarget?: string;
   /**
@@ -937,77 +960,25 @@ interface FCPAttribution {
 }
 ```
 
-#### `FIDAttribution`
-
-> [!CAUTION]
-> This interface is deprecated and will be removed in the next major release.
-
-```ts
-interface FIDAttribution {
-  /**
-   * A selector identifying the element that the user interacted with. This
-   * element will be the `target` of the `event` dispatched.
-   */
-  eventTarget: string;
-  /**
-   * The time when the user interacted. This time will match the `timeStamp`
-   * value of the `event` dispatched.
-   */
-  eventTime: number;
-  /**
-   * The `type` of the `event` dispatched from the user interaction.
-   */
-  eventType: string;
-  /**
-   * The `PerformanceEventTiming` entry corresponding to FID.
-   */
-  eventEntry: PerformanceEventTiming;
-  /**
-   * The loading state of the document at the time when the first interaction
-   * occurred (see `LoadState` for details). If the first interaction occurred
-   * while the document was loading and executing script (e.g. usually in the
-   * `dom-interactive` phase) it can result in long input delays.
-   */
-  loadState: LoadState;
-}
-```
-
 #### `INPAttribution`
 
 ```ts
 interface INPAttribution {
   /**
-   * A selector identifying the element that the user first interacted with
-   * as part of the frame where the INP candidate interaction occurred.
-   * If this value is an empty string, that generally means the element was
-   * removed from the DOM after the interaction.
+   * By default, a selector identifying the element that the user first
+   * interacted with as part of the frame where the INP candidate interaction
+   * occurred. If this value is an empty string, that generally means the
+   * element was removed from the DOM after the interaction. If the
+   * `generateTarget` configuration option was passed, then this will instead
+   * be the return value of that function.
    */
   interactionTarget: string;
-  /**
-   * A reference to the HTML element identified by `interactionTarget`.
-   * NOTE: for attribution purpose, a selector identifying the element is
-   * typically more useful than the element itself. However, the element is
-   * also made available in case additional context is needed.
-   */
-  interactionTargetElement: Node | undefined;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred
    * within the frame, only the first time is reported).
    */
   interactionTime: DOMHighResTimeStamp;
-  /**
-   * The best-guess timestamp of the next paint after the interaction.
-   * In general, this timestamp is the same as the `startTime + duration` of
-   * the event timing entry. However, since `duration` values are rounded to
-   * the nearest 8ms, it can sometimes appear that the paint occurred before
-   * processing ended (which cannot happen). This value clamps the paint time
-   * so it's always after `processingEnd` from the Event Timing API and
-   * `renderStart` from the Long Animation Frame API (where available).
-   * It also averages the duration values for all entries in the same
-   * animation frame, which should be closer to the "real" value.
-   */
-  nextPaintTime: DOMHighResTimeStamp;
   /**
    * The type of interaction, based on the event type of the `event` entry
    * that corresponds to the interaction (i.e. the first `event` entry
@@ -1017,19 +988,18 @@ interface INPAttribution {
    */
   interactionType: 'pointer' | 'keyboard';
   /**
+   * The best-guess timestamp of the next paint after the interaction.
+   * In general, this timestamp is the same as the `startTime + duration` of
+   * the event timing entry. However, since duration values are rounded to the
+   * nearest 8ms (and can be rounded down), this value is clamped to always be
+   * reported after the processing times.
+   */
+  nextPaintTime: DOMHighResTimeStamp;
+  /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
    */
   processedEventEntries: PerformanceEventTiming[];
-  /**
-   * If the browser supports the Long Animation Frame API, this array will
-   * include any `long-animation-frame` entries that intersect with the INP
-   * candidate interaction's `startTime` and the `processingEnd` time of the
-   * last event processed within that animation frame. If the browser does not
-   * support the Long Animation Frame API or no `long-animation-frame` entries
-   * are detect, this array will be empty.
-   */
-  longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
   /**
    * The time from when the user interacted with the page until when the
    * browser was first able to start processing event listeners for that
@@ -1058,6 +1028,68 @@ interface INPAttribution {
    * (e.g. usually in the `dom-interactive` phase) it can result in long delays.
    */
   loadState: LoadState;
+  /**
+   * If the browser supports the Long Animation Frame API, this array will
+   * include any `long-animation-frame` entries that intersect with the INP
+   * candidate interaction's `startTime` and the `processingEnd` time of the
+   * last event processed within that animation frame. If the browser does not
+   * support the Long Animation Frame API or no `long-animation-frame` entries
+   * are detected, this array will be empty.
+   */
+  longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[];
+  /**
+   * Summary information about the longest script entry intersecting the INP
+   * duration. Note, only script entries above 5 milliseconds are reported by
+   * the Long Animation Frame API.
+   */
+  longestScript?: INPLongestScriptSummary;
+  /**
+   * The total duration of Long Animation Frame scripts that intersect the INP
+   * duration excluding any forced style and layout (that is included in
+   * totalStyleAndLayout). Note, this is limited to scripts > 5 milliseconds.
+   */
+  totalScriptDuration?: number;
+  /**
+   * The total style and layout duration from any Long Animation Frames
+   * intersecting the INP interaction. This includes any end-of-frame style and
+   * layout duration + any forced style and layout duration.
+   */
+  totalStyleAndLayoutDuration?: number;
+  /**
+   * The off main-thread presentation delay from the end of the last Long
+   * Animation Frame (where available) until the INP end point.
+   */
+  totalPaintDuration?: number;
+  /**
+   * The total unattributed time not included in any of the previous totals.
+   * This includes scripts < 5 milliseconds and other timings not attributed
+   * by Long Animation Frame (including when a frame is < 50ms and so has no
+   * Long Animation Frame).
+   * When no Long Animation Frames are present this will be undefined, rather
+   * than everything being unattributed to make it clearer when it's expected
+   * to be small.
+   */
+  totalUnattributedDuration?: number;
+}
+```
+
+#### `INPLongestScriptSummary`
+
+```ts
+interface INPLongestScriptSummary {
+  /**
+   * The longest Long Animation Frame script entry that intersects the INP
+   * interaction.
+   */
+  entry: PerformanceScriptTiming;
+  /**
+   * The INP subpart where the longest script ran.
+   */
+  subpart: 'input-delay' | 'processing-duration' | 'presentation-delay';
+  /**
+   * The amount of time the longest script intersected the INP duration.
+   */
+  intersectingDuration: number;
 }
 ```
 
@@ -1066,9 +1098,12 @@ interface INPAttribution {
 ```ts
 interface LCPAttribution {
   /**
-   * The element corresponding to the largest contentful paint for the page.
+   * By default, a selector identifying the element corresponding to the
+   * largest contentful paint for the page. If the `generateTarget`
+   * configuration option was passed, then this will instead be the return
+   * value of that function.
    */
-  element?: string;
+  target?: string;
   /**
    * The URL (if applicable) of the LCP image resource. If the LCP element
    * is a text node, this value will not be set.
@@ -1119,7 +1154,7 @@ interface LCPAttribution {
 #### `TTFBAttribution`
 
 ```ts
-export interface TTFBAttribution {
+interface TTFBAttribution {
   /**
    * The total time from when the user initiates loading the page to when the
    * page starts to handle the request. Large values here are typically due
@@ -1159,13 +1194,14 @@ export interface TTFBAttribution {
 
 ## Browser Support
 
-The `web-vitals` code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9. However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
+The `web-vitals` code is tested in Chrome, Firefox, and Safari. In addition, all JavaScript features used in the code are part of ([Baseline Widely Available](https://web.dev/baseline)), and thus should run without error in all versions of these browsers released within the last 30 months.
+
+However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet), which means in some browsers those metrics will not be reported.
 
 Browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari
-- `onFID()`: Chromium, Firefox _(Deprecated)_
 - `onINP()`: Chromium
 - `onLCP()`: Chromium, Firefox
 - `onTTFB()`: Chromium, Firefox, Safari

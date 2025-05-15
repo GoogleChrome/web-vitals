@@ -14,14 +14,15 @@
  * limitations under the License.
  */
 
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {initMetric} from './lib/initMetric.js';
-import {observe} from './lib/observe.js';
-import {onBFCacheRestore} from './lib/bfcache.js';
-import {onHidden} from './lib/onHidden.js';
-import {runOnce} from './lib/runOnce.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {initMetric} from './lib/initMetric.js';
+import {initUnique} from './lib/initUnique.js';
+import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
+import {observe} from './lib/observe.js';
+import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
 import {
   CLSMetric,
@@ -56,10 +57,8 @@ export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
  */
 export const onCLS = (
   onReport: (metric: CLSMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
   const softNavsEnabled = softNavs(opts);
   let reportedMetric = false;
   let metricNavStartTime = 0;
@@ -71,21 +70,20 @@ export const onCLS = (
       let metric = initMetric('CLS', 0);
       let report: ReturnType<typeof bindReporter>;
 
-      let sessionValue = 0;
-      let sessionEntries: LayoutShift[] = [];
+      const layoutShiftManager = initUnique(opts, LayoutShiftManager);
 
       const initNewCLSMetric = (
         navigation?: Metric['navigationType'],
         navigationId?: string,
       ) => {
         metric = initMetric('CLS', 0, navigation, navigationId);
+        layoutShiftManager._sessionValue = 0;
         report = bindReporter(
           onReport,
           metric,
           CLSThresholds,
           opts!.reportAllChanges,
         );
-        sessionValue = 0;
         reportedMetric = false;
         if (navigation === 'soft-navigation') {
           const softNavEntry = getSoftNavigationEntry(navigationId);
@@ -94,7 +92,7 @@ export const onCLS = (
       };
 
       const handleEntries = (entries: LayoutShift[]) => {
-        entries.forEach((entry) => {
+        for (const entry of entries) {
           // If the entry is for a new navigationId than previous, then we have
           // entered a new soft nav, so emit the final LCP and reinitialize the
           // metric.
@@ -103,44 +101,17 @@ export const onCLS = (
             entry.navigationId &&
             entry.navigationId !== metric.navigationId
           ) {
-            // If the current session value is larger than the current CLS value,
-            // update CLS and the entries contributing to it.
-            if (sessionValue > metric.value) {
-              metric.value = sessionValue;
-              metric.entries = sessionEntries;
-            }
             report(true);
             initNewCLSMetric('soft-navigation', entry.navigationId);
           }
-
-          // Only count layout shifts without recent user input.
-          if (!entry.hadRecentInput) {
-            const firstSessionEntry = sessionEntries[0];
-            const lastSessionEntry = sessionEntries[sessionEntries.length - 1];
-
-            // If the entry occurred less than 1 second after the previous entry
-            // and less than 5 seconds after the first entry in the session,
-            // include the entry in the current session. Otherwise, start a new
-            // session.
-            if (
-              sessionValue &&
-              entry.startTime - lastSessionEntry.startTime < 1000 &&
-              entry.startTime - firstSessionEntry.startTime < 5000
-            ) {
-              sessionValue += entry.value;
-              sessionEntries.push(entry);
-            } else {
-              sessionValue = entry.value;
-              sessionEntries = [entry];
-            }
-          }
-        });
+          layoutShiftManager._processEntry(entry);
+        }
 
         // If the current session value is larger than the current CLS value,
         // update CLS and the entries contributing to it.
-        if (sessionValue > metric.value) {
-          metric.value = sessionValue;
-          metric.entries = sessionEntries;
+        if (layoutShiftManager._sessionValue > metric.value) {
+          metric.value = layoutShiftManager._sessionValue;
+          metric.entries = layoutShiftManager._sessionEntries;
           report();
         }
       };
@@ -154,16 +125,19 @@ export const onCLS = (
           opts!.reportAllChanges,
         );
 
-        onHidden(() => {
-          handleEntries(po.takeRecords() as CLSMetric['entries']);
-          report(true);
-          reportedMetric = true;
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') {
+            handleEntries(po.takeRecords() as CLSMetric['entries']);
+            report(true);
+            reportedMetric = true;
+          }
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
           initNewCLSMetric('back-forward-cache', metric.navigationId);
+
           doubleRAF(() => report());
         });
 
@@ -178,7 +152,7 @@ export const onCLS = (
         // are already dealt with so just checking navigationId differs from
         // current metric's navigation id, as we did above, is not sufficient.
         const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
-          entries.forEach((entry) => {
+          for (const entry of entries) {
             const navId = entry.navigationId;
             const softNavEntry = navId ? getSoftNavigationEntry(navId) : null;
             if (
@@ -196,7 +170,7 @@ export const onCLS = (
                 opts!.reportAllChanges,
               );
             }
-          });
+          }
         };
 
         if (softNavsEnabled) {
@@ -206,7 +180,7 @@ export const onCLS = (
         // Queue a task to report (if nothing else triggers a report first).
         // This allows CLS to be reported as soon as FCP fires when
         // `reportAllChanges` is true.
-        setTimeout(report, 0);
+        setTimeout(report);
       }
     }),
   );

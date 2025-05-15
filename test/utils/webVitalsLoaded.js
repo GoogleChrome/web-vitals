@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2025 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,14 @@
  * limitations under the License.
  */
 
-export {onCLS, CLSThresholds} from './onCLS.js';
-export {onFCP, FCPThresholds} from './onFCP.js';
-export {onINP, INPThresholds} from './onINP.js';
-export {onLCP, LCPThresholds} from './onLCP.js';
-export {onTTFB, TTFBThresholds} from './onTTFB.js';
-
-export * from './types.js';
+/**
+ * Returns a promise that resolves once the web-vitals library has been
+ * loaded via the `__testImport()` function.
+ * @return {Promise<void>}
+ */
+export function webVitalsLoaded() {
+  return browser.waitUntil(async () => {
+    const isLoaded = await browser.execute(() => self.__isWebVitalsLoaded);
+    return isLoaded === true;
+  });
+}
