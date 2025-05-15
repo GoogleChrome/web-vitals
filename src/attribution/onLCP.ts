@@ -15,6 +15,7 @@
  */
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
+import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
@@ -61,6 +62,7 @@ export const onLCP = (
   };
 
   const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
+    const hardNavId = getNavigationEntry()?.navigationId || '1';
     // Use a default object if no other attribution has been set.
     let attribution: LCPAttribution = {
       timeToFirstByte: 0,
@@ -70,9 +72,29 @@ export const onLCP = (
     };
 
     if (metric.entries.length) {
-      const navigationEntry = getNavigationEntry();
+      let navigationEntry;
+      let activationStart = 0;
+      let responseStart = 0;
+      let softNavStart = 0;
+
+      if (!metric.navigationId || metric.navigationId === hardNavId) {
+        navigationEntry = getNavigationEntry();
+        activationStart =
+          navigationEntry && navigationEntry.activationStart
+            ? navigationEntry.activationStart
+            : 0;
+        responseStart =
+          navigationEntry && navigationEntry.responseStart
+            ? navigationEntry.responseStart
+            : 0;
+      } else {
+        navigationEntry = getSoftNavigationEntry(metric.navigationId);
+        // Set activationStart to the SoftNav start time
+        softNavStart = navigationEntry ? navigationEntry.startTime : 0;
+        activationStart = softNavStart;
+      }
+
       if (navigationEntry) {
-        const activationStart = navigationEntry.activationStart || 0;
         // The `metric.entries.length` check ensures there will be an entry.
         const lcpEntry = metric.entries.at(-1)!;
         const lcpResourceEntry =
@@ -81,10 +103,7 @@ export const onLCP = (
             .getEntriesByType('resource')
             .filter((e) => e.name === lcpEntry.url)[0];
 
-        const ttfb = Math.max(
-          0,
-          navigationEntry.responseStart - activationStart,
-        );
+        const ttfb = Math.max(0, responseStart - activationStart);
 
         const lcpRequestStart = Math.max(
           ttfb,
@@ -98,10 +117,11 @@ export const onLCP = (
           // Cap at LCP time (videos continue downloading after LCP for example)
           metric.value,
           Math.max(
-            lcpRequestStart,
+            lcpRequestStart - softNavStart,
             lcpResourceEntry
               ? lcpResourceEntry.responseEnd - activationStart
               : 0,
+            0,
           ),
         );
 

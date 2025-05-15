@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import {softNavs} from './softNavs.js';
+
 interface PerformanceEntryMap {
   'event': PerformanceEventTiming[];
   'first-input': PerformanceEventTiming[];
@@ -23,6 +25,7 @@ interface PerformanceEntryMap {
   'paint': PerformancePaintTiming[];
   'navigation': PerformanceNavigationTiming[];
   'resource': PerformanceResourceTiming[];
+  'soft-navigation': SoftNavigationEntry[];
 }
 
 /**
@@ -38,6 +41,7 @@ export const observe = <K extends keyof PerformanceEntryMap>(
   callback: (entries: PerformanceEntryMap[K]) => void,
   opts: PerformanceObserverInit = {},
 ): PerformanceObserver | undefined => {
+  const includeSoftNavigationObservations = softNavs(opts);
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
       const po = new PerformanceObserver((list) => {
@@ -48,7 +52,18 @@ export const observe = <K extends keyof PerformanceEntryMap>(
           callback(list.getEntries() as PerformanceEntryMap[K]);
         });
       });
-      po.observe({type, buffered: true, ...opts});
+      po.observe(
+        Object.assign(
+          {
+            type,
+            buffered: true,
+            includeSoftNavigationObservations:
+              includeSoftNavigationObservations,
+            ...opts,
+          },
+          opts || {},
+        ) as PerformanceObserverInit,
+      );
       return po;
     }
   } catch {
