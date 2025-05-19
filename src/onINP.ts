@@ -24,10 +24,9 @@ import {
   resetInteractions,
 } from './lib/interactions.js';
 import {observe} from './lib/observe.js';
-import {onHidden} from './lib/onHidden.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {whenIdle} from './lib/whenIdle.js';
+import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
 import {INPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
@@ -40,11 +39,13 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
  * the `event` performance entries reported for that interaction. The reported
  * value is a `DOMHighResTimeStamp`.
  *
- * A custom `durationThreshold` configuration option can optionally be passed to
- * control what `event-timing` entries are considered for INP reporting. The
- * default threshold is `40`, which means INP scores of less than 40 are
- * reported as 0. Note that this will not affect your 75th percentile INP value
- * unless that value is also less than 40 (well below the recommended
+ * A custom `durationThreshold` configuration option can optionally be passed
+ * to control what `event-timing` entries are considered for INP reporting. The
+ * default threshold is `40`, which means INP scores of less than 40 will not
+ * be reported. To avoid reporting no interactions in these cases, the library
+ * will fall back to the input delay of the first interaction. Note that this
+ * will not affect your 75th percentile INP value unless that value is also
+ * less than 40 (well below the recommended
  * [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
@@ -63,20 +64,17 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
  */
 export const onINP = (
   onReport: (metric: INPMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   // Return if the browser doesn't support all APIs needed to measure INP.
   if (
     !(
-      'PerformanceEventTiming' in self &&
+      globalThis.PerformanceEventTiming &&
       'interactionId' in PerformanceEventTiming.prototype
     )
   ) {
     return;
   }
-
-  // Set defaults
-  opts = opts || {};
 
   whenActivated(() => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.
@@ -92,8 +90,10 @@ export const onINP = (
       // have been dispatched. Note: there is currently an experiment
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
-      whenIdle(() => {
-        entries.forEach(processInteractionEntry);
+      whenIdleOrHidden(() => {
+        for (const entry of entries) {
+          processInteractionEntry(entry);
+        }
 
         const inp = estimateP98LongestInteraction();
 
@@ -127,9 +127,11 @@ export const onINP = (
       // where the first interaction is less than the `durationThreshold`.
       po.observe({type: 'first-input', buffered: true});
 
-      onHidden(() => {
-        handleEntries(po.takeRecords() as INPMetric['entries']);
-        report(true);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          handleEntries(po.takeRecords() as INPMetric['entries']);
+          report(true);
+        }
       });
 
       // Only report after a bfcache restore if the `PerformanceObserver`

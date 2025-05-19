@@ -42,10 +42,6 @@ The library supports all of the [Core Web Vitals](https://web.dev/articles/vital
 
 - [First Contentful Paint (FCP)](https://web.dev/articles/fcp)
 - [Time to First Byte (TTFB)](https://web.dev/articles/ttfb)
-- [First Input Delay (FID)](https://web.dev/articles/fid)
-
-> [!CAUTION]
-> FID is deprecated and will be removed in the next major release.
 
 <a name="installation"><a>
 <a name="load-the-library"><a>
@@ -210,8 +206,8 @@ Note that some of these metrics will not report until the user has interacted wi
 
 Also, in some cases a metric callback may never be called:
 
-- FID and INP are not reported if the user never interacts with the page.
-- CLS, FCP, FID, and LCP are not reported if the page was loaded in the background.
+- INP is not reported if the user never interacts with the page.
+- CLS, FCP, and LCP are not reported if the page was loaded in the background.
 
 In other cases, a metric callback may be called more than once:
 
@@ -266,7 +262,7 @@ In addition to using the `id` field to group multiple deltas for the same metric
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
 
-The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method (if available), but falls back to the [`fetch()`](https://developer.mozilla.org/docs/Web/API/Fetch_API) API when not.
+The `sendToAnalytics()` function uses the [`navigator.sendBeacon()`](https://developer.mozilla.org/docs/Web/API/Navigator/sendBeacon) method, which is widely available across browsers, and supports sending data as the page is being unloaded.
 
 ```js
 import {onCLS, onINP, onLCP} from 'web-vitals';
@@ -276,9 +272,9 @@ function sendToAnalytics(metric) {
   // Note: JSON.stringify will likely include more data than you need.
   const body = JSON.stringify(metric);
 
-  // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-  (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-    fetch('/analytics', {body, method: 'POST', keepalive: true});
+  // Use `navigator.sendBeacon()` to send the data, which supports
+  // sending while the page is unloading.
+  navigator.sendBeacon('/analytics', body);
 }
 
 onCLS(sendToAnalytics);
@@ -396,9 +392,9 @@ function flushQueue() {
     // Note: JSON.stringify will likely include more data than you need.
     const body = JSON.stringify([...queue]);
 
-    // Use `navigator.sendBeacon()` if available, falling back to `fetch()`.
-    (navigator.sendBeacon && navigator.sendBeacon('/analytics', body)) ||
-      fetch('/analytics', {body, method: 'POST', keepalive: true});
+    // Use `navigator.sendBeacon()` to send the data, which supports
+    // sending while the page is unloading.
+    navigator.sendBeacon('/analytics', body);
 
     queue.clear();
   }
@@ -504,7 +500,7 @@ interface Metric {
   /**
    * The name of the metric (in acronym form).
    */
-  name: 'CLS' | 'FCP' | 'FID' | 'INP' | 'LCP' | 'TTFB';
+  name: 'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB';
 
   /**
    * The current value of the metric.
@@ -580,18 +576,6 @@ interface CLSMetric extends Metric {
 interface FCPMetric extends Metric {
   name: 'FCP';
   entries: PerformancePaintTiming[];
-}
-```
-
-##### `FIDMetric`
-
-> [!CAUTION]
-> This interface is deprecated and will be removed in the next major release.
-
-```ts
-interface FIDMetric extends Metric {
-  name: 'FID';
-  entries: PerformanceEventTiming[];
 }
 ```
 
@@ -701,20 +685,6 @@ function onFCP(callback: (metric: FCPMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [FCP](https://web.dev/articles/fcp) value for the current page and calls the `callback` function once the value is ready, along with the relevant `paint` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-#### `onFID()`
-
-> [!CAUTION]
-> This function is deprecated and will be removed in the next major release.
-
-```ts
-function onFID(callback: (metric: FIDMetric) => void, opts?: ReportOpts): void;
-```
-
-Calculates the [FID](https://web.dev/articles/fid) value for the current page and calls the `callback` function once the value is ready, along with the relevant `first-input` performance entry used to determine the value. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
-
-> [!IMPORTANT]
-> Since FID is only reported after the user interacts with the page, it's possible that it will not be reported for some page loads.
-
 #### `onINP()`
 
 ```ts
@@ -723,7 +693,7 @@ function onINP(callback: (metric: INPMetric) => void, opts?: ReportOpts): void;
 
 Calculates the [INP](https://web.dev/articles/inp) value for the current page and calls the `callback` function once the value is ready, along with the `event` performance entries reported for that interaction. The reported value is a [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp).
 
-A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control what `event-timing` entries are considered for INP reporting. The default threshold is `40`, which means INP scores of less than 40 are reported as 0. Note that this will not affect your 75th percentile INP value unless that value is also less than 40 (well below the recommended [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
+A custom `durationThreshold` [configuration option](#reportopts) can optionally be passed to control the minimum duration filter for `event-timing`. Events which are faster than this threshold are not reported. Note that the `first-input` entry is always observed, regardless of duration, to ensure you always have some INP score. The default threshold, after the library is initialized, is `40` milliseconds (the `event-timing` default of `104` milliseconds applies to all events emitted before the library is initialised). This default threshold of `40` is chosen to strike a balance between usefulness and performance. Running this callback for any interaction that spans just one or two frames is likely not worth the insight that could be gained.
 
 If the `reportAllChanges` [configuration option](#reportopts) is set to `true`, the `callback` function will be called as soon as the value is initially determined as well as any time the value changes throughout the page lifespan (Note [not necessarily for every interaction](#report-the-value-on-every-change)).
 
@@ -867,41 +837,6 @@ interface FCPAttribution {
 }
 ```
 
-#### `FIDAttribution`
-
-> [!CAUTION]
-> This interface is deprecated and will be removed in the next major release.
-
-```ts
-interface FIDAttribution {
-  /**
-   * A selector identifying the element that the user interacted with. This
-   * element will be the `target` of the `event` dispatched.
-   */
-  eventTarget: string;
-  /**
-   * The time when the user interacted. This time will match the `timeStamp`
-   * value of the `event` dispatched.
-   */
-  eventTime: number;
-  /**
-   * The `type` of the `event` dispatched from the user interaction.
-   */
-  eventType: string;
-  /**
-   * The `PerformanceEventTiming` entry corresponding to FID.
-   */
-  eventEntry: PerformanceEventTiming;
-  /**
-   * The loading state of the document at the time when the first interaction
-   * occurred (see `LoadState` for details). If the first interaction occurred
-   * while the document was loading and executing script (e.g. usually in the
-   * `dom-interactive` phase) it can result in long input delays.
-   */
-  loadState: LoadState;
-}
-```
-
 #### `INPAttribution`
 
 ```ts
@@ -929,13 +864,9 @@ interface INPAttribution {
   /**
    * The best-guess timestamp of the next paint after the interaction.
    * In general, this timestamp is the same as the `startTime + duration` of
-   * the event timing entry. However, since `duration` values are rounded to
-   * the nearest 8ms, it can sometimes appear that the paint occurred before
-   * processing ended (which cannot happen). This value clamps the paint time
-   * so it's always after `processingEnd` from the Event Timing API and
-   * `renderStart` from the Long Animation Frame API (where available).
-   * It also averages the duration values for all entries in the same
-   * animation frame, which should be closer to the "real" value.
+   * the event timing entry. However, since duration values are rounded to the
+   * nearest 8ms (and can be rounded down), this value is clamped to always be
+   * reported after the processing times.
    */
   nextPaintTime: DOMHighResTimeStamp;
   /**
@@ -1089,13 +1020,14 @@ export interface TTFBAttribution {
 
 ## Browser Support
 
-The `web-vitals` code has been tested and will run without error in all major browsers as well as Internet Explorer back to version 9. However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet).
+The `web-vitals` code is tested in Chrome, Firefox, and Safari. In addition, all JavaScript features used in the code are part of ([Baseline Widely Available](https://web.dev/baseline)), and thus should run without error in all versions of these browsers released within the last 30 months.
+
+However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet), which means in some browsers those metrics will not be reported.
 
 Browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari
-- `onFID()`: Chromium, Firefox _(Deprecated)_
 - `onINP()`: Chromium
 - `onLCP()`: Chromium, Firefox
 - `onTTFB()`: Chromium, Firefox, Safari

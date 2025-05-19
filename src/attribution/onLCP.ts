@@ -37,7 +37,8 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
     const navigationEntry = getNavigationEntry();
     if (navigationEntry) {
       const activationStart = navigationEntry.activationStart || 0;
-      const lcpEntry = metric.entries[metric.entries.length - 1];
+      // The `metric.entries.length` check ensures there will be an entry.
+      const lcpEntry = metric.entries.at(-1)!;
       const lcpResourceEntry =
         lcpEntry.url &&
         performance
@@ -54,13 +55,13 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
               activationStart
           : 0,
       );
-      const lcpResponseEnd = Math.max(
-        lcpRequestStart,
-        lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
-      );
-      const lcpRenderTime = Math.max(
-        lcpResponseEnd,
-        lcpEntry.startTime - activationStart,
+      const lcpResponseEnd = Math.min(
+        // Cap at LCP time (videos continue downloading after LCP for example)
+        metric.value,
+        Math.max(
+          lcpRequestStart,
+          lcpResourceEntry ? lcpResourceEntry.responseEnd - activationStart : 0,
+        ),
       );
 
       attribution = {
@@ -68,7 +69,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
         timeToFirstByte: ttfb,
         resourceLoadDelay: lcpRequestStart - ttfb,
         resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
-        elementRenderDelay: lcpRenderTime - lcpResponseEnd,
+        elementRenderDelay: metric.value - lcpResponseEnd,
         navigationEntry,
         lcpEntry,
       };
@@ -83,7 +84,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
     }
   }
 
-  // Use Object.assign to set property to keep tsc happy.
+  // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: LCPMetricWithAttribution = Object.assign(
     metric,
     {attribution},
@@ -104,7 +105,7 @@ const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
  */
 export const onLCP = (
   onReport: (metric: LCPMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   unattributedOnLCP((metric: LCPMetric) => {
     const metricWithAttribution = attributeLCP(metric);

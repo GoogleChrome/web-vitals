@@ -78,7 +78,7 @@ export const getVisibilityWatcher = () => {
       setTimeout(() => {
         firstHiddenTime = initHiddenTime();
         addChangeListeners();
-      }, 0);
+      });
     });
   }
   return {

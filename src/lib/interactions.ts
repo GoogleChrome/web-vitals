@@ -87,14 +87,15 @@ export const entryPreProcessingCallbacks: EntryPreProcessingHook[] = [];
  * and entries list is updated as needed.
  */
 export const processInteractionEntry = (entry: PerformanceEventTiming) => {
-  entryPreProcessingCallbacks.forEach((cb) => cb(entry));
+  for (const cb of entryPreProcessingCallbacks) {
+    cb(entry);
+  }
 
   // Skip further processing for entries that cannot be INP candidates.
   if (!(entry.interactionId || entry.entryType === 'first-input')) return;
 
   // The least-long of the 10 longest interactions.
-  const minLongestInteraction =
-    longestInteractionList[longestInteractionList.length - 1];
+  const minLongestInteraction = longestInteractionList.at(-1);
 
   const existingInteraction = longestInteractionMap.get(entry.interactionId!);
 
@@ -103,7 +104,8 @@ export const processInteractionEntry = (entry: PerformanceEventTiming) => {
   if (
     existingInteraction ||
     longestInteractionList.length < MAX_INTERACTIONS_TO_CONSIDER ||
-    entry.duration > minLongestInteraction.latency
+    // If the above conditions are false, `minLongestInteraction` will be set.
+    entry.duration > minLongestInteraction!.latency
   ) {
     // If the interaction already exists, update it. Otherwise create one.
     if (existingInteraction) {
@@ -131,9 +133,13 @@ export const processInteractionEntry = (entry: PerformanceEventTiming) => {
     // Sort the entries by latency (descending) and keep only the top ten.
     longestInteractionList.sort((a, b) => b.latency - a.latency);
     if (longestInteractionList.length > MAX_INTERACTIONS_TO_CONSIDER) {
-      longestInteractionList
-        .splice(MAX_INTERACTIONS_TO_CONSIDER)
-        .forEach((i) => longestInteractionMap.delete(i.id));
+      const removedInteractions = longestInteractionList.splice(
+        MAX_INTERACTIONS_TO_CONSIDER,
+      );
+
+      for (const interaction of removedInteractions) {
+        longestInteractionMap.delete(interaction.id);
+      }
     }
   }
 };

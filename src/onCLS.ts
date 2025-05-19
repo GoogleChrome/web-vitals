@@ -19,7 +19,6 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {onHidden} from './lib/onHidden.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
 import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
@@ -50,11 +49,8 @@ export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
  */
 export const onCLS = (
   onReport: (metric: CLSMetric) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
-
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   onFCP(
@@ -66,11 +62,11 @@ export const onCLS = (
       let sessionEntries: LayoutShift[] = [];
 
       const handleEntries = (entries: LayoutShift[]) => {
-        entries.forEach((entry) => {
+        for (const entry of entries) {
           // Only count layout shifts without recent user input.
           if (!entry.hadRecentInput) {
             const firstSessionEntry = sessionEntries[0];
-            const lastSessionEntry = sessionEntries[sessionEntries.length - 1];
+            const lastSessionEntry = sessionEntries.at(-1);
 
             // If the entry occurred less than 1 second after the previous entry
             // and less than 5 seconds after the first entry in the session,
@@ -78,6 +74,8 @@ export const onCLS = (
             // session.
             if (
               sessionValue &&
+              firstSessionEntry &&
+              lastSessionEntry &&
               entry.startTime - lastSessionEntry.startTime < 1000 &&
               entry.startTime - firstSessionEntry.startTime < 5000
             ) {
@@ -88,7 +86,7 @@ export const onCLS = (
               sessionEntries = [entry];
             }
           }
-        });
+        }
 
         // If the current session value is larger than the current CLS value,
         // update CLS and the entries contributing to it.
@@ -108,9 +106,11 @@ export const onCLS = (
           opts!.reportAllChanges,
         );
 
-        onHidden(() => {
-          handleEntries(po.takeRecords() as CLSMetric['entries']);
-          report(true);
+        document.addEventListener('visibilitychange', () => {
+          if (document.visibilityState === 'hidden') {
+            handleEntries(po.takeRecords() as CLSMetric['entries']);
+            report(true);
+          }
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`
@@ -131,7 +131,7 @@ export const onCLS = (
         // Queue a task to report (if nothing else triggers a report first).
         // This allows CLS to be reported as soon as FCP fires when
         // `reportAllChanges` is true.
-        setTimeout(report, 0);
+        setTimeout(report);
       }
     }),
   );

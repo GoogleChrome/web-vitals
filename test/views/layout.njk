@@ -89,7 +89,7 @@
               Object.defineProperty(navEntry, 'activationStart', {
                 configurable: true,
                 enumerable: true,
-                value: Math.min(time, fcpEntry && fcpEntry.startTime || time),
+                value: Math.min(time, fcpEntry?.startTime ?? time),
               });
               self.__stubVisibilityChange('visible');
               delete document.prerendering;

@@ -16,7 +16,6 @@
 
 import type {CLSMetric, CLSMetricWithAttribution} from './cls.js';
 import type {FCPMetric, FCPMetricWithAttribution} from './fcp.js';
-import type {FIDMetric, FIDMetricWithAttribution} from './fid.js';
 import type {INPMetric, INPMetricWithAttribution} from './inp.js';
 import type {LCPMetric, LCPMetricWithAttribution} from './lcp.js';
 import type {TTFBMetric, TTFBMetricWithAttribution} from './ttfb.js';
@@ -25,7 +24,7 @@ export interface Metric {
   /**
    * The name of the metric (in acronym form).
    */
-  name: 'CLS' | 'FCP' | 'FID' | 'INP' | 'LCP' | 'TTFB';
+  name: 'CLS' | 'FCP' | 'INP' | 'LCP' | 'TTFB';
 
   /**
    * The current value of the metric.
@@ -87,7 +86,6 @@ export interface Metric {
 export type MetricType =
   | CLSMetric
   | FCPMetric
-  | FIDMetric
   | INPMetric
   | LCPMetric
   | TTFBMetric;
@@ -96,7 +94,6 @@ export type MetricType =
 export type MetricWithAttribution =
   | CLSMetricWithAttribution
   | FCPMetricWithAttribution
-  | FIDMetricWithAttribution
   | INPMetricWithAttribution
   | LCPMetricWithAttribution
   | TTFBMetricWithAttribution;

@@ -22,7 +22,7 @@ import {
   longestInteractionMap,
 } from '../lib/interactions.js';
 import {observe} from '../lib/observe.js';
-import {whenIdle} from '../lib/whenIdle.js';
+import {whenIdleOrHidden} from '../lib/whenIdleOrHidden.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
 import {
   INPAttribution,
@@ -76,10 +76,8 @@ const entryToEntriesGroupMap: WeakMap<
 // A mapping of interactionIds to the target Node.
 export const interactionTargetMap: Map<number, Node> = new Map();
 
-// A reference to the idle task used to clean up entries from the above
-// variables. If the value is -1 it means no task is queue, and if it's
-// greater than -1 the value corresponds to the idle callback handle.
-let idleHandle: number = -1;
+// A boolean flag indicating whether or not a cleanup task has been queued.
+let cleanupPending = false;
 
 /**
  * Adds new LoAF entries to the `pendingLoAFs` list.
@@ -159,8 +157,9 @@ const groupEntriesByRenderTime = (entry: PerformanceEventTiming) => {
 
 const queueCleanup = () => {
   // Queue cleanup of entries that are not part of any INP candidates.
-  if (idleHandle < 0) {
-    idleHandle = whenIdle(cleanupEntries);
+  if (!cleanupPending) {
+    whenIdleOrHidden(cleanupEntries);
+    cleanupPending = true;
   }
 };
 
@@ -168,11 +167,11 @@ const cleanupEntries = () => {
   // Delete any stored interaction target elements if they're not part of one
   // of the 10 longest interactions.
   if (interactionTargetMap.size > 10) {
-    interactionTargetMap.forEach((_, key) => {
+    for (const [key] of interactionTargetMap) {
       if (!longestInteractionMap.has(key)) {
         interactionTargetMap.delete(key);
       }
-    });
+    }
   }
 
   // Keep all render times that are part of a pending INP candidate or
@@ -190,13 +189,11 @@ const cleanupEntries = () => {
   // 1) intersect with entries in the newly cleaned up `pendingEntriesGroups`
   // 2) occur after the most recently-processed event entry (for up to MAX_PREVIOUS_FRAMES)
   const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
-  for (let i = 0; i < pendingEntriesGroups.length; i++) {
-    const group = pendingEntriesGroups[i];
-    getIntersectingLoAFs(group.startTime, group.processingEnd).forEach(
-      (loaf) => {
-        loafsToKeep.add(loaf);
-      },
-    );
+  for (const group of pendingEntriesGroups) {
+    const loafs = getIntersectingLoAFs(group.startTime, group.processingEnd);
+    for (const loaf of loafs) {
+      loafsToKeep.add(loaf);
+    }
   }
   const prevFrameIndexCutoff = pendingLoAFs.length - 1 - MAX_PREVIOUS_FRAMES;
   // Filter `pendingLoAFs` to preserve LoAF order.
@@ -208,8 +205,7 @@ const cleanupEntries = () => {
     return loafsToKeep.has(loaf);
   });
 
-  // Reset the idle callback handle so it can be queued again.
-  idleHandle = -1;
+  cleanupPending = false;
 };
 
 entryPreProcessingCallbacks.push(
@@ -221,9 +217,9 @@ const getIntersectingLoAFs = (
   start: DOMHighResTimeStamp,
   end: DOMHighResTimeStamp,
 ) => {
-  const intersectingLoAFs = [];
+  const intersectingLoAFs: PerformanceLongAnimationFrameTiming[] = [];
 
-  for (let i = 0, loaf; (loaf = pendingLoAFs[i]); i++) {
+  for (const loaf of pendingLoAFs) {
     // If the LoAF ends before the given start time, ignore it.
     if (loaf.startTime + loaf.duration < start) continue;
 
@@ -242,7 +238,21 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   const group = entryToEntriesGroupMap.get(firstEntry)!;
 
   const processingStart = firstEntry.processingStart;
-  const processingEnd = group.processingEnd;
+
+  // Due to the fact that durations can be rounded down to the nearest 8ms,
+  // we have to clamp `nextPaintTime` so it doesn't appear to occur before
+  // processing starts. Note: we can't use `processingEnd` since processing
+  // can extend beyond the event duration in some cases (see next comment).
+  const nextPaintTime = Math.max(
+    firstEntry.startTime + firstEntry.duration,
+    processingStart,
+  );
+
+  // For the purposes of attribution, clamp `processingEnd` to `nextPaintTime`,
+  // so processing is never reported as taking longer than INP (which can
+  // happen via the web APIs in the case of sync modals, e.g. `alert()`).
+  // See: https://github.com/GoogleChrome/web-vitals/issues/492
+  const processingEnd = Math.min(group.processingEnd, nextPaintTime);
 
   // Sort the entries in processing time order.
   const processedEventEntries = group.entries.sort((a, b) => {
@@ -260,20 +270,8 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
   // cases where the element is removed from the DOM before reporting happens).
   const firstEntryWithTarget = metric.entries.find((entry) => entry.target);
   const interactionTargetElement =
-    (firstEntryWithTarget && firstEntryWithTarget.target) ||
+    firstEntryWithTarget?.target ??
     interactionTargetMap.get(firstEntry.interactionId);
-
-  // Since entry durations are rounded to the nearest 8ms, we need to clamp
-  // the `nextPaintTime` value to be higher than the `processingEnd` or
-  // end time of any LoAF entry.
-  const nextPaintTimeCandidates = [
-    firstEntry.startTime + firstEntry.duration,
-    processingEnd,
-  ].concat(
-    longAnimationFrameEntries.map((loaf) => loaf.startTime + loaf.duration),
-  );
-
-  const nextPaintTime = Math.max.apply(Math, nextPaintTimeCandidates);
 
   const attribution: INPAttribution = {
     interactionTarget: getSelector(interactionTargetElement),
@@ -285,11 +283,11 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     longAnimationFrameEntries: longAnimationFrameEntries,
     inputDelay: processingStart - firstEntry.startTime,
     processingDuration: processingEnd - processingStart,
-    presentationDelay: Math.max(nextPaintTime - processingEnd, 0),
+    presentationDelay: nextPaintTime - processingEnd,
     loadState: getLoadState(firstEntry.startTime),
   };
 
-  // Use Object.assign to set property to keep tsc happy.
+  // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: INPMetricWithAttribution = Object.assign(
     metric,
     {attribution},
@@ -303,11 +301,13 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
  * the `event` performance entries reported for that interaction. The reported
  * value is a `DOMHighResTimeStamp`.
  *
- * A custom `durationThreshold` configuration option can optionally be passed to
- * control what `event-timing` entries are considered for INP reporting. The
- * default threshold is `40`, which means INP scores of less than 40 are
- * reported as 0. Note that this will not affect your 75th percentile INP value
- * unless that value is also less than 40 (well below the recommended
+ * A custom `durationThreshold` configuration option can optionally be passed
+ * to control what `event-timing` entries are considered for INP reporting. The
+ * default threshold is `40`, which means INP scores of less than 40 will not
+ * be reported. To avoid reporting no interactions in these cases, the library
+ * will fall back to the input delay of the first interaction. Note that this
+ * will not affect your 75th percentile INP value unless that value is also
+ * less than 40 (well below the recommended
  * [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
@@ -326,7 +326,7 @@ const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
  */
 export const onINP = (
   onReport: (metric: INPMetricWithAttribution) => void,
-  opts?: ReportOpts,
+  opts: ReportOpts = {},
 ) => {
   if (!loafObserver) {
     loafObserver = observe('long-animation-frame', handleLoAFEntries);
