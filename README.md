@@ -113,7 +113,7 @@ _**Important!** The [unpkg.com](https://unpkg.com), [jsDelivr](https://www.jsdel
 ```html
 <!-- Append the `?module` param to load the module version of `web-vitals` -->
 <script type="module">
-  import {onCLS, onINP, onLCP} from 'https://unpkg.com/web-vitals@4?module';
+  import {onCLS, onINP, onLCP} from 'https://unpkg.com/web-vitals@5?module';
 
   onCLS(console.log);
   onINP(console.log);
@@ -129,7 +129,7 @@ Note: When the web-vitals code is isolated from the application code in this way
 <script>
   (function () {
     var script = document.createElement('script');
-    script.src = 'https://unpkg.com/web-vitals@4/dist/web-vitals.iife.js';
+    script.src = 'https://unpkg.com/web-vitals@5/dist/web-vitals.iife.js';
     script.onload = function () {
       // When loading `web-vitals` using a classic script, all the public
       // methods can be found on the `webVitals` global namespace.
@@ -151,7 +151,7 @@ Note: When the web-vitals code is isolated from the application code in this way
     onCLS,
     onINP,
     onLCP,
-  } from 'https://unpkg.com/web-vitals@4/dist/web-vitals.attribution.js?module';
+  } from 'https://unpkg.com/web-vitals@5/dist/web-vitals.attribution.js?module';
 
   onCLS(console.log);
   onINP(console.log);
@@ -166,7 +166,7 @@ Note: When the web-vitals code is isolated from the application code in this way
   (function () {
     var script = document.createElement('script');
     script.src =
-      'https://unpkg.com/web-vitals@4/dist/web-vitals.attribution.iife.js';
+      'https://unpkg.com/web-vitals@5/dist/web-vitals.attribution.iife.js';
     script.onload = function () {
       // When loading `web-vitals` using a classic script, all the public
       // methods can be found on the `webVitals` global namespace.
