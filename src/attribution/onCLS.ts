@@ -72,7 +72,7 @@ export const onCLS = (
   layoutShiftManager._onAfterProcessingUnexpectedShift = (
     entry: LayoutShift,
   ) => {
-    if (entry.sources.length) {
+    if (entry?.sources?.length) {
       const largestSource = getLargestLayoutShiftSource(entry.sources);
       if (largestSource) {
         const generateTargetFn = opts.generateTarget ?? getSelector;
@@ -88,7 +88,7 @@ export const onCLS = (
 
     if (metric.entries.length) {
       const largestEntry = getLargestLayoutShiftEntry(metric.entries);
-      if (largestEntry?.sources.length) {
+      if (largestEntry?.sources?.length) {
         const largestSource = getLargestLayoutShiftSource(largestEntry.sources);
         if (largestSource) {
           attribution = {

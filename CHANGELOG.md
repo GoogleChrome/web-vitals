@@ -1,5 +1,9 @@
 # Changelog
 
+### v5.0.2 (2025-05-29)
+
+- Handle layout shifts with no sources ([#623](https://github.com/GoogleChrome/web-vitals/pull/623))
+
 ### v5.0.1 (2025-05-13)
 
 - Fix missing FCP and LCP for prerendered pages ([#621](https://github.com/GoogleChrome/web-vitals/pull/621))
