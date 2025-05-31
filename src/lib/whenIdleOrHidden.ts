@@ -33,8 +33,7 @@ export const whenIdleOrHidden = (cb: () => void) => {
     rIC(() => {
       cb();
       // Remove the above EventListener since no longer required
-      // to prevent multiple ones building up wasting needless
-      // memory and processing time
+      // See: https://github.com/GoogleChrome/web-vitals/issues/622
       document.removeEventListener('visibilitychange', cb);
     });
   }
