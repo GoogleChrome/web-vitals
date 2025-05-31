@@ -29,7 +29,13 @@ export const whenIdleOrHidden = (cb: () => void) => {
     cb();
   } else {
     cb = runOnce(cb);
-    rIC(cb);
     document.addEventListener('visibilitychange', cb, {once: true});
+    rIC(() => {
+      cb();
+      // Remove the above EventListener since no longer required
+      // to prevent multiple ones building up wasting needless
+      // memory and processing time
+      document.removeEventListener('visibilitychange', cb);
+    });
   }
 };
