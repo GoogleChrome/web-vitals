@@ -43,7 +43,7 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
     // time is included in cacheDuration (which also includes other sw time
     // anyway, that cannot be accurately split out cross-browser).
     const waitEnd = Math.max(
-      (navigationEntry.workerStart || navigationEntry.fetchStart) -
+      (navigationEntry.workerStart || navigationEntry.fetchStart || 0) -
         activationStart,
       0,
     );
