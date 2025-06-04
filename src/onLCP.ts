@@ -88,18 +88,14 @@ export const onLCP = (
 
     const handleEntries = (entries: LCPMetric['entries']) => {
       // If reportAllChanges is set then call this function for each entry,
-      // otherwise only consider the last one.
-      if (!opts!.reportAllChanges) {
+      // otherwise only consider the last one, unless soft navs are enabled.
+      if (!opts!.reportAllChanges && !softNavsEnabled) {
         entries = entries.slice(-1);
       }
 
       for (const entry of entries) {
         if (entry) {
-          if (
-            softNavsEnabled &&
-            entry.navigationId &&
-            entry.navigationId !== metric.navigationId
-          ) {
+          if (softNavsEnabled && entry?.navigationId !== metric.navigationId) {
             // If the entry is for a new navigationId than previous, then we have
             // entered a new soft nav, so emit the final LCP and reinitialize the
             // metric.
@@ -255,10 +251,8 @@ export const onLCP = (
             ? getSoftNavigationEntry(entry.navigationId)
             : null;
           if (
-            entry.navigationId &&
-            entry.navigationId !== metric.navigationId &&
-            softNavEntry &&
-            (softNavEntry.startTime || 0) > metricNavStartTime
+            entry?.navigationId !== metric.navigationId &&
+            (softNavEntry?.startTime || 0) > metricNavStartTime
           ) {
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
