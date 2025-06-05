@@ -275,7 +275,6 @@ Some important points to note:
 
 - TTFB is reported as 0, and not the time of the first network call (if any) after the soft navigation.
 - FCP and LCP are the first and largest contentful paints after the soft navigation. Prior reported paint times will not be counted for these metrics, even though these elements may remain between soft navigations, and may be the first or largest contentful item.
-- FID is reset to measure the first interaction after the soft navigation.
 - INP is reset to measure only interactions after the the soft navigation.
 - CLS is reset to measure again separate to the first page.
 
