@@ -1,5 +1,9 @@
 # Changelog
 
+### v5.0.3 (2025-06-11)
+
+- Remove visibilitychange event listeners when no longer required ([#627](https://github.com/GoogleChrome/web-vitals/pull/627))
+
 ### v5.0.2 (2025-05-29)
 
 - Handle layout shifts with no sources ([#623](https://github.com/GoogleChrome/web-vitals/pull/623))
