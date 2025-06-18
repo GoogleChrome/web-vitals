@@ -254,6 +254,7 @@ export const onLCP = (
             entry?.navigationId !== metric.navigationId &&
             (softNavEntry?.startTime || 0) > metricNavStartTime
           ) {
+            handleEntries(po!.takeRecords() as LCPMetric['entries']);
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
           }

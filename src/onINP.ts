@@ -220,6 +220,7 @@ export const onINP = (
             // Queue in whenIdleOrHidden in case entry processing for previous
             // metric are queued.
             whenIdleOrHidden(() => {
+              handleEntries(po.takeRecords() as INPMetric['entries']);
               if (!reportedMetric && metric.value > 0) report(true);
               initNewINPMetric('soft-navigation', entry.navigationId);
               report = bindReporter(

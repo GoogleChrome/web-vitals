@@ -94,7 +94,7 @@ export const onCLS = (
       const handleEntries = (entries: LayoutShift[]) => {
         for (const entry of entries) {
           // If the entry is for a new navigationId than previous, then we have
-          // entered a new soft nav, so emit the final LCP and reinitialize the
+          // entered a new soft nav, so emit the final CLS and reinitialize the
           // metric.
           if (
             softNavsEnabled &&
@@ -161,6 +161,7 @@ export const onCLS = (
               softNavEntry &&
               (softNavEntry.startTime || 0) > metricNavStartTime
             ) {
+              handleEntries(po.takeRecords() as CLSMetric['entries']);
               if (!reportedMetric) report(true);
               initNewCLSMetric('soft-navigation', entry.navigationId);
               report = bindReporter(
