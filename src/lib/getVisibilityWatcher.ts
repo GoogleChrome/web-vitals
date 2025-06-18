@@ -62,7 +62,10 @@ const removeChangeListeners = () => {
   removeEventListener('prerenderingchange', onVisibilityUpdate, true);
 };
 
-export const getVisibilityWatcher = () => {
+export const getVisibilityWatcher = (reset = false) => {
+  if (reset) {
+    firstHiddenTime = -1;
+  }
   if (firstHiddenTime < 0) {
     // Check if we have a previous hidden `visibility-state` performance entry.
     const activationStart = getActivationStart();
