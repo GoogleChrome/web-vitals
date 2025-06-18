@@ -128,6 +128,9 @@ export const onINP = (
     };
 
     const handleEntries = (entries: INPMetric['entries']) => {
+      // Only process entries, if at least some of them have interaction ids
+      // (otherwise run into lots of errors later for empty INP entries)
+      if (entries.filter((entry) => entry.interactionId).length === 0) return;
       // Queue the `handleEntries()` callback in the next idle task.
       // This is needed to increase the chances that all event entries that
       // occurred between the user interaction and the next paint
@@ -214,14 +217,18 @@ export const onINP = (
             entry.navigationId !== metric.navigationId &&
             softNavEntryStartTime > metricNavStartTime
           ) {
-            if (!reportedMetric && metric.value > 0) report(true);
-            initNewINPMetric('soft-navigation', entry.navigationId);
-            report = bindReporter(
-              onReport,
-              metric,
-              INPThresholds,
-              opts!.reportAllChanges,
-            );
+            // Queue in whenIdleOrHidden in case entry processing for previous
+            // metric are queued.
+            whenIdleOrHidden(() => {
+              if (!reportedMetric && metric.value > 0) report(true);
+              initNewINPMetric('soft-navigation', entry.navigationId);
+              report = bindReporter(
+                onReport,
+                metric,
+                INPThresholds,
+                opts!.reportAllChanges,
+              );
+            });
           }
         });
       };
