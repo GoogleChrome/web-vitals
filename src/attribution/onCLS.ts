@@ -74,9 +74,11 @@ export const onCLS = (
   ) => {
     if (entry?.sources?.length) {
       const largestSource = getLargestLayoutShiftSource(entry.sources);
-      if (largestSource) {
-        const generateTargetFn = opts.generateTarget ?? getSelector;
-        const customTarget = generateTargetFn(largestSource.node);
+      const node = largestSource?.node;
+      if (node) {
+        const customTarget = opts.generateTarget
+          ? opts.generateTarget(node) ?? getSelector(node)
+          : getSelector(node);
         layoutShiftTargetMap.set(largestSource, customTarget);
       }
     }

@@ -54,8 +54,9 @@ export const onLCP = (
     entry: LargestContentfulPaint,
   ) => {
     if (entry.element) {
-      const generateTargetFn = opts.generateTarget ?? getSelector;
-      const customTarget = generateTargetFn(entry.element);
+      const customTarget = opts.generateTarget
+        ? opts.generateTarget(entry.element) ?? getSelector(entry.element)
+        : getSelector(entry.element);
       lcpTargetMap.set(entry, customTarget);
     }
   };

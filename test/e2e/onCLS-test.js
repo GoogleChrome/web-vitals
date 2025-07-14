@@ -900,6 +900,29 @@ describe('onCLS()', async function () {
       );
     });
 
+    it('supports generating a custom target with default fallback', async function () {
+      if (!browserSupportsCLS) this.skip();
+
+      await navigateTo('/test/cls?attribution=1&img2Hidden=1&generateTarget=1');
+
+      // Wait until all images are loaded and rendered, then change to hidden.
+      await imagesPainted();
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [cls] = await getBeacons();
+      assert(cls.value > 0);
+      assert(cls.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(cls.name, 'CLS');
+      assert.strictEqual(cls.value, cls.delta);
+      assert.strictEqual(cls.rating, 'good');
+      assert.strictEqual(cls.entries.length, 1);
+      assert.match(cls.navigationType, /navigate|reload/);
+
+      assert.equal(cls.attribution.largestShiftTarget, '#p4');
+    });
+
     it('supports multiple calls with different custom target generation functions', async function () {
       if (!browserSupportsCLS) this.skip();
 
