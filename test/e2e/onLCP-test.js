@@ -215,6 +215,10 @@ describe('onLCP()', async function () {
     const h1 = await $('h1');
     await h1.click();
 
+    // New tab switch and switch back, which triggers reporting in
+    // browsers that support the API.
+    await switchToNewTabAndBack();
+
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
 
