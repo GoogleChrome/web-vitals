@@ -115,6 +115,9 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
+    // Pause to ensure web-vitals has a chance to collect performance metrics
+    await browser.pause(100);
+
     // Load a new page to trigger the hidden state.
     await navigateTo('about:blank');
 
