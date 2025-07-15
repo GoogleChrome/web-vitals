@@ -354,6 +354,7 @@ export const onINP = (
   };
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
+    if (!metric.entries.length) return metric as INPMetricWithAttribution;
     const firstEntry = metric.entries[0];
     const group = entryToEntriesGroupMap.get(firstEntry)!;
 
