@@ -83,7 +83,7 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
-    // Click on the h1.
+    // Click on the h1 to finalize LCP.
     const h1 = await $('h1');
     await h1.click();
 
@@ -99,10 +99,6 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
-    // Click on the h1.
-    const h1 = await $('h1');
-    await h1.click();
-
     await beaconCountIs(2);
     assertFullReportsAreCorrect(await getBeacons());
   });
@@ -115,7 +111,7 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
-    // Click on the h1.
+    // Click on the h1 to finalize LCP.
     const h1 = await $('h1');
     await h1.click();
 
@@ -169,7 +165,7 @@ describe('onLCP()', async function () {
     // Wait until web-vitals is loaded
     await webVitalsLoaded();
 
-    // Click on the h1.
+    // Click on the h1 to finalize LCP.
     const h1 = await $('h1');
     await h1.click();
 
@@ -212,7 +208,7 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
-    // Click on the h1.
+    // Click on the h1 to finalize LCP.
     const h1 = await $('h1');
     await h1.click();
 
@@ -237,7 +233,7 @@ describe('onLCP()', async function () {
 
     await stubVisibilityChange('visible');
 
-    // Click on the h1.
+    // Click on the h1 to finalize LCP.
     const h1 = await $('h1');
     await h1.click();
 
@@ -256,7 +252,7 @@ describe('onLCP()', async function () {
     await navigateTo('/test/lcp?loadAfterInput=1&renderBlocking=400');
 
     // Immediately switch tab
-    await switchToNewTabAndBack();
+    await hideAndReshowPage();
 
     // Click on the h1 to load the library
     const h1 = await $('h1');
@@ -281,7 +277,7 @@ describe('onLCP()', async function () {
 
     // Don't load the library until we click
     await navigateTo('/test/lcp?loadAfterInput=1&renderBlocking=400');
-    await switchToNewTabAndBack();
+    await hideAndReshowPage();
 
     // Click on the h1 to load the library
     const h1 = await $('h1');
@@ -305,9 +301,9 @@ describe('onLCP()', async function () {
 
     await navigateTo('/test/lcp?renderBlocking=1000');
 
-    await switchToNewTabAndBack();
+    await hideAndReshowPage();
 
-    // Click on the h1.
+    // Click on the h1 to finalize LCP.
     const h1 = await $('h1');
     await h1.click();
 
@@ -325,7 +321,7 @@ describe('onLCP()', async function () {
 
     // Change to hidden after the first render.
     await browser.pause(3500);
-    await switchToNewTabAndBack();
+    await hideAndReshowPage();
 
     const [lcp1] = await getBeacons();
 
@@ -351,13 +347,13 @@ describe('onLCP()', async function () {
     await webVitalsLoaded();
     await firstContentfulPaint();
 
-    await switchToNewTabAndBack();
+    await hideAndReshowPage();
 
     await browser.execute(() => {
       document.querySelector('img').hidden = false;
     });
 
-    // Click on the h1.
+    // Click on the h1 to finalize LCP.
     const h1 = await $('h1');
     await h1.click();
 
@@ -397,7 +393,7 @@ describe('onLCP()', async function () {
     assert.match(lcp.navigationType, /navigate|reload/);
 
     await clearBeacons();
-    await switchToNewTabAndBack();
+    await hideAndReshowPage();
 
     await browser.execute(() => {
       document.querySelector('img').hidden = false;
@@ -460,7 +456,7 @@ describe('onLCP()', async function () {
 
     await stubVisibilityChange('visible');
 
-    // Click on the h1.
+    // Click on the h1 to finalize LCP.
     const h1 = await $('h1');
     await h1.click();
 
@@ -720,7 +716,7 @@ describe('onLCP()', async function () {
       // Wait until web-vitals is loaded
       await webVitalsLoaded();
 
-      // Click on the h1.
+      // Click on the h1 to finalize LCP.
       const h1 = await $('h1');
       await h1.click();
 
@@ -917,13 +913,19 @@ const assertFullReportsAreCorrect = (beacons) => {
   assert.match(lcp2.navigationType, /navigate|reload/);
 };
 
-const switchToNewTabAndBack = async () => {
-  // Switch to a blank tab and back
-  // TODO: this is flakey in Safari, so when it starts to support LCP
-  // We may need to consider an alternative
-  const handle1 = await browser.getWindowHandle();
-  await browser.newWindow('https://example.com');
-  await browser.pause(500);
-  await browser.closeWindow();
-  await browser.switchToWindow(handle1);
+const hideAndReshowPage = async () => {
+  // Switch to new tab and back to change visibility state.
+  // New tabs on Safari in webdriver.io are flakey, so minimize/maximize
+  // instead, but it's kind of distracting so use tab switch for others.
+  if (browser.capabilities.browserName !== 'safari') {
+    const handle1 = await browser.getWindowHandle();
+    await browser.newWindow('https://example.com');
+    await browser.pause(500);
+    await browser.closeWindow();
+    await browser.switchToWindow(handle1);
+  } else {
+    await browser.minimizeWindow();
+    await browser.pause(500);
+    await browser.maximizeWindow();
+  }
 };
