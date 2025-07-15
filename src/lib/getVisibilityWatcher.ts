@@ -62,6 +62,18 @@ const removeChangeListeners = () => {
   removeEventListener('prerenderingchange', onVisibilityUpdate, true);
 };
 
+// Register visibility change early so those registering after library
+// loads (e.g. for batch processing) run early.
+// See https://github.com/GoogleChrome/web-vitals/issues/502
+const onHiddenFunctions: (() => void)[] = [];
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'hidden') {
+    for (const onHiddenFunction of onHiddenFunctions) {
+      onHiddenFunction();
+    }
+  }
+});
+
 export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
     // Check if we have a previous hidden `visibility-state` performance entry.
@@ -100,6 +112,9 @@ export const getVisibilityWatcher = () => {
   return {
     get firstHiddenTime() {
       return firstHiddenTime;
+    },
+    set onHidden(cb: () => void) {
+      onHiddenFunctions.push(cb);
     },
   };
 };
