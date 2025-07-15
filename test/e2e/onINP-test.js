@@ -783,6 +783,30 @@ describe('onINP()', async function () {
       assert.equal(inp1.attribution.interactionTarget, 'main-heading');
     });
 
+    it('supports generating a custom target with fallback', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo('/test/inp?click=100&attribution=1&generateTarget=1', {
+        readyState: 'complete',
+      });
+
+      const label1 = await $('#label1');
+      await simulateUserLikeClick(label1);
+
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+
+      assert.equal(inp1.attribution.interactionTarget, '#label1>code');
+    });
+
     it('supports multiple calls with different custom target generation functions', async function () {
       if (!browserSupportsINP) this.skip();
 

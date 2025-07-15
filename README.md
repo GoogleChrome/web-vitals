@@ -648,7 +648,7 @@ A subclass of `ReportOpts` used for each metric function exported in the [attrib
 
 ```ts
 interface AttributionReportOpts extends ReportOpts {
-  generateTarget?: (el: Node | null) => string;
+  generateTarget?: (el: Node | null) => string | null | undefined;
 }
 ```
 
@@ -792,11 +792,11 @@ In the [attribution build](#attribution-build) each of the metric functions has 
 
 1. Their callback is invoked with a `MetricWithAttribution` objects instead of a `Metric` object. Each `MetricWithAttribution` extends the `Metric` object and adds an additional `attribution` object, which contains potentially-helpful debugging information that can be sent along with the metric values for the current page visit in order to help identify issues happening to real-users in the field.
 
-2. They accept an `AttributionReportOpts` objects instead of a `ReportOpts` object. The `AttributionReportOpts` object supports an additional, optional, `generateTarget()` function that lets developers customize how DOM elements are stringified for reporting purposes. When passed, the return value of the `generateTarget()` function will be used for any "target" properties in the following attribution objects: [`CLSAttribution`](#CLSAttribution), [`INPAttribution`](#INPAttribution), and [`LCPAttribution`](#LCPAttribution).
+2. They accept an `AttributionReportOpts` objects instead of a `ReportOpts` object. The `AttributionReportOpts` object supports an additional, optional, `generateTarget()` function that lets developers customize how DOM elements are stringified for reporting purposes. When passed, the return value of the `generateTarget()` function will be used for any "target" properties in the following attribution objects: [`CLSAttribution`](#CLSAttribution), [`INPAttribution`](#INPAttribution), and [`LCPAttribution`](#LCPAttribution). If `null` or `undefined` is returned by the `generateTarget()` function, or no function is given, then the default selector function will be used.
 
    ```ts
    interface AttributionReportOpts extends ReportOpts {
-     generateTarget?: (el: Node | null) => string;
+     generateTarget?: (el: Node | null) => string | null | undefined;
    }
    ```
 
@@ -808,7 +808,7 @@ In the [attribution build](#attribution-build) each of the metric functions has 
        return el.dataset.name;
      }
 
-     // Do some other fallback when data-name doesn't exist (not-shown).
+     // Otherwise use default selector function
    }
 
    onLCP(sendToAnalytics, {generateTarget: customGenerateTarget});
@@ -824,7 +824,8 @@ interface CLSAttribution {
    * By default, a selector identifying the first element (in document order)
    * that shifted when the single largest layout shift that contributed to the
    * page's CLS score occurred. If the `generateTarget` configuration option
-   * was passed, then this will instead be the return value of that function.
+   * was passed, then this will instead be the return value of that function,
+   * falling back to the default if that returns null or undefined.
    */
   largestShiftTarget?: string;
   /**
@@ -900,7 +901,8 @@ interface INPAttribution {
    * occurred. If this value is an empty string, that generally means the
    * element was removed from the DOM after the interaction. If the
    * `generateTarget` configuration option was passed, then this will instead
-   * be the return value of that function.
+   * be the return value of that function, falling back to the default if that
+   * returns null or undefined.
    */
   interactionTarget: string;
   /**
@@ -1031,7 +1033,8 @@ interface LCPAttribution {
    * By default, a selector identifying the element corresponding to the
    * largest contentful paint for the page. If the `generateTarget`
    * configuration option was passed, then this will instead be the return
-   * value of that function.
+   * value of that function, falling back to the default if that returns null
+   * or undefined.
    */
   target?: string;
   /**
