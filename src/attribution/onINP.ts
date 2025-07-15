@@ -269,9 +269,12 @@ export const onINP = (
       return;
     }
 
-    const interactionTime = attribution.interactionTime;
-    const inputDelay = attribution.inputDelay;
-    const processingDuration = attribution.processingDuration;
+    // We can assume these will be set as we only call attributeLoAFDetails
+    // when we have an entry, and so these details.
+    const interactionTime = attribution.interactionTime!;
+    const inputDelay = attribution.inputDelay!;
+    const processingDuration = attribution.processingDuration!;
+    const nextPaintTime = attribution.nextPaintTime!;
 
     // Stats across all LoAF entries and scripts.
     let totalScriptDuration = 0;
@@ -332,7 +335,7 @@ export const onINP = (
       ? lastLoAF.startTime + lastLoAF.duration
       : 0;
     if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
-      totalPaintDuration = attribution.nextPaintTime - lastLoAFEndTime;
+      totalPaintDuration = nextPaintTime - lastLoAFEndTime;
     }
 
     if (longestScriptEntry && longestScriptSubpart) {
@@ -346,7 +349,7 @@ export const onINP = (
     attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
     attribution.totalPaintDuration = totalPaintDuration;
     attribution.totalUnattributedDuration =
-      attribution.nextPaintTime -
+      nextPaintTime -
       interactionTime -
       totalScriptDuration -
       totalStyleAndLayoutDuration -
@@ -354,63 +357,66 @@ export const onINP = (
   };
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
-    if (!metric.entries.length) return metric as INPMetricWithAttribution;
-    const firstEntry = metric.entries[0];
-    const group = entryToEntriesGroupMap.get(firstEntry)!;
+    // Use an empty object if no other attribution has been set.
+    let attribution: INPAttribution = {};
+    if (metric.entries.length) {
+      const firstEntry = metric.entries[0];
+      const group = entryToEntriesGroupMap.get(firstEntry)!;
 
-    const processingStart = firstEntry.processingStart;
+      const processingStart = firstEntry.processingStart;
 
-    // Due to the fact that durations can be rounded down to the nearest 8ms,
-    // we have to clamp `nextPaintTime` so it doesn't appear to occur before
-    // processing starts. Note: we can't use `processingEnd` since processing
-    // can extend beyond the event duration in some cases (see next comment).
-    const nextPaintTime = Math.max(
-      firstEntry.startTime + firstEntry.duration,
-      processingStart,
-    );
+      // Due to the fact that durations can be rounded down to the nearest 8ms,
+      // we have to clamp `nextPaintTime` so it doesn't appear to occur before
+      // processing starts. Note: we can't use `processingEnd` since processing
+      // can extend beyond the event duration in some cases (see next comment).
+      const nextPaintTime = Math.max(
+        firstEntry.startTime + firstEntry.duration,
+        processingStart,
+      );
 
-    // For the purposes of attribution, clamp `processingEnd` to `nextPaintTime`,
-    // so processing is never reported as taking longer than INP (which can
-    // happen via the web APIs in the case of sync modals, e.g. `alert()`).
-    // See: https://github.com/GoogleChrome/web-vitals/issues/492
-    const processingEnd = Math.min(group.processingEnd, nextPaintTime);
+      // For the purposes of attribution, clamp `processingEnd` to `nextPaintTime`,
+      // so processing is never reported as taking longer than INP (which can
+      // happen via the web APIs in the case of sync modals, e.g. `alert()`).
+      // See: https://github.com/GoogleChrome/web-vitals/issues/492
+      const processingEnd = Math.min(group.processingEnd, nextPaintTime);
 
-    // Sort the entries in processing time order.
-    const processedEventEntries = group.entries.sort((a, b) => {
-      return a.processingStart - b.processingStart;
-    });
+      // Sort the entries in processing time order.
+      const processedEventEntries = group.entries.sort((a, b) => {
+        return a.processingStart - b.processingStart;
+      });
 
-    const longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[] =
-      getIntersectingLoAFs(firstEntry.startTime, processingEnd);
+      const longAnimationFrameEntries: PerformanceLongAnimationFrameTiming[] =
+        getIntersectingLoAFs(firstEntry.startTime, processingEnd);
 
-    const interaction = interactionManager._longestInteractionMap.get(
-      firstEntry.interactionId,
-    );
+      const interaction = interactionManager._longestInteractionMap.get(
+        firstEntry.interactionId,
+      );
 
-    const attribution: INPAttribution = {
-      // TS flags the next line because `interactionTargetMap.get()` might
-      // return `undefined`, but we ignore this assuming the user knows what
-      // they are doing.
-      interactionTarget: interactionTargetMap.get(interaction!)!,
-      interactionType: firstEntry.name.startsWith('key')
-        ? 'keyboard'
-        : 'pointer',
-      interactionTime: firstEntry.startTime,
-      nextPaintTime: nextPaintTime,
-      processedEventEntries: processedEventEntries,
-      longAnimationFrameEntries: longAnimationFrameEntries,
-      inputDelay: processingStart - firstEntry.startTime,
-      processingDuration: processingEnd - processingStart,
-      presentationDelay: nextPaintTime - processingEnd,
-      loadState: getLoadState(firstEntry.startTime),
-      longestScript: undefined,
-      totalScriptDuration: undefined,
-      totalStyleAndLayoutDuration: undefined,
-      totalPaintDuration: undefined,
-      totalUnattributedDuration: undefined,
-    };
+      attribution = {
+        // TS flags the next line because `interactionTargetMap.get()` might
+        // return `undefined`, but we ignore this assuming the user knows what
+        // they are doing.
+        interactionTarget: interactionTargetMap.get(interaction!)!,
+        interactionType: firstEntry.name.startsWith('key')
+          ? 'keyboard'
+          : 'pointer',
+        interactionTime: firstEntry.startTime,
+        nextPaintTime: nextPaintTime,
+        processedEventEntries: processedEventEntries,
+        longAnimationFrameEntries: longAnimationFrameEntries,
+        inputDelay: processingStart - firstEntry.startTime,
+        processingDuration: processingEnd - processingStart,
+        presentationDelay: nextPaintTime - processingEnd,
+        loadState: getLoadState(firstEntry.startTime),
+        longestScript: undefined,
+        totalScriptDuration: undefined,
+        totalStyleAndLayoutDuration: undefined,
+        totalPaintDuration: undefined,
+        totalUnattributedDuration: undefined,
+      };
 
-    attributeLoAFDetails(attribution);
+      attributeLoAFDetails(attribution);
+    }
 
     // Use `Object.assign()` to ensure the original metric object is returned.
     const metricWithAttribution: INPMetricWithAttribution = Object.assign(
