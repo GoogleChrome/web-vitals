@@ -43,7 +43,7 @@
        */
       self.__stubVisibilityChange = (visibilityState) => {
         self.__stubVisibilityState(visibilityState);
-        document.dispatchEvent(new Event('visibilitychange'));
+        dispatchEvent(new Event('visibilitychange'));
       }
 
       /**
