@@ -83,7 +83,6 @@ export const onLCP = (
         metricNavStartTime =
           softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
       }
-      addInputListeners();
     };
 
     const handleEntries = (entries: LCPMetric['entries']) => {
@@ -140,57 +139,6 @@ export const onLCP = (
       }
     };
 
-    const finalizeLCPs = () => {
-      removeInputListeners();
-      if (!reportedMetric) {
-        handleEntries(po!.takeRecords() as LCPMetric['entries']);
-        if (!softNavsEnabled) po!.disconnect();
-        // As the clicks are handled when idle, check if the current metric was
-        // for the reported NavId and only if so, then report.
-        if (metric.navigationId === finalizeNavId) {
-          reportedMetric = true;
-          report(true);
-        }
-      }
-    };
-
-    const addInputListeners = () => {
-      ['keydown', 'click'].forEach((type) => {
-        // Stop listening after input. Note: while scrolling is an input that
-        // stops LCP observation, it's unreliable since it can be programmatically
-        // generated. See: https://github.com/GoogleChrome/web-vitals/issues/75
-        addEventListener(type, () => handleInput(), true);
-      });
-    };
-
-    const removeInputListeners = () => {
-      ['keydown', 'click'].forEach((type) => {
-        // Remove event listeners as no longer required
-        removeEventListener(type, () => handleInput(), true);
-      });
-    };
-
-    const handleInput = () => {
-      // Since we only finalize whenIdle, we only want to finalize the LCPs
-      // for the current navigationId at the time of the input and not any
-      // others that came after, and before it was idle. So note the current
-      // metric.navigationId.
-      finalizeNavId = metric.navigationId;
-      // Wrap in a setTimeout so the callback is run in a separate task
-      // to avoid extending the keyboard/click handler to reduce INP impact
-      // https://github.com/GoogleChrome/web-vitals/issues/383
-      whenIdleOrHidden(finalizeLCPs);
-    };
-
-    const handleHidden = () => {
-      // Finalise the current navigationId metric.
-      finalizeNavId = metric.navigationId;
-      // Wrap in a setTimeout so the callback is run in a separate task
-      // to avoid extending the keyboard/click handler to reduce INP impact
-      // https://github.com/GoogleChrome/web-vitals/issues/383
-      finalizeLCPs();
-    };
-
     const po = observe('largest-contentful-paint', handleEntries, opts);
 
     if (po) {
@@ -201,18 +149,25 @@ export const onLCP = (
         opts!.reportAllChanges,
       );
 
-      addInputListeners();
-
-      // Need a separate wrapper to ensure the `runOnce` function above is
-      // common for all three functions
-      const stopListeningWrapper = (event: Event) => {
-        if (event.isTrusted) {
+      const finalizeLCP = (event: Event) => {
+        if (event.isTrusted && !reportedMetric) {
+          // Finalize the current navigationId metric.
+          finalizeNavId = metric.navigationId;
           // Wrap the listener in an idle callback so it's run in a separate
           // task to reduce potential INP impact.
           // https://github.com/GoogleChrome/web-vitals/issues/383
-          whenIdleOrHidden(handleHidden);
-          removeEventListener(event.type, stopListeningWrapper, {
-            capture: true,
+          whenIdleOrHidden(() => {
+            if (!reportedMetric) {
+              handleEntries(po!.takeRecords() as LCPMetric['entries']);
+              if (!softNavsEnabled) {
+                po!.disconnect();
+                removeEventListener(event.type, finalizeLCP);
+              }
+              if (metric.navigationId === finalizeNavId) {
+                reportedMetric = true;
+                report(true);
+              }
+            }
           });
         }
       };
@@ -222,10 +177,7 @@ export const onLCP = (
       // unreliable since it can be programmatically generated.
       // See: https://github.com/GoogleChrome/web-vitals/issues/75
       for (const type of ['keydown', 'click', 'visibilitychange']) {
-        // Wrap the listener in an idle callback so it's run in a separate
-        // task to reduce potential INP impact.
-        // https://github.com/GoogleChrome/web-vitals/issues/383
-        addEventListener(type, () => stopListeningWrapper, {
+        addEventListener(type, finalizeLCP, {
           capture: true,
         });
       }
