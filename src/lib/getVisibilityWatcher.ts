@@ -66,7 +66,7 @@ const removeChangeListeners = () => {
 // loads (e.g. for batch processing) run early.
 // See https://github.com/GoogleChrome/web-vitals/issues/502
 const onHiddenFunctions: (() => void)[] = [];
-document.addEventListener('visibilitychange', () => {
+addEventListener('visibilitychange', () => {
   if (document.visibilityState === 'hidden') {
     for (const onHiddenFunction of onHiddenFunctions) {
       onHiddenFunction();
