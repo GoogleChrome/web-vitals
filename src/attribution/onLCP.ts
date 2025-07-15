@@ -49,10 +49,13 @@ export const onLCP = (
   opts = Object.assign({}, opts);
 
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
-  const lcpTargetMap: WeakMap<LargestContentfulPaint, string> = new WeakMap();
+  const lcpTargetMap: WeakMap<
+    LargestContentfulPaint | InteractionContentfulPaint,
+    string
+  > = new WeakMap();
 
   lcpEntryManager._onBeforeProcessingEntry = (
-    entry: LargestContentfulPaint,
+    entry: LargestContentfulPaint | InteractionContentfulPaint,
   ) => {
     const node = entry.element;
     if (node) {

@@ -227,6 +227,7 @@ export const onLCP = (
       };
 
       if (softNavsEnabled) {
+        observe('interaction-contentful-paint', handleEntries, opts);
         observe('soft-navigation', handleSoftNavEntries, opts);
       }
     }

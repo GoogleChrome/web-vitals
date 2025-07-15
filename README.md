@@ -659,7 +659,7 @@ interface INPMetric extends Metric {
 ```ts
 interface LCPMetric extends Metric {
   name: 'LCP';
-  entries: LargestContentfulPaint[];
+  entries: (LargestContentfulPaint | InteractionContentfulPaint)[];
 }
 ```
 
@@ -1147,9 +1147,10 @@ interface LCPAttribution {
    */
   lcpResourceEntry?: PerformanceResourceTiming;
   /**
-   * The `LargestContentfulPaint` entry corresponding to LCP.
+   * The `LargestContentfulPaint` entry corresponding to LCP
+   * (or `InteractionContentfulPaint` for soft navigations).
    */
-  lcpEntry?: LargestContentfulPaint;
+  lcpEntry?: LargestContentfulPaint | InteractionContentfulPaint;
 }
 ```
 

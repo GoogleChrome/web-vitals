@@ -21,7 +21,7 @@ import type {Metric} from './base.js';
  */
 export interface LCPMetric extends Metric {
   name: 'LCP';
-  entries: LargestContentfulPaint[];
+  entries: (LargestContentfulPaint | InteractionContentfulPaint)[];
 }
 
 /**
@@ -79,9 +79,10 @@ export interface LCPAttribution {
    */
   lcpResourceEntry?: PerformanceResourceTiming;
   /**
-   * The `LargestContentfulPaint` entry corresponding to LCP.
+   * The `LargestContentfulPaint` entry corresponding to LCP
+   * (or `InteractionContentfulPaint` for soft navigations).
    */
-  lcpEntry?: LargestContentfulPaint;
+  lcpEntry?: LargestContentfulPaint | InteractionContentfulPaint;
 }
 
 /**

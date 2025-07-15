@@ -19,6 +19,7 @@ import {softNavs} from './softNavs.js';
 interface PerformanceEntryMap {
   'event': PerformanceEventTiming[];
   'first-input': PerformanceEventTiming[];
+  'interaction-contentful-paint': InteractionContentfulPaint[];
   'layout-shift': LayoutShift[];
   'largest-contentful-paint': LargestContentfulPaint[];
   'long-animation-frame': PerformanceLongAnimationFrameTiming[];

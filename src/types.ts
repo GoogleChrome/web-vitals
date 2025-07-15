@@ -31,6 +31,7 @@ interface PerformanceEntryMap {
   navigation: PerformanceNavigationTiming;
   resource: PerformanceResourceTiming;
   paint: PerformancePaintTiming;
+  'interaction-contentful-paint': InteractionContentfulPaint;
   'soft-navigation': SoftNavigationEntry;
 }
 
@@ -66,11 +67,6 @@ declare global {
     navigationId?: string;
   }
 
-  // https://github.com/WICG/soft-navigations
-  interface SoftNavigationEntry extends PerformanceEntry {
-    navigationId?: string;
-  }
-
   // https://wicg.github.io/event-timing/#sec-performance-event-timing
   interface PerformanceEventTiming extends PerformanceEntry {
     duration: DOMHighResTimeStamp;
@@ -96,6 +92,20 @@ declare global {
 
   // https://w3c.github.io/largest-contentful-paint/#sec-largest-contentful-paint-interface
   interface LargestContentfulPaint extends PerformanceEntry {
+    readonly renderTime: DOMHighResTimeStamp;
+    readonly loadTime: DOMHighResTimeStamp;
+    readonly size: number;
+    readonly id: string;
+    readonly url: string;
+    readonly element: Element | null;
+    navigationId?: string;
+  }
+
+  // https://github.com/WICG/soft-navigations
+  interface SoftNavigationEntry extends PerformanceEntry {
+    navigationId?: string;
+  }
+  interface InteractionContentfulPaint extends PerformanceEntry {
     readonly renderTime: DOMHighResTimeStamp;
     readonly loadTime: DOMHighResTimeStamp;
     readonly size: number;
