@@ -632,6 +632,24 @@ describe('onLCP()', async function () {
       assert.equal(lcp.attribution.target, 'main-image');
     });
 
+    it('supports generating a custom target with fallback', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1&imgHidden=1&generateTarget=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+
+      assert.equal(lcp.attribution.target, 'html>body>main>h1');
+    });
+
     it('supports multiple calls with different custom target generation functions', async function () {
       if (!browserSupportsLCP) this.skip();
 
