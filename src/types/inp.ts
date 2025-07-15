@@ -172,5 +172,5 @@ export interface INPAttribution {
  * An INP-specific version of the Metric object with attribution.
  */
 export interface INPMetricWithAttribution extends INPMetric {
-  attribution: INPAttribution;
+  attribution?: INPAttribution;
 }
