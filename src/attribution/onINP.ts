@@ -128,9 +128,7 @@ export const onINP = (
     if (!interactionTargetMap.get(interaction)) {
       const node = interaction.entries[0].target;
       if (node) {
-        const customTarget = opts.generateTarget
-          ? opts.generateTarget(node) ?? getSelector(node)
-          : getSelector(node);
+        const customTarget = opts.generateTarget?.(node) ?? getSelector(node);
         interactionTargetMap.set(interaction, customTarget);
       }
     }
