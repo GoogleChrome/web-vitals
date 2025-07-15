@@ -98,13 +98,15 @@ export const onLCP = (
 
       // Need a separate wrapper to ensure the `runOnce` function above is
       // common for all three functions
-      const stopListeningWrapper = (e: Event) => {
-        if (e.isTrusted) {
+      const stopListeningWrapper = (event: Event) => {
+        if (event.isTrusted) {
           // Wrap the listener in an idle callback so it's run in a separate
           // task to reduce potential INP impact.
           // https://github.com/GoogleChrome/web-vitals/issues/383
           whenIdleOrHidden(stopListening);
-          removeEventListener(e.type, stopListeningWrapper, {capture: true});
+          removeEventListener(event.type, stopListeningWrapper, {
+            capture: true,
+          });
         }
       };
 
