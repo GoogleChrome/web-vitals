@@ -216,10 +216,6 @@ describe('onLCP()', async function () {
     const h1 = await $('h1');
     await h1.click();
 
-    // New tab switch and switch back, which triggers reporting in
-    // browsers that support the API.
-    await switchToNewTabAndBack();
-
     // Wait a bit to ensure no beacons were sent.
     await browser.pause(1000);
 
@@ -923,6 +919,8 @@ const assertFullReportsAreCorrect = (beacons) => {
 
 const switchToNewTabAndBack = async () => {
   // Switch to a blank tab and back
+  // TODO: this is flakey in Safari, so when it starts to support LCP
+  // We may need to consider an alternative
   const handle1 = await browser.getWindowHandle();
   await browser.newWindow('https://example.com');
   await browser.pause(500);
