@@ -132,10 +132,10 @@ export const onINP = (
       // where the first interaction is less than the `durationThreshold`.
       po.observe({type: 'first-input', buffered: true});
 
-      visibilityWatcher.onHidden = () => {
+      visibilityWatcher.onHidden(() => {
         handleEntries(po.takeRecords() as INPMetric['entries']);
         report(true);
-      };
+      });
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.

@@ -18,7 +18,7 @@ import {onBFCacheRestore} from './bfcache.js';
 import {getActivationStart} from './getActivationStart.js';
 
 let firstHiddenTime = -1;
-const onHiddenFunctions: (() => void)[] = [];
+const onHiddenFunctions: Set<() => void> = new Set();
 
 const initHiddenTime = () => {
   // If the document is hidden when this code runs, assume it was always
@@ -34,8 +34,10 @@ const initHiddenTime = () => {
 const onVisibilityUpdate = (event: Event) => {
   // Handle changes to hidden state
   if (document.visibilityState === 'hidden') {
-    for (const onHiddenFunction of onHiddenFunctions) {
-      onHiddenFunction();
+    if (event.type === 'visibilitychange') {
+      for (const onHiddenFunction of onHiddenFunctions) {
+        onHiddenFunction();
+      }
     }
 
     // If the document is 'hidden' and no previous hidden timestamp has been
@@ -53,7 +55,7 @@ const onVisibilityUpdate = (event: Event) => {
       // We no longer need the `prerenderingchange` event listener now we've
       // set an initial init time so remove that
       // (we'll keep the visibilitychange one for onHiddenFunction above)
-      addEventListener('prerenderingchange', onVisibilityUpdate, true);
+      removeEventListener('prerenderingchange', onVisibilityUpdate, true);
     }
   }
 };
@@ -80,7 +82,7 @@ export const getVisibilityWatcher = () => {
 
     // Listen for visibility changes so we can handle things like bfcache
     // restores and/or prerender without having to examine individual
-    // timestamps in detail and also for onHiddenFunction calls.
+    // timestamps in detail and also for onHidden function calls.
     addEventListener('visibilitychange', onVisibilityUpdate, true);
     // IMPORTANT: when a page is prerendering, its `visibilityState` is
     // 'hidden', so in order to account for cases where this module checks for
@@ -102,8 +104,8 @@ export const getVisibilityWatcher = () => {
     get firstHiddenTime() {
       return firstHiddenTime;
     },
-    set onHidden(cb: () => void) {
-      onHiddenFunctions.push(cb);
+    onHidden(cb: () => void) {
+      onHiddenFunctions.add(cb);
     },
   };
 };

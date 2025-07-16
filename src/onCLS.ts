@@ -87,10 +87,10 @@ export const onCLS = (
           opts!.reportAllChanges,
         );
 
-        visibilityWatcher.onHidden = () => {
+        visibilityWatcher.onHidden(() => {
           handleEntries(po.takeRecords() as CLSMetric['entries']);
           report(true);
-        };
+        });
 
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
