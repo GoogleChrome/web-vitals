@@ -29,7 +29,7 @@ export const whenIdleOrHidden = (cb: () => void) => {
     cb();
   } else {
     cb = runOnce(cb);
-    addEventListener('visibilitychange', cb, {once: true});
+    addEventListener('visibilitychange', cb, {once: true, capture: true});
     rIC(() => {
       cb();
       // Remove the above event listener since no longer required.
