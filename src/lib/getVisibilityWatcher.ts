@@ -33,7 +33,6 @@ const initHiddenTime = () => {
 
 const onVisibilityUpdate = (event: Event) => {
   // Handle changes to hidden state
-  console.log('BARRY calling onVisibilityUpdate', document.visibilityState);
   if (document.visibilityState === 'hidden') {
     for (const onHiddenFunction of onHiddenFunctions) {
       onHiddenFunction();
