@@ -18,6 +18,7 @@ import {onBFCacheRestore} from './bfcache.js';
 import {getActivationStart} from './getActivationStart.js';
 
 let firstHiddenTime = -1;
+const onHiddenFunctions: (() => void)[] = [];
 
 const initHiddenTime = () => {
   // If the document is hidden when this code runs, assume it was always
@@ -31,52 +32,32 @@ const initHiddenTime = () => {
 };
 
 const onVisibilityUpdate = (event: Event) => {
-  // If the document is 'hidden' and no previous hidden timestamp has been
-  // set, update it based on the current event data.
-  if (document.visibilityState === 'hidden' && firstHiddenTime > -1) {
-    // If the event is a 'visibilitychange' event, it means the page was
-    // visible prior to this change, so the event timestamp is the first
-    // hidden time.
-    // However, if the event is not a 'visibilitychange' event, then it must
-    // be a 'prerenderingchange' event, and the fact that the document is
-    // still 'hidden' from the above check means the tab was activated
-    // in a background state and so has always been hidden.
-    firstHiddenTime = event.type === 'visibilitychange' ? event.timeStamp : 0;
+  // Handle changes to hidden state
+  console.log('BARRY calling onVisibilityUpdate', document.visibilityState);
+  if (document.visibilityState === 'hidden') {
+    for (const onHiddenFunction of onHiddenFunctions) {
+      onHiddenFunction();
+    }
 
-    // Remove all listeners now that a `firstHiddenTime` value has been set.
-    removeChangeListeners();
+    // If the document is 'hidden' and no previous hidden timestamp has been
+    // set (so is infinity), update it based on the current event data.
+    if (!isFinite(firstHiddenTime)) {
+      // If the event is a 'visibilitychange' event, it means the page was
+      // visible prior to this change, so the event timestamp is the first
+      // hidden time.
+      // However, if the event is not a 'visibilitychange' event, then it must
+      // be a 'prerenderingchange' event, and the fact that the document is
+      // still 'hidden' from the above check means the tab was activated
+      // in a background state and so has always been hidden.
+      firstHiddenTime = event.type === 'visibilitychange' ? event.timeStamp : 0;
+
+      // We no longer need the `prerenderingchange` event listener now we've
+      // set an initial init time so remove that
+      // (we'll keep the visibilitychange one for onHiddenFunction above)
+      addEventListener('prerenderingchange', onVisibilityUpdate, true);
+    }
   }
 };
-
-const addChangeListeners = () => {
-  addEventListener('visibilitychange', onVisibilityUpdate, true);
-  // IMPORTANT: when a page is prerendering, its `visibilityState` is
-  // 'hidden', so in order to account for cases where this module checks for
-  // visibility during prerendering, an additional check after prerendering
-  // completes is also required.
-  addEventListener('prerenderingchange', onVisibilityUpdate, true);
-};
-
-const removeChangeListeners = () => {
-  removeEventListener('visibilitychange', onVisibilityUpdate, true);
-  removeEventListener('prerenderingchange', onVisibilityUpdate, true);
-};
-
-// Register visibility change early so those registering after library
-// loads (e.g. for batch processing) run early.
-// See https://github.com/GoogleChrome/web-vitals/issues/502
-const onHiddenFunctions: (() => void)[] = [];
-globalThis.addEventListener?.(
-  'visibilitychange',
-  () => {
-    if (document.visibilityState === 'hidden') {
-      for (const onHiddenFunction of onHiddenFunctions) {
-        onHiddenFunction();
-      }
-    }
-  },
-  true,
-);
 
 export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
@@ -97,10 +78,16 @@ export const getVisibilityWatcher = () => {
     // a perfect heuristic, but it's the best we can do until the
     // `visibility-state` performance entry becomes available in all browsers.
     firstHiddenTime = firstVisibilityStateHiddenTime ?? initHiddenTime();
-    // We're still going to listen to for changes so we can handle things like
-    // bfcache restores and/or prerender without having to examine individual
-    // timestamps in detail.
-    addChangeListeners();
+
+    // Listen for visibility changes so we can handle things like bfcache
+    // restores and/or prerender without having to examine individual
+    // timestamps in detail and also for onHiddenFunction calls.
+    addEventListener('visibilitychange', onVisibilityUpdate, true);
+    // IMPORTANT: when a page is prerendering, its `visibilityState` is
+    // 'hidden', so in order to account for cases where this module checks for
+    // visibility during prerendering, an additional check after prerendering
+    // completes is also required.
+    addEventListener('prerenderingchange', onVisibilityUpdate, true);
 
     // Reset the time on bfcache restores.
     onBFCacheRestore(() => {
@@ -109,7 +96,6 @@ export const getVisibilityWatcher = () => {
       // https://bugs.chromium.org/p/chromium/issues/detail?id=1133363
       setTimeout(() => {
         firstHiddenTime = initHiddenTime();
-        addChangeListeners();
       });
     });
   }
