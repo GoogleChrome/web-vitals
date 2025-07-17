@@ -34,18 +34,49 @@
   <script type="module">
     const {onCLS} = await __testImport('{{ modulePath }}');
 
+    const queue = new Set();
+    function addToQueue(metric) {
+      queue.add(metric);
+    }
+
     onCLS((cls) => {
       cls.instance = 1;
 
       // Log for easier manual testing.
       console.log('CLS:', cls);
 
-      // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
+      if (self.__visibilityChangeEventHandlers) {
+        console.log('Adding to queue');
+        addToQueue(cls);
+      } else {
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
+      }
     }, {
       reportAllChanges: self.__reportAllChanges,
       generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
+
+    if (self.__visibilityChangeEventHandlers) {
+      // Equal to `window.addEventListener`
+      addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          for (const cls of queue) {
+            console.log('window.addEventListener');
+            navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
+          }
+        }
+      });
+
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          for (const cls of queue) {
+            console.log('document.addEventListener');
+            navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
+          }
+        }
+      });
+    }
 
     if (self.__doubleCall) {
       onCLS((cls) => {

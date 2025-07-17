@@ -29,12 +29,12 @@ export const whenIdleOrHidden = (cb: () => void) => {
     cb();
   } else {
     cb = runOnce(cb);
-    document.addEventListener('visibilitychange', cb, {once: true});
+    addEventListener('visibilitychange', cb, {once: true, capture: true});
     rIC(() => {
       cb();
       // Remove the above event listener since no longer required.
       // See: https://github.com/GoogleChrome/web-vitals/issues/622
-      document.removeEventListener('visibilitychange', cb);
+      removeEventListener('visibilitychange', cb, {capture: true});
     });
   }
 };

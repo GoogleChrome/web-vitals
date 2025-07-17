@@ -571,6 +571,50 @@ describe('onINP()', async function () {
     assert.strictEqual(inp1.navigationType, inp2_2.navigationType);
   });
 
+  it('reports before document and window visibility changes', async function () {
+    if (!browserSupportsINP) this.skip();
+
+    await navigateTo('/test/inp?click=100&visibilityChangeEventHandlers=1', {
+      readyState: 'interactive',
+    });
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    await hideAndReshowPage();
+
+    // The test sends a beacon on both document and window visibility changes
+    // So we should get two identical beacons
+    await beaconCountIs(2);
+    const [inp1, inp2] = await getBeacons();
+
+    assert(inp1.value >= 0);
+    assert(inp1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp1.name, 'INP');
+    assert.strictEqual(inp1.value, inp1.delta);
+    assert.strictEqual(inp1.rating, 'good');
+    assert(containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'));
+    assert(allEntriesPresentTogether(inp1.entries));
+    assert.match(inp1.navigationType, /navigate|reload/);
+
+    assert(inp2.value >= 0);
+    assert(inp2.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp2.name, 'INP');
+    assert.strictEqual(inp2.value, inp2.delta);
+    assert.strictEqual(inp2.rating, 'good');
+    assert(containsEntry(inp2.entries, 'click', '[object HTMLHeadingElement]'));
+    assert(allEntriesPresentTogether(inp2.entries));
+    assert.match(inp2.navigationType, /navigate|reload/);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsINP) this.skip();
@@ -1043,4 +1087,21 @@ const simulateUserLikeClick = async (element) => {
     .pause(50)
     .up({button: 0})
     .perform();
+};
+
+const hideAndReshowPage = async () => {
+  // Switch to new tab and back to change visibility state.
+  // New tabs on Safari in webdriver.io are flakey, so minimize/maximize
+  // instead, but it's kind of distracting so use tab switch for others.
+  if (browser.capabilities.browserName !== 'safari') {
+    const handle1 = await browser.getWindowHandle();
+    await browser.newWindow('https://example.com');
+    await browser.pause(500);
+    await browser.closeWindow();
+    await browser.switchToWindow(handle1);
+  } else {
+    await browser.minimizeWindow();
+    await browser.pause(500);
+    await browser.maximizeWindow();
+  }
 };

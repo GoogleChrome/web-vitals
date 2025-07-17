@@ -543,6 +543,24 @@ describe('onLCP()', async function () {
     assert.deepEqual(beacons1[0].entries, beacons2[1].entries);
   });
 
+  it('reports before document and window visibility changes', async function () {
+    if (!browserSupportsLCP) this.skip();
+
+    await navigateTo('/test/lcp?visibilityChangeEventHandlers=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    await hideAndReshowPage();
+
+    // The test sends a beacon on both document and window visibility changes
+    // So we should get two identical beacons
+    await beaconCountIs(2);
+    const [lcp1, lcp2] = await getBeacons();
+    assertStandardReportsAreCorrect([lcp1]);
+    assertStandardReportsAreCorrect([lcp2]);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsLCP) this.skip();
