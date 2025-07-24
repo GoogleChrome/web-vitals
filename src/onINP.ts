@@ -100,7 +100,7 @@ export const onINP = (
       navigationId?: string,
     ) => {
       interactionManager._resetInteractions();
-      metric = initMetric('INP', 0, navigation, navigationId);
+      metric = initMetric('INP', -1, navigation, navigationId);
       report = bindReporter(
         onReport,
         metric,
@@ -223,12 +223,6 @@ export const onINP = (
               handleEntries(po.takeRecords() as INPMetric['entries']);
               if (!reportedMetric && metric.value > 0) report(true);
               initNewINPMetric('soft-navigation', entry.navigationId);
-              report = bindReporter(
-                onReport,
-                metric,
-                INPThresholds,
-                opts!.reportAllChanges,
-              );
             });
           }
         });
