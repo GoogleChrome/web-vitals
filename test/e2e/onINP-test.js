@@ -571,7 +571,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp1.navigationType, inp2_2.navigationType);
   });
 
-  it('reports on batch reporting using document visibilitychange', async function () {
+  it('reports on batch reporting using document.visibilitychange', async function () {
     if (!browserSupportsINP) this.skip();
 
     await navigateTo('/test/inp?click=100&batchReporting=1', {

@@ -543,7 +543,7 @@ describe('onLCP()', async function () {
     assert.deepEqual(beacons1[0].entries, beacons2[1].entries);
   });
 
-  it('reports on batch reporting using document visibilitychange', async function () {
+  it('reports on batch reporting using document.visibilitychange', async function () {
     if (!browserSupportsLCP) this.skip();
 
     await navigateTo('/test/lcp?batchReporting=1');

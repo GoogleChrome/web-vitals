@@ -832,7 +832,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1_1.navigationType, cls2_3.navigationType);
   });
 
-  it('reports on batch reporting using document visibilitychange', async function () {
+  it('reports on batch reporting using document.visibilitychange', async function () {
     if (!browserSupportsCLS) this.skip();
 
     await navigateTo('/test/cls?batchReporting=1');
