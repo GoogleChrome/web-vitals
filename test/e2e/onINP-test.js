@@ -571,10 +571,10 @@ describe('onINP()', async function () {
     assert.strictEqual(inp1.navigationType, inp2_2.navigationType);
   });
 
-  it('reports before document and window visibility changes', async function () {
+  it('reports on document visibility changes added before library loads', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=100&visibilityChangeEventHandlers=1', {
+    await navigateTo('/test/inp?click=100&earlyDocumentVisibilityChange=1', {
       readyState: 'interactive',
     });
 
@@ -591,28 +591,17 @@ describe('onINP()', async function () {
 
     await hideAndReshowPage();
 
-    // The test sends a beacon on both document and window visibility changes
-    // So we should get two identical beacons
-    await beaconCountIs(2);
-    const [inp1, inp2] = await getBeacons();
+    await beaconCountIs(1);
+    const [inp] = await getBeacons();
 
-    assert(inp1.value >= 0);
-    assert(inp1.id.match(/^v5-\d+-\d+$/));
-    assert.strictEqual(inp1.name, 'INP');
-    assert.strictEqual(inp1.value, inp1.delta);
-    assert.strictEqual(inp1.rating, 'good');
-    assert(containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'));
-    assert(allEntriesPresentTogether(inp1.entries));
-    assert.match(inp1.navigationType, /navigate|reload/);
-
-    assert(inp2.value >= 0);
-    assert(inp2.id.match(/^v5-\d+-\d+$/));
-    assert.strictEqual(inp2.name, 'INP');
-    assert.strictEqual(inp2.value, inp2.delta);
-    assert.strictEqual(inp2.rating, 'good');
-    assert(containsEntry(inp2.entries, 'click', '[object HTMLHeadingElement]'));
-    assert(allEntriesPresentTogether(inp2.entries));
-    assert.match(inp2.navigationType, /navigate|reload/);
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
   });
 
   describe('attribution', function () {

@@ -832,35 +832,26 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1_1.navigationType, cls2_3.navigationType);
   });
 
-  it('reports before document and window visibility changes', async function () {
+  it('reports on document visibility changes added before library loads', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await navigateTo('/test/cls?visibilityChangeEventHandlers=1');
+    await navigateTo('/test/cls?earlyDocumentVisibilityChange=1');
 
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();
     await hideAndReshowPage();
 
-    // The test sends a beacon on both document and window visibility changes
-    // So we should get two identical beacons
-    await beaconCountIs(2);
-    const [cls1, cls2] = await getBeacons();
+    // The test sends a beacon on both document visibility changes
+    await beaconCountIs(1);
+    const [cls] = await getBeacons();
 
-    assert(cls1.value > 0);
-    assert(cls1.id.match(/^v5-\d+-\d+$/));
-    assert.strictEqual(cls1.name, 'CLS');
-    assert.strictEqual(cls1.value, cls1.delta);
-    assert.strictEqual(cls1.rating, 'good');
-    assert.strictEqual(cls1.entries.length, 2);
-    assert.match(cls1.navigationType, /navigate|reload/);
-
-    assert(cls2.value > 0);
-    assert(cls2.id.match(/^v5-\d+-\d+$/));
-    assert.strictEqual(cls2.name, 'CLS');
-    assert.strictEqual(cls2.value, cls2.delta);
-    assert.strictEqual(cls2.rating, 'good');
-    assert.strictEqual(cls2.entries.length, 2);
-    assert.match(cls2.navigationType, /navigate|reload/);
+    assert(cls.value > 0);
+    assert(cls.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.match(cls.navigationType, /navigate|reload/);
   });
 
   describe('attribution', function () {

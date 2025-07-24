@@ -165,7 +165,7 @@
 
       self.__lazyLoad = Boolean(infer('lazyLoad'));
       self.__loadAfterInput = Boolean(infer('loadAfterInput'));
-      self.__visibilityChangeEventHandlers = Boolean(infer('visibilityChangeEventHandlers'));
+      self.__earlyDocumentVisibilityChange = Boolean(infer('earlyDocumentVisibilityChange'));
 
       if (params.has('hidden')) {
         // Stub the page being loaded in the hidden state, but defer to the

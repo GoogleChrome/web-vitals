@@ -45,7 +45,7 @@
       // Log for easier manual testing.
       console.log('CLS:', cls);
 
-      if (self.__visibilityChangeEventHandlers) {
+      if (self.__earlyDocumentVisibilityChange) {
         console.log('Adding to queue');
         addToQueue(cls);
       } else {
@@ -57,17 +57,7 @@
       generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
 
-    if (self.__visibilityChangeEventHandlers) {
-      // Equal to `window.addEventListener`
-      addEventListener('visibilitychange', () => {
-        if (document.visibilityState === 'hidden') {
-          for (const cls of queue) {
-            console.log('window.addEventListener');
-            navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
-          }
-        }
-      });
-
+    if (self.__earlyDocumentVisibilityChange) {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           for (const cls of queue) {
