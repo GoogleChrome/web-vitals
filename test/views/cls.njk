@@ -45,7 +45,7 @@
       // Log for easier manual testing.
       console.log('CLS:', cls);
 
-      if (self.__earlyDocumentVisibilityChange) {
+      if (self.__documentVisibilityChangeHandling) {
         console.log('Adding to queue');
         addToQueue(cls);
       } else {
@@ -57,7 +57,7 @@
       generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
 
-    if (self.__earlyDocumentVisibilityChange) {
+    if (self.__documentVisibilityChangeHandling) {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           for (const cls of queue) {

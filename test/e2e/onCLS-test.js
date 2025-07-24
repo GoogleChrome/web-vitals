@@ -832,10 +832,10 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1_1.navigationType, cls2_3.navigationType);
   });
 
-  it('reports on document visibility changes added before library loads', async function () {
+  it('reports on document visibility change handling', async function () {
     if (!browserSupportsCLS) this.skip();
 
-    await navigateTo('/test/cls?earlyDocumentVisibilityChange=1');
+    await navigateTo('/test/cls?documentVisibilityChangeHandling=1');
 
     // Wait until all images are loaded and rendered, then change to hidden.
     await imagesPainted();

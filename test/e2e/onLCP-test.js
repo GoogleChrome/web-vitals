@@ -543,10 +543,10 @@ describe('onLCP()', async function () {
     assert.deepEqual(beacons1[0].entries, beacons2[1].entries);
   });
 
-  it('reports on document visibility changes added before library loads', async function () {
+  it('reports on document visibility change handling', async function () {
     if (!browserSupportsLCP) this.skip();
 
-    await navigateTo('/test/lcp?earlyDocumentVisibilityChange=1');
+    await navigateTo('/test/lcp?documentVisibilityChangeHandling=1');
 
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
