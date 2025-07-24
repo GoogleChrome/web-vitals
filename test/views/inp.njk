@@ -146,6 +146,7 @@
             console.log('document.addEventListener');
             navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
           }
+          queue.clear();
         }
       });
     }
