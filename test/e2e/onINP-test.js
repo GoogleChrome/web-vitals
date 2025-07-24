@@ -571,6 +571,39 @@ describe('onINP()', async function () {
     assert.strictEqual(inp1.navigationType, inp2_2.navigationType);
   });
 
+  it('reports on batch reporting using document.visibilitychange', async function () {
+    if (!browserSupportsINP) this.skip();
+
+    await navigateTo('/test/inp?click=100&batchReporting=1', {
+      readyState: 'interactive',
+    });
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    await hideAndReshowPage();
+
+    await beaconCountIs(1);
+    const [inp] = await getBeacons();
+
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsINP) this.skip();
@@ -1043,4 +1076,21 @@ const simulateUserLikeClick = async (element) => {
     .pause(50)
     .up({button: 0})
     .perform();
+};
+
+const hideAndReshowPage = async () => {
+  // Switch to new tab and back to change visibility state.
+  // New tabs on Safari in webdriver.io are flakey, so minimize/maximize
+  // instead, but it's kind of distracting so use tab switch for others.
+  if (browser.capabilities.browserName !== 'safari') {
+    const handle1 = await browser.getWindowHandle();
+    await browser.newWindow('https://example.com');
+    await browser.pause(500);
+    await browser.closeWindow();
+    await browser.switchToWindow(handle1);
+  } else {
+    await browser.minimizeWindow();
+    await browser.pause(500);
+    await browser.maximizeWindow();
+  }
 };

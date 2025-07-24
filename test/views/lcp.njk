@@ -35,18 +35,40 @@
   <script type="module">
     const {onLCP} = await __testImport('{{ modulePath }}');
 
+    const queue = new Set();
+    function addToQueue(metric) {
+      queue.add(metric);
+    }
+
     onLCP((lcp) => {
       lcp.instance = 1;
 
       // Log for easier manual testing.
       console.log('LCP:', lcp);
 
-      // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
+      if (self.__batchReporting) {
+        console.log('Adding to queue');
+        addToQueue(lcp);
+      } else {
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
+      }
     }, {
       reportAllChanges: self.__reportAllChanges,
       generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
+
+    if (self.__batchReporting) {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          for (const lcp of queue) {
+            console.log('document.addEventListener');
+            navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
+          }
+          queue.clear();
+        }
+      });
+    }
 
     if (self.__doubleCall) {
       onLCP((lcp) => {
