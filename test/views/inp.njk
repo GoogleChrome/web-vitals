@@ -126,7 +126,7 @@
       // Log for easier manual testing.
       console.log('INP:', inp);
 
-      if (self.__documentVisibilityChangeHandling) {
+      if (self.__batchReporting) {
         console.log('Adding to queue');
         addToQueue(inp);
       } else {
@@ -139,7 +139,7 @@
       generateTarget: self.__generateTarget && ((el) => el?.dataset?.target),
     });
 
-    if (self.__documentVisibilityChangeHandling) {
+    if (self.__batchReporting) {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           for (const inp of queue) {

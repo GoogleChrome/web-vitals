@@ -46,7 +46,7 @@
       // Log for easier manual testing.
       console.log('LCP:', lcp);
 
-      if (self.__documentVisibilityChangeHandling) {
+      if (self.__batchReporting) {
         console.log('Adding to queue');
         addToQueue(lcp);
       } else {
@@ -58,7 +58,7 @@
       generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
 
-    if (self.__documentVisibilityChangeHandling) {
+    if (self.__batchReporting) {
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           for (const lcp of queue) {
