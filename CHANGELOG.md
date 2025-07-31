@@ -1,5 +1,11 @@
 # Changelog
 
+### v5.1.0 (2025-07-31)
+
+- Register `visibility-change` early ([#637](https://github.com/GoogleChrome/web-vitals/pull/637))
+- Only finalize LCP on user events (`isTrusted=true`) ([#635](https://github.com/GoogleChrome/web-vitals/pull/635))
+- Fallback to default `getSelector` if custom function is null or undefined ([#634](https://github.com/GoogleChrome/web-vitals/pull/634))
+
 ### v5.0.3 (2025-06-11)
 
 - Remove visibilitychange event listeners when no longer required ([#627](https://github.com/GoogleChrome/web-vitals/pull/627))
