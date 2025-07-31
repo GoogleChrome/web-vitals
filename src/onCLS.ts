@@ -18,6 +18,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
@@ -63,6 +64,7 @@ export const onCLS = (
   let reportedMetric = false;
   let metricNavStartTime = 0;
 
+  const visibilityWatcher = getVisibilityWatcher();
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   onFCP(
@@ -125,12 +127,10 @@ export const onCLS = (
           opts!.reportAllChanges,
         );
 
-        document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'hidden') {
-            handleEntries(po.takeRecords() as CLSMetric['entries']);
-            report(true);
-            reportedMetric = true;
-          }
+        visibilityWatcher.onHidden(() => {
+          handleEntries(po.takeRecords() as CLSMetric['entries']);
+          report(true);
+          reportedMetric = true;
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`

@@ -832,6 +832,28 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls1_1.navigationType, cls2_3.navigationType);
   });
 
+  it('reports on batch reporting using document.visibilitychange', async function () {
+    if (!browserSupportsCLS) this.skip();
+
+    await navigateTo('/test/cls?batchReporting=1');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await hideAndReshowPage();
+
+    // The test sends a beacon on both document visibility changes
+    await beaconCountIs(1);
+    const [cls] = await getBeacons();
+
+    assert(cls.value > 0);
+    assert(cls.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.match(cls.navigationType, /navigate|reload/);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsCLS) this.skip();
@@ -1065,3 +1087,20 @@ function getAttribution(entries) {
 
   return {largestShiftEntry, largestShiftSource};
 }
+
+const hideAndReshowPage = async () => {
+  // Switch to new tab and back to change visibility state.
+  // New tabs on Safari in webdriver.io are flakey, so minimize/maximize
+  // instead, but it's kind of distracting so use tab switch for others.
+  if (browser.capabilities.browserName !== 'safari') {
+    const handle1 = await browser.getWindowHandle();
+    await browser.newWindow('https://example.com');
+    await browser.pause(500);
+    await browser.closeWindow();
+    await browser.switchToWindow(handle1);
+  } else {
+    await browser.minimizeWindow();
+    await browser.pause(500);
+    await browser.maximizeWindow();
+  }
+};

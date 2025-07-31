@@ -543,6 +543,21 @@ describe('onLCP()', async function () {
     assert.deepEqual(beacons1[0].entries, beacons2[1].entries);
   });
 
+  it('reports on batch reporting using document.visibilitychange', async function () {
+    if (!browserSupportsLCP) this.skip();
+
+    await navigateTo('/test/lcp?batchReporting=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    await hideAndReshowPage();
+
+    await beaconCountIs(1);
+    const [lcp] = await getBeacons();
+    assertStandardReportsAreCorrect([lcp]);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsLCP) this.skip();
