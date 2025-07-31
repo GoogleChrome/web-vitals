@@ -115,19 +115,41 @@
   <script type="module">
     const {onINP} = await __testImport('{{ modulePath }}');
 
+    const queue = new Set();
+    function addToQueue(metric) {
+      queue.add(metric);
+    }
+
     onINP((inp) => {
       inp.instance = 1;
 
       // Log for easier manual testing.
       console.log('INP:', inp);
 
-      // Test sending the metric to an analytics endpoint.
-      navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
+      if (self.__batchReporting) {
+        console.log('Adding to queue');
+        addToQueue(inp);
+      } else {
+        // Test sending the metric to an analytics endpoint.
+        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
+      }
     }, {
       reportAllChanges: self.__reportAllChanges,
       durationThreshold: self.__durationThreshold,
       generateTarget: self.__generateTarget && ((el) => el?.dataset?.target),
     });
+
+    if (self.__batchReporting) {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+          for (const inp of queue) {
+            console.log('document.addEventListener');
+            navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
+          }
+          queue.clear();
+        }
+      });
+    }
 
     if (self.__doubleCall) {
       onINP((inp) => {

@@ -23,6 +23,7 @@ import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
 import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
+import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for CLS. See https://web.dev/articles/cls#what_is_a_good_cls_score */
@@ -53,6 +54,7 @@ export const onCLS = (
   onReport: (metric: CLSMetric) => void,
   opts: ReportOpts = {},
 ) => {
+  const visibilityWatcher = getVisibilityWatcher();
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
   onFCP(
@@ -85,11 +87,9 @@ export const onCLS = (
           opts!.reportAllChanges,
         );
 
-        document.addEventListener('visibilitychange', () => {
-          if (document.visibilityState === 'hidden') {
-            handleEntries(po.takeRecords() as CLSMetric['entries']);
-            report(true);
-          }
+        visibilityWatcher.onHidden(() => {
+          handleEntries(po.takeRecords() as CLSMetric['entries']);
+          report(true);
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`

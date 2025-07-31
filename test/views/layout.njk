@@ -43,7 +43,7 @@
        */
       self.__stubVisibilityChange = (visibilityState) => {
         self.__stubVisibilityState(visibilityState);
-        document.dispatchEvent(new Event('visibilitychange'));
+        dispatchEvent(new Event('visibilitychange'));
       }
 
       /**
@@ -165,6 +165,7 @@
 
       self.__lazyLoad = Boolean(infer('lazyLoad'));
       self.__loadAfterInput = Boolean(infer('loadAfterInput'));
+      self.__batchReporting = Boolean(infer('batchReporting'));
 
       if (params.has('hidden')) {
         // Stub the page being loaded in the hidden state, but defer to the
