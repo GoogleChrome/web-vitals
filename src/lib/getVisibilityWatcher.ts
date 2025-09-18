@@ -62,7 +62,7 @@ const onVisibilityUpdate = (event: Event) => {
 
 export const getVisibilityWatcher = (reset = false) => {
   if (reset) {
-    firstHiddenTime = -1;
+    firstHiddenTime = Infinity;
   }
   if (firstHiddenTime < 0) {
     // Check if we have a previous hidden `visibility-state` performance entry.
