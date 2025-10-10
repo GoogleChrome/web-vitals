@@ -98,6 +98,7 @@ export const onINP = (
       whenIdleOrHidden(() => {
         for (const entry of entries) {
           interactionManager._processEntry(entry);
+          opts.onEachInteraction?.(entry);
         }
 
         const inp = interactionManager._estimateP98LongestInteraction();

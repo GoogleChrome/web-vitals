@@ -23,6 +23,7 @@ import type {
 
 export interface INPReportOpts extends ReportOpts {
   durationThreshold?: number;
+  onEachInteraction?: (interaction: PerformanceEventTiming) => void;
 }
 
 export interface INPAttributionReportOpts extends AttributionReportOpts {
