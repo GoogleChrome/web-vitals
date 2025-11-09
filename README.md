@@ -1135,7 +1135,7 @@ Browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari
-- `onINP()`: Chromium
+- `onINP()`: Chromium, Firefox
 - `onLCP()`: Chromium, Firefox
 - `onTTFB()`: Chromium, Firefox, Safari
 
