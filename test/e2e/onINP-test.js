@@ -450,9 +450,9 @@ describe('onINP()', async function () {
           '[object HTMLButtonElement]',
         ),
       );
+      assert(allEntriesPresentTogether(inp3.entries));
+      assert(inp3.entries[0].startTime > inp2.entries[0].startTime);
     }
-    assert(allEntriesPresentTogether(inp3.entries));
-    assert(inp3.entries[0].startTime > inp2.entries[0].startTime);
     assert.strictEqual(inp3.navigationType, 'back-forward-cache');
   });
 
