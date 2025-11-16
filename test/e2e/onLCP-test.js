@@ -389,7 +389,10 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp.value, lcp.delta);
     assert.strictEqual(lcp.rating, 'good');
     assert.strictEqual(lcp.entries.length, 1);
-    assert.strictEqual(lcp.entries[0].element, '[object HTMLHeadingElement]');
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1977827
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(lcp.entries[0].element, '[object HTMLHeadingElement]');
+    }
     assert.match(lcp.navigationType, /navigate|reload/);
 
     await clearBeacons();
