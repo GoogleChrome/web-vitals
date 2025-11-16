@@ -369,7 +369,13 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'good');
     assert.strictEqual(lcp1.entries.length, 1);
-    assert.strictEqual(lcp1.entries[0].element, '[object HTMLHeadingElement]');
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1977827
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(
+        lcp1.entries[0].element,
+        '[object HTMLHeadingElement]',
+      );
+    }
     assert.match(lcp1.navigationType, /navigate|reload/);
   });
 
