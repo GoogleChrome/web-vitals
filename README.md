@@ -1129,14 +1129,12 @@ interface TTFBAttribution {
 
 The `web-vitals` code is tested in Chrome, Firefox, and Safari. In addition, all JavaScript features used in the code are part of ([Baseline Widely Available](https://web.dev/baseline)), and thus should run without error in all versions of these browsers released within the last 30 months.
 
-However, some of the APIs required to capture these metrics are currently only available in Chromium-based browsers (e.g. Chrome, Edge, Opera, Samsung Internet), which means in some browsers those metrics will not be reported.
-
-Browser support for each function is as follows:
+However, some of the APIs required to capture these metrics are currently only available in some browsers. Browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari
-- `onINP()`: Chromium
-- `onLCP()`: Chromium, Firefox
+- `onINP()`: Chromium, Firefox, Safari Tech Preview
+- `onLCP()`: Chromium, Firefox, Safari Tech Preview
 - `onTTFB()`: Chromium, Firefox, Safari
 
 ## Limitations
