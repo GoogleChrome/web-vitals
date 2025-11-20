@@ -141,7 +141,7 @@
     "@rollup/plugin-terser": "^0.4.4",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
-    "@wdio/cli": "^8.32.3",
+    "@wdio/cli": "^9.20.1",
     "@wdio/local-runner": "^8.32.3",
     "@wdio/mocha-framework": "^8.32.3",
     "@wdio/spec-reporter": "^8.32.2",
