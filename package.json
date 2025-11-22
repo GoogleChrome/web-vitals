@@ -137,7 +137,6 @@
     "@babel/core": "^7.23.6",
     "@babel/preset-env": "^7.23.6",
     "@rollup/plugin-babel": "^6.0.4",
-    "@rollup/plugin-replace": "^5.0.5",
     "@rollup/plugin-terser": "^0.4.4",
     "@typescript-eslint/eslint-plugin": "^6.16.0",
     "@typescript-eslint/parser": "^6.16.0",
