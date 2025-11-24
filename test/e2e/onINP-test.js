@@ -927,10 +927,13 @@ describe('onINP()', async function () {
       assert(inp1.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(inp1.name, 'INP');
       assert.strictEqual(inp1.value, inp1.delta);
-      assert.strictEqual(inp1.rating, 'good');
-      assert(
-        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
-      );
+      // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.strictEqual(inp1.rating, 'good');
+        assert(
+          containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+        );
+      }
       assert(allEntriesPresentTogether(inp1.entries));
       assert.match(inp1.navigationType, /navigate|reload/);
 
