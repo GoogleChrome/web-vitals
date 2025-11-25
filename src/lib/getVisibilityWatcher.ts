@@ -64,15 +64,12 @@ export const getVisibilityWatcher = () => {
   if (firstHiddenTime < 0) {
     // Check if we have a previous hidden `visibility-state` performance entry.
     const activationStart = getActivationStart();
-    /* eslint-disable indent */
     const firstVisibilityStateHiddenTime = !document.prerendering
       ? globalThis.performance
-          .getEntriesByType('visibility-state')
-          .filter(
-            (e) => e.name === 'hidden' && e.startTime > activationStart,
-          )[0]?.startTime
+        .getEntriesByType('visibility-state')
+        .find((e) => e.name === 'hidden' && e.startTime > activationStart)
+        ?.startTime
       : undefined;
-    /* eslint-enable indent */
 
     // Prefer that, but if it's not available and the document is hidden when
     // this code runs, assume it was hidden since navigation start. This isn't
