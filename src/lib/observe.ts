@@ -44,7 +44,7 @@ export const observe = <K extends keyof PerformanceEntryMap>(
         // Delay by a microtask to workaround a bug in Safari where the
         // callback is invoked immediately, rather than in a separate task.
         // See: https://github.com/GoogleChrome/web-vitals/issues/277
-        Promise.resolve().then(() => {
+        queueMicrotask(() => {
           callback(list.getEntries() as PerformanceEntryMap[K]);
         });
       });
