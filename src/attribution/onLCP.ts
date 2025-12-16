@@ -104,7 +104,7 @@ export const onLCP = (
           lcpEntry.url &&
           performance
             .getEntriesByType('resource')
-            .filter((e) => e.name === lcpEntry.url)[0];
+            .find((e) => e.name === lcpEntry.url);
 
         const ttfb = Math.max(0, responseStart - activationStart);
 

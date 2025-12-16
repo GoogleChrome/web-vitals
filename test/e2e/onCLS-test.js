@@ -24,6 +24,8 @@ import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 
+let marginTop = 0;
+
 describe('onCLS()', async function () {
   // Retry all tests in this suite up to 2 times.
   this.retries(2);
@@ -43,6 +45,7 @@ describe('onCLS()', async function () {
   beforeEach(async function () {
     await navigateTo('about:blank');
     await clearBeacons();
+    marginTop = 0;
   });
 
   it('reports the correct value on visibility hidden after shifts (reportAllChanges === false)', async function () {
@@ -1053,8 +1056,6 @@ describe('onCLS()', async function () {
     });
   });
 });
-
-let marginTop = 0;
 
 /**
  * Adds

@@ -73,8 +73,13 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp.rating, 'good');
+      assert(
+        containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -96,8 +101,13 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp.rating, 'good');
+      assert(
+        containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -154,8 +164,13 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp.rating, 'good');
+      assert(
+        containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -177,8 +192,13 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp.rating, 'good');
+      assert(
+        containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -202,8 +222,13 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp.rating, 'good');
+      assert(
+        containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -350,8 +375,13 @@ describe('onINP()', async function () {
     assert(inp1.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp1.name, 'INP');
     assert.strictEqual(inp1.value, inp1.delta);
-    assert.strictEqual(inp1.rating, 'good');
-    assert(containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'));
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp1.rating, 'good');
+      assert(
+        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp1.entries));
     assert.match(inp1.navigationType, /navigate|reload/);
 
@@ -410,12 +440,19 @@ describe('onINP()', async function () {
     assert(inp1.id !== inp3.id);
     assert.strictEqual(inp3.name, 'INP');
     assert.strictEqual(inp3.value, inp3.delta);
-    assert.strictEqual(inp3.rating, 'needs-improvement');
-    assert(
-      containsEntry(inp3.entries, 'pointerdown', '[object HTMLButtonElement]'),
-    );
-    assert(allEntriesPresentTogether(inp3.entries));
-    assert(inp3.entries[0].startTime > inp2.entries[0].startTime);
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp3.rating, 'needs-improvement');
+      assert(
+        containsEntry(
+          inp3.entries,
+          'pointerdown',
+          '[object HTMLButtonElement]',
+        ),
+      );
+      assert(allEntriesPresentTogether(inp3.entries));
+      assert(inp3.entries[0].startTime > inp2.entries[0].startTime);
+    }
     assert.strictEqual(inp3.navigationType, 'back-forward-cache');
   });
 
@@ -502,8 +539,13 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp.rating, 'good');
+      assert(
+        containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp.entries));
     assert.strictEqual(inp.navigationType, 'restore');
   });
@@ -527,10 +569,13 @@ describe('onINP()', async function () {
     assert(inp2_1.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp2_1.name, 'INP');
     assert.strictEqual(inp2_1.value, inp2_1.delta);
-    assert.strictEqual(inp2_1.rating, 'good');
-    assert(
-      containsEntry(inp2_1.entries, 'click', '[object HTMLTextAreaElement]'),
-    );
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp2_1.rating, 'good');
+      assert(
+        containsEntry(inp2_1.entries, 'click', '[object HTMLTextAreaElement]'),
+      );
+    }
     assert(allEntriesValid(inp2_1.entries));
     assert.match(inp2_1.navigationType, /navigate|reload/);
 
@@ -547,7 +592,10 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2_2.name, 'INP');
     assert.strictEqual(inp2_2.value, inp2_2.delta + inp2_1.delta);
     assert.strictEqual(inp2_2.delta, inp2_2.value - inp2_1.delta);
-    assert.strictEqual(inp2_2.rating, 'needs-improvement');
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp2_2.rating, 'needs-improvement');
+    }
     assert(
       containsEntry(inp2_2.entries, 'keydown', '[object HTMLTextAreaElement]'),
     );
@@ -598,8 +646,13 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+    if (browser.capabilities.browserName !== 'firefox') {
+      assert.strictEqual(inp.rating, 'good');
+      assert(
+        containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
   });
@@ -635,10 +688,13 @@ describe('onINP()', async function () {
       assert(inp1.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(inp1.name, 'INP');
       assert.strictEqual(inp1.value, inp1.delta);
-      assert.strictEqual(inp1.rating, 'good');
-      assert(
-        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
-      );
+      // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.strictEqual(inp1.rating, 'good');
+        assert(
+          containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+        );
+      }
       assert(allEntriesPresentTogether(inp1.entries));
       assert.match(inp1.navigationType, /navigate|reload/);
 
@@ -806,10 +862,13 @@ describe('onINP()', async function () {
       assert(inp1.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(inp1.name, 'INP');
       assert.strictEqual(inp1.value, inp1.delta);
-      assert.strictEqual(inp1.rating, 'good');
-      assert(
-        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
-      );
+      // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.strictEqual(inp1.rating, 'good');
+        assert(
+          containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+        );
+      }
       assert(allEntriesPresentTogether(inp1.entries));
       assert.match(inp1.navigationType, /navigate|reload/);
 
@@ -837,7 +896,10 @@ describe('onINP()', async function () {
 
       const [inp1] = await getBeacons();
 
-      assert.equal(inp1.attribution.interactionTarget, '#label1>code');
+      // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.equal(inp1.attribution.interactionTarget, '#label1>code');
+      }
     });
 
     it('supports multiple calls with different custom target generation functions', async function () {
@@ -865,10 +927,13 @@ describe('onINP()', async function () {
       assert(inp1.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(inp1.name, 'INP');
       assert.strictEqual(inp1.value, inp1.delta);
-      assert.strictEqual(inp1.rating, 'good');
-      assert(
-        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
-      );
+      // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
+      if (browser.capabilities.browserName !== 'firefox') {
+        assert.strictEqual(inp1.rating, 'good');
+        assert(
+          containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+        );
+      }
       assert(allEntriesPresentTogether(inp1.entries));
       assert.match(inp1.navigationType, /navigate|reload/);
 
