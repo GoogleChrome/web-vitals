@@ -146,6 +146,8 @@ export const onINP = (
     const renderTime = entry.startTime + entry.duration;
     let group;
 
+    // Update `latestProcessingEnd` to correspond to the `precessingEnd`
+    // value of the most recently dispatched `event` entry.
     latestProcessingEnd = Math.max(latestProcessingEnd, entry.processingEnd);
 
     // Iterate over all previous render times in reverse order to find a match.
@@ -213,20 +215,20 @@ export const onINP = (
     // Clean up the `pendingEntriesGroups` list so it doesn't grow endlessly.
     // Keep any groups that:
     // 1) Correspond to one of the current longest interactions, OR
-    // 2) Any group that's part of the most recent set of frames (based on
-    //    `MAX_PENDING_FRAMES`).
+    // 2) Are part of one of the most recent set of frames (which is
+    //    determined by checking if the index in the group is within
+    //    `MAX_PENDING_FRAMES` of the group's length).
+    const minIndexToKeep = pendingEntriesGroups.length - MAX_PENDING_FRAMES;
     pendingEntriesGroups = pendingEntriesGroups.filter((group, i) => {
-      return (
-        // Check length first because it's faster.
-        i >= pendingEntriesGroups.length - MAX_PENDING_FRAMES ||
-        longestInteractionGroups.has(group)
-      );
+      // Check index first because it's faster.
+      return i >= minIndexToKeep || longestInteractionGroups.has(group);
     });
 
     // Create a set of LoAF entries that intersect with entries in the newly
     // cleaned up `pendingEntriesGroups` (for faster lookup below).
     const intersectingLoAFs: Set<PerformanceLongAnimationFrameTiming> =
       new Set();
+
     for (const group of pendingEntriesGroups) {
       const loafs = getIntersectingLoAFs(group.startTime, group.processingEnd);
       for (const loaf of loafs) {
@@ -237,10 +239,10 @@ export const onINP = (
     // Clean up the `pendingLoAFs` list so it doesn't grow endlessly.
     // Keep all LoAFs that either:
     // 1) Intersect with one of the above pending entries groups, OR
-    // 2) Occurred more recently than the most recently process event entry
+    // 2) Occurred more recently than the most recently process event entry.
     pendingLoAFs = pendingLoAFs.filter((loaf) => {
       return (
-        // Check length first because it's faster.
+        // Compare times first because it's faster.
         loaf.startTime > latestProcessingEnd || intersectingLoAFs.has(loaf)
       );
     });
