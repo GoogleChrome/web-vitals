@@ -217,8 +217,9 @@ export const onINP = (
     //    `MAX_PENDING_FRAMES`).
     pendingEntriesGroups = pendingEntriesGroups.filter((group, i) => {
       return (
-        longestInteractionGroups.has(group) ||
-        i >= pendingEntriesGroups.length - MAX_PENDING_FRAMES
+        // Check length first as quicker
+        i >= pendingEntriesGroups.length - MAX_PENDING_FRAMES ||
+        longestInteractionGroups.has(group)
       );
     });
 
@@ -235,11 +236,14 @@ export const onINP = (
 
     // Clean up the `pendingLoAFs` list so it doesn't grow endlessly.
     // Keep all LoAFs that either:
+    // Clean up the `pendingLoAFs` list so it doesn't grow endlessly.
+    // Keep all LoAFs that either:
     // 1) Intersect with one of the above pending entries groups, OR
     // 2) Occurred more recently than the most recently process event entry
     pendingLoAFs = pendingLoAFs.filter((loaf) => {
       return (
-        intersectingLoAFs.has(loaf) || loaf.startTime > latestProcessingEnd
+        // Check length first as quicker
+        loaf.startTime > latestProcessingEnd || intersectingLoAFs.has(loaf)
       );
     });
 
