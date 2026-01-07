@@ -81,6 +81,7 @@ export const config = {
       browserName: browserName,
       maxInstances: 1,
       pageLoadStrategy: 'none',
+      'wdio:enforceWebDriverClassic': true,
     };
     if (browserName === 'chrome') {
       capability['goog:chromeOptions'] = {
