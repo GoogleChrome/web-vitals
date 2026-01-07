@@ -146,7 +146,7 @@ export const onINP = (
     const renderTime = entry.startTime + entry.duration;
     let group;
 
-    // Update `latestProcessingEnd` to correspond to the `precessingEnd`
+    // Update `latestProcessingEnd` to correspond to the `processingEnd`
     // value of the most recently dispatched `event` entry.
     latestProcessingEnd = Math.max(latestProcessingEnd, entry.processingEnd);
 
