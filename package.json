@@ -88,7 +88,7 @@
     "release:beta": "npm version prerelease --preid=beta -m 'Release v%s' && npm publish --tag next",
     "release:rc": "npm version prerelease --preid=rc -m 'Release v%s' && npm publish --tag next",
     "test": "npm-run-all build test:unit -p -r test:e2e test:server",
-    "test:e2e": "wdio wdio.conf.js",
+    "test:e2e": "wdio",
     "test:server": "node test/server.js",
     "test:unit": "node --test test/unit/*test.js",
     "start": "run-s build:ts test:server watch",
