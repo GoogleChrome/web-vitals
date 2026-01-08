@@ -26,15 +26,9 @@ const configurePlugins = ({module}) => {
           {
             bugfixes: true,
             targets: [
-              // Match browsers supporting "Baseline Widely Available" features:
-              // https://web.dev/baseline
-              'chrome >0 and last 2.5 years',
-              'edge >0 and last 2.5 years',
-              'safari >0 and last 2.5 years',
-              'firefox >0 and last 2.5 years',
-              'and_chr >0 and last 2.5 years',
-              'and_ff >0 and last 2.5 years',
-              'ios >0 and last 2.5 years',
+              // Use Browserslist's Baseline feature instead of manual targets:
+              // https://web.dev/articles/use-baseline-with-browserslist
+              // The browserslist config in package.json will be automatically used.
             ],
           },
         ],
