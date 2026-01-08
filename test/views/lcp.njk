@@ -20,7 +20,7 @@
     {% if not imgDelay %}
       {% set imgDelay = 500 %}
     {% endif %}
-    <img id="lcp-image" class="foo bar" elementtiming="main-image" data-target="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
+    <img {% if removeElement %}id="lcp-image"{% endif %} class="foo bar" elementtiming="main-image" data-target="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 
