@@ -13,7 +13,10 @@
  limitations under the License.
 */
 
-const argv = require('yargs').argv;
+import yargs from 'yargs/yargs';
+import {hideBin} from 'yargs/helpers';
+
+const argv = yargs(hideBin(process.argv)).parse();
 
 // Allow running tests for a comma-delimited set of metrics via `--metrics=TTFB,LCP`.
 const metrics = argv.metrics ? argv.metrics.toUpperCase().split(',') : ['*'];
@@ -23,7 +26,7 @@ const browsers = argv.browsers
   ? argv.browsers.toLowerCase().split(',')
   : ['chrome', 'firefox', 'safari'];
 
-module.exports.config = {
+export const config = {
   //
   // ====================
   // Runner Configuration
@@ -78,6 +81,7 @@ module.exports.config = {
       browserName: browserName,
       maxInstances: 1,
       pageLoadStrategy: 'none',
+      'wdio:enforceWebDriverClassic': true,
     };
     if (browserName === 'chrome') {
       capability['goog:chromeOptions'] = {
