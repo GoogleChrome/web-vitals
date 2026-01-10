@@ -127,6 +127,9 @@
       "pre-commit": "npm run lint"
     }
   },
+  "browserslist": [
+    "baseline widely available"
+  ],
   "prettier": {
     "arrowParens": "always",
     "bracketSpacing": false,
@@ -145,6 +148,7 @@
     "@wdio/mocha-framework": "^9.23.0",
     "@wdio/spec-reporter": "^9.20.0",
     "body-parser": "^2.2.2",
+    "browserslist": "^4.28.1",
     "chromedriver": "^143.0.4",
     "eslint": "^9.39.2",
     "express": "^5.2.1",
