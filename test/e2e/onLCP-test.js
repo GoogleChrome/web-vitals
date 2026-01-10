@@ -728,7 +728,7 @@ describe('onLCP()', async function () {
       assertStandardReportsAreCorrect([lcp]);
 
       // TODO - this is flakey in Safari. Need to find out why.
-      if (browser.capabilities.browserName === 'Safari') {
+      if (browser.capabilities.browserName !== 'Safari') {
         assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
       }
       assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
