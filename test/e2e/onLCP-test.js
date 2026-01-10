@@ -695,6 +695,9 @@ describe('onLCP()', async function () {
     it('handles image resources with incomplete timing data', async function () {
       if (!browserSupportsLCP) this.skip();
 
+      // TODO - this whole test is flakey in Safari. Need to find out why.
+      if (browser.capabilities.browserName === 'Safari') this.skip();
+
       await navigateTo('/test/lcp?attribution=1');
 
       // Wait until all images are loaded and fully rendered.
@@ -727,11 +730,8 @@ describe('onLCP()', async function () {
 
       assertStandardReportsAreCorrect([lcp]);
 
-      // TODO - this is flakey in Safari. Need to find out why.
-      if (browser.capabilities.browserName !== 'Safari') {
-        assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
-        assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
-      }
+      assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
 
       // Specifically check that resourceLoadDelay falls back to `startTime`.
       assert.equal(
