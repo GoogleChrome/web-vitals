@@ -321,6 +321,13 @@ describe('onINP()', async function () {
     // Give INP a chance to report
     await waitUntilIdle();
 
+    // Safari doesn't emit an entry immediately when no paint
+    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
+    // So need to give it a moment to make sure the entry was emitted.
+    if (browser.capabilities.browserName === 'Safari') {
+      await browser.pause(1000);
+    }
+
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -342,6 +349,13 @@ describe('onINP()', async function () {
     await nextFrame();
     // Give INP a chance to report
     await waitUntilIdle();
+
+    // Safari doesn't emit an entry immediately when no paint
+    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
+    // So need to give it a moment to make sure the entry was emitted.
+    if (browser.capabilities.browserName === 'Safari') {
+      await browser.pause(1000);
+    }
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
