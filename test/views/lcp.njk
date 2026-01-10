@@ -20,7 +20,7 @@
     {% if not imgDelay %}
       {% set imgDelay = 500 %}
     {% endif %}
-    <img class="foo bar" elementtiming="main-image" data-target="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
+    <img {% if removeElement %}id="lcp-image"{% endif %} class="foo bar" elementtiming="main-image" data-target="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay={{ imgDelay }}">
   </p>
   <p>Text below the image</p>
 
@@ -33,6 +33,20 @@
   <footer>Text below the full-height element.</footer>
 
   <script type="module">
+    // Remove the LCP element before loading web-vitals if requested.
+    // This tests the entry.id fallback when element is no longer in DOM.
+    if (self.__removeElement) {
+      await self.__afterElementsRendered;
+        // Give Safari a chance to register image LCP
+        await new Promise(resolve => {
+          setTimeout(resolve, 0);
+        });
+      const img = document.getElementById('lcp-image');
+      if (img) {
+        img.remove();
+      }
+    }
+
     const {onLCP} = await __testImport('{{ modulePath }}');
 
     const queue = new Set();

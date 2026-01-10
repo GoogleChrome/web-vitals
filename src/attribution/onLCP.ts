@@ -57,6 +57,10 @@ export const onLCP = (
     if (node) {
       const customTarget = opts.generateTarget?.(node) ?? getSelector(node);
       lcpTargetMap.set(entry, customTarget);
+    } else if (entry.id) {
+      // Use the LargestContentfulPaint.id property when the element has been
+      // removed from the DOM (and so node is null), but still has an ID.
+      lcpTargetMap.set(entry, `#${entry.id}`);
     }
   };
 
