@@ -718,6 +718,12 @@ describe('onLCP()', async function () {
         return __toSafeObject(entry);
       });
 
+      // Test is flakey in Safari if you don't give it
+      // a moment to report LCP
+      if (browser.capabilities.browserName === 'Safari') {
+        await browser.pause(1000);
+      }
+
       // Load a new page to trigger the hidden state.
       await navigateTo('about:blank');
 
