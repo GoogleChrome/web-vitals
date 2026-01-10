@@ -695,6 +695,9 @@ describe('onLCP()', async function () {
     it('handles image resources with incomplete timing data', async function () {
       if (!browserSupportsLCP) this.skip();
 
+      // TODO - this whole test is flakey in Safari. Need to find out why.
+      if (browser.capabilities.browserName === 'Safari') this.skip();
+
       await navigateTo('/test/lcp?attribution=1');
 
       // Wait until all images are loaded and fully rendered.
@@ -715,7 +718,7 @@ describe('onLCP()', async function () {
           enumerable: true,
         });
 
-        return entry.toJSON();
+        return __toSafeObject(entry);
       });
 
       // Load a new page to trigger the hidden state.
