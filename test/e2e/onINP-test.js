@@ -389,6 +389,8 @@ describe('onINP()', async function () {
     while (count < 100) {
       await h1.click(); // Use .click() because it's faster.
       count++;
+      // Ensure the interaction completes.
+      await nextFrame();
     }
 
     // Safari doesn't emit an entry immediately when no paint
