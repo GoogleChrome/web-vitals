@@ -314,10 +314,10 @@ describe('onINP()', async function () {
     while (count < 50) {
       await h1.click(); // Use .click() because it's faster.
       count++;
+      // Ensure the interaction completes.
+      await nextFrame();
     }
 
-    // Ensure the interaction completes.
-    await nextFrame();
     // Give INP a chance to report
     await waitUntilIdle();
 
@@ -343,10 +343,10 @@ describe('onINP()', async function () {
     while (count < 100) {
       await h1.click(); // Use .click() because it's faster.
       count++;
+      // Ensure the interaction completes.
+      await nextFrame();
     }
 
-    // Ensure the interaction completes.
-    await nextFrame();
     // Give INP a chance to report
     await waitUntilIdle();
 
