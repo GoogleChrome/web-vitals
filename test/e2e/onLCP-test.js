@@ -918,6 +918,32 @@ describe('onLCP()', async function () {
       assert.equal(lcp2.attribution.lcpResourceEntry, undefined);
       assert.equal(lcp2.attribution.lcpEntry, undefined);
     });
+
+    it('uses entry.id as fallback when element is removed from DOM', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      // Navigate with removeElement=1 to remove the LCP image from DOM
+      // before web-vitals library loads, testing the entry.id fallback.
+      await navigateTo('/test/lcp?attribution=1&removeElement=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+
+      assert(lcp.value > 500);
+      assert(lcp.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(lcp.name, 'LCP');
+      assert.strictEqual(lcp.rating, 'good');
+      assert.strictEqual(lcp.entries.length, 1);
+
+      assert.equal(lcp.attribution.target, '#lcp-image');
+    });
   });
 });
 

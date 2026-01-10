@@ -166,6 +166,7 @@
       self.__lazyLoad = Boolean(infer('lazyLoad'));
       self.__loadAfterInput = Boolean(infer('loadAfterInput'));
       self.__batchReporting = Boolean(infer('batchReporting'));
+      self.__removeElement = Boolean(infer('removeElement'));
 
       if (params.has('hidden')) {
         // Stub the page being loaded in the hidden state, but defer to the
