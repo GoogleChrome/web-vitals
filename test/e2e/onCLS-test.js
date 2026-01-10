@@ -1093,7 +1093,7 @@ const hideAndReshowPage = async () => {
   // Switch to new tab and back to change visibility state.
   // New tabs on Safari in webdriver.io are flakey, so minimize/maximize
   // instead, but it's kind of distracting so use tab switch for others.
-  if (browser.capabilities.browserName !== 'safari') {
+  if (browser.capabilities.browserName !== 'Safari') {
     const handle1 = await browser.getWindowHandle();
     await browser.newWindow('https://example.com');
     await browser.pause(500);
