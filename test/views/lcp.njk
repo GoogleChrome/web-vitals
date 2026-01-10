@@ -37,6 +37,10 @@
     // This tests the entry.id fallback when element is no longer in DOM.
     if (self.__removeElement) {
       await self.__afterElementsRendered;
+        // Give Safari a chance to register image LCP
+        await new Promise(resolve => {
+          setTimeout(resolve, 0);
+        });
       const img = document.getElementById('lcp-image');
       if (img) {
         img.remove();
