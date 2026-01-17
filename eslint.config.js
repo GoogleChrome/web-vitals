@@ -69,15 +69,6 @@ export default defineConfig([
           ignoreUrls: true,
         },
       ],
-
-      'space-before-function-paren': [
-        'error',
-        {
-          anonymous: 'always',
-          named: 'never',
-          asyncArrow: 'always',
-        },
-      ],
     },
   },
   {
@@ -96,20 +87,10 @@ export default defineConfig([
       '@typescript-eslint/explicit-function-return-type': 'off',
       '@typescript-eslint/explicit-module-boundary-types': 'off',
       '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/camelcase': 'off',
       'comma-dangle': ['error', 'always-multiline'],
       indent: ['error', 2],
       'no-dupe-class-members': 'off',
       'prefer-spread': 'off',
-
-      'space-before-function-paren': [
-        'error',
-        {
-          anonymous: 'always',
-          named: 'never',
-          asyncArrow: 'always',
-        },
-      ],
     },
   },
 ]);
