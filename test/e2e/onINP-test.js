@@ -484,9 +484,12 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
     assert.strictEqual(inp2.rating, 'good');
-    assert(
-      containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
-    );
+    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
+    if (browser.capabilities.browserName === 'Safari') {
+      assert(
+        containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+      );
+    }
     assert(allEntriesPresentTogether(inp1.entries));
     assert(inp2.entries[0].startTime > inp1.entries[0].startTime);
     assert.strictEqual(inp2.navigationType, 'back-forward-cache');
@@ -521,7 +524,12 @@ describe('onINP()', async function () {
     assert.strictEqual(inp3.name, 'INP');
     assert.strictEqual(inp3.value, inp3.delta);
     // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
-    if (browser.capabilities.browserName !== 'firefox') {
+    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
+    console.log(inp3.entries);
+    if (
+      browser.capabilities.browserName !== 'firefox' &&
+      browser.capabilities.browserName !== 'safari'
+    ) {
       assert.strictEqual(inp3.rating, 'needs-improvement');
       assert(
         containsEntry(
