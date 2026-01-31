@@ -44,7 +44,7 @@ interface pendingEntriesGroup {
 // the frame-related data has come in.
 // In most cases this out-of-order data is only off by a frame or two, so
 // keeping the most recent 50 should be more than sufficient.
-const MAX_PREVIOUS_FRAMES = 50;
+const MAX_PENDING_FRAMES = 50;
 
 /**
  * Calculates the [INP](https://web.dev/articles/inp) value for the current
@@ -146,6 +146,8 @@ export const onINP = (
     const renderTime = entry.startTime + entry.duration;
     let group;
 
+    // Update `latestProcessingEnd` to correspond to the `processingEnd`
+    // value of the most recently dispatched `event` entry.
     latestProcessingEnd = Math.max(latestProcessingEnd, entry.processingEnd);
 
     // Iterate over all previous render times in reverse order to find a match.
@@ -202,39 +204,47 @@ export const onINP = (
   };
 
   const cleanupEntries = () => {
-    // Keep all render times that are part of a pending INP candidate or
-    // that occurred within the 50 most recently-dispatched groups of events.
-    const longestInteractionGroups =
+    // Create a set of entries groups that are part of the longest
+    // interactions (for faster lookup below).
+    const longestInteractionGroups = new Set(
       interactionManager._longestInteractionList.map((i) => {
         return entryToEntriesGroupMap.get(i.entries[0]);
-      });
-    const minIndex = pendingEntriesGroups.length - MAX_PREVIOUS_FRAMES;
-    pendingEntriesGroups = pendingEntriesGroups.filter((group, index) => {
-      if (index >= minIndex) return true;
-      return longestInteractionGroups.includes(group);
+      }),
+    );
+
+    // Clean up the `pendingEntriesGroups` list so it doesn't grow endlessly.
+    // Keep any groups that:
+    // 1) Correspond to one of the current longest interactions, OR
+    // 2) Are part of one of the most recent set of frames (which is
+    //    determined by checking if the index in the group is within
+    //    `MAX_PENDING_FRAMES` of the group's length).
+    const minIndexToKeep = pendingEntriesGroups.length - MAX_PENDING_FRAMES;
+    pendingEntriesGroups = pendingEntriesGroups.filter((group, i) => {
+      // Check index first because it's faster.
+      return i >= minIndexToKeep || longestInteractionGroups.has(group);
     });
 
-    // Keep all pending LoAF entries that either:
-    // 1) intersect with entries in the newly cleaned up `pendingEntriesGroups`
-    // 2) occur after the most recently-processed event entry (for up to MAX_PREVIOUS_FRAMES)
-    const loafsToKeep: Set<PerformanceLongAnimationFrameTiming> = new Set();
+    // Create a set of LoAF entries that intersect with entries in the newly
+    // cleaned up `pendingEntriesGroups` (for faster lookup below).
+    const intersectingLoAFs: Set<PerformanceLongAnimationFrameTiming> =
+      new Set();
+
     for (const group of pendingEntriesGroups) {
       const loafs = getIntersectingLoAFs(group.startTime, group.processingEnd);
       for (const loaf of loafs) {
-        loafsToKeep.add(loaf);
+        intersectingLoAFs.add(loaf);
       }
     }
-    const prevFrameIndexCutoff = pendingLoAFs.length - 1 - MAX_PREVIOUS_FRAMES;
-    // Filter `pendingLoAFs` to preserve LoAF order.
-    pendingLoAFs = pendingLoAFs.filter((loaf, index) => {
-      if (
-        loaf.startTime > latestProcessingEnd &&
-        index > prevFrameIndexCutoff
-      ) {
-        return true;
-      }
 
-      return loafsToKeep.has(loaf);
+    // Clean up the `pendingLoAFs` list so it doesn't grow endlessly.
+    // Keep all LoAFs that either:
+    // 1) Intersect with one of the above pending entries groups, OR
+    // 2) Occurred more recently than the most recently process event entry.
+    pendingLoAFs = pendingLoAFs.filter((loaf) => {
+      return (
+        // Compare times first because it's faster.
+        loaf.startTime > latestProcessingEnd || intersectingLoAFs.has(loaf)
+      );
     });
 
     cleanupPending = false;
