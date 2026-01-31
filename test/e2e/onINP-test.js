@@ -525,7 +525,6 @@ describe('onINP()', async function () {
     assert.strictEqual(inp3.value, inp3.delta);
     // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=2000426
     // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    console.log(inp3.entries);
     if (
       browser.capabilities.browserName !== 'firefox' &&
       browser.capabilities.browserName !== 'safari'
