@@ -83,6 +83,7 @@ export const onLCP = (
           .find((e) => e.name === lcpEntry.url);
 
       attribution.target = lcpTargetMap.get(lcpEntry);
+      attribution.lcpEntry = lcpEntry;
       // Only attribute the URL and resource entry if they exist.
       if (lcpEntry.url) {
         attribution.url = lcpEntry.url;
@@ -91,7 +92,8 @@ export const onLCP = (
         attribution.lcpResourceEntry = lcpResourceEntry;
       }
 
-      // Get subparts from navigation entry
+      // Get subparts from navigation entry. Do this last as occasionally
+      // Safari seems to fail to find a navigation entry.
       const navigationEntry = getNavigationEntry();
       if (navigationEntry) {
         const activationStart = navigationEntry.activationStart || 0;
