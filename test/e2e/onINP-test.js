@@ -686,9 +686,16 @@ describe('onINP()', async function () {
         assert.strictEqual(inp2_2.rating, 'needs-improvement');
       }
     }
-    assert(
-      containsEntry(inp2_2.entries, 'keydown', '[object HTMLTextAreaElement]'),
-    );
+    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
+    if (browser.capabilities.browserName !== 'Safari') {
+      assert(
+        containsEntry(
+          inp2_2.entries,
+          'keydown',
+          '[object HTMLTextAreaElement]',
+        ),
+      );
+    }
     assert(allEntriesValid(inp2_2.entries));
     assert.match(inp2_2.navigationType, /navigate|reload/);
 
