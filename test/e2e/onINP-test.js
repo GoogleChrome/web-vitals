@@ -494,7 +494,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp3.name, 'INP');
     assert.strictEqual(inp3.value, inp3.delta);
     // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName !== 'safari') {
+    if (browser.capabilities.browserName !== 'Safari') {
       assert.strictEqual(inp3.rating, 'needs-improvement');
       assert(
         containsEntry(
