@@ -609,7 +609,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP) this.skip();
 
     await navigateTo(
-      '/test/inp?click=100&keydown=200&doubleCall=1&reportAllChanges2=1',
+      '/test/inp?click=100&keydown=220&doubleCall=1&reportAllChanges2=1',
       {readyState: 'interactive'},
     );
 
@@ -927,7 +927,7 @@ describe('onINP()', async function () {
         readyState: 'complete',
       });
 
-      const label1 = await $('#label1');
+      const label1 = await $('#label1>code');
       await simulateUserLikeClick(label1);
 
       // Ensure the interaction completes.
