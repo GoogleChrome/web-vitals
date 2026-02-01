@@ -387,14 +387,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'good');
     assert.strictEqual(lcp1.entries.length, 1);
-    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1977827
-    if (browser.capabilities.browserName !== 'firefox') {
-      assert.strictEqual(
-        lcp1.entries[0].element,
-        '[object HTMLHeadingElement]',
-      );
-    }
-    assert.match(lcp1.navigationType, /navigate|reload/);
+    assert.strictEqual(lcp1.entries[0].element, '[object HTMLHeadingElement]');
   });
 
   it('stops reporting after the document changes to hidden (reportAllChanges === true)', async function () {
@@ -413,10 +406,7 @@ describe('onLCP()', async function () {
     assert.strictEqual(lcp.value, lcp.delta);
     assert.strictEqual(lcp.rating, 'good');
     assert.strictEqual(lcp.entries.length, 1);
-    // See Firefox bug - https://bugzilla.mozilla.org/show_bug.cgi?id=1977827
-    if (browser.capabilities.browserName !== 'firefox') {
-      assert.strictEqual(lcp.entries[0].element, '[object HTMLHeadingElement]');
-    }
+    assert.strictEqual(lcp.entries[0].element, '[object HTMLHeadingElement]');
     assert.match(lcp.navigationType, /navigate|reload/);
 
     await clearBeacons();
