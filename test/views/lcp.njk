@@ -54,23 +54,36 @@
       queue.add(metric);
     }
 
-    onLCP((lcp) => {
-      lcp.instance = 1;
+    function registerLCP() {
+      onLCP((lcp) => {
+        lcp.instance = 1;
 
-      // Log for easier manual testing.
-      console.log('LCP:', lcp);
+        // Log for easier manual testing.
+        console.log('LCP:', lcp);
 
-      if (self.__batchReporting) {
-        console.log('Adding to queue');
-        addToQueue(lcp);
-      } else {
-        // Test sending the metric to an analytics endpoint.
-        navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
-      }
-    }, {
-      reportAllChanges: self.__reportAllChanges,
-      generateTarget: self.__generateTarget && ((el) => el.dataset.target),
-    });
+        if (self.__batchReporting) {
+          console.log('Adding to queue');
+          addToQueue(lcp);
+        } else {
+          // Test sending the metric to an analytics endpoint.
+          navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
+        }
+      }, {
+        reportAllChanges: self.__reportAllChanges,
+        generateTarget: self.__generateTarget && ((el) => el.dataset.target),
+      });
+    }
+
+    if (self.__registerOnVisibilityChange) {
+      document.addEventListener('visibilitychange', () => {
+        console.log('Got a visibilitychange event', document.visibilityState);
+        if (document.visibilityState === 'visible') {
+          registerLCP()
+        }
+      });
+    } else {
+      registerLCP()
+    }
 
     if (self.__batchReporting) {
       document.addEventListener('visibilitychange', () => {

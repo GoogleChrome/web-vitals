@@ -20,6 +20,7 @@ import {browserSupportsEntry} from '../utils/browserSupportsEntry.js';
 import {firstContentfulPaint} from '../utils/firstContentfulPaint.js';
 import {imagesPainted} from '../utils/imagesPainted.js';
 import {navigateTo} from '../utils/navigateTo.js';
+import {nextFrame} from '../utils/nextFrame.js';
 import {stubForwardBack} from '../utils/stubForwardBack.js';
 import {stubVisibilityChange} from '../utils/stubVisibilityChange.js';
 import {webVitalsLoaded} from '../utils/webVitalsLoaded.js';
@@ -312,6 +313,35 @@ describe('onLCP()', async function () {
 
     await beaconCountIs(1);
     assertStandardReportsAreCorrect(await getBeacons());
+  });
+
+  it('does not report if page hidden initially and onLCP loaded on visibility', async function () {
+    if (!browserSupportsLCP) this.skip();
+    if (!browserSupportsVisibilityState) this.skip();
+
+    // Don't load the library until we reshow the page
+    await navigateTo('/test/lcp?hidden=1&registerOnVisibilityChange=1');
+
+    // Wait until web-vitals is loaded
+    await webVitalsLoaded();
+
+    // Wait a frame to ensure the onLCP call is registered
+    await nextFrame();
+
+    await stubVisibilityChange('visible');
+
+    // Wait a frame to ensure the H1 is painted
+    await nextFrame();
+
+    // Click on the h1 to finalize LCP
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
   });
 
   it('does not report if the document changes to hidden before the first render', async function () {
