@@ -314,6 +314,29 @@ describe('onLCP()', async function () {
     assertStandardReportsAreCorrect(await getBeacons());
   });
 
+  it('does report if library loaded on first visibility', async function () {
+    if (!browserSupportsLCP) this.skip();
+    if (!browserSupportsVisibilityState) this.skip();
+
+    // Don't load the library until we reshow the page
+    await navigateTo('/test/lcp??hidden=1&loadOnVisibilityChange=1');
+
+    // Wait until web-vitals is loaded
+    await webVitalsLoaded();
+
+    await hideAndReshowPage();
+
+    // Click on the h1 to finalize LCP
+    const h1 = await $('h1');
+    await h1.click();
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+
+    const beacons = await getBeacons();
+    assert.strictEqual(beacons.length, 0);
+  });
+
   it('does not report if the document changes to hidden before the first render', async function () {
     if (!browserSupportsLCP) this.skip();
 
