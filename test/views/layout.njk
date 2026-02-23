@@ -43,7 +43,7 @@
        */
       self.__stubVisibilityChange = (visibilityState) => {
         self.__stubVisibilityState(visibilityState);
-        dispatchEvent(new Event('visibilitychange'));
+        document.dispatchEvent(new Event('visibilitychange'));
       }
 
       /**
@@ -165,7 +165,7 @@
 
       self.__lazyLoad = Boolean(infer('lazyLoad'));
       self.__loadAfterInput = Boolean(infer('loadAfterInput'));
-      self.__loadOnVisibilityChange = Boolean(infer('loadOnVisibilityChange'));
+      self.__registerOnVisibilityChange = Boolean(infer('registerOnVisibilityChange'));
       self.__batchReporting = Boolean(infer('batchReporting'));
       self.__removeElement = Boolean(infer('removeElement'));
 

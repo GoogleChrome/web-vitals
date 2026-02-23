@@ -74,8 +74,9 @@
       });
     }
 
-    if (self.__loadAfterInput) {
+    if (self.__registerOnVisibilityChange) {
       document.addEventListener('visibilitychange', () => {
+        console.log('Got a visibilitychange event', document.visibilityState);
         if (document.visibilityState === 'visible') {
           registerLCP()
         }
