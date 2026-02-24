@@ -13,82 +13,110 @@
  limitations under the License.
 */
 
-import express from 'express';
+import http from 'node:http';
 import fs from 'fs-extra';
+import path from 'node:path';
 import nunjucks from 'nunjucks';
 
 const BEACON_FILE = 'test/beacons.log';
-const app = express();
+
+const MIME_TYPES = {
+  '.js': 'text/javascript',
+  '.cjs': 'text/javascript',
+  '.css': 'text/css',
+  '.png': 'image/png',
+  '.map': 'application/json',
+};
 
 nunjucks.configure('./test/views/', {noCache: true});
 
-// Turn off all caching for tests.
-app.use((req, res, next) => {
-  res.set('Cache-Control', 'no-cache');
-  res.set('Access-Control-Allow-Origin', '*');
-  next();
-});
+function readBody(req) {
+  return new Promise((resolve) => {
+    const chunks = [];
+    req.on('data', (chunk) => chunks.push(chunk));
+    req.on('end', () => resolve(Buffer.concat(chunks).toString()));
+  });
+}
 
-// Allow the use of a `delay` query param to delay any response.
-app.use((req, res, next) => {
-  if (req.query && req.query.delay) {
-    setTimeout(next, req.query.delay);
-  } else {
-    next();
-  }
-});
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, Number(ms)));
+}
 
-// Allow the use of a `earlyHintsDelay` query param to delay any response
-// after sending an early hints
-app.use((req, res, next) => {
-  if (req.query && req.query.earlyHintsDelay) {
-    res.writeEarlyHints({
-      'link': '</styles.css>; rel=preload; as=style',
-    });
-    setTimeout(next, req.query.earlyHintsDelay);
-  } else {
-    next();
-  }
-});
+const server = http.createServer(async (req, res) => {
+  const url = new URL(req.url, 'http://localhost');
+  const query = Object.fromEntries(url.searchParams);
 
-// Add a "collect" endpoint to simulate analytics beacons.
-app.post('/collect', express.text(), (req, res) => {
-  // Uncomment to log the metric when manually testing.
-  console.log(JSON.stringify(JSON.parse(req.body), null, 2));
-  console.log('-'.repeat(80));
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Access-Control-Allow-Origin', '*');
 
-  fs.appendFileSync(BEACON_FILE, req.body + '\n');
-  res.end();
-});
-
-app.get('/test/:view', function (req, res, next) {
-  let modulePath = `/dist/web-vitals.js`;
-  if (req.query.attribution) {
-    modulePath = `/dist/web-vitals.attribution.js`;
+  if (query.delay) {
+    await sleep(query.delay);
   }
 
-  const data = {
-    ...req.query,
-    queryString: new URLSearchParams(req.query).toString(),
-    modulePath: modulePath,
-  };
-
-  const content = nunjucks.render(`${req.params.view}.njk`, data);
-  if (req.query.delayResponse) {
-    res.write(content + '\n');
-    setTimeout(() => {
-      res.write(`</body></html>`);
-      res.end();
-      next();
-    }, Number(req.query.delayResponse));
-  } else {
-    res.send(content);
+  if (query.earlyHintsDelay) {
+    res.writeEarlyHints({'link': '</styles.css>; rel=preload; as=style'});
+    await sleep(query.earlyHintsDelay);
   }
+
+  // POST /collect - analytics beacon endpoint
+  if (req.method === 'POST' && url.pathname === '/collect') {
+    const body = await readBody(req);
+    // Uncomment to log the metric when manually testing.
+    console.log(JSON.stringify(JSON.parse(body), null, 2));
+    console.log('-'.repeat(80));
+    fs.appendFileSync(BEACON_FILE, body + '\n');
+    res.end();
+    return;
+  }
+
+  // GET /test/:view - render nunjucks template
+  const viewMatch = url.pathname.match(/^\/test\/([^/]+)$/);
+  if (req.method === 'GET' && viewMatch) {
+    const view = viewMatch[1];
+    const modulePath = query.attribution
+      ? '/dist/web-vitals.attribution.js'
+      : '/dist/web-vitals.js';
+
+    const data = {
+      ...query,
+      queryString: url.searchParams.toString(),
+      modulePath,
+    };
+
+    const content = nunjucks.render(`${view}.njk`, data);
+    res.setHeader('Content-Type', 'text/html');
+
+    if (query.delayResponse) {
+      res.write(content + '\n');
+      setTimeout(() => {
+        res.write('</body></html>');
+        res.end();
+      }, Number(query.delayResponse));
+    } else {
+      res.end(content);
+    }
+    return;
+  }
+
+  // Static file serving
+  const filePath = '.' + url.pathname;
+  const ext = path.extname(filePath);
+  const contentType = MIME_TYPES[ext] || 'application/octet-stream';
+
+  fs.readFile(filePath, (err, data) => {
+    if (err) {
+      res.writeHead(404);
+      res.end('Not found');
+      return;
+    }
+    res.writeHead(200, {'Content-Type': contentType});
+    res.end(data);
+  });
 });
 
-app.use(express.static('./'));
-
-const listener = app.listen(process.env.PORT || 9090, () => {
-  fs.ensureFileSync(BEACON_FILE);
-  console.log(`Server running:\nhttp://localhost:${listener.address().port}`);
+const port = process.env.PORT || 9090;
+server.listen(port, () => {
+  fs.mkdirSync(path.dirname(BEACON_FILE), {recursive: true});
+  fs.appendFileSync(BEACON_FILE, '');
+  console.log(`Server running:\nhttp://localhost:${port}`);
 });
