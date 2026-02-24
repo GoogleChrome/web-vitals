@@ -13,7 +13,6 @@
  limitations under the License.
 */
 
-import bodyParser from 'body-parser';
 import express from 'express';
 import fs from 'fs-extra';
 import nunjucks from 'nunjucks';
@@ -53,7 +52,7 @@ app.use((req, res, next) => {
 });
 
 // Add a "collect" endpoint to simulate analytics beacons.
-app.post('/collect', bodyParser.text(), (req, res) => {
+app.post('/collect', express.text(), (req, res) => {
   // Uncomment to log the metric when manually testing.
   console.log(JSON.stringify(JSON.parse(req.body), null, 2));
   console.log('-'.repeat(80));
