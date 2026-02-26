@@ -15,6 +15,7 @@
  */
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
+import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
@@ -48,10 +49,13 @@ export const onLCP = (
   opts = Object.assign({}, opts);
 
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
-  const lcpTargetMap: WeakMap<LargestContentfulPaint, string> = new WeakMap();
+  const lcpTargetMap: WeakMap<
+    LargestContentfulPaint | InteractionContentfulPaint,
+    string
+  > = new WeakMap();
 
   lcpEntryManager._onBeforeProcessingEntry = (
-    entry: LargestContentfulPaint,
+    entry: LargestContentfulPaint | InteractionContentfulPaint,
   ) => {
     const node = entry.element;
     if (node) {
@@ -65,6 +69,7 @@ export const onLCP = (
   };
 
   const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
+    const hardNavId = getNavigationEntry()?.navigationId || '1';
     // Use a default object if no other attribution has been set.
     let attribution: LCPAttribution = {
       timeToFirstByte: 0,
@@ -94,14 +99,30 @@ export const onLCP = (
 
       // Get subparts from navigation entry. Do this last as occasionally
       // Safari seems to fail to find a navigation entry.
-      const navigationEntry = getNavigationEntry();
-      if (navigationEntry) {
-        const activationStart = navigationEntry.activationStart || 0;
+      let navigationEntry;
+      let activationStart = 0;
+      let responseStart = 0;
+      let softNavStart = 0;
 
-        const ttfb = Math.max(
-          0,
-          navigationEntry.responseStart - activationStart,
-        );
+      if (!metric.navigationId || metric.navigationId === hardNavId) {
+        navigationEntry = getNavigationEntry();
+        activationStart =
+          navigationEntry && navigationEntry.activationStart
+            ? navigationEntry.activationStart
+            : 0;
+        responseStart =
+          navigationEntry && navigationEntry.responseStart
+            ? navigationEntry.responseStart
+            : 0;
+      } else {
+        navigationEntry = getSoftNavigationEntry(metric.navigationId);
+        // Set activationStart to the SoftNav start time
+        softNavStart = navigationEntry ? navigationEntry.startTime : 0;
+        activationStart = softNavStart;
+      }
+
+      if (navigationEntry) {
+        const ttfb = Math.max(0, responseStart - activationStart);
 
         const lcpRequestStart = Math.max(
           ttfb,
@@ -115,10 +136,11 @@ export const onLCP = (
           // Cap at LCP time (videos continue downloading after LCP for example)
           metric.value,
           Math.max(
-            lcpRequestStart,
+            lcpRequestStart - softNavStart,
             lcpResourceEntry
               ? lcpResourceEntry.responseEnd - activationStart
               : 0,
+            0,
           ),
         );
 
