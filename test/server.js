@@ -33,6 +33,7 @@ function readBody(req) {
   return new Promise((resolve) => {
     const chunks = [];
     req.on('data', (chunk) => chunks.push(chunk));
+    req.on('error', (err) => reject(err));
     req.on('end', () => resolve(Buffer.concat(chunks).toString()));
   });
 }
