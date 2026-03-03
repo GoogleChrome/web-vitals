@@ -83,17 +83,23 @@ const server = http.createServer(async (req, res) => {
       modulePath,
     };
 
-    const content = nunjucks.render(`${view}.njk`, data);
-    res.setHeader('Content-Type', 'text/html');
+    try {
+      const content = nunjucks.render(`${view}.njk`, data);
+      res.setHeader('Content-Type', 'text/html');
 
-    if (query.delayResponse) {
-      res.write(content + '\n');
-      setTimeout(() => {
-        res.write('</body></html>');
-        res.end();
-      }, Number(query.delayResponse));
-    } else {
-      res.end(content);
+      if (query.delayResponse) {
+        res.write(content + '\n');
+        setTimeout(() => {
+          res.write('</body></html>');
+          res.end();
+        }, Number(query.delayResponse));
+      } else {
+        res.end(content);
+      }
+    } catch (error) {
+      console.error(error.stack);
+      res.writeHead(500);
+      res.end(error.stack);
     }
     return;
   }
