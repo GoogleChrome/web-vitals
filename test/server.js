@@ -25,7 +25,6 @@ const MIME_TYPES = {
   '.cjs': 'text/javascript',
   '.css': 'text/css',
   '.png': 'image/png',
-  '.map': 'application/json',
 };
 
 nunjucks.configure('./test/views/', {noCache: true});
