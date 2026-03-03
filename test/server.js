@@ -98,7 +98,14 @@ const server = http.createServer(async (req, res) => {
   }
 
   // Static file serving
-  const filePath = '.' + url.pathname;
+  const root = process.cwd();
+  const filePath = path.join(root, url.pathname);
+  // Check if filePath is within root
+  if (!filePath.startsWith(root)) {
+    res.writeHead(403);
+    res.end('Forbidden');
+    return;
+  }
   const ext = path.extname(filePath);
   const contentType = MIME_TYPES[ext] || 'application/octet-stream';
 
