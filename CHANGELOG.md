@@ -1,5 +1,14 @@
 # Changelog
 
+### v5.2.0 (2026-02-03)
+
+- Use `LargestContentfulPaint.id` as fallback when element is removed from DOM ([#676](https://github.com/GoogleChrome/web-vitals/pull/676))
+- Misc code ands performance improvements:
+  - Replace `filter()[0]` with `find()` for better performance ([#658](https://github.com/GoogleChrome/web-vitals/pull/658))
+  - Use `queueMicrotask` for microtask scheduling ([#660](https://github.com/GoogleChrome/web-vitals/pull/660))
+  - Simplify the event and LoAF entry clean up logic ([#662](https://github.com/GoogleChrome/web-vitals/pull/662))
+  - Remove obsolete FID polyfill types ([#675](https://github.com/GoogleChrome/web-vitals/pull/675))
+
 ### v5.1.0 (2025-07-31)
 
 - Register `visibility-change` early ([#637](https://github.com/GoogleChrome/web-vitals/pull/637))
