@@ -174,9 +174,11 @@ export const onINP = (
         // So limit to 5 (the first 4 + the last one) to cap the memory of
         // keeping the heavy PerformanceEventEntry objects around.
         if (group.entries.length >= 5) {
-          group.entries = group.entries.slice(0, 4);
+          group.entries.length = 5; // Shouldn't ever happen but let's be safe
+          group.entries[4] = entry;
+        } else {
+          group.entries.push(entry);
         }
-        group.entries.push(entry);
 
         break;
       }
