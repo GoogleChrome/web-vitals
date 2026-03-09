@@ -152,7 +152,6 @@
     "nunjucks": "^3.2.4",
     "prettier": "^3.7.4",
     "rollup": "^4.55.1",
-    "selenium-standalone": "^10.0.2",
     "typescript": "^5.9.3",
     "yargs": "^18.0.0"
   },
