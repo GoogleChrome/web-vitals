@@ -43,8 +43,8 @@ interface pendingEntriesGroup {
 // frame data is needed to determine various bits of INP attribution once all
 // the frame-related data has come in.
 // In most cases this out-of-order data is only off by a frame or two, so
-// keeping the most recent 5 should be more than sufficient.
-const MAX_PENDING_FRAMES = 5;
+// keeping the most recent 10 should be more than sufficient.
+const MAX_PENDING_FRAMES = 10;
 
 /**
  * Calculates the [INP](https://web.dev/articles/inp) value for the current
