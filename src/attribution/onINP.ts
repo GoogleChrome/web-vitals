@@ -43,8 +43,8 @@ interface pendingEntriesGroup {
 // frame data is needed to determine various bits of INP attribution once all
 // the frame-related data has come in.
 // In most cases this out-of-order data is only off by a frame or two, so
-// keeping the most recent 50 should be more than sufficient.
-const MAX_PENDING_FRAMES = 50;
+// keeping the most recent 10 should be more than sufficient.
+const MAX_PENDING_FRAMES = 10;
 
 /**
  * Calculates the [INP](https://web.dev/articles/inp) value for the current
@@ -168,7 +168,17 @@ export const onINP = (
           entry.processingEnd,
           group.processingEnd,
         );
-        group.entries.push(entry);
+        // For some frames there can be many event entries. In this case the
+        // value of including all the processed entries versus the memory use
+        // becomes questionable (see also https://crbug.com/484342204).
+        // So limit to 5 (the first 4 + the last one) to cap the memory of
+        // keeping the heavy PerformanceEventEntry objects around.
+        if (group.entries.length >= 5) {
+          group.entries.length = 5; // Shouldn't ever happen but let's be safe
+          group.entries[4] = entry;
+        } else {
+          group.entries.push(entry);
+        }
 
         break;
       }
