@@ -22,19 +22,25 @@ import {runOnce} from './runOnce.js';
  */
 export const whenIdleOrHidden = (cb: () => void) => {
   const rIC = globalThis.requestIdleCallback || setTimeout;
+  const cIC = globalThis.cancelIdleCallback || clearTimeout;
 
   // If the document is hidden, run the callback immediately, otherwise
   // race an idle callback with the next `visibilitychange` event.
   if (document.visibilityState === 'hidden') {
     cb();
   } else {
-    cb = runOnce(cb);
-    addEventListener('visibilitychange', cb, {once: true, capture: true});
-    rIC(() => {
-      cb();
-      // Remove the above event listener since no longer required.
-      // See: https://github.com/GoogleChrome/web-vitals/issues/622
-      removeEventListener('visibilitychange', cb, {capture: true});
+    const wrappedCb = runOnce(cb);
+
+    let idleHandle = -1;
+    const onHidden = () => {
+      cIC(idleHandle);
+      wrappedCb();
+    };
+
+    addEventListener('visibilitychange', onHidden, {once: true, capture: true});
+    idleHandle = rIC(() => {
+      removeEventListener('visibilitychange', onHidden, {capture: true});
+      wrappedCb();
     });
   }
 };

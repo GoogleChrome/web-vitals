@@ -930,6 +930,7 @@ interface INPAttribution {
   /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
+   * Note this is capped to a max of 5 entries (the first 4 + the last one).
    */
   processedEventEntries: PerformanceEventTiming[];
   /**

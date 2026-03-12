@@ -68,7 +68,7 @@ export const getVisibilityWatcher = () => {
     const firstVisibilityStateHiddenTime = !document.prerendering
       ? globalThis.performance
           .getEntriesByType('visibility-state')
-          .find((e) => e.name === 'hidden' && e.startTime > activationStart)
+          .find((e) => e.name === 'hidden' && e.startTime >= activationStart)
           ?.startTime
       : undefined;
     /* eslint-enable indent */
