@@ -104,7 +104,7 @@ export const onCLS = (
             opts!.reportAllChanges,
           );
 
-          doubleRAF(() => report());
+          doubleRAF(report);
         });
 
         // Queue a task to report (if nothing else triggers a report first).
