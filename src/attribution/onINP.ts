@@ -432,18 +432,13 @@ export const onINP = (
     attributeLoAFDetails(attribution);
 
     // Use `Object.assign()` to ensure the original metric object is returned.
-    const metricWithAttribution: INPMetricWithAttribution = Object.assign(
-      metric,
-      {attribution},
-    );
-    return metricWithAttribution;
+    return Object.assign(metric, {attribution});
   };
 
   // Start observing LoAF entries for attribution.
   observe('long-animation-frame', handleLoAFEntries);
 
   unattributedOnINP((metric: INPMetric) => {
-    const metricWithAttribution = attributeINP(metric);
-    onReport(metricWithAttribution);
+    onReport(attributeINP(metric));
   }, opts);
 };
