@@ -895,6 +895,8 @@ describe('onINP()', async function () {
         },
       );
 
+      // Wait until the library is loaded and the first paint occurs to ensure
+      // The 40ms event duration is set
       await webVitalsLoaded();
       await firstContentfulPaint();
 
@@ -912,6 +914,11 @@ describe('onINP()', async function () {
 
       const [inp] = await getBeacons();
 
+      assert(inp.value >= 0);
+      assert(inp.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp.name, 'INP');
+      assert.strictEqual(inp.value, inp.delta);
+      assert(allEntriesPresentTogether(inp.entries));
       assert.equal(inp.attribution.processedEventEntries.length, 0);
     });
 

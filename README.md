@@ -815,6 +815,15 @@ In the [attribution build](#attribution-build) each of the metric functions has 
    onLCP(sendToAnalytics, {generateTarget: customGenerateTarget});
    ```
 
+3. The `onINP` `AttributionReportOpts` supports an additional, optional, `includeProcessedEventEntries` configuration option. When set to `false`, the `event` performance entries will not be included in the `attribution` object to conserve memory if these entries are not needed. The default value is `true`.
+
+```ts
+interface INPAttributionReportOpts extends AttributionReportOpts {
+  durationThreshold?: number;
+  includeProcessedEventEntries?: boolean;
+}
+```
+
 The next sections document the shape of the `attribution` object for each of the metrics:
 
 #### `CLSAttribution`

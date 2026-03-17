@@ -172,6 +172,8 @@ export const onINP = (
           entry.processingEnd,
           group.processingEnd,
         );
+        // processedEventEntries can be quite large, so only include them if
+        // the user explicitly requests them (default is to include).
         if (opts.includeProcessedEventEntries !== false) {
           group.entries.push(entry);
         }
@@ -187,6 +189,8 @@ export const onINP = (
         processingStart: entry.processingStart,
         processingEnd: entry.processingEnd,
         renderTime,
+        // processedEventEntries can be quite large, so only include them if
+        // the user explicitly requests them (default is to include).
         entries: opts.includeProcessedEventEntries !== false ? [entry] : [],
       };
 
