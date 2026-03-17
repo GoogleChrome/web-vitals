@@ -895,11 +895,6 @@ describe('onINP()', async function () {
         },
       );
 
-      // Wait until the library is loaded and the first paint occurs to ensure
-      // The 40ms event duration is set
-      await webVitalsLoaded();
-      await firstContentfulPaint();
-
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);
 
