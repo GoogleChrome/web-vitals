@@ -61,6 +61,10 @@ const MAX_PENDING_FRAMES = 10;
  * less than 40 (well below the recommended
  * [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
  *
+ * A custom `includeProcessedEventEntries` configuration option can optionally
+ * be passed to control whether the `processedEventEntries` array in the
+ * attribution object is populated. The default value is `true`.
+ *
  * If the `reportAllChanges` configuration option is set to `true`, the
  * `callback` function will be called as soon as the value is initially
  * determined as well as any time the value changes throughout the page
@@ -168,15 +172,7 @@ export const onINP = (
           entry.processingEnd,
           group.processingEnd,
         );
-        // For some frames there can be many event entries. In this case the
-        // value of including all the processed entries versus the memory use
-        // becomes questionable (see also https://crbug.com/484342204).
-        // So limit to 5 (the first 4 + the last one) to cap the memory of
-        // keeping the heavy PerformanceEventEntry objects around.
-        if (group.entries.length >= 5) {
-          group.entries.length = 5; // Shouldn't ever happen but let's be safe
-          group.entries[4] = entry;
-        } else {
+        if (opts.includeProcessedEventEntries !== false) {
           group.entries.push(entry);
         }
 
@@ -191,7 +187,7 @@ export const onINP = (
         processingStart: entry.processingStart,
         processingEnd: entry.processingEnd,
         renderTime,
-        entries: [entry],
+        entries: opts.includeProcessedEventEntries !== false ? [entry] : [],
       };
 
       pendingEntriesGroups.push(group);
