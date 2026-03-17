@@ -917,6 +917,38 @@ describe('onINP()', async function () {
       assert.equal(inp.attribution.processedEventEntries.length, 0);
     });
 
+    it('supports enabling processedEventEntries', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo(
+        '/test/inp?click=100&attribution=1&includeProcessedEventEntries=true',
+        {
+          readyState: 'complete',
+        },
+      );
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp] = await getBeacons();
+
+      assert(inp.value >= 0);
+      assert(inp.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp.name, 'INP');
+      assert.strictEqual(inp.value, inp.delta);
+      assert(allEntriesPresentTogether(inp.entries));
+      assert(inp.attribution.processedEventEntries.length > 0);
+    });
+
     it('supports generating a custom target', async function () {
       if (!browserSupportsINP) this.skip();
 
