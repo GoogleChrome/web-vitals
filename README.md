@@ -659,6 +659,7 @@ Metric-specific subclasses:
 ```ts
 interface INPAttributionReportOpts extends AttributionReportOpts {
   durationThreshold?: number;
+  includeProcessedEventEntries?: boolean;
 }
 ```
 
