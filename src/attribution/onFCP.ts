@@ -70,7 +70,6 @@ export const onFCP = (
   opts: AttributionReportOpts = {},
 ) => {
   unattributedOnFCP((metric: FCPMetric) => {
-    const metricWithAttribution = attributeFCP(metric);
-    onReport(metricWithAttribution);
+    onReport(attributeFCP(metric));
   }, opts);
 };

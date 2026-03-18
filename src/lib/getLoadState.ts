@@ -22,26 +22,27 @@ export const getLoadState = (timestamp: number): LoadState => {
     // If the `readyState` is 'loading' there's no need to look at timestamps
     // since the timestamp has to be the current time or earlier.
     return 'loading';
-  } else {
-    const navigationEntry = getNavigationEntry();
-    if (navigationEntry) {
-      if (timestamp < navigationEntry.domInteractive) {
-        return 'loading';
-      } else if (
-        navigationEntry.domContentLoadedEventStart === 0 ||
-        timestamp < navigationEntry.domContentLoadedEventStart
-      ) {
-        // If the `domContentLoadedEventStart` timestamp has not yet been
-        // set, or if the given timestamp is less than that value.
-        return 'dom-interactive';
-      } else if (
-        navigationEntry.domComplete === 0 ||
-        timestamp < navigationEntry.domComplete
-      ) {
-        // If the `domComplete` timestamp has not yet been
-        // set, or if the given timestamp is less than that value.
-        return 'dom-content-loaded';
-      }
+  }
+  const navigationEntry = getNavigationEntry();
+  if (navigationEntry) {
+    if (timestamp < navigationEntry.domInteractive) {
+      return 'loading';
+    }
+    if (
+      navigationEntry.domContentLoadedEventStart === 0 ||
+      timestamp < navigationEntry.domContentLoadedEventStart
+    ) {
+      // If the `domContentLoadedEventStart` timestamp has not yet been
+      // set, or if the given timestamp is less than that value.
+      return 'dom-interactive';
+    }
+    if (
+      navigationEntry.domComplete === 0 ||
+      timestamp < navigationEntry.domComplete
+    ) {
+      // If the `domComplete` timestamp has not yet been
+      // set, or if the given timestamp is less than that value.
+      return 'dom-content-loaded';
     }
   }
   // If any of the above fail, default to loaded. This could really only
