@@ -137,6 +137,7 @@
       reportAllChanges: self.__reportAllChanges,
       durationThreshold: self.__durationThreshold,
       generateTarget: self.__generateTarget && ((el) => el?.dataset?.target),
+      includeProcessedEventEntries: self.__includeProcessedEventEntries,
     });
 
     if (self.__batchReporting) {

@@ -659,6 +659,7 @@ Metric-specific subclasses:
 ```ts
 interface INPAttributionReportOpts extends AttributionReportOpts {
   durationThreshold?: number;
+  includeProcessedEventEntries?: boolean;
 }
 ```
 
@@ -814,6 +815,15 @@ In the [attribution build](#attribution-build) each of the metric functions has 
    onLCP(sendToAnalytics, {generateTarget: customGenerateTarget});
    ```
 
+3. The `onINP` `AttributionReportOpts` supports an additional, optional, `includeProcessedEventEntries` configuration option. When set to `false`, the `event` performance entries will not be included in the `attribution` object to conserve memory if these entries are not needed. The default value is `true`.
+
+```ts
+interface INPAttributionReportOpts extends AttributionReportOpts {
+  durationThreshold?: number;
+  includeProcessedEventEntries?: boolean;
+}
+```
+
 The next sections document the shape of the `attribution` object for each of the metrics:
 
 #### `CLSAttribution`
@@ -930,7 +940,9 @@ interface INPAttribution {
   /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
-   * Note this is capped to a max of 5 entries (the first 4 + the last one).
+   * This array can be quite large so it will be empty if the
+   * `includeProcessedEventEntries` configuration option is set to `false` to
+   * conserve memory if these entries are not required.
    */
   processedEventEntries: PerformanceEventTiming[];
   /**
