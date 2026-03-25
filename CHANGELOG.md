@@ -4,7 +4,9 @@
 
 - Use `LargestContentfulPaint.id` as fallback when element is removed from DOM ([#676](https://github.com/GoogleChrome/web-vitals/pull/676))
 - Fix bug for `onLCP` when attached late ([#697](https://github.com/GoogleChrome/web-vitals/pull/697))
+- FHandle initially hidden pages and onLCP registered on visibility change ([#698](https://github.com/GoogleChrome/web-vitals/pull/698))
 - Limit pending events to conserve memory ([#710](https://github.com/GoogleChrome/web-vitals/pull/710))
+- Add `includeProcessedEventEntries` option ([#714](https://github.com/GoogleChrome/web-vitals/pull/714))
 - Misc code and performance improvements:
   - Replace `filter()[0]` with `find()` for better performance ([#658](https://github.com/GoogleChrome/web-vitals/pull/658))
   - Use `queueMicrotask` for microtask scheduling ([#660](https://github.com/GoogleChrome/web-vitals/pull/660))
