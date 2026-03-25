@@ -55,8 +55,8 @@ export const onLCP = (
   let reportedMetric = false;
   const softNavsEnabled = softNavs(opts);
   let metricNavStartTime = 0;
-  const hardNavId = getNavigationEntry()?.navigationId || '1';
-  let finalizeNavId = '';
+  const hardNavId = getNavigationEntry()?.navigationId || 0;
+  let finalizeNavId = 0;
 
   whenActivated(() => {
     let visibilityWatcher = getVisibilityWatcher();
@@ -67,7 +67,7 @@ export const onLCP = (
 
     const initNewLCPMetric = (
       navigation?: Metric['navigationType'],
-      navigationId?: string,
+      navigationId?: number,
     ) => {
       metric = initMetric('LCP', 0, navigation, navigationId);
       report = bindReporter(
@@ -85,7 +85,10 @@ export const onLCP = (
       }
     };
 
-    const handleEntries = (entries: LCPMetric['entries']) => {
+    const handleEntries = (
+      entries: LCPMetric['entries'],
+      navigationId?: number,
+    ) => {
       // If reportAllChanges is set then call this function for each entry,
       // otherwise only consider the last one, unless soft navs are enabled.
       if (!opts!.reportAllChanges && !softNavsEnabled) {
@@ -94,15 +97,17 @@ export const onLCP = (
 
       for (const entry of entries) {
         if (entry) {
-          if (softNavsEnabled && entry?.navigationId !== metric.navigationId) {
+          const navId = navigationId || entry.navigationId;
+
+          if (softNavsEnabled && navId !== metric.navigationId) {
             // If the entry is for a new navigationId than previous, then we have
             // entered a new soft nav, so emit the final LCP and reinitialize the
             // metric.
             if (!reportedMetric) report(true);
-            initNewLCPMetric('soft-navigation', entry.navigationId);
+            initNewLCPMetric('soft-navigation', navId);
           }
           let value = 0;
-          if (!entry.navigationId || entry.navigationId === hardNavId) {
+          if (!navId || navId === hardNavId) {
             // The startTime attribute returns the value of the renderTime if it is
             // not 0, and the value of the loadTime otherwise. The activationStart
             // reference is used because LCP should be relative to page activation
@@ -113,12 +118,12 @@ export const onLCP = (
           } else {
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
-            const softNavEntry = getSoftNavigationEntry(entry.navigationId);
+            const softNavEntry = getSoftNavigationEntry(navId);
             const softNavEntryStartTime =
               softNavEntry && softNavEntry.startTime
                 ? softNavEntry.startTime
                 : 0;
-            value = Math.max(entry.startTime - softNavEntryStartTime, 0);
+            value = Math.max(entry.renderTime - softNavEntryStartTime, 0);
           }
 
           lcpEntryManager._processEntry(entry);
@@ -222,6 +227,10 @@ export const onLCP = (
             handleEntries(po!.takeRecords() as LCPMetric['entries']);
             if (!reportedMetric) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
+            handleEntries(
+              [entry.largestInteractionContentfulPaint],
+              entry.navigationId,
+            );
           }
         });
       };

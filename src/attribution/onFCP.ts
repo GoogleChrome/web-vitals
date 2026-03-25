@@ -27,7 +27,7 @@ import {
 } from '../types.js';
 
 const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
-  const hardNavId = getNavigationEntry()?.navigationId || '1';
+  const hardNavId = getNavigationEntry()?.navigationId || 0;
   // Use a default object if no other attribution has been set.
   let attribution: FCPAttribution = {
     timeToFirstByte: 0,

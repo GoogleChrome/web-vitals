@@ -76,7 +76,7 @@ export const onCLS = (
 
       const initNewCLSMetric = (
         navigation?: Metric['navigationType'],
-        navigationId?: string,
+        navigationId?: number,
       ) => {
         metric = initMetric('CLS', 0, navigation, navigationId);
         layoutShiftManager._sessionValue = 0;

@@ -100,7 +100,7 @@ export const onINP = (
 
     const initNewINPMetric = (
       navigation?: Metric['navigationType'],
-      navigationId?: string,
+      navigationId?: number,
     ) => {
       interactionManager._resetInteractions();
       metric = initMetric('INP', -1, navigation, navigationId);

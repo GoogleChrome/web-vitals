@@ -69,7 +69,7 @@ export const onLCP = (
   };
 
   const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
-    const hardNavId = getNavigationEntry()?.navigationId || '1';
+    const hardNavId = getNavigationEntry()?.navigationId || 0;
     // Use a default object if no other attribution has been set.
     let attribution: LCPAttribution = {
       timeToFirstByte: 0,

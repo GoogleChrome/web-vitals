@@ -51,7 +51,7 @@ declare global {
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
   interface PerformancePaintTiming extends PerformanceEntry {
-    navigationId?: string;
+    navigationId?: number;
   }
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
@@ -63,14 +63,14 @@ declare global {
   // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
   interface PerformanceNavigationTiming {
     activationStart?: number;
-    navigationId?: string;
+    navigationId?: number;
   }
 
   // https://wicg.github.io/event-timing/#sec-performance-event-timing
   interface PerformanceEventTiming extends PerformanceEntry {
     duration: DOMHighResTimeStamp;
     readonly interactionId: number;
-    navigationId?: string;
+    navigationId?: number;
   }
 
   // https://wicg.github.io/layout-instability/#sec-layout-shift-attribution
@@ -78,7 +78,7 @@ declare global {
     node: Node | null;
     previousRect: DOMRectReadOnly;
     currentRect: DOMRectReadOnly;
-    navigationId?: string;
+    navigationId?: number;
   }
 
   // https://wicg.github.io/layout-instability/#sec-layout-shift
@@ -86,7 +86,7 @@ declare global {
     value: number;
     sources: LayoutShiftAttribution[];
     hadRecentInput: boolean;
-    navigationId?: string;
+    navigationId?: number;
   }
 
   // https://w3c.github.io/largest-contentful-paint/#sec-largest-contentful-paint-interface
@@ -97,13 +97,10 @@ declare global {
     readonly id: string;
     readonly url: string;
     readonly element: Element | null;
-    navigationId?: string;
+    navigationId?: number;
   }
 
   // https://github.com/WICG/soft-navigations
-  interface SoftNavigationEntry extends PerformanceEntry {
-    navigationId?: string;
-  }
   interface InteractionContentfulPaint extends PerformanceEntry {
     readonly renderTime: DOMHighResTimeStamp;
     readonly loadTime: DOMHighResTimeStamp;
@@ -111,7 +108,14 @@ declare global {
     readonly id: string;
     readonly url: string;
     readonly element: Element | null;
-    navigationId?: string;
+    navigationId?: number;
+  }
+  interface SoftNavigationEntry extends PerformanceEntry {
+    navigationId?: number;
+    navigationType?: string;
+    largestInteractionContentfulPaint: InteractionContentfulPaint;
+    paintTime?: number;
+    presentationTime?: number;
   }
 
   // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming

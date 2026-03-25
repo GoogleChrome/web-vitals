@@ -48,7 +48,7 @@ export const onFCP = (
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
   let metricNavStartTime = 0;
-  const hardNavId = getNavigationEntry()?.navigationId || '1';
+  const hardNavId = getNavigationEntry()?.navigationId || 0;
 
   whenActivated(() => {
     let visibilityWatcher = getVisibilityWatcher();
@@ -57,7 +57,7 @@ export const onFCP = (
 
     const initNewFCPMetric = (
       navigation?: Metric['navigationType'],
-      navigationId?: string,
+      navigationId?: number,
     ) => {
       metric = initMetric('FCP', 0, navigation, navigationId);
       report = bindReporter(
@@ -129,7 +129,7 @@ export const onFCP = (
           ) {
             metric.value = value;
             metric.entries.push(entry);
-            metric.navigationId = entry.navigationId || '1';
+            metric.navigationId = entry.navigationId || 0;
             // FCP should only be reported once so can report right
             report(true);
           }
@@ -168,6 +168,40 @@ export const onFCP = (
           report(true);
         });
       });
+    }
+    // Soft navs may be detected by navigationId changes in metrics above
+    // But where no metric is issued we need to also listen for soft nav
+    // entries, then emit the final metric for the previous navigation and
+    // reset the metric for the new navigation.
+    //
+    // As PO is ordered by time, these should not happen before metrics.
+    //
+    // We add a check on startTime as we may be processing many entries that
+    // are already dealt with so just checking navigationId differs from
+    // current metric's navigation id, as we did above, is not sufficient.
+    const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
+      entries.forEach((entry) => {
+        handleEntries(po!.takeRecords() as FCPMetric['entries']);
+        const FCPTime =
+          (entry.presentationTime || entry.paintTime || 0) - entry.startTime;
+        metric = initMetric(
+          'FCP',
+          FCPTime,
+          'soft-navigation',
+          entry.navigationId,
+        );
+        report = bindReporter(
+          onReport,
+          metric,
+          FCPThresholds,
+          opts!.reportAllChanges,
+        );
+        report(true);
+      });
+    };
+
+    if (softNavsEnabled) {
+      observe('soft-navigation', handleSoftNavEntries, opts);
     }
   });
 };

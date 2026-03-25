@@ -26,11 +26,11 @@ declare global {
 let interactionCountEstimate = 0;
 let minKnownInteractionId = Infinity;
 let maxKnownInteractionId = 0;
-let currentNavId = '';
+let currentNavId = 0;
 let softNavsEnabled = false;
 
 const updateEstimate = (entries: PerformanceEventTiming[]) => {
-  if (!currentNavId) currentNavId = getNavigationEntry()?.navigationId || '1';
+  if (!currentNavId) currentNavId = getNavigationEntry()?.navigationId || 0;
   for (const entry of entries) {
     if (entry.interactionId) {
       if (

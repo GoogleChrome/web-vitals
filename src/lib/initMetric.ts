@@ -25,9 +25,9 @@ export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
   value: number = -1,
   navigation?: MetricType['navigationType'],
-  navigationId?: string,
+  navigationId: number = 0,
 ) => {
-  const hardNavId = getNavigationEntry()?.navigationId || '1';
+  const hardNavId = getNavigationEntry()?.navigationId || 0;
   const hardNavEntry = getNavigationEntry();
   let navigationType: MetricType['navigationType'] = 'navigate';
 
