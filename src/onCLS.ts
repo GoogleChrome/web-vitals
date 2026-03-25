@@ -138,7 +138,7 @@ export const onCLS = (
         onBFCacheRestore(() => {
           initNewCLSMetric('back-forward-cache', metric.navigationId);
 
-          doubleRAF(() => report());
+          doubleRAF(report);
         });
 
         // Soft navs may be detected by navigationId changes in metrics above

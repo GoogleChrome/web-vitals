@@ -27,6 +27,7 @@ export interface INPReportOpts extends ReportOpts {
 
 export interface INPAttributionReportOpts extends AttributionReportOpts {
   durationThreshold?: number;
+  includeProcessedEventEntries?: boolean;
 }
 
 /**
@@ -94,6 +95,9 @@ export interface INPAttribution {
   /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
+   * This array can be quite large so it will be empty if the
+   * `includeProcessedEventEntries` configuration option is set to `false` to
+   * conserve memory if these entries are not required.
    */
   processedEventEntries: PerformanceEventTiming[];
   /**

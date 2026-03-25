@@ -19,7 +19,7 @@ import {observe} from '../observe.js';
 
 declare global {
   interface Performance {
-    interactionCount: number;
+    readonly interactionCount: number;
   }
 }
 
@@ -78,8 +78,6 @@ export const initInteractionCountPolyfill = (softNavs?: boolean) => {
   softNavsEnabled = softNavs || false;
 
   po = observe('event', updateEstimate, {
-    type: 'event',
-    buffered: true,
     durationThreshold: 0,
     includeSoftNavigationObservations: softNavsEnabled,
   } as PerformanceObserverInit);

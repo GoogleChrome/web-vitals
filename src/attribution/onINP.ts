@@ -43,8 +43,8 @@ interface pendingEntriesGroup {
 // frame data is needed to determine various bits of INP attribution once all
 // the frame-related data has come in.
 // In most cases this out-of-order data is only off by a frame or two, so
-// keeping the most recent 50 should be more than sufficient.
-const MAX_PENDING_FRAMES = 50;
+// keeping the most recent 10 should be more than sufficient.
+const MAX_PENDING_FRAMES = 10;
 
 /**
  * Calculates the [INP](https://web.dev/articles/inp) value for the current
@@ -60,6 +60,10 @@ const MAX_PENDING_FRAMES = 50;
  * will not affect your 75th percentile INP value unless that value is also
  * less than 40 (well below the recommended
  * [good](https://web.dev/articles/inp#what_is_a_good_inp_score) threshold).
+ *
+ * A custom `includeProcessedEventEntries` configuration option can optionally
+ * be passed to control whether the `processedEventEntries` array in the
+ * attribution object is populated. The default value is `true`.
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
  * `callback` function will be called as soon as the value is initially
@@ -168,7 +172,11 @@ export const onINP = (
           entry.processingEnd,
           group.processingEnd,
         );
-        group.entries.push(entry);
+        // processedEventEntries can be quite large, so only include them if
+        // the user explicitly requests them (default is to include).
+        if (opts.includeProcessedEventEntries !== false) {
+          group.entries.push(entry);
+        }
 
         break;
       }
@@ -181,7 +189,9 @@ export const onINP = (
         processingStart: entry.processingStart,
         processingEnd: entry.processingEnd,
         renderTime,
-        entries: [entry],
+        // processedEventEntries can be quite large, so only include them if
+        // the user explicitly requests them (default is to include).
+        entries: opts.includeProcessedEventEntries !== false ? [entry] : [],
       };
 
       pendingEntriesGroups.push(group);
@@ -422,18 +432,13 @@ export const onINP = (
     attributeLoAFDetails(attribution);
 
     // Use `Object.assign()` to ensure the original metric object is returned.
-    const metricWithAttribution: INPMetricWithAttribution = Object.assign(
-      metric,
-      {attribution},
-    );
-    return metricWithAttribution;
+    return Object.assign(metric, {attribution});
   };
 
   // Start observing LoAF entries for attribution.
   observe('long-animation-frame', handleLoAFEntries);
 
   unattributedOnINP((metric: INPMetric) => {
-    const metricWithAttribution = attributeINP(metric);
-    onReport(metricWithAttribution);
+    onReport(attributeINP(metric));
   }, opts);
 };
