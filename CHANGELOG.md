@@ -1,18 +1,18 @@
 # Changelog
 
-### v5.2.0 (2026-03-18)
+### v5.2.0 (2026-03-25)
 
+- Replace `filter()[0]` with `find()` for better performance ([#658](https://github.com/GoogleChrome/web-vitals/pull/658))
+- Use `queueMicrotask` for microtask scheduling ([#660](https://github.com/GoogleChrome/web-vitals/pull/660))
+- Simplify the event and LoAF entry clean up logic ([#662](https://github.com/GoogleChrome/web-vitals/pull/662))
+- Remove obsolete FID polyfill types ([#675](https://github.com/GoogleChrome/web-vitals/pull/675))
 - Use `LargestContentfulPaint.id` as fallback when element is removed from DOM ([#676](https://github.com/GoogleChrome/web-vitals/pull/676))
 - Fix bug for `onLCP` when attached late ([#697](https://github.com/GoogleChrome/web-vitals/pull/697))
 - FHandle initially hidden pages and onLCP registered on visibility change ([#698](https://github.com/GoogleChrome/web-vitals/pull/698))
+- Ensure we clear idle callbacks in `whenIdleOrHidden` ([#707](https://github.com/GoogleChrome/web-vitals/pull/707))
 - Limit pending events to conserve memory ([#710](https://github.com/GoogleChrome/web-vitals/pull/710))
 - Add `includeProcessedEventEntries` option ([#714](https://github.com/GoogleChrome/web-vitals/pull/714))
-- Misc code and performance improvements:
-  - Replace `filter()[0]` with `find()` for better performance ([#658](https://github.com/GoogleChrome/web-vitals/pull/658))
-  - Use `queueMicrotask` for microtask scheduling ([#660](https://github.com/GoogleChrome/web-vitals/pull/660))
-  - Simplify the event and LoAF entry clean up logic ([#662](https://github.com/GoogleChrome/web-vitals/pull/662))
-  - Remove obsolete FID polyfill types ([#675](https://github.com/GoogleChrome/web-vitals/pull/675))
-  - Ensure we clear idle callbacks in `whenIdleOrHidden` ([#707](https://github.com/GoogleChrome/web-vitals/pull/707))
+- Reduce bundle size by refactoring ([#713](https://github.com/GoogleChrome/web-vitals/pull/713))
 
 ### v5.1.0 (2025-07-31)
 
