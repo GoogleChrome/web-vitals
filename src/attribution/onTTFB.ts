@@ -101,7 +101,6 @@ export const onTTFB = (
   opts: AttributionReportOpts = {},
 ) => {
   unattributedOnTTFB((metric: TTFBMetric) => {
-    const metricWithAttribution = attributeTTFB(metric);
-    onReport(metricWithAttribution);
+    onReport(attributeTTFB(metric));
   }, opts);
 };

@@ -134,15 +134,10 @@ export const onLCP = (
     }
 
     // Use `Object.assign()` to ensure the original metric object is returned.
-    const metricWithAttribution: LCPMetricWithAttribution = Object.assign(
-      metric,
-      {attribution},
-    );
-    return metricWithAttribution;
+    return Object.assign(metric, {attribution});
   };
 
   unattributedOnLCP((metric: LCPMetric) => {
-    const metricWithAttribution = attributeLCP(metric);
-    onReport(metricWithAttribution);
+    onReport(attributeLCP(metric));
   }, opts);
 };
