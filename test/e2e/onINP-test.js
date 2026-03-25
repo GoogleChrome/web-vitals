@@ -885,30 +885,26 @@ describe('onINP()', async function () {
       );
     });
 
-    it('limits processedEventEntries to 5', async function () {
+    it('supports disabling processedEventEntries', async function () {
       if (!browserSupportsINP) this.skip();
 
-      await navigateTo('/test/inp?attribution=1&pointerdown=100');
+      await navigateTo(
+        '/test/inp?click=100&attribution=1&includeProcessedEventEntries=false',
+        {
+          readyState: 'complete',
+        },
+      );
 
-      // Wait until the library is loaded and the first paint occurs to ensure
-      // The 40ms event duration is set
-      await webVitalsLoaded();
-      await firstContentfulPaint();
-
-      const textarea = await $('#textarea');
-
-      // A click should register pointerdown, mousedown, mouseup, pointerup,
-      // click and some pointerover, pointerenter, pointerleave events
-      // (at least in Chrome and Firefox)
-      // Which is more than 5 and so enough to test with!
-      await textarea.click();
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
 
       // Ensure the interaction completes.
       await nextFrame();
       // Give INP a chance to report
       await waitUntilIdle();
 
-      await stubForwardBack();
+      await stubVisibilityChange('hidden');
+
       await beaconCountIs(1);
 
       const [inp] = await getBeacons();
@@ -918,8 +914,39 @@ describe('onINP()', async function () {
       assert.strictEqual(inp.name, 'INP');
       assert.strictEqual(inp.value, inp.delta);
       assert(allEntriesPresentTogether(inp.entries));
-      assert(inp.attribution.processedEventEntries.length > 1);
-      assert(inp.attribution.processedEventEntries.length <= 5);
+      assert.equal(inp.attribution.processedEventEntries.length, 0);
+    });
+
+    it('supports enabling processedEventEntries', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo(
+        '/test/inp?click=100&attribution=1&includeProcessedEventEntries=true',
+        {
+          readyState: 'complete',
+        },
+      );
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp] = await getBeacons();
+
+      assert(inp.value >= 0);
+      assert(inp.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp.name, 'INP');
+      assert.strictEqual(inp.value, inp.delta);
+      assert(allEntriesPresentTogether(inp.entries));
+      assert(inp.attribution.processedEventEntries.length > 0);
     });
 
     it('supports generating a custom target', async function () {
