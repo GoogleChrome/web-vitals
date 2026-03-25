@@ -2,6 +2,9 @@
   "name": "web-vitals",
   "version": "5.2.0",
   "description": "Easily measure performance metrics in JavaScript",
+  "publishConfig": {
+    "registry": "https://registry.npmjs.org/"
+  },
   "type": "module",
   "typings": "dist/modules/index.d.ts",
   "main": "dist/web-vitals.umd.cjs",
