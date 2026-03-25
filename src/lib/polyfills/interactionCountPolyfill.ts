@@ -62,8 +62,6 @@ export const initInteractionCountPolyfill = () => {
   if ('interactionCount' in performance || po) return;
 
   po = observe('event', updateEstimate, {
-    type: 'event',
-    buffered: true,
     durationThreshold: 0,
   } as PerformanceObserverInit);
 };
