@@ -17,7 +17,7 @@
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {softNavs} from './lib/softNavs.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
@@ -40,7 +40,7 @@ export const onFCP = (
 ) => {
   // Set defaults
   opts = opts || {};
-  const softNavsEnabled = softNavs(opts);
+  const softNavsEnabled = checkSoftNavsEnabled(opts);
 
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();

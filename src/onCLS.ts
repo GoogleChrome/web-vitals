@@ -17,7 +17,6 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {softNavs} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
@@ -25,6 +24,7 @@ import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
 import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
+import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 import {
   CLSMetric,
   Metric,
@@ -60,8 +60,6 @@ export const onCLS = (
   onReport: (metric: CLSMetric) => void,
   opts: ReportOpts = {},
 ) => {
-  const softNavsEnabled = softNavs(opts);
-
   const visibilityWatcher = getVisibilityWatcher();
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
   // Note: this is done to match the current behavior of CrUX.
@@ -86,10 +84,30 @@ export const onCLS = (
         );
       };
 
-      const handleEntries = (entries: LayoutShift[]) => {
-        for (const entry of entries) {
-          layoutShiftManager._processEntry(entry);
-        }
+      const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
+        handleEntries(po?.takeRecords() as CLSMetric['entries']);
+        report(true);
+        initNewCLSMetric('soft-navigation', entry.navigationId);
+        report = bindReporter(
+          onReport,
+          metric,
+          CLSThresholds,
+          opts!.reportAllChanges,
+        );
+      };
+
+      const handleEntries = (
+        entries: (LayoutShift | SoftNavigationEntry)[],
+      ) => {
+        whenIdleOrHidden(() => {
+          for (const entry of entries) {
+            if ('largestInteractionContentfulPaint' in entry) {
+              handleSoftNavEntry(entry);
+              continue;
+            }
+            layoutShiftManager._processEntry(entry);
+          }
+        });
 
         // If the current session value is larger than the current CLS value,
         // update CLS and the entries contributing to it.
@@ -121,24 +139,6 @@ export const onCLS = (
 
           doubleRAF(report);
         });
-
-        const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
-          for (const entry of entries) {
-            handleEntries(po.takeRecords() as CLSMetric['entries']);
-            report(true);
-            initNewCLSMetric('soft-navigation', entry.navigationId);
-            report = bindReporter(
-              onReport,
-              metric,
-              CLSThresholds,
-              opts!.reportAllChanges,
-            );
-          }
-        };
-
-        if (softNavsEnabled) {
-          observe('soft-navigation', handleSoftNavEntries, opts);
-        }
 
         // Queue a task to report (if nothing else triggers a report first).
         // This allows CLS to be reported as soon as FCP fires when

@@ -17,7 +17,6 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {softNavs} from './lib/softNavs.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {InteractionManager} from './lib/InteractionManager.js';
@@ -39,6 +38,12 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
 
 // The default `durationThreshold` used across this library for observing
 // `event` entries via PerformanceObserver.
+// Event Timing entries have their durations rounded to the nearest 8ms,
+// so a duration of 40ms would be any event that spans 2.5 or more frames
+// at 60Hz. This threshold is chosen to strike a balance between usefulness
+// and performance. Running this callback for any interaction that spans
+// just one or two frames is likely not worth the insight that could be
+// gained.
 const DEFAULT_DURATION_THRESHOLD = 40;
 
 /**
@@ -74,7 +79,6 @@ export const onINP = (
   onReport: (metric: INPMetric) => void,
   opts: INPReportOpts = {},
 ) => {
-  const softNavsEnabled = softNavs(opts);
   // Return if the browser doesn't support all APIs needed to measure INP.
   if (
     !(
@@ -89,7 +93,7 @@ export const onINP = (
 
   whenActivated(() => {
     // TODO(philipwalton): remove once the polyfill is no longer needed.
-    initInteractionCountPolyfill(softNavsEnabled);
+    initInteractionCountPolyfill();
 
     let metric = initMetric('INP');
     let report: ReturnType<typeof bindReporter>;
@@ -122,10 +126,19 @@ export const onINP = (
       }
     };
 
-    const handleEntries = (entries: INPMetric['entries']) => {
-      // Only process entries, if at least some of them have interaction ids
-      // (otherwise run into lots of errors later for empty INP entries)
-      if (entries.filter((entry) => entry.interactionId).length === 0) return;
+    const handleSoftNavEntry = (
+      entry: SoftNavigationEntry,
+      take: boolean = true,
+    ) => {
+      if (take) handleEntries(po?.takeRecords() as INPMetric['entries']);
+      updateINPMetric();
+      report(true);
+      initNewINPMetric('soft-navigation', entry.navigationId);
+    };
+
+    const handleEntries = (
+      entries: (PerformanceEventTiming | SoftNavigationEntry)[],
+    ) => {
       // Queue the `handleEntries()` callback in the next idle task.
       // This is needed to increase the chances that all event entries that
       // occurred between the user interaction and the next paint
@@ -133,7 +146,14 @@ export const onINP = (
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
       whenIdleOrHidden(() => {
+        // Only process entries, if at least some of them have interaction ids
+        // (otherwise run into lots of errors later for empty INP entries)
+        if (entries.filter((entry) => entry.interactionId).length === 0) return;
         for (const entry of entries) {
+          if ('largestInteractionContentfulPaint' in entry) {
+            handleSoftNavEntry(entry, false);
+            continue;
+          }
           interactionManager._processEntry(entry);
         }
 
@@ -143,14 +163,8 @@ export const onINP = (
     };
 
     const po = observe('event', handleEntries, {
-      // Event Timing entries have their durations rounded to the nearest 8ms,
-      // so a duration of 40ms would be any event that spans 2.5 or more frames
-      // at 60Hz. This threshold is chosen to strike a balance between usefulness
-      // and performance. Running this callback for any interaction that spans
-      // just one or two frames is likely not worth the insight that could be
-      // gained.
       durationThreshold: opts.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
-      opts,
+      ...opts,
     } as PerformanceObserverInit);
 
     report = bindReporter(
@@ -161,14 +175,6 @@ export const onINP = (
     );
 
     if (po) {
-      // Also observe entries of type `first-input`. This is useful in cases
-      // where the first interaction is less than the `durationThreshold`.
-      po.observe({
-        type: 'first-input',
-        buffered: true,
-        includeSoftNavigationObservations: softNavsEnabled,
-      });
-
       visibilityWatcher.onHidden(() => {
         handleEntries(po.takeRecords() as INPMetric['entries']);
         report(true);
@@ -189,22 +195,6 @@ export const onINP = (
           opts.reportAllChanges,
         );
       });
-
-      const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
-        entries.forEach((entry) => {
-          // Queue in whenIdleOrHidden in case entry processing for previous
-          // metric are queued.
-          whenIdleOrHidden(() => {
-            handleEntries(po.takeRecords() as INPMetric['entries']);
-            report(true);
-            initNewINPMetric('soft-navigation', entry.navigationId);
-          });
-        });
-      };
-
-      if (softNavsEnabled) {
-        observe('soft-navigation', handleSoftNavEntries, opts);
-      }
     }
   });
 };

@@ -21,7 +21,7 @@ import {getActivationStart} from './lib/getActivationStart.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
-import {softNavs} from './lib/softNavs.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
 
 /** Thresholds for TTFB. See https://web.dev/articles/ttfb#what_is_a_good_ttfb_score */
@@ -63,7 +63,7 @@ export const onTTFB = (
 ) => {
   // Set defaults
   opts = opts || {};
-  const softNavsEnabled = softNavs(opts);
+  const softNavsEnabled = checkSoftNavsEnabled(opts);
 
   let metric = initMetric('TTFB');
   let report = bindReporter(

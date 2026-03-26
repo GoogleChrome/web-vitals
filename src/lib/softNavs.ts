@@ -16,7 +16,7 @@
 
 import {ReportOpts} from '../types.js';
 
-export const softNavs = (opts?: ReportOpts) => {
+export const checkSoftNavsEnabled = (opts?: ReportOpts) => {
   return (
     PerformanceObserver.supportedEntryTypes.includes('soft-navigation') &&
     opts &&

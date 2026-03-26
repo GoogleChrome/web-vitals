@@ -27,10 +27,12 @@ export * from './types/ttfb.js';
 // --------------------------------------------------------------------------
 
 interface PerformanceEntryMap {
-  navigation: PerformanceNavigationTiming;
-  resource: PerformanceResourceTiming;
-  paint: PerformancePaintTiming;
+  'event': PerformanceEventTiming;
   'interaction-contentful-paint': InteractionContentfulPaint;
+  'layout-shift': LayoutShift;
+  'navigation': PerformanceNavigationTiming;
+  'paint': PerformancePaintTiming;
+  'resource': PerformanceResourceTiming;
   'soft-navigation': SoftNavigationEntry;
 }
 

@@ -19,7 +19,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {getSoftNavigationEntry, checkSoftNavsEnabled} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
@@ -54,7 +54,7 @@ export const onLCP = (
   // As InteractionContentfulPaint entries used by soft navs can emit after
   // LCP is finalized, we need a flag to know to ignore them.
   let isFinalized = false;
-  const softNavsEnabled = softNavs(opts);
+  const softNavsEnabled = checkSoftNavsEnabled(opts);
 
   whenActivated(() => {
     let visibilityWatcher = getVisibilityWatcher();
@@ -82,7 +82,24 @@ export const onLCP = (
       }
     };
 
-    const handleEntries = (entries: LCPMetric['entries']) => {
+    const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
+      handleEntries(po!.takeRecords() as LCPMetric['entries']);
+      if (!isFinalized) report(true);
+      initNewLCPMetric('soft-navigation', entry.navigationId);
+      // Soft Navs contain the largest paint until now, so handle that as
+      // if it just happened, then listen for more.
+      // The largestInteractionContentfulPaint will have the old
+      // navigationId in this case, so pass the new one
+      handleEntries([entry.largestInteractionContentfulPaint]);
+    };
+
+    const handleEntries = (
+      entries: (
+        | LargestContentfulPaint
+        | InteractionContentfulPaint
+        | SoftNavigationEntry
+      )[],
+    ) => {
       // If reportAllChanges is set then call this function for each entry,
       // otherwise only consider the last one, unless soft navs are enabled.
       if (!opts!.reportAllChanges && !softNavsEnabled) {
@@ -90,6 +107,11 @@ export const onLCP = (
       }
 
       for (const entry of entries) {
+        if ('largestInteractionContentfulPaint' in entry) {
+          handleSoftNavEntry(entry);
+          continue;
+        }
+
         if (entry) {
           let value = 0;
           if (entry instanceof LargestContentfulPaint) {
@@ -196,29 +218,6 @@ export const onLCP = (
           report(true);
         });
       });
-
-      const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
-        // Wrap the listener in an idle callback so it's run in a separate
-        // task to reduce potential INP impact.
-        // https://github.com/GoogleChrome/web-vitals/issues/383
-        whenIdleOrHidden(() => {
-          entries.forEach((entry) => {
-            handleEntries(po!.takeRecords() as LCPMetric['entries']);
-            if (!isFinalized) report(true);
-            initNewLCPMetric('soft-navigation', entry.navigationId);
-            // Soft Navs contain the largest paint until now, so handle that as
-            // if it just happened, then listen for more.
-            // The lICP will ahve the old navigationId in this case, so pass the
-            // new one
-            handleEntries([entry.largestInteractionContentfulPaint]);
-          });
-        });
-      };
-
-      if (softNavsEnabled) {
-        observe('interaction-contentful-paint', handleEntries, opts);
-        observe('soft-navigation', handleSoftNavEntries, opts);
-      }
     }
   });
 };

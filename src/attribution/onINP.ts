@@ -436,7 +436,7 @@ export const onINP = (
   };
 
   // Start observing LoAF entries for attribution.
-  observe('long-animation-frame', handleLoAFEntries);
+  observe('long-animation-frame', handleLoAFEntries, opts);
 
   unattributedOnINP((metric: INPMetric) => {
     onReport(attributeINP(metric));
