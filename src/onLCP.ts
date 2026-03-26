@@ -99,15 +99,14 @@ export const onLCP = (
         if (entry) {
           const navId = navigationId || entry.navigationId;
 
-          if (softNavsEnabled && navId !== metric.navigationId) {
-            // If the entry is for a new navigationId than previous, then we have
-            // entered a new soft nav, so emit the final LCP and reinitialize the
-            // metric.
-            if (!reportedMetric) report(true);
-            initNewLCPMetric('soft-navigation', navId);
-          }
           let value = 0;
           if (!navId || navId === hardNavId) {
+            // Ignore ICPs for navigationId === 0
+            // Should not happen but a bug in Chrome!
+            if ('interactionId' in entry && entry.navigationId === 0) {
+              continue;
+            }
+
             // The startTime attribute returns the value of the renderTime if it is
             // not 0, and the value of the loadTime otherwise. The activationStart
             // reference is used because LCP should be relative to page activation
@@ -119,6 +118,16 @@ export const onLCP = (
             // As a soft nav needs an interaction, it should never be before
             // getActivationStart so can just cap to 0
             const softNavEntry = getSoftNavigationEntry(navId);
+
+            // Ignore interactions not for this soft nav
+            // (either paints that have bleed into this interaction or paints when
+            // we should have finalized)
+            if (
+              'interactionId' in entry &&
+              entry.interactionId != softNavEntry?.interactionId
+            ) {
+              continue;
+            }
             const softNavEntryStartTime =
               softNavEntry && softNavEntry.startTime
                 ? softNavEntry.startTime
