@@ -72,6 +72,8 @@ export const observe = <K extends keyof PerformanceEntryMap>(
         queueMicrotask(() => {
           // sort entries to ensure they're in the right order
           const entries = list.getEntries();
+          // Best to sort by end time (startTime + duration)
+          // See: https://github.com/w3c/performance-timeline/issues/224
           entries.sort((a, b) => {
             const scoreA = a.startTime + a.duration;
             const scoreB = b.startTime + b.duration;

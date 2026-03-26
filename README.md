@@ -618,10 +618,16 @@ interface Metric {
     | 'soft-navigation';
 
   /**
-   * The navigatonId the metric happened for. This is particularly relevent for soft navigations where
+   * The navigationId the metric happened for. This is particularly relevant for soft navigations where
    * the metric may be reported for a previous URL.
    */
-  navigatonId: number;
+  navigationId: number;
+
+  /**
+   * The navigation URL the metric happened for. This is particularly relevant for soft navigations where
+   * the metric may be reported for a previous URL.
+   */
+  navigationURL?: string;
 }
 ```
 

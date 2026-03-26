@@ -15,14 +15,14 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
-import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {whenActivated} from './lib/whenActivated.js';
+import {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
 
 /** Thresholds for TTFB. See https://web.dev/articles/ttfb#what_is_a_good_ttfb_score */
 export const TTFBThresholds: MetricRatingThresholds = [800, 1800];
@@ -106,28 +106,27 @@ export const onTTFB = (
       });
 
       // Listen for soft-navigation entries and emit a dummy 0 TTFB entry
-      const reportSoftNavTTFBs = (entries: SoftNavigationEntry[]) => {
-        entries.forEach((entry) => {
-          if (entry.navigationId) {
-            metric = initMetric(
-              'TTFB',
-              0,
-              'soft-navigation',
-              entry.navigationId,
-            );
-            metric.entries = [entry];
-            report = bindReporter(
-              onReport,
-              metric,
-              TTFBThresholds,
-              opts!.reportAllChanges,
-            );
-            report(true);
-          }
-        });
-      };
-
       if (softNavsEnabled) {
+        const reportSoftNavTTFBs = (entries: SoftNavigationEntry[]) => {
+          entries.forEach((entry) => {
+            if (entry.navigationId) {
+              metric = initMetric(
+                'TTFB',
+                0,
+                'soft-navigation',
+                entry.navigationId,
+              );
+              metric.entries = [entry];
+              report = bindReporter(
+                onReport,
+                metric,
+                TTFBThresholds,
+                opts!.reportAllChanges,
+              );
+              report(true);
+            }
+          });
+        };
         observe('soft-navigation', reportSoftNavTTFBs, opts);
       }
     }
