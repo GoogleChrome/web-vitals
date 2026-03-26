@@ -17,7 +17,7 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {softNavs} from './lib/softNavs.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {InteractionManager} from './lib/InteractionManager.js';
@@ -75,8 +75,6 @@ export const onINP = (
   opts: INPReportOpts = {},
 ) => {
   const softNavsEnabled = softNavs(opts);
-  let reportedMetric = false;
-  let metricNavStartTime = 0;
   // Return if the browser doesn't support all APIs needed to measure INP.
   if (
     !(
@@ -110,12 +108,6 @@ export const onINP = (
         INPThresholds,
         opts!.reportAllChanges,
       );
-      reportedMetric = false;
-      if (navigation === 'soft-navigation') {
-        const softNavEntry = getSoftNavigationEntry(navigationId);
-        metricNavStartTime =
-          softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
-      }
     };
 
     const updateINPMetric = () => {
@@ -198,34 +190,15 @@ export const onINP = (
         );
       });
 
-      // Soft navs may be detected by navigationId changes in metrics above
-      // But where no metric is issued we need to also listen for soft nav
-      // entries, then emit the final metric for the previous navigation and
-      // reset the metric for the new navigation.
-      //
-      // As PO is ordered by time, these should not happen before metrics.
-      //
-      // We add a check on startTime as we may be processing many entries that
-      // are already dealt with so just checking navigationId differs from
-      // current metric's navigation id, as we did above, is not sufficient.
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
         entries.forEach((entry) => {
-          const softNavEntry = getSoftNavigationEntry(entry.navigationId);
-          const softNavEntryStartTime =
-            softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
-          if (
-            entry.navigationId &&
-            entry.navigationId !== metric.navigationId &&
-            softNavEntryStartTime > metricNavStartTime
-          ) {
-            // Queue in whenIdleOrHidden in case entry processing for previous
-            // metric are queued.
-            whenIdleOrHidden(() => {
-              handleEntries(po.takeRecords() as INPMetric['entries']);
-              if (!reportedMetric && metric.value > 0) report(true);
-              initNewINPMetric('soft-navigation', entry.navigationId);
-            });
-          }
+          // Queue in whenIdleOrHidden in case entry processing for previous
+          // metric are queued.
+          whenIdleOrHidden(() => {
+            handleEntries(po.takeRecords() as INPMetric['entries']);
+            report(true);
+            initNewINPMetric('soft-navigation', entry.navigationId);
+          });
         });
       };
 

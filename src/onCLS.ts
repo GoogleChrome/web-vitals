@@ -17,7 +17,7 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
-import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {softNavs} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
@@ -61,8 +61,6 @@ export const onCLS = (
   opts: ReportOpts = {},
 ) => {
   const softNavsEnabled = softNavs(opts);
-  let reportedMetric = false;
-  let metricNavStartTime = 0;
 
   const visibilityWatcher = getVisibilityWatcher();
   // Start monitoring FCP so we can only report CLS if FCP is also reported.
@@ -86,26 +84,10 @@ export const onCLS = (
           CLSThresholds,
           opts!.reportAllChanges,
         );
-        reportedMetric = false;
-        if (navigation === 'soft-navigation') {
-          const softNavEntry = getSoftNavigationEntry(navigationId);
-          metricNavStartTime = softNavEntry ? softNavEntry.startTime || 0 : 0;
-        }
       };
 
       const handleEntries = (entries: LayoutShift[]) => {
         for (const entry of entries) {
-          // If the entry is for a new navigationId than previous, then we have
-          // entered a new soft nav, so emit the final CLS and reinitialize the
-          // metric.
-          if (
-            softNavsEnabled &&
-            entry.navigationId &&
-            entry.navigationId !== metric.navigationId
-          ) {
-            report(true);
-            initNewCLSMetric('soft-navigation', entry.navigationId);
-          }
           layoutShiftManager._processEntry(entry);
         }
 
@@ -130,7 +112,6 @@ export const onCLS = (
         visibilityWatcher.onHidden(() => {
           handleEntries(po.takeRecords() as CLSMetric['entries']);
           report(true);
-          reportedMetric = true;
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`
@@ -141,36 +122,17 @@ export const onCLS = (
           doubleRAF(report);
         });
 
-        // Soft navs may be detected by navigationId changes in metrics above
-        // But where no metric is issued we need to also listen for soft nav
-        // entries, then emit the final metric for the previous navigation and
-        // reset the metric for the new navigation.
-        //
-        // As PO is ordered by time, these should not happen before metrics.
-        //
-        // We add a check on startTime as we may be processing many entries that
-        // are already dealt with so just checking navigationId differs from
-        // current metric's navigation id, as we did above, is not sufficient.
         const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
           for (const entry of entries) {
-            const navId = entry.navigationId;
-            const softNavEntry = navId ? getSoftNavigationEntry(navId) : null;
-            if (
-              navId &&
-              navId !== metric.navigationId &&
-              softNavEntry &&
-              (softNavEntry.startTime || 0) > metricNavStartTime
-            ) {
-              handleEntries(po.takeRecords() as CLSMetric['entries']);
-              if (!reportedMetric) report(true);
-              initNewCLSMetric('soft-navigation', entry.navigationId);
-              report = bindReporter(
-                onReport,
-                metric,
-                CLSThresholds,
-                opts!.reportAllChanges,
-              );
-            }
+            handleEntries(po.takeRecords() as CLSMetric['entries']);
+            report(true);
+            initNewCLSMetric('soft-navigation', entry.navigationId);
+            report = bindReporter(
+              onReport,
+              metric,
+              CLSThresholds,
+              opts!.reportAllChanges,
+            );
           }
         };
 

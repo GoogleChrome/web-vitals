@@ -17,19 +17,13 @@
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
+import {softNavs} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
-import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {
-  FCPMetric,
-  Metric,
-  MetricRatingThresholds,
-  ReportOpts,
-} from './types.js';
+import {FCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for FCP. See https://web.dev/articles/fcp#what_is_a_good_fcp_score */
 export const FCPThresholds: MetricRatingThresholds = [1800, 3000];
@@ -47,87 +41,24 @@ export const onFCP = (
   // Set defaults
   opts = opts || {};
   const softNavsEnabled = softNavs(opts);
-  let metricNavStartTime = 0;
-  const hardNavId = getNavigationEntry()?.navigationId || 0;
 
   whenActivated(() => {
-    let visibilityWatcher = getVisibilityWatcher();
+    const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FCP');
     let report: ReturnType<typeof bindReporter>;
-
-    const initNewFCPMetric = (
-      navigation?: Metric['navigationType'],
-      navigationId?: number,
-    ) => {
-      metric = initMetric('FCP', 0, navigation, navigationId);
-      report = bindReporter(
-        onReport,
-        metric,
-        FCPThresholds,
-        opts!.reportAllChanges,
-      );
-      if (navigation === 'soft-navigation') {
-        visibilityWatcher = getVisibilityWatcher(true);
-        const softNavEntry = navigationId
-          ? getSoftNavigationEntry(navigationId)
-          : null;
-        metricNavStartTime = softNavEntry ? softNavEntry.startTime || 0 : 0;
-      }
-    };
 
     const handleEntries = (entries: FCPMetric['entries']) => {
       for (const entry of entries) {
         if (entry.name === 'first-contentful-paint') {
-          if (!softNavsEnabled) {
-            // If we're not using soft navs monitoring, we should not see
-            // any more FCPs so can discconnect the performance observer
-            po!.disconnect();
-          } else if (
-            entry.navigationId &&
-            entry.navigationId !== metric.navigationId
-          ) {
-            // If the entry is for a new navigationId than previous, then we have
-            // entered a new soft nav, so reinitialize the metric.
-            initNewFCPMetric('soft-navigation', entry.navigationId);
-          }
+          po!.disconnect();
 
-          let value = 0;
-
-          if (!entry.navigationId || entry.navigationId === hardNavId) {
-            // Only report if the page wasn't hidden prior to the first paint.
+          // Only report if the page wasn't hidden prior to FCP.
+          if (entry.startTime < visibilityWatcher.firstHiddenTime) {
             // The activationStart reference is used because FCP should be
             // relative to page activation rather than navigation start if the
             // page was prerendered. But in cases where `activationStart` occurs
             // after the FCP, this time should be clamped at 0.
-            value = Math.max(entry.startTime - getActivationStart(), 0);
-          } else {
-            const softNavEntry = getSoftNavigationEntry(entry.navigationId);
-            const softNavStartTime =
-              softNavEntry && softNavEntry.startTime
-                ? softNavEntry.startTime
-                : 0;
-            // As a soft nav needs an interaction, it should never be before
-            // getActivationStart so can just cap to 0
-            value = Math.max(entry.startTime - softNavStartTime, 0);
-          }
-
-          // Only report if the page wasn't hidden prior to FCP.
-          // Or it's a soft nav FCP
-          const softNavEntry =
-            softNavsEnabled && entry.navigationId
-              ? getSoftNavigationEntry(entry.navigationId)
-              : null;
-          const softNavEntryStartTime =
-            softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
-          if (
-            entry.startTime < visibilityWatcher.firstHiddenTime ||
-            (softNavsEnabled &&
-              entry.navigationId &&
-              entry.navigationId !== metric.navigationId &&
-              entry.navigationId !== hardNavId &&
-              softNavEntryStartTime > metricNavStartTime)
-          ) {
-            metric.value = value;
+            metric.value = Math.max(entry.startTime - getActivationStart(), 0);
             metric.entries.push(entry);
             metric.navigationId = entry.navigationId || 0;
             // FCP should only be reported once so can report right
@@ -169,16 +100,7 @@ export const onFCP = (
         });
       });
     }
-    // Soft navs may be detected by navigationId changes in metrics above
-    // But where no metric is issued we need to also listen for soft nav
-    // entries, then emit the final metric for the previous navigation and
-    // reset the metric for the new navigation.
-    //
-    // As PO is ordered by time, these should not happen before metrics.
-    //
-    // We add a check on startTime as we may be processing many entries that
-    // are already dealt with so just checking navigationId differs from
-    // current metric's navigation id, as we did above, is not sufficient.
+
     const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
       entries.forEach((entry) => {
         handleEntries(po!.takeRecords() as FCPMetric['entries']);

@@ -19,7 +19,6 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {getSoftNavigationEntry, softNavs} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
@@ -52,11 +51,10 @@ export const onLCP = (
   onReport: (metric: LCPMetric) => void,
   opts: ReportOpts = {},
 ) => {
-  let reportedMetric = false;
+  // As InteractionContentfulPaint entries used by soft navs can emit after
+  // LCP is finalized, we need a flag to know to ignore them.
+  let isFinalized = false;
   const softNavsEnabled = softNavs(opts);
-  let metricNavStartTime = 0;
-  const hardNavId = getNavigationEntry()?.navigationId || 0;
-  let finalizeNavId = 0;
 
   whenActivated(() => {
     let visibilityWatcher = getVisibilityWatcher();
@@ -76,19 +74,15 @@ export const onLCP = (
         LCPThresholds,
         opts!.reportAllChanges,
       );
-      reportedMetric = false;
+      // Reset the finalized flag
+      isFinalized = false;
+      // If it's a soft nav, then need to reset the visibilitywatcher
       if (navigation === 'soft-navigation') {
         visibilityWatcher = getVisibilityWatcher(true);
-        const softNavEntry = getSoftNavigationEntry(navigationId);
-        metricNavStartTime =
-          softNavEntry && softNavEntry.startTime ? softNavEntry.startTime : 0;
       }
     };
 
-    const handleEntries = (
-      entries: LCPMetric['entries'],
-      navigationId?: number,
-    ) => {
+    const handleEntries = (entries: LCPMetric['entries']) => {
       // If reportAllChanges is set then call this function for each entry,
       // otherwise only consider the last one, unless soft navs are enabled.
       if (!opts!.reportAllChanges && !softNavsEnabled) {
@@ -97,16 +91,8 @@ export const onLCP = (
 
       for (const entry of entries) {
         if (entry) {
-          const navId = navigationId || entry.navigationId;
-
           let value = 0;
-          if (!navId || navId === hardNavId) {
-            // Ignore ICPs for navigationId === 0
-            // Should not happen but a bug in Chrome!
-            if ('interactionId' in entry && entry.navigationId === 0) {
-              continue;
-            }
-
+          if (entry instanceof LargestContentfulPaint) {
             // The startTime attribute returns the value of the renderTime if it is
             // not 0, and the value of the loadTime otherwise. The activationStart
             // reference is used because LCP should be relative to page activation
@@ -115,24 +101,25 @@ export const onLCP = (
             // clamped at 0.
             value = Math.max(entry.startTime - getActivationStart(), 0);
           } else {
-            // As a soft nav needs an interaction, it should never be before
-            // getActivationStart so can just cap to 0
-            const softNavEntry = getSoftNavigationEntry(navId);
+            // InteractionContentfulPaints should only happen after a
+            // SoftNavigationEntry so the metric should have been set
+            // with a non-zero navigationId mapping to a soft nav.
+            if (!metric.navigationId) continue;
+            const softNavEntry = getSoftNavigationEntry(metric.navigationId);
+            if (!softNavEntry) continue;
 
             // Ignore interactions not for this soft nav
-            // (either paints that have bleed into this interaction or paints when
-            // we should have finalized)
+            // (either paints that have bled into this interaction or paints when
+            // we should have already finalized)
             if (
               'interactionId' in entry &&
-              entry.interactionId != softNavEntry?.interactionId
+              entry.interactionId != softNavEntry.interactionId
             ) {
               continue;
             }
-            const softNavEntryStartTime =
-              softNavEntry && softNavEntry.startTime
-                ? softNavEntry.startTime
-                : 0;
-            value = Math.max(entry.renderTime - softNavEntryStartTime, 0);
+
+            // Paints should never be less than 0 but add cap just in case
+            value = Math.max(entry.renderTime - softNavEntry.startTime, 0);
           }
 
           lcpEntryManager._processEntry(entry);
@@ -164,23 +151,19 @@ export const onLCP = (
       );
 
       const finalizeLCP = (event: Event) => {
-        if (event.isTrusted && !reportedMetric) {
-          // Finalize the current navigationId metric.
-          finalizeNavId = metric.navigationId;
+        if (event.isTrusted && !isFinalized) {
           // Wrap the listener in an idle callback so it's run in a separate
           // task to reduce potential INP impact.
           // https://github.com/GoogleChrome/web-vitals/issues/383
           whenIdleOrHidden(() => {
-            if (!reportedMetric) {
+            if (!isFinalized) {
               handleEntries(po!.takeRecords() as LCPMetric['entries']);
               if (!softNavsEnabled) {
                 po!.disconnect();
                 removeEventListener(event.type, finalizeLCP);
               }
-              if (metric.navigationId === finalizeNavId) {
-                reportedMetric = true;
-                report(true);
-              }
+              isFinalized = true;
+              report(true);
             }
           });
         }
@@ -209,38 +192,26 @@ export const onLCP = (
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;
-          reportedMetric = true;
+          isFinalized = true;
           report(true);
         });
       });
 
-      // Soft navs may be detected by navigationId changes in metrics above
-      // But where no metric is issued we need to also listen for soft nav
-      // entries, then emit the final metric for the previous navigation and
-      // reset the metric for the new navigation.
-      //
-      // As PO is ordered by time, these should not happen before metrics.
-      //
-      // We add a check on startTime as we may be processing many entries that
-      // are already dealt with so just checking navigationId differs from
-      // current metric's navigation id, as we did above, is not sufficient.
       const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
-        entries.forEach((entry) => {
-          const softNavEntry = entry.navigationId
-            ? getSoftNavigationEntry(entry.navigationId)
-            : null;
-          if (
-            entry?.navigationId !== metric.navigationId &&
-            (softNavEntry?.startTime || 0) > metricNavStartTime
-          ) {
+        // Wrap the listener in an idle callback so it's run in a separate
+        // task to reduce potential INP impact.
+        // https://github.com/GoogleChrome/web-vitals/issues/383
+        whenIdleOrHidden(() => {
+          entries.forEach((entry) => {
             handleEntries(po!.takeRecords() as LCPMetric['entries']);
-            if (!reportedMetric) report(true);
+            if (!isFinalized) report(true);
             initNewLCPMetric('soft-navigation', entry.navigationId);
-            handleEntries(
-              [entry.largestInteractionContentfulPaint],
-              entry.navigationId,
-            );
-          }
+            // Soft Navs contain the largest paint until now, so handle that as
+            // if it just happened, then listen for more.
+            // The lICP will ahve the old navigationId in this case, so pass the
+            // new one
+            handleEntries([entry.largestInteractionContentfulPaint]);
+          });
         });
       };
 
