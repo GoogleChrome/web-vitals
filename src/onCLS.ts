@@ -24,7 +24,6 @@ import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
 import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
-import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 import {
   CLSMetric,
   Metric,
@@ -99,15 +98,13 @@ export const onCLS = (
       const handleEntries = (
         entries: (LayoutShift | SoftNavigationEntry)[],
       ) => {
-        whenIdleOrHidden(() => {
-          for (const entry of entries) {
-            if ('largestInteractionContentfulPaint' in entry) {
-              handleSoftNavEntry(entry);
-              continue;
-            }
-            layoutShiftManager._processEntry(entry);
+        for (const entry of entries) {
+          if ('largestInteractionContentfulPaint' in entry) {
+            handleSoftNavEntry(entry);
+            continue;
           }
-        });
+          layoutShiftManager._processEntry(entry);
+        }
 
         // If the current session value is larger than the current CLS value,
         // update CLS and the entries contributing to it.
