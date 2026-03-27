@@ -117,12 +117,10 @@ export const onINP = (
     const updateINPMetric = () => {
       const inp = interactionManager._estimateP98LongestInteraction();
 
-      if (
-        inp &&
-        (inp._latency !== metric.value || (opts && opts.reportAllChanges))
-      ) {
+      if (inp && inp._latency !== metric.value) {
         metric.value = inp._latency;
         metric.entries = inp.entries;
+        report();
       }
     };
 
@@ -158,13 +156,12 @@ export const onINP = (
         }
 
         updateINPMetric();
-        report();
       });
     };
 
     const po = observe('event', handleEntries, {
-      durationThreshold: opts.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
       ...opts,
+      durationThreshold: opts.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
     } as PerformanceObserverInit);
 
     report = bindReporter(
