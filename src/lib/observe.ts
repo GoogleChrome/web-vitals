@@ -44,13 +44,13 @@ export const observe = <K extends keyof PerformanceEntryMap>(
 ): PerformanceObserver | undefined => {
   // Observe extra types if using SoftNavs
   const typesToMonitor: (keyof PerformanceEntryMap)[] = [type];
-  const includeSoftNavigationObservations = checkSoftNavsEnabled(opts);
+  const reportSoftNavs = checkSoftNavsEnabled(opts);
   if (type === 'event') {
     // Also observe entries of type `first-input`. This is useful in cases
     // where the first interaction is less than the `durationThreshold`.
     typesToMonitor.push('first-input');
   }
-  if (includeSoftNavigationObservations) {
+  if (reportSoftNavs) {
     if (
       type === 'largest-contentful-paint' ||
       type === 'event' ||
@@ -90,8 +90,6 @@ export const observe = <K extends keyof PerformanceEntryMap>(
             {
               type: t,
               buffered: true,
-              includeSoftNavigationObservations:
-                includeSoftNavigationObservations,
               ...opts,
             },
             opts || {},
