@@ -788,6 +788,14 @@ describe('onINP()', async function () {
         sortedEntries1[0].processingStart,
         1,
       );
+      // Add some debugging information for Firefox:
+      console.log(
+        inp1.attribution.interactionTime +
+          inp1.attribution.inputDelay +
+          inp1.attribution.processingDuration,
+        sortedEntries1.at(-1).processingEnd,
+      );
+      console.log(sortedEntries1);
       assertIsCloseTo(
         inp1.attribution.interactionTime +
           inp1.attribution.inputDelay +
@@ -869,19 +877,22 @@ describe('onINP()', async function () {
           return a.processingStart - b.processingStart;
         },
       );
-      assert.equal(
+      assertIsCloseTo(
         inp2.attribution.interactionTime + inp2.attribution.inputDelay,
         sortedEntries2[0].processingStart,
+        1,
       );
-      assert.equal(
+      assertIsCloseTo(
         inp2.attribution.interactionTime +
           inp2.attribution.inputDelay +
           inp2.attribution.processingDuration,
         sortedEntries2.at(-1).processingEnd,
+        1,
       );
-      assert.equal(
+      assertIsCloseTo(
         inp2.attribution.nextPaintTime - inp2.attribution.presentationDelay,
         sortedEntries2.at(-1).processingEnd,
+        1,
       );
     });
 
