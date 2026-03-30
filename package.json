@@ -125,11 +125,6 @@
   "bugs": {
     "url": "https://github.com/GoogleChrome/web-vitals/issues"
   },
-  "husky": {
-    "hooks": {
-      "pre-commit": "npm run lint"
-    }
-  },
   "prettier": {
     "arrowParens": "always",
     "bracketSpacing": false,
