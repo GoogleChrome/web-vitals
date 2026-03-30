@@ -788,25 +788,23 @@ describe('onINP()', async function () {
         sortedEntries1[0].processingStart,
         1,
       );
-      // Add some debugging information for Firefox:
-      console.log(
-        inp1.attribution.interactionTime +
-          inp1.attribution.inputDelay +
-          inp1.attribution.processingDuration,
-        sortedEntries1.at(-1).processingEnd,
-      );
-      console.log(sortedEntries1);
+      // Due to duration rounding, it can be up to 4ms out on Firefox
+      // See https://github.com/w3c/event-timing/issues/168
+      let maxDelta = 1;
+      if (browser.capabilities.browserName !== 'firefox') {
+        maxDelta = 4;
+      }
       assertIsCloseTo(
         inp1.attribution.interactionTime +
           inp1.attribution.inputDelay +
           inp1.attribution.processingDuration,
         sortedEntries1.at(-1).processingEnd,
-        1,
+        maxDelta,
       );
       assertIsCloseTo(
         inp1.attribution.nextPaintTime - inp1.attribution.presentationDelay,
         sortedEntries1.at(-1).processingEnd,
-        1,
+        maxDelta,
       );
 
       await clearBeacons();
