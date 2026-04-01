@@ -23,22 +23,21 @@ export const getLoadState = (timestamp: number): LoadState => {
     // since the timestamp has to be the current time or earlier.
     return 'loading';
   }
-  const navigationEntry = getNavigationEntry();
-  if (navigationEntry) {
-    if (timestamp < navigationEntry.domInteractive) {
+
+  const hardNavEntry = getNavigationEntry();
+  if (hardNavEntry) {
+    if (timestamp < hardNavEntry.domInteractive) {
       return 'loading';
-    }
-    if (
-      navigationEntry.domContentLoadedEventStart === 0 ||
-      timestamp < navigationEntry.domContentLoadedEventStart
+    } else if (
+      hardNavEntry.domContentLoadedEventStart === 0 ||
+      timestamp < hardNavEntry.domContentLoadedEventStart
     ) {
       // If the `domContentLoadedEventStart` timestamp has not yet been
       // set, or if the given timestamp is less than that value.
       return 'dom-interactive';
-    }
-    if (
-      navigationEntry.domComplete === 0 ||
-      timestamp < navigationEntry.domComplete
+    } else if (
+      hardNavEntry.domComplete === 0 ||
+      timestamp < hardNavEntry.domComplete
     ) {
       // If the `domComplete` timestamp has not yet been
       // set, or if the given timestamp is less than that value.
