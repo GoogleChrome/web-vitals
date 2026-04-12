@@ -17,14 +17,19 @@
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
+import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
 import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
-import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
-import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
+import {
+  CLSMetric,
+  Metric,
+  MetricRatingThresholds,
+  ReportOpts,
+} from './types.js';
 
 /** Thresholds for CLS. See https://web.dev/articles/cls#what_is_a_good_cls_score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
@@ -64,8 +69,40 @@ export const onCLS = (
 
       const layoutShiftManager = initUnique(opts, LayoutShiftManager);
 
-      const handleEntries = (entries: LayoutShift[]) => {
+      const initNewCLSMetric = (
+        navigation?: Metric['navigationType'],
+        navigationId?: number,
+      ) => {
+        metric = initMetric('CLS', 0, navigation, navigationId);
+        layoutShiftManager._sessionValue = 0;
+        report = bindReporter(
+          onReport,
+          metric,
+          CLSThresholds,
+          opts!.reportAllChanges,
+        );
+      };
+
+      const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
+        handleEntries(po?.takeRecords() as CLSMetric['entries']);
+        report(true);
+        initNewCLSMetric('soft-navigation', entry.navigationId);
+        report = bindReporter(
+          onReport,
+          metric,
+          CLSThresholds,
+          opts!.reportAllChanges,
+        );
+      };
+
+      const handleEntries = (
+        entries: (LayoutShift | SoftNavigationEntry)[],
+      ) => {
         for (const entry of entries) {
+          if ('largestInteractionContentfulPaint' in entry) {
+            handleSoftNavEntry(entry);
+            continue;
+          }
           layoutShiftManager._processEntry(entry);
         }
 
@@ -78,7 +115,7 @@ export const onCLS = (
         }
       };
 
-      const po = observe('layout-shift', handleEntries);
+      const po = observe('layout-shift', handleEntries, opts);
       if (po) {
         report = bindReporter(
           onReport,
@@ -95,14 +132,7 @@ export const onCLS = (
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          layoutShiftManager._sessionValue = 0;
-          metric = initMetric('CLS', 0);
-          report = bindReporter(
-            onReport,
-            metric,
-            CLSThresholds,
-            opts!.reportAllChanges,
-          );
+          initNewCLSMetric('back-forward-cache', metric.navigationId);
 
           doubleRAF(report);
         });

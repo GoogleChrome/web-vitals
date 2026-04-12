@@ -14,15 +14,19 @@
  * limitations under the License.
  */
 
+import {checkSoftNavsEnabled} from './softNavs.js';
+
 interface PerformanceEntryMap {
   'event': PerformanceEventTiming[];
   'first-input': PerformanceEventTiming[];
+  'interaction-contentful-paint': InteractionContentfulPaint[];
   'layout-shift': LayoutShift[];
   'largest-contentful-paint': LargestContentfulPaint[];
   'long-animation-frame': PerformanceLongAnimationFrameTiming[];
   'paint': PerformancePaintTiming[];
   'navigation': PerformanceNavigationTiming[];
   'resource': PerformanceResourceTiming[];
+  'soft-navigation': SoftNavigationEntry[];
 }
 
 /**
@@ -38,6 +42,27 @@ export const observe = <K extends keyof PerformanceEntryMap>(
   callback: (entries: PerformanceEntryMap[K]) => void,
   opts: PerformanceObserverInit = {},
 ): PerformanceObserver | undefined => {
+  // Observe extra types if using SoftNavs
+  const typesToMonitor: (keyof PerformanceEntryMap)[] = [type];
+  const reportSoftNavs = checkSoftNavsEnabled(opts);
+  if (type === 'event') {
+    // Also observe entries of type `first-input`. This is useful in cases
+    // where the first interaction is less than the `durationThreshold`.
+    typesToMonitor.push('first-input');
+  }
+  if (reportSoftNavs) {
+    if (
+      type === 'largest-contentful-paint' ||
+      type === 'event' ||
+      type === 'layout-shift'
+    ) {
+      typesToMonitor.push('soft-navigation');
+    }
+
+    if (type === 'largest-contentful-paint') {
+      typesToMonitor.push('interaction-contentful-paint');
+    }
+  }
   try {
     if (PerformanceObserver.supportedEntryTypes.includes(type)) {
       const po = new PerformanceObserver((list) => {
@@ -45,10 +70,32 @@ export const observe = <K extends keyof PerformanceEntryMap>(
         // callback is invoked immediately, rather than in a separate task.
         // See: https://github.com/GoogleChrome/web-vitals/issues/277
         queueMicrotask(() => {
-          callback(list.getEntries() as PerformanceEntryMap[K]);
+          // sort entries to ensure they're in the right order
+          const entries = list.getEntries();
+          // Best to sort by end time (startTime + duration)
+          // See: https://github.com/w3c/performance-timeline/issues/224
+          entries.sort((a, b) => {
+            const scoreA = a.startTime + a.duration;
+            const scoreB = b.startTime + b.duration;
+
+            return scoreA - scoreB;
+          });
+          callback(entries as PerformanceEntryMap[K]);
         });
       });
-      po.observe({type, buffered: true, ...opts});
+
+      for (const t of typesToMonitor) {
+        po.observe(
+          Object.assign(
+            {
+              type: t,
+              buffered: true,
+              ...opts,
+            },
+            opts || {},
+          ) as PerformanceObserverInit,
+        );
+      }
       return po;
     }
   } catch {
