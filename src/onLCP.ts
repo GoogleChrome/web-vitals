@@ -76,7 +76,7 @@ export const onLCP = (
       );
       // Reset the finalized flag
       isFinalized = false;
-      // If it's a soft nav, then need to reset the visibilitywatcher
+      // If it's a soft nav, then need to reset the visibilityWatcher
       if (navigation === 'soft-navigation') {
         visibilityWatcher = getVisibilityWatcher(true);
       }
@@ -86,11 +86,13 @@ export const onLCP = (
       handleEntries(po!.takeRecords() as LCPMetric['entries']);
       if (!isFinalized) report(true);
       initNewLCPMetric('soft-navigation', entry.navigationId);
-      // Soft Navs contain the largest paint until now, so handle that as
-      // if it just happened, then listen for more.
-      // The largestInteractionContentfulPaint will have the old
-      // navigationId in this case, so pass the new one
-      handleEntries([entry.largestInteractionContentfulPaint]);
+      // Soft Navs should contain the largest paint until now, so handle that
+      // as if it just happened, then listen for more.
+      // It can however be null in rare circumstances
+      // (see https://github.com/GoogleChrome/web-vitals/issues/725)
+      if (entry.largestInteractionContentfulPaint) {
+        handleEntries([entry.largestInteractionContentfulPaint]);
+      }
     };
 
     const handleEntries = (
@@ -107,57 +109,57 @@ export const onLCP = (
       }
 
       for (const entry of entries) {
+        if (!entry) continue;
+
         if ('largestInteractionContentfulPaint' in entry) {
           handleSoftNavEntry(entry);
           continue;
         }
 
-        if (entry) {
-          let value = 0;
-          if (entry instanceof LargestContentfulPaint) {
-            // The startTime attribute returns the value of the renderTime if it is
-            // not 0, and the value of the loadTime otherwise. The activationStart
-            // reference is used because LCP should be relative to page activation
-            // rather than navigation start if the page was prerendered. But in cases
-            // where `activationStart` occurs after the LCP, this time should be
-            // clamped at 0.
-            value = Math.max(entry.startTime - getActivationStart(), 0);
-          } else {
-            // InteractionContentfulPaints should only happen after a
-            // SoftNavigationEntry so the metric should have been set
-            // with a non-zero navigationId mapping to a soft nav.
-            if (!metric.navigationId) continue;
-            const softNavEntry = getSoftNavigationEntry(metric.navigationId);
-            if (!softNavEntry) continue;
+        let value = 0;
+        if (entry instanceof LargestContentfulPaint) {
+          // The startTime attribute returns the value of the renderTime if it is
+          // not 0, and the value of the loadTime otherwise. The activationStart
+          // reference is used because LCP should be relative to page activation
+          // rather than navigation start if the page was prerendered. But in cases
+          // where `activationStart` occurs after the LCP, this time should be
+          // clamped at 0.
+          value = Math.max(entry.startTime - getActivationStart(), 0);
+        } else {
+          // InteractionContentfulPaints should only happen after a
+          // SoftNavigationEntry so the metric should have been set
+          // with a non-zero navigationId mapping to a soft nav.
+          if (!metric.navigationId) continue;
+          const softNavEntry = getSoftNavigationEntry(metric.navigationId);
+          if (!softNavEntry) continue;
 
-            // Ignore interactions not for this soft nav
-            // (either paints that have bled into this interaction or paints when
-            // we should have already finalized)
-            if (
-              'interactionId' in entry &&
-              entry.interactionId != softNavEntry.interactionId
-            ) {
-              continue;
-            }
-
-            // Paints should never be less than 0 but add cap just in case
-            value = Math.max(entry.renderTime - softNavEntry.startTime, 0);
+          // Ignore interactions not for this soft nav
+          // (either paints that have bled into this interaction or paints when
+          // we should have already finalized)
+          if (
+            'interactionId' in entry &&
+            entry.interactionId != softNavEntry.interactionId
+          ) {
+            continue;
           }
 
-          lcpEntryManager._processEntry(entry);
+          // Paints should never be less than 0 but add cap just in case
+          value = Math.max(entry.renderTime - softNavEntry.startTime, 0);
+        }
 
-          // Only report if the page wasn't hidden prior to LCP.
-          if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-            // The startTime attribute returns the value of the renderTime if it is
-            // not 0, and the value of the loadTime otherwise. The activationStart
-            // reference is used because LCP should be relative to page activation
-            // rather than navigation start if the page was prerendered. But in cases
-            // where `activationStart` occurs after the LCP, this time should be
-            // clamped at 0.
-            metric.value = value;
-            metric.entries = [entry];
-            report();
-          }
+        lcpEntryManager._processEntry(entry);
+
+        // Only report if the page wasn't hidden prior to LCP.
+        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
+          // The startTime attribute returns the value of the renderTime if it is
+          // not 0, and the value of the loadTime otherwise. The activationStart
+          // reference is used because LCP should be relative to page activation
+          // rather than navigation start if the page was prerendered. But in cases
+          // where `activationStart` occurs after the LCP, this time should be
+          // clamped at 0.
+          metric.value = value;
+          metric.entries = [entry];
+          report();
         }
       }
     };

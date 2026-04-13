@@ -124,11 +124,8 @@ export const onINP = (
       }
     };
 
-    const handleSoftNavEntry = (
-      entry: SoftNavigationEntry,
-      take: boolean = true,
-    ) => {
-      if (take) handleEntries(po?.takeRecords() as INPMetric['entries']);
+    const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
+      handleEntries(po?.takeRecords() as INPMetric['entries']);
       updateINPMetric();
       report(true);
       initNewINPMetric('soft-navigation', entry.navigationId);
@@ -149,7 +146,7 @@ export const onINP = (
         if (entries.filter((entry) => entry.interactionId).length === 0) return;
         for (const entry of entries) {
           if ('largestInteractionContentfulPaint' in entry) {
-            handleSoftNavEntry(entry, false);
+            handleSoftNavEntry(entry);
             continue;
           }
           interactionManager._processEntry(entry);

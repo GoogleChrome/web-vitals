@@ -87,12 +87,6 @@ export const onCLS = (
         handleEntries(po?.takeRecords() as CLSMetric['entries']);
         report(true);
         initNewCLSMetric('soft-navigation', entry.navigationId);
-        report = bindReporter(
-          onReport,
-          metric,
-          CLSThresholds,
-          opts!.reportAllChanges,
-        );
       };
 
       const handleEntries = (
