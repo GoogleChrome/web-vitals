@@ -115,7 +115,9 @@ export const onINP = (
     };
 
     const updateINPMetric = () => {
-      const inp = interactionManager._estimateP98LongestInteraction();
+      const inp = interactionManager._estimateP98LongestInteraction(
+        metric.navigationType,
+      );
 
       if (inp && inp._latency !== metric.value) {
         metric.value = inp._latency;
@@ -171,6 +173,11 @@ export const onINP = (
     if (po) {
       visibilityWatcher.onHidden(() => {
         handleEntries(po.takeRecords() as INPMetric['entries']);
+        // For soft navigations we may also need to report on hidden, even
+        // if there are no entries if the only interactions are < 16ms.
+        if (metric.navigationType === 'soft-navigation') {
+          updateINPMetric();
+        }
         report(true);
       });
 
