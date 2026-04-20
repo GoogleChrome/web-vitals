@@ -1,6 +1,6 @@
 {
   "name": "web-vitals",
-  "version": "5.2.0-soft-navs-2",
+  "version": "5.2.0-soft-navs-3",
   "description": "Easily measure performance metrics in JavaScript",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
