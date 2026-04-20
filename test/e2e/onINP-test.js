@@ -788,17 +788,19 @@ describe('onINP()', async function () {
         sortedEntries1[0].processingStart,
         1,
       );
+      // Due to `duration` rounding, it can be up to 4ms out (+1 for rounding)
+      // See https://github.com/w3c/event-timing/issues/168
       assertIsCloseTo(
         inp1.attribution.interactionTime +
           inp1.attribution.inputDelay +
           inp1.attribution.processingDuration,
         sortedEntries1.at(-1).processingEnd,
-        1,
+        5,
       );
       assertIsCloseTo(
         inp1.attribution.nextPaintTime - inp1.attribution.presentationDelay,
         sortedEntries1.at(-1).processingEnd,
-        1,
+        5,
       );
 
       await clearBeacons();
@@ -869,19 +871,22 @@ describe('onINP()', async function () {
           return a.processingStart - b.processingStart;
         },
       );
-      assert.equal(
+      assertIsCloseTo(
         inp2.attribution.interactionTime + inp2.attribution.inputDelay,
         sortedEntries2[0].processingStart,
+        1,
       );
-      assert.equal(
+      assertIsCloseTo(
         inp2.attribution.interactionTime +
           inp2.attribution.inputDelay +
           inp2.attribution.processingDuration,
         sortedEntries2.at(-1).processingEnd,
+        1,
       );
-      assert.equal(
+      assertIsCloseTo(
         inp2.attribution.nextPaintTime - inp2.attribution.presentationDelay,
         sortedEntries2.at(-1).processingEnd,
+        1,
       );
     });
 
