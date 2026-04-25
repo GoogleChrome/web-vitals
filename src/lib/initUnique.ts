@@ -14,7 +14,10 @@
  * limitations under the License.
  */
 
-const instanceMap: WeakMap<object, unknown> = new WeakMap();
+const instanceMap: WeakMap<
+  new () => unknown,
+  WeakMap<object, unknown>
+> = new WeakMap();
 
 /**
  * A function that accepts and identity object and a class object and returns
@@ -22,8 +25,13 @@ const instanceMap: WeakMap<object, unknown> = new WeakMap();
  * identity object was previously used.
  */
 export function initUnique<T>(identityObj: object, ClassObj: new () => T): T {
-  if (!instanceMap.get(identityObj)) {
-    instanceMap.set(identityObj, new ClassObj());
+  let classInstances = instanceMap.get(ClassObj);
+  if (!classInstances) {
+    classInstances = new WeakMap();
+    instanceMap.set(ClassObj, classInstances);
   }
-  return instanceMap.get(identityObj)! as T;
+  if (!classInstances.get(identityObj)) {
+    classInstances.set(identityObj, new ClassObj());
+  }
+  return classInstances.get(identityObj)! as T;
 }
