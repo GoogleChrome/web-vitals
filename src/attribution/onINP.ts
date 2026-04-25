@@ -16,6 +16,7 @@
 
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
+import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {initUnique} from '../lib/initUnique.js';
 import {InteractionManager, Interaction} from '../lib/InteractionManager.js';
 import {observe} from '../lib/observe.js';
@@ -374,6 +375,42 @@ export const onINP = (
   };
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
+    // Soft navs can have a dummy INP as no first-input entry to fall back on
+    // See https://github.com/GoogleChrome/web-vitals/issues/724
+    if (
+      metric.entries.length === 0 &&
+      metric.navigationType === 'soft-navigation'
+    ) {
+      const softNavEntryStartTime = getSoftNavigationEntry(
+        metric.navigationId,
+      )?.startTime;
+      if (softNavEntryStartTime) {
+        // For simplicity make some assumptions for values we can't get
+        // to avoid undefined/null values which would be unexpected.
+        // - Assume interactionType as pointer as the most common
+        // - Assume interactionTime of soft nav start time
+        // - Assume nextPaintTime as interactionTime + length
+        const attribution: INPAttribution = {
+          interactionTarget: '',
+          interactionType: 'pointer',
+          interactionTime: softNavEntryStartTime,
+          nextPaintTime: softNavEntryStartTime + metric.value,
+          processedEventEntries: [],
+          longAnimationFrameEntries: [],
+          inputDelay: 0,
+          processingDuration: 0,
+          presentationDelay: metric.value,
+          loadState: getLoadState(softNavEntryStartTime),
+          longestScript: undefined,
+          totalScriptDuration: undefined,
+          totalStyleAndLayoutDuration: undefined,
+          totalPaintDuration: undefined,
+          totalUnattributedDuration: undefined,
+        };
+        return Object.assign(metric, {attribution});
+      }
+    }
+
     const firstEntry = metric.entries[0];
     const group = entryToEntriesGroupMap.get(firstEntry)!;
 
@@ -436,7 +473,7 @@ export const onINP = (
   };
 
   // Start observing LoAF entries for attribution.
-  observe('long-animation-frame', handleLoAFEntries);
+  observe('long-animation-frame', handleLoAFEntries, opts);
 
   unattributedOnINP((metric: INPMetric) => {
     onReport(attributeINP(metric));
