@@ -1,6 +1,6 @@
 {
   "name": "web-vitals",
-  "version": "5.2.0-soft-navs-4",
+  "version": "5.2.0-soft-navs-5",
   "description": "Easily measure performance metrics in JavaScript",
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
@@ -90,6 +90,7 @@
     "release:alpha": "npm version prerelease --preid=alpha -m 'Release v%s' && npm publish --tag next",
     "release:beta": "npm version prerelease --preid=beta -m 'Release v%s' && npm publish --tag next",
     "release:rc": "npm version prerelease --preid=rc -m 'Release v%s' && npm publish --tag next",
+    "release:soft-navs": "npm run build && npm publish --tag soft-navs",
     "test": "npm-run-all build test:unit -p -r test:e2e test:server",
     "test:e2e": "wdio",
     "test:server": "node test/server.js",
