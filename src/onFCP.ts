@@ -14,13 +14,14 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
+import {onBFCacheRestore} from './lib/bfcache.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {FCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
@@ -37,6 +38,10 @@ export const onFCP = (
   onReport: (metric: FCPMetric) => void,
   opts: ReportOpts = {},
 ) => {
+  // Set defaults
+  opts = opts || {};
+  const softNavsEnabled = checkSoftNavsEnabled(opts);
+
   whenActivated(() => {
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FCP');
@@ -47,7 +52,7 @@ export const onFCP = (
         if (entry.name === 'first-contentful-paint') {
           po!.disconnect();
 
-          // Only report if the page wasn't hidden prior to the first paint.
+          // Only report if the page wasn't hidden prior to FCP.
           if (entry.startTime < visibilityWatcher.firstHiddenTime) {
             // The activationStart reference is used because FCP should be
             // relative to page activation rather than navigation start if the
@@ -55,13 +60,15 @@ export const onFCP = (
             // after the FCP, this time should be clamped at 0.
             metric.value = Math.max(entry.startTime - getActivationStart(), 0);
             metric.entries.push(entry);
+            metric.navigationId = entry.navigationId || 0;
+            // FCP should only be reported once so can report right away
             report(true);
           }
         }
       }
     };
 
-    const po = observe('paint', handleEntries);
+    const po = observe('paint', handleEntries, opts);
 
     if (po) {
       report = bindReporter(
@@ -74,7 +81,12 @@ export const onFCP = (
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered or the `paint` entry exists.
       onBFCacheRestore((event) => {
-        metric = initMetric('FCP');
+        metric = initMetric(
+          'FCP',
+          0,
+          'back-forward-cache',
+          metric.navigationId,
+        );
         report = bindReporter(
           onReport,
           metric,
@@ -87,6 +99,33 @@ export const onFCP = (
           report(true);
         });
       });
+    }
+
+    if (softNavsEnabled) {
+      // As first-contentful-paint is only reported once, we can handle soft
+      // navigations afterwards on their own for simplicity, as no need to
+      // observe both and sort the entries like for the other metrics
+      const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
+        entries.forEach((entry) => {
+          handleEntries(po!.takeRecords() as FCPMetric['entries']);
+          const FCPTime =
+            (entry.presentationTime || entry.paintTime || 0) - entry.startTime;
+          metric = initMetric(
+            'FCP',
+            FCPTime,
+            'soft-navigation',
+            entry.navigationId,
+          );
+          report = bindReporter(
+            onReport,
+            metric,
+            FCPThresholds,
+            opts!.reportAllChanges,
+          );
+          report(true);
+        });
+      };
+      observe('soft-navigation', handleSoftNavEntries, opts);
     }
   });
 };
