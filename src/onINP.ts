@@ -184,17 +184,8 @@ export const onINP = (
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        interactionManager._resetInteractions();
         initNewINPMetric('back-forward-cache', metric.navigationId);
-        doubleRAF(() => report());
-
-        metric = initMetric('INP');
-        report = bindReporter(
-          onReport,
-          metric,
-          INPThresholds,
-          opts.reportAllChanges,
-        );
+        doubleRAF(report);
       });
     }
   });
