@@ -185,7 +185,6 @@ export const onINP = (
       // successfully registered.
       onBFCacheRestore(() => {
         initNewINPMetric('back-forward-cache', metric.navigationId);
-        doubleRAF(report);
       });
     }
   });
