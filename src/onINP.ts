@@ -16,7 +16,6 @@
 
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
-import {doubleRAF} from './lib/doubleRAF.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {InteractionManager} from './lib/InteractionManager.js';
@@ -184,17 +183,7 @@ export const onINP = (
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        interactionManager._resetInteractions();
         initNewINPMetric('back-forward-cache', metric.navigationId);
-        doubleRAF(() => report());
-
-        metric = initMetric('INP');
-        report = bindReporter(
-          onReport,
-          metric,
-          INPThresholds,
-          opts.reportAllChanges,
-        );
       });
     }
   });
