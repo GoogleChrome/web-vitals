@@ -144,7 +144,7 @@ export const onINP = (
       whenIdleOrHidden(() => {
         // Only process entries, if at least some of them have interaction ids
         // (otherwise run into lots of errors later for empty INP entries)
-        if (entries.filter((entry) => entry.interactionId).length === 0) return;
+        if (!entries.some((entry) => entry.interactionId)) return;
         for (const entry of entries) {
           if ('largestInteractionContentfulPaint' in entry) {
             handleSoftNavEntry(entry);

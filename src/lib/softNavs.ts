@@ -29,10 +29,7 @@ export const getSoftNavigationEntry = (
 ): SoftNavigationEntry | undefined => {
   if (!navigationId) return;
 
-  const softNavEntry = window.performance
+  return window.performance
     .getEntriesByType('soft-navigation')
-    .filter((entry) => entry.navigationId === navigationId);
-  if (softNavEntry) return softNavEntry[0];
-
-  return;
+    .find((entry) => entry.navigationId === navigationId);
 };
