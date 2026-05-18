@@ -19,7 +19,7 @@ import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
-import {
+import type {
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,

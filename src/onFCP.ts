@@ -22,7 +22,7 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {FCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
+import type {FCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for FCP. See https://web.dev/articles/fcp#what_is_a_good_fcp_score */
 export const FCPThresholds: MetricRatingThresholds = [1800, 3000];

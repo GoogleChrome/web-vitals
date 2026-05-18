@@ -26,4 +26,4 @@ export {INPThresholds} from '../onINP.js';
 export {LCPThresholds} from '../onLCP.js';
 export {TTFBThresholds} from '../onTTFB.js';
 
-export * from '../types.js';
+export type * from '../types.js';

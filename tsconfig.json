@@ -14,7 +14,8 @@
     "rootDir": "./src",
     "strict": true,
     "target": "esnext",
-    "tsBuildInfoFile": "./tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "verbatimModuleSyntax": true
   },
   "include": ["src/**/*.ts"],
   "exclude": []

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {MetricType, MetricRatingThresholds} from '../types.js';
+import type {MetricType, MetricRatingThresholds} from '../types.js';
 
 const getRating = (
   value: number,

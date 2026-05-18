@@ -25,7 +25,11 @@ import {whenActivated} from './lib/whenActivated.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
-import {INPMetric, MetricRatingThresholds, INPReportOpts} from './types.js';
+import type {
+  INPMetric,
+  MetricRatingThresholds,
+  INPReportOpts,
+} from './types.js';
 
 /** Thresholds for INP. See https://web.dev/articles/inp#what_is_a_good_inp_score */
 export const INPThresholds: MetricRatingThresholds = [200, 500];
