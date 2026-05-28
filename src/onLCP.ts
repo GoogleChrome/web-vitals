@@ -107,12 +107,13 @@ export const onLCP = (
       // as if it just happened, then listen for more.
       // It can however be null in rare circumstances
       // (see https://github.com/GoogleChrome/web-vitals/issues/725)
-      if (entry.getLargestInteractionContentfulPaint) {
-        handleEntries([entry.getLargestInteractionContentfulPaint()]);
-      } else if (entry.largestInteractionContentfulPaint) {
+      const largestInteractionContentfulPaint =
+        entry.getLargestInteractionContentfulPaint?.() ||
         // TODO to remove this, after OT ends as this has been replaced
         // with above function
-        handleEntries([entry.largestInteractionContentfulPaint]);
+        entry.largestInteractionContentfulPaint;
+      if (largestInteractionContentfulPaint) {
+        handleEntries([largestInteractionContentfulPaint]);
       }
     };
 
