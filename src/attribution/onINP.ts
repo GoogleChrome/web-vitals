@@ -130,10 +130,19 @@ export const onINP = (
 
   const saveInteractionTarget = (interaction: Interaction) => {
     if (!interactionTargetMap.get(interaction)) {
-      const node = interaction.entries[0].target;
+      // Use find to get first selector
+      const node = interaction.entries.find((e) => e.target)?.target;
       if (node) {
         const customTarget = opts.generateTarget?.(node) ?? getSelector(node);
         interactionTargetMap.set(interaction, customTarget);
+      } else {
+        // Fall back to targetSelector
+        const selector = interaction.entries.find(
+          (e) => e.targetSelector,
+        )?.targetSelector;
+        if (selector) {
+          interactionTargetMap.set(interaction, selector);
+        }
       }
     }
   };
