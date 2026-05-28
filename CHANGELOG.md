@@ -1,5 +1,14 @@
 # Changelog
 
+### v5.3.0 (2026-05-28)
+
+- Remove `getFirstHiddenTimePolyfill`
+  ([#729](https://github.com/GoogleChrome/web-vitals/pull/729))
+- Fixed issue where the same configuration object to multiple metric functions can result in errors
+  ([#731](https://github.com/GoogleChrome/web-vitals/pull/731))
+- Add more robust `interactionTarget` setting for INP
+  ([#744](https://github.com/GoogleChrome/web-vitals/pull/744))
+
 ### v5.2.0 (2026-03-25)
 
 - Replace `filter()[0]` with `find()` for better performance ([#658](https://github.com/GoogleChrome/web-vitals/pull/658))
