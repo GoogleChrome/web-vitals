@@ -16,7 +16,6 @@
 
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
-import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {initUnique} from '../lib/initUnique.js';
 import {InteractionManager, Interaction} from '../lib/InteractionManager.js';
 import {observe} from '../lib/observe.js';
@@ -381,9 +380,7 @@ export const onINP = (
       metric.entries.length === 0 &&
       metric.navigationType === 'soft-navigation'
     ) {
-      const softNavEntryStartTime = getSoftNavigationEntry(
-        metric.navigationId,
-      )?.startTime;
+      const softNavEntryStartTime = metric.navigationStartTime;
       if (softNavEntryStartTime) {
         // For simplicity make some assumptions for values we can't get
         // to avoid undefined/null values which would be unexpected.

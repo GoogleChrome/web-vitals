@@ -98,20 +98,18 @@ declare global {
 
   // https://github.com/WICG/soft-navigations
   interface InteractionContentfulPaint extends PerformanceEntry {
-    readonly element: Element | null;
-    readonly id: string;
     readonly interactionId: number;
-    readonly loadTime: DOMHighResTimeStamp;
-    readonly renderTime: DOMHighResTimeStamp;
-    readonly size: number;
-    readonly url: string;
+    readonly largestContentfulPaint?: LargestContentfulPaint;
+    readonly renderTime?: DOMHighResTimeStamp; // TODO: remove
   }
   interface SoftNavigationEntry extends PerformanceEntry {
     readonly interactionId: number;
-    readonly largestInteractionContentfulPaint: InteractionContentfulPaint;
     readonly navigationType?: NavigationType;
     readonly paintTime?: number;
     readonly presentationTime?: number;
+    // TODO Remove the largestInteractionContentfulPaint when OT ends as moved to function
+    readonly largestInteractionContentfulPaint: InteractionContentfulPaint;
+    readonly getLargestInteractionContentfulPaint?: () => InteractionContentfulPaint | null;
   }
 
   // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming

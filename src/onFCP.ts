@@ -84,8 +84,11 @@ export const onFCP = (
         metric = initMetric(
           'FCP',
           0,
+          metric.interactionId,
           'back-forward-cache',
           metric.navigationId,
+          metric.navigationURL,
+          metric.navigationStartTime,
         );
         report = bindReporter(
           onReport,
@@ -113,8 +116,11 @@ export const onFCP = (
           metric = initMetric(
             'FCP',
             FCPTime,
+            entry.interactionId,
             'soft-navigation',
             entry.navigationId,
+            entry.name,
+            entry.startTime,
           );
           report = bindReporter(
             onReport,

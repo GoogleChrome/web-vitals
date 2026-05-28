@@ -17,7 +17,6 @@
 import {getBFCacheRestoreTime} from '../lib/bfcache.js';
 import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
-import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
 import {
   FCPAttribution,
@@ -40,7 +39,7 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
     const fcpEntry = metric.entries.at(-1);
 
     let ttfb = 0;
-    let softNavStart = 0;
+    // For hard navs use an actual TTFB
     if (!metric.navigationId || metric.navigationId === hardNavId) {
       navigationEntry = getNavigationEntry();
       if (navigationEntry) {
@@ -48,11 +47,6 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
         const activationStart = navigationEntry.activationStart || 0;
         ttfb = Math.max(0, responseStart - activationStart);
       }
-    } else {
-      navigationEntry = getSoftNavigationEntry(metric.navigationId);
-      // Set ttfb to the SoftNav start time
-      softNavStart = navigationEntry ? navigationEntry.startTime : 0;
-      ttfb = softNavStart;
     }
 
     if (navigationEntry) {

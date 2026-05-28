@@ -100,11 +100,22 @@ export const onINP = (
     const interactionManager = initUnique(opts, InteractionManager);
 
     const initNewINPMetric = (
-      navigation?: Metric['navigationType'],
+      interactionId?: number,
+      navigationType?: Metric['navigationType'],
       navigationId?: number,
+      navigationURL?: string,
+      navigationStartTime?: number,
     ) => {
       interactionManager._resetInteractions();
-      metric = initMetric('INP', -1, navigation, navigationId);
+      metric = initMetric(
+        'INP',
+        -1,
+        interactionId,
+        navigationType,
+        navigationId,
+        navigationURL,
+        navigationStartTime,
+      );
       report = bindReporter(
         onReport,
         metric,
@@ -129,7 +140,13 @@ export const onINP = (
       handleEntries(po?.takeRecords() as INPMetric['entries']);
       updateINPMetric();
       report(true);
-      initNewINPMetric('soft-navigation', entry.navigationId);
+      initNewINPMetric(
+        entry.interactionId,
+        'soft-navigation',
+        entry.navigationId,
+        entry.name,
+        entry.startTime,
+      );
     };
 
     const handleEntries = (
@@ -183,7 +200,13 @@ export const onINP = (
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        initNewINPMetric('back-forward-cache', metric.navigationId);
+        initNewINPMetric(
+          metric.interactionId,
+          'back-forward-cache',
+          metric.navigationId,
+          metric.navigationURL,
+          metric.navigationStartTime,
+        );
       });
     }
   });

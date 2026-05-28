@@ -19,7 +19,7 @@ import {onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {getSoftNavigationEntry, checkSoftNavsEnabled} from './lib/softNavs.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
@@ -65,9 +65,20 @@ export const onLCP = (
 
     const initNewLCPMetric = (
       navigation?: Metric['navigationType'],
+      interactionId?: number,
       navigationId?: number,
+      navigationURL?: string,
+      navigationStartTime?: number,
     ) => {
-      metric = initMetric('LCP', 0, navigation, navigationId);
+      metric = initMetric(
+        'LCP',
+        0,
+        interactionId,
+        navigation,
+        navigationId,
+        navigationURL,
+        navigationStartTime,
+      );
       report = bindReporter(
         onReport,
         metric,
@@ -85,12 +96,22 @@ export const onLCP = (
     const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
       handleEntries(po!.takeRecords() as LCPMetric['entries']);
       if (!isFinalized) report(true);
-      initNewLCPMetric('soft-navigation', entry.navigationId);
+      initNewLCPMetric(
+        'soft-navigation',
+        entry.interactionId,
+        entry.navigationId,
+        entry.name,
+        entry.startTime,
+      );
       // Soft Navs should contain the largest paint until now, so handle that
       // as if it just happened, then listen for more.
       // It can however be null in rare circumstances
       // (see https://github.com/GoogleChrome/web-vitals/issues/725)
-      if (entry.largestInteractionContentfulPaint) {
+      if (entry.getLargestInteractionContentfulPaint) {
+        handleEntries([entry.getLargestInteractionContentfulPaint()]);
+      } else if (entry.largestInteractionContentfulPaint) {
+        // TODO to remove this, after OT ends as this has been replaced
+        // with above function
         handleEntries([entry.largestInteractionContentfulPaint]);
       }
     };
@@ -117,6 +138,7 @@ export const onLCP = (
         }
 
         let value = 0;
+        let entries: LargestContentfulPaint[] = [];
         if (entry instanceof LargestContentfulPaint) {
           // The startTime attribute returns the value of the renderTime if it is
           // not 0, and the value of the loadTime otherwise. The activationStart
@@ -125,29 +147,40 @@ export const onLCP = (
           // where `activationStart` occurs after the LCP, this time should be
           // clamped at 0.
           value = Math.max(entry.startTime - getActivationStart(), 0);
+
+          lcpEntryManager._processEntry(entry);
+          entries = [entry];
         } else {
           // InteractionContentfulPaints should only happen after a
           // SoftNavigationEntry so the metric should have been set
           // with a non-zero navigationId mapping to a soft nav.
           if (!metric.navigationId) continue;
-          const softNavEntry = getSoftNavigationEntry(metric.navigationId);
-          if (!softNavEntry) continue;
 
           // Ignore interactions not for this soft nav
           // (either paints that have bled into this interaction or paints when
           // we should have already finalized)
           if (
             'interactionId' in entry &&
-            entry.interactionId != softNavEntry.interactionId
+            entry.interactionId != metric.interactionId
           ) {
             continue;
           }
 
-          // Paints should never be less than 0 but add cap just in case
-          value = Math.max(entry.renderTime - softNavEntry.startTime, 0);
-        }
+          // We're changing the shape to nest LCP entries within
+          // interaction-contentful-paint so handle both for now
+          const renderTime =
+            entry?.largestContentfulPaint?.renderTime || entry.renderTime || 0;
 
-        lcpEntryManager._processEntry(entry);
+          // Paints should never be less than 0 but add cap just in case
+          value = Math.max(renderTime - entry.startTime, 0);
+
+          if (entry.largestContentfulPaint) {
+            lcpEntryManager._processEntry(entry.largestContentfulPaint);
+          }
+          if (entry.largestContentfulPaint) {
+            entries = [entry.largestContentfulPaint];
+          }
+        }
 
         // Only report if the page wasn't hidden prior to LCP.
         if (entry.startTime < visibilityWatcher.firstHiddenTime) {
@@ -158,7 +191,7 @@ export const onLCP = (
           // where `activationStart` occurs after the LCP, this time should be
           // clamped at 0.
           metric.value = value;
-          metric.entries = [entry];
+          metric.entries = entries;
           report();
         }
       }
@@ -206,7 +239,13 @@ export const onLCP = (
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore((event) => {
-        initNewLCPMetric('back-forward-cache', metric.navigationId);
+        initNewLCPMetric(
+          'back-forward-cache',
+          metric.interactionId,
+          metric.navigationId,
+          metric.navigationURL,
+          metric.navigationStartTime,
+        );
         report = bindReporter(
           onReport,
           metric,
