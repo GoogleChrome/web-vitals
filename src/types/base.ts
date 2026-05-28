@@ -95,16 +95,16 @@ export interface Metric {
   navigationId: number;
 
   /**
-   * The navigation URL the metric happened for. This is particularly relevant for soft navigations where
-   * the metric may be reported for a previous URL.
-   */
-  navigationURL?: string;
-
-  /**
    * The navigation startTime the metric is based from. This is particularly
    * relevant for soft navigations where time origin is not 0.
    */
   navigationStartTime?: number;
+
+  /**
+   * The navigation URL the metric happened for. This is particularly relevant for soft navigations where
+   * the metric may be reported for a previous URL.
+   */
+  navigationURL?: string;
 }
 
 /** The union of supported metric types. */
