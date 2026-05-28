@@ -18,14 +18,16 @@ import {getBFCacheRestoreTime} from './bfcache.js';
 import {generateUniqueID} from './generateUniqueID.js';
 import {getActivationStart} from './getActivationStart.js';
 import {getNavigationEntry} from './getNavigationEntry.js';
-import {getSoftNavigationEntry} from './softNavs.js';
 import {MetricType} from '../types.js';
 
 export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
   value: number = -1,
+  interactionId?: number,
   navigation?: MetricType['navigationType'],
   navigationId: number = 0,
+  navigationURL?: string,
+  navigationStartTime?: number,
 ) => {
   const hardNavId = getNavigationEntry()?.navigationId || 0;
   const hardNavEntry = getNavigationEntry();
@@ -61,7 +63,8 @@ export const initMetric = <MetricName extends MetricType['name']>(
     id: generateUniqueID(),
     navigationType,
     navigationId: navigationId || hardNavId,
-    navigationURL:
-      getSoftNavigationEntry(navigationId)?.name || getNavigationEntry()?.name,
+    interactionId: interactionId,
+    navigationURL: navigationURL || hardNavEntry?.name,
+    navigationStartTime: navigationStartTime || 0,
   };
 };

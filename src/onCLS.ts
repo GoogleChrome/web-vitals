@@ -70,10 +70,21 @@ export const onCLS = (
       const layoutShiftManager = initUnique(opts, LayoutShiftManager);
 
       const initNewCLSMetric = (
-        navigation?: Metric['navigationType'],
+        interactionId?: number,
+        navigationType?: Metric['navigationType'],
         navigationId?: number,
+        navigationURL?: string,
+        navigationStartTime?: number,
       ) => {
-        metric = initMetric('CLS', 0, navigation, navigationId);
+        metric = initMetric(
+          'CLS',
+          0,
+          interactionId,
+          navigationType,
+          navigationId,
+          navigationURL,
+          navigationStartTime,
+        );
         layoutShiftManager._sessionValue = 0;
         report = bindReporter(
           onReport,
@@ -86,7 +97,13 @@ export const onCLS = (
       const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
         handleEntries(po?.takeRecords() as CLSMetric['entries']);
         report(true);
-        initNewCLSMetric('soft-navigation', entry.navigationId);
+        initNewCLSMetric(
+          entry.interactionId,
+          'soft-navigation',
+          entry.navigationId,
+          entry.name,
+          entry.startTime,
+        );
       };
 
       const handleEntries = (
@@ -126,7 +143,13 @@ export const onCLS = (
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          initNewCLSMetric('back-forward-cache', metric.navigationId);
+          initNewCLSMetric(
+            metric.interactionId,
+            'back-forward-cache',
+            metric.navigationId,
+            metric.navigationURL,
+            metric.navigationStartTime,
+          );
 
           doubleRAF(report);
         });

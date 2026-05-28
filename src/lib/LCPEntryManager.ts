@@ -15,11 +15,9 @@
  */
 
 export class LCPEntryManager {
-  _onBeforeProcessingEntry?: (
-    entry: LargestContentfulPaint | InteractionContentfulPaint,
-  ) => void;
+  _onBeforeProcessingEntry?: (entry: LargestContentfulPaint) => void;
 
-  _processEntry(entry: LargestContentfulPaint | InteractionContentfulPaint) {
+  _processEntry(entry: LargestContentfulPaint) {
     this._onBeforeProcessingEntry?.(entry);
   }
 }

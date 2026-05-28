@@ -23,13 +23,3 @@ export const checkSoftNavsEnabled = (opts?: ReportOpts) => {
     opts.reportSoftNavs
   );
 };
-
-export const getSoftNavigationEntry = (
-  navigationId?: number,
-): SoftNavigationEntry | undefined => {
-  if (!navigationId) return;
-
-  return window.performance
-    .getEntriesByType('soft-navigation')
-    .find((entry) => entry.navigationId === navigationId);
-};

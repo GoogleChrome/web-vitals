@@ -92,8 +92,11 @@ export const onTTFB = (
         metric = initMetric(
           'TTFB',
           0,
+          metric.interactionId,
           'back-forward-cache',
           metric.navigationId,
+          metric.navigationURL,
+          metric.navigationStartTime,
         );
         report = bindReporter(
           onReport,
@@ -113,8 +116,11 @@ export const onTTFB = (
               metric = initMetric(
                 'TTFB',
                 0,
+                entry.interactionId,
                 'soft-navigation',
                 entry.navigationId,
+                entry.name,
+                entry.startTime,
               );
               metric.entries = [entry];
               report = bindReporter(

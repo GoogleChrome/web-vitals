@@ -15,7 +15,6 @@
  */
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
-import {getSoftNavigationEntry} from '../lib/softNavs.js';
 import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
@@ -55,7 +54,7 @@ export const onLCP = (
   > = new WeakMap();
 
   lcpEntryManager._onBeforeProcessingEntry = (
-    entry: LargestContentfulPaint | InteractionContentfulPaint,
+    entry: LargestContentfulPaint,
   ) => {
     const node = entry.element;
     if (node) {
@@ -102,7 +101,6 @@ export const onLCP = (
       let navigationEntry;
       let activationStart = 0;
       let responseStart = 0;
-      let softNavStart = 0;
 
       if (!metric.navigationId || metric.navigationId === hardNavId) {
         navigationEntry = getNavigationEntry();
@@ -115,10 +113,8 @@ export const onLCP = (
             ? navigationEntry.responseStart
             : 0;
       } else {
-        navigationEntry = getSoftNavigationEntry(metric.navigationId);
         // Set activationStart to the SoftNav start time
-        softNavStart = navigationEntry ? navigationEntry.startTime : 0;
-        activationStart = softNavStart;
+        activationStart = metric.navigationStartTime || 0;
       }
 
       if (navigationEntry) {
@@ -136,7 +132,7 @@ export const onLCP = (
           // Cap at LCP time (videos continue downloading after LCP for example)
           metric.value,
           Math.max(
-            lcpRequestStart - softNavStart,
+            lcpRequestStart - activationStart,
             lcpResourceEntry
               ? lcpResourceEntry.responseEnd - activationStart
               : 0,
