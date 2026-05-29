@@ -80,9 +80,8 @@ export interface LCPAttribution {
   lcpResourceEntry?: PerformanceResourceTiming;
   /**
    * The `LargestContentfulPaint` entry corresponding to LCP
-   * (or `InteractionContentfulPaint` for soft navigations).
    */
-  lcpEntry?: LargestContentfulPaint | InteractionContentfulPaint;
+  lcpEntry?: LargestContentfulPaint;
 }
 
 /**
