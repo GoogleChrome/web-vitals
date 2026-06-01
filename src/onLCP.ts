@@ -133,7 +133,11 @@ export const onLCP = (
       for (const entry of entries) {
         if (!entry) continue;
 
-        if ('largestInteractionContentfulPaint' in entry) {
+        // TODO Remove second check after OT ends
+        if (
+          'getLargestInteractionContentfulPaint' in entry ||
+          'largestInteractionContentfulPaint' in entry
+        ) {
           handleSoftNavEntry(entry);
           continue;
         }
