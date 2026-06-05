@@ -33,7 +33,7 @@ interface PerformanceEntryMap {
   'navigation': PerformanceNavigationTiming;
   'paint': PerformancePaintTiming;
   'resource': PerformanceResourceTiming;
-  'soft-navigation': SoftNavigationEntry;
+  'soft-navigation': PerformanceSoftNavigation;
 }
 
 // Update built-in types to be more accurate.
@@ -103,7 +103,7 @@ declare global {
     readonly largestContentfulPaint?: LargestContentfulPaint;
     readonly renderTime?: DOMHighResTimeStamp; // TODO: remove
   }
-  interface SoftNavigationEntry extends PerformanceEntry {
+  interface PerformanceSoftNavigation extends PerformanceEntry {
     readonly interactionId: number;
     readonly navigationType?: NavigationType;
     readonly paintTime?: number;

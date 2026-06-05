@@ -94,7 +94,7 @@ export const onCLS = (
         );
       };
 
-      const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
+      const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
         handleEntries(po?.takeRecords() as CLSMetric['entries']);
         report(true);
         initNewCLSMetric(
@@ -107,7 +107,7 @@ export const onCLS = (
       };
 
       const handleEntries = (
-        entries: (LayoutShift | SoftNavigationEntry)[],
+        entries: (LayoutShift | PerformanceSoftNavigation)[],
       ) => {
         for (const entry of entries) {
           if ('largestInteractionContentfulPaint' in entry) {

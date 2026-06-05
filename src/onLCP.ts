@@ -93,7 +93,7 @@ export const onLCP = (
       }
     };
 
-    const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
+    const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
       handleEntries(po!.takeRecords() as LCPMetric['entries']);
       if (!isFinalized) report(true);
       initNewLCPMetric(
@@ -121,7 +121,7 @@ export const onLCP = (
       entries: (
         | LargestContentfulPaint
         | InteractionContentfulPaint
-        | SoftNavigationEntry
+        | PerformanceSoftNavigation
       )[],
     ) => {
       // If reportAllChanges is set then call this function for each entry,
@@ -157,7 +157,7 @@ export const onLCP = (
           entries = [entry];
         } else {
           // InteractionContentfulPaints should only happen after a
-          // SoftNavigationEntry so the metric should have been set
+          // PerformanceSoftNavigation so the metric should have been set
           // with a non-zero navigationId mapping to a soft nav.
           if (!metric.navigationId) continue;
 

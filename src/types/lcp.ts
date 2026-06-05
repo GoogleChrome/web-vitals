@@ -72,7 +72,7 @@ export interface LCPAttribution {
    * general page load issues. This can be used to access `serverTiming` for example:
    * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming | SoftNavigationEntry;
+  navigationEntry?: PerformanceNavigationTiming | PerformanceSoftNavigation;
   /**
    * The `resource` entry for the LCP resource (if applicable), which is useful
    * for diagnosing resource load issues.

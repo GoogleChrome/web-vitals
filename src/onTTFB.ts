@@ -110,7 +110,7 @@ export const onTTFB = (
 
       // Listen for soft-navigation entries and emit a dummy 0 TTFB entry
       if (softNavsEnabled) {
-        const reportSoftNavTTFBs = (entries: SoftNavigationEntry[]) => {
+        const reportSoftNavTTFBs = (entries: PerformanceSoftNavigation[]) => {
           entries.forEach((entry) => {
             if (entry.navigationId) {
               metric = initMetric(

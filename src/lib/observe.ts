@@ -26,7 +26,7 @@ interface PerformanceEntryMap {
   'paint': PerformancePaintTiming[];
   'navigation': PerformanceNavigationTiming[];
   'resource': PerformanceResourceTiming[];
-  'soft-navigation': SoftNavigationEntry[];
+  'soft-navigation': PerformanceSoftNavigation[];
 }
 
 /**

@@ -108,7 +108,7 @@ export const onFCP = (
       // As first-contentful-paint is only reported once, we can handle soft
       // navigations afterwards on their own for simplicity, as no need to
       // observe both and sort the entries like for the other metrics
-      const handleSoftNavEntries = (entries: SoftNavigationEntry[]) => {
+      const handleSoftNavEntries = (entries: PerformanceSoftNavigation[]) => {
         entries.forEach((entry) => {
           handleEntries(po!.takeRecords() as FCPMetric['entries']);
           const FCPTime =

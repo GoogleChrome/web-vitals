@@ -136,7 +136,7 @@ export const onINP = (
       }
     };
 
-    const handleSoftNavEntry = (entry: SoftNavigationEntry) => {
+    const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
       handleEntries(po?.takeRecords() as INPMetric['entries']);
       updateINPMetric();
       report(true);
@@ -150,7 +150,7 @@ export const onINP = (
     };
 
     const handleEntries = (
-      entries: (PerformanceEventTiming | SoftNavigationEntry)[],
+      entries: (PerformanceEventTiming | PerformanceSoftNavigation)[],
     ) => {
       // Queue the `handleEntries()` callback in the next idle task.
       // This is needed to increase the chances that all event entries that
