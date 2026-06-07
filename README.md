@@ -256,20 +256,17 @@ In addition to using the `id` field to group multiple deltas for the same metric
 
 _**Note:** this is experimental and subject to change._
 
-Currently Core Web Vitals are only tracked for full page navigations, which can affect how [Single Page Applications](https://web.dev/vitals-spa-faq/) that use so called "soft navigations" to update the browser URL and history outside of the normal browser's handling of this. The Chrome team are experimenting with being able to [measure these soft navigations](https://github.com/WICG/soft-navigations) separately and report on Core Web Vitals separately for them.
+Currently Core Web Vitals are only tracked for full page navigations, which can affect how [Single Page Applications](https://web.dev/vitals-spa-faq/) that use so called "soft navigations" to update the browser URL and history outside of the normal browser's handling of this. The Chrome team are working on a feature to enable [measuring these soft navigations](https://github.com/WICG/soft-navigations) separately and report on Core Web Vitals separately for them.
 
-This experimental support allows sites to measure how their Core Web Vitals might be measured differently should this happen.
+This allows sites to measure how their Core Web Vitals might be measured differently should this happen.
 
 At present a "soft navigation" is defined as happening after the following three things happen:
 
 - A user interaction occurs
 - The URL changes
-- Content is added to the DOM
 - Something is painted to screen.
 
 For some sites, these heuristics may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not missing the above criteria). We welcome feedback at https://github.com/WICG/soft-navigations/issues on the heuristics, at https://crbug.com for bugs in the Chrome implementation, and on [https://github.com/GoogleChrome/web-vitals/pull/308](this pull request) for implementation issues with web-vitals.js.
-
-_**Note:** At this time it is not known if this experiment will be something we want to move forward with. Until such time, this support will likely remain in a separate branch of this project, rather than be included in any production builds. If we decide not to move forward with this, the support of this will likely be removed from this project since this library is intended to mirror the Core Web Vitals as much as possible._
 
 Some important points to note:
 
@@ -277,8 +274,6 @@ Some important points to note:
 - FCP and LCP are the first and largest contentful paints after the soft navigation. Prior reported paint times will not be counted for these metrics, even though these elements may remain between soft navigations, and may be the first or largest contentful item.
 - INP is reset to measure only interactions after the the soft navigation.
 - CLS is reset to measure again separate to the first page.
-
-_**Note:** It is not known at this time whether soft navigations will be weighted the same as full navigations. No weighting is included in this library at present and metrics are reported in the same way as full page load metrics._
 
 The metrics can be reported for Soft Navigations using the `reportSoftNavs: true` reporting option:
 
@@ -294,7 +289,7 @@ onINP(console.log, {reportSoftNavs: true});
 onLCP(console.log, {reportSoftNavs: true});
 ```
 
-Note that this will change the way the first page loads are measured as the metrics for the inital URL will be finalized once the first soft nav occurs. To measure both you need to register two callbacks:
+Note that this will change the way the first page loads are measured as the metrics for the initial URL will be finalized once the first soft nav occurs. To measure both you need to register two callbacks:
 
 ```js
 import {
@@ -312,6 +307,8 @@ onINP(doSoftNavProcessing, {reportSoftNavs: true});
 onLCP(doSoftNavProcessing, {reportSoftNavs: true});
 ```
 
+In both cases the `navigationURL` property will provide the URL the metrics are for. This should be used rather than assuming the current URL is the page URL, since metrics may be reported after the fact.
+
 ### Send the results to an analytics endpoint
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
@@ -326,6 +323,9 @@ function sendToAnalytics(metric) {
     name: metric.name,
     value: metric.value,
     id: metric.id,
+
+    // Override the page location for soft nav support
+    page_location: navigationURL,
 
     // Include additional data as needed...
   });
@@ -360,6 +360,9 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
     metric_value: value, // Optional.
     metric_delta: delta, // Optional.
 
+    // Override the page location for soft nav support
+    page_location: navigationURL,
+
     // OPTIONAL: any additional params or debug info here.
     // See: https://web.dev/articles/debug-performance-in-the-field
     // metric_rating: 'good' | 'needs-improvement' | 'poor',
@@ -374,6 +377,8 @@ onLCP(sendToGoogleAnalytics);
 ```
 
 For details on how to query this data in [BigQuery](https://cloud.google.com/bigquery), or visualise it in [Looker Studio](https://lookerstudio.google.com/), see [Measure and debug performance with Google Analytics 4 and BigQuery](https://web.dev/articles/vitals-ga4).
+
+For the soft navigations
 
 ### Send the results to Google Tag Manager
 
@@ -399,6 +404,9 @@ function sendToGoogleAnalytics({name, delta, value, id, attribution}) {
     metric_id: id, // Needed to aggregate events.
     metric_value: value, // Optional.
     metric_delta: delta, // Optional.
+
+    // Override the page location for soft nav support
+    page_location: navigationURL,
   };
 
   switch (name) {
