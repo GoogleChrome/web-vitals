@@ -420,7 +420,7 @@ export const onINP = (
     const firstEntry = metric.entries[0];
     const group = entryToEntriesGroupMap.get(firstEntry)!;
 
-    const processingStart = firstEntry.processingStart;
+    const processingStart = group.processingStart;
 
     // Due to the fact that durations can be rounded down to the nearest 8ms,
     // we have to clamp `nextPaintTime` so it doesn't appear to occur before
@@ -430,7 +430,6 @@ export const onINP = (
       firstEntry.startTime + firstEntry.duration,
       processingStart,
     );
-
     // For the purposes of attribution, clamp `processingEnd` to `nextPaintTime`,
     // so processing is never reported as taking longer than INP (which can
     // happen via the web APIs in the case of sync modals, e.g. `alert()`).
