@@ -26,6 +26,7 @@ import {
 } from '../types.js';
 
 const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
+  const hardNavId = getNavigationEntry()?.navigationId || 0;
   // Use a default object if no other attribution has been set.
   let attribution: FCPAttribution = {
     timeToFirstByte: 0,
@@ -34,13 +35,21 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
   };
 
   if (metric.entries.length) {
-    const navigationEntry = getNavigationEntry();
+    let navigationEntry;
     const fcpEntry = metric.entries.at(-1);
 
-    if (navigationEntry) {
-      const activationStart = navigationEntry.activationStart || 0;
-      const ttfb = Math.max(0, navigationEntry.responseStart - activationStart);
+    let ttfb = 0;
+    // For hard navs use an actual TTFB
+    if (!metric.navigationId || metric.navigationId === hardNavId) {
+      navigationEntry = getNavigationEntry();
+      if (navigationEntry) {
+        const responseStart = navigationEntry.responseStart;
+        const activationStart = navigationEntry.activationStart || 0;
+        ttfb = Math.max(0, responseStart - activationStart);
+      }
+    }
 
+    if (navigationEntry) {
       attribution = {
         timeToFirstByte: ttfb,
         firstByteToFCP: metric.value - ttfb,

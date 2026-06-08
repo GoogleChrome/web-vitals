@@ -55,6 +55,11 @@ export interface Metric {
   id: string;
 
   /**
+   * The interactionId that started this interaction for soft navigations
+   */
+  interactionId?: number;
+
+  /**
    * Any performance entries relevant to the metric value calculation.
    * The array may also be empty if the metric value was not based on any
    * entries (e.g. a CLS value of 0 given no layout shifts).
@@ -72,6 +77,7 @@ export interface Metric {
    * - 'prerender': for pages that were prerendered.
    * - 'restore': for pages that were discarded by the browser and then
    * restored by the user.
+   * - 'soft-navigation': for soft navigations.
    */
   navigationType:
     | 'navigate'
@@ -79,7 +85,26 @@ export interface Metric {
     | 'back-forward'
     | 'back-forward-cache'
     | 'prerender'
-    | 'restore';
+    | 'restore'
+    | 'soft-navigation';
+
+  /**
+   * The navigationId the metric happened for. This is particularly relevant for soft navigations where
+   * the metric may be reported for a previous URL.
+   */
+  navigationId: number;
+
+  /**
+   * The navigation startTime the metric is based from. This is particularly
+   * relevant for soft navigations where time origin is not 0.
+   */
+  navigationStartTime?: number;
+
+  /**
+   * The navigation URL the metric happened for. This is particularly relevant for soft navigations where
+   * the metric may be reported for a previous URL.
+   */
+  navigationURL?: string;
 }
 
 /** The union of supported metric types. */
@@ -124,6 +149,8 @@ export interface ReportCallback {
 
 export interface ReportOpts {
   reportAllChanges?: boolean;
+  durationThreshold?: number;
+  reportSoftNavs?: boolean;
 }
 
 export interface AttributionReportOpts extends ReportOpts {

@@ -48,7 +48,10 @@ export const onLCP = (
   opts = Object.assign({}, opts);
 
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
-  const lcpTargetMap: WeakMap<LargestContentfulPaint, string> = new WeakMap();
+  const lcpTargetMap: WeakMap<
+    LargestContentfulPaint | InteractionContentfulPaint,
+    string
+  > = new WeakMap();
 
   lcpEntryManager._onBeforeProcessingEntry = (
     entry: LargestContentfulPaint,
@@ -65,6 +68,7 @@ export const onLCP = (
   };
 
   const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
+    const hardNavId = getNavigationEntry()?.navigationId || 0;
     // Use a default object if no other attribution has been set.
     let attribution: LCPAttribution = {
       timeToFirstByte: 0,
@@ -94,14 +98,27 @@ export const onLCP = (
 
       // Get subparts from navigation entry. Do this last as occasionally
       // Safari seems to fail to find a navigation entry.
-      const navigationEntry = getNavigationEntry();
-      if (navigationEntry) {
-        const activationStart = navigationEntry.activationStart || 0;
+      let navigationEntry;
+      let activationStart = 0;
+      let responseStart = 0;
 
-        const ttfb = Math.max(
-          0,
-          navigationEntry.responseStart - activationStart,
-        );
+      if (!metric.navigationId || metric.navigationId === hardNavId) {
+        navigationEntry = getNavigationEntry();
+        activationStart =
+          navigationEntry && navigationEntry.activationStart
+            ? navigationEntry.activationStart
+            : 0;
+        responseStart =
+          navigationEntry && navigationEntry.responseStart
+            ? navigationEntry.responseStart
+            : 0;
+      } else {
+        // Set activationStart to the SoftNav start time
+        activationStart = metric.navigationStartTime || 0;
+      }
+
+      if (navigationEntry) {
+        const ttfb = Math.max(0, responseStart - activationStart);
 
         const lcpRequestStart = Math.max(
           ttfb,
@@ -115,10 +132,11 @@ export const onLCP = (
           // Cap at LCP time (videos continue downloading after LCP for example)
           metric.value,
           Math.max(
-            lcpRequestStart,
+            lcpRequestStart - activationStart,
             lcpResourceEntry
               ? lcpResourceEntry.responseEnd - activationStart
               : 0,
+            0,
           ),
         );
 
