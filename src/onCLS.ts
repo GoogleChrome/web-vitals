@@ -24,7 +24,7 @@ import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
-import {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
+import type {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for CLS. See https://web.dev/articles/cls#what_is_a_good_cls_score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];

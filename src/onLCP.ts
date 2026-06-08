@@ -26,7 +26,7 @@ import {observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
-import {LCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
+import type {LCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
 /** Thresholds for LCP. See https://web.dev/articles/lcp#what_is_a_good_lcp_score */
 export const LCPThresholds: MetricRatingThresholds = [2500, 4000];

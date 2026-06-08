@@ -19,7 +19,7 @@ import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
 import {onCLS as unattributedOnCLS} from '../onCLS.js';
-import {
+import type {
   CLSAttribution,
   CLSMetric,
   CLSMetricWithAttribution,

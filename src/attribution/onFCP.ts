@@ -18,7 +18,7 @@ import {getBFCacheRestoreTime} from '../lib/bfcache.js';
 import {getLoadState} from '../lib/getLoadState.js';
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
-import {
+import type {
   FCPAttribution,
   FCPMetric,
   FCPMetricWithAttribution,
