@@ -27,7 +27,7 @@ export const getSelector = (node: Node | null) => {
   let sel = '';
 
   try {
-    while (node?.nodeType === 1) {
+    while (node?.nodeType !== 9) {
       const el: Element = node as Element;
       const part = el.id
         ? '#' + el.id
