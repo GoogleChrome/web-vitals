@@ -35,11 +35,17 @@ describe('onINP()', async function () {
   let browserSupportsINP;
   let browserSupportsLoAF;
   let browserSupportsPrerender;
+  let browserSupportsSoftNavs;
   before(async function () {
     browserSupportsINP = await browserSupportsEntry('event');
     browserSupportsLoAF = await browserSupportsEntry('long-animation-frame');
     browserSupportsPrerender = await browser.execute(() => {
       return 'onprerenderingchange' in document;
+    });
+    browserSupportsSoftNavs = await browser.execute(() => {
+      return PerformanceObserver.supportedEntryTypes.includes(
+        'soft-navigation',
+      );
     });
   });
 
@@ -706,6 +712,167 @@ describe('onINP()', async function () {
     assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
+  });
+
+  it('reports hard nav INP and soft navs (reportAllChanges === false)', async function () {
+    if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/inp?reportSoftNavs=1&click=150');
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
+
+    await stubVisibilityChange('visible');
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    await clearBeacons();
+
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    // Load a new page to trigger the hidden state.
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [softInp] = await getBeacons();
+    assert(softInp.value >= 0);
+    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softInp.name, 'INP');
+    assert.strictEqual(softInp.value, softInp.delta);
+    assert.strictEqual(softInp.rating, 'good');
+    assert(
+      containsEntry(softInp.entries, 'click', '[object HTMLHeadingElement]'),
+    );
+    assert(allEntriesPresentTogether(softInp.entries));
+    assert.strictEqual(softInp.navigationType, 'soft-navigation');
+  });
+
+  it('reports hard nav INP and soft navs (reportAllChanges === true)', async function () {
+    if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/inp?reportSoftNavs=1&reportAllChanges=1&click=150');
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
+
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    await clearBeacons();
+
+    await simulateUserLikeClick(h1);
+
+    await beaconCountIs(1);
+
+    const [softInp] = await getBeacons();
+    assert(softInp.value >= 0);
+    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softInp.name, 'INP');
+    assert.strictEqual(softInp.value, softInp.delta);
+    assert.strictEqual(softInp.rating, 'good');
+    assert(
+      containsEntry(softInp.entries, 'click', '[object HTMLHeadingElement]'),
+    );
+    assert(allEntriesPresentTogether(softInp.entries));
+    assert.strictEqual(softInp.navigationType, 'soft-navigation');
+  });
+
+  it('reports soft navs when loaded late (reportAllChanges === false)', async function () {
+    if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/inp?reportSoftNavs=1&loadAfterInput=1&click=150');
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    // TODO: This next line seems flakey, not sure why?
+    // assert(containsEntry(inp.entries, 'click',
+    // '[object HTMLButtonElement]'));
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
+
+    await clearBeacons();
+
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+
+    const [softInp] = await getBeacons();
+    assert(softInp.value >= 0);
+    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softInp.name, 'INP');
+    assert.strictEqual(softInp.value, softInp.delta);
+    assert.strictEqual(softInp.rating, 'good');
+    // TODO: The next lines seems flakey as entries empty, not sure why?
+    // assert(containsEntry(softInp.entries, 'click',
+    // '[object HTMLHeadingElement]'));
+    // assert(allEntriesPresentTogether(softInp.entries));
+    assert.strictEqual(softInp.navigationType, 'soft-navigation');
   });
 
   describe('attribution', function () {

@@ -59,9 +59,15 @@ describe('onTTFB()', async function () {
   this.retries(2);
 
   let browserSupportsPrerender;
+  let browserSupportsSoftNavs;
   before(async function () {
     browserSupportsPrerender = await browser.execute(() => {
       return 'onprerenderingchange' in document;
+    });
+    browserSupportsSoftNavs = await browser.execute(() => {
+      return PerformanceObserver.supportedEntryTypes.includes(
+        'soft-navigation',
+      );
     });
   });
   beforeEach(async function () {
@@ -295,6 +301,111 @@ describe('onTTFB()', async function () {
     assert.strictEqual(ttfb2.rating, ttfb1.rating);
     assert.deepEqual(ttfb2.entries, ttfb1.entries);
     assert.strictEqual(ttfb2.navigationType, ttfb1.navigationType);
+  });
+
+  it('reports hard nav TTFB and soft navs (reportAllChanges === false)', async function () {
+    if (!browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/ttfb?reportSoftNavs=1');
+
+    const ttfb = await getTTFBBeacon();
+
+    assert(ttfb.value >= 0);
+    assert(ttfb.value >= ttfb.entries[0].requestStart);
+    assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
+    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(ttfb.name, 'TTFB');
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
+    assert.strictEqual(ttfb.navigationType, 'navigate');
+    assert.strictEqual(ttfb.entries.length, 1);
+
+    assertValidEntry(ttfb.entries[0]);
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    const softTtfb = await getTTFBBeacon();
+
+    assert.strictEqual(softTtfb.value, 0);
+    assert(softTtfb.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softTtfb.name, 'TTFB');
+    assert.strictEqual(softTtfb.value, softTtfb.delta);
+    assert.strictEqual(softTtfb.rating, 'good');
+    assert.strictEqual(softTtfb.navigationType, 'soft-navigation');
+    assert.strictEqual(softTtfb.entries.length, 1);
+  });
+
+  it('reports hard nav TTFB and soft navs (reportAllChanges === true)', async function () {
+    if (!browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/ttfb?reportSoftNavs=1&reportAllChanges=1');
+
+    const ttfb = await getTTFBBeacon();
+
+    assert(ttfb.value >= 0);
+    assert(ttfb.value >= ttfb.entries[0].requestStart);
+    assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
+    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(ttfb.name, 'TTFB');
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
+    assert.strictEqual(ttfb.navigationType, 'navigate');
+    assert.strictEqual(ttfb.entries.length, 1);
+
+    assertValidEntry(ttfb.entries[0]);
+
+    // clear the beacons
+    await clearBeacons();
+
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    const softTtfb = await getTTFBBeacon();
+
+    assert.strictEqual(softTtfb.value, 0);
+    assert(softTtfb.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softTtfb.name, 'TTFB');
+    assert.strictEqual(softTtfb.value, softTtfb.delta);
+    assert.strictEqual(softTtfb.rating, 'good');
+    assert.strictEqual(softTtfb.navigationType, 'soft-navigation');
+    assert.strictEqual(softTtfb.entries.length, 1);
+  });
+
+  it('reports soft navs when loaded late (reportAllChanges === false)', async function () {
+    if (!browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/ttfb?reportSoftNavs=1&loadAfterInput=1');
+
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(2, {instance: 'All'});
+
+    const [ttfb, softTtfb] = await getBeacons({instance: 'All'});
+
+    assert(ttfb.value >= 0);
+    assert(ttfb.value >= ttfb.entries[0].requestStart);
+    assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
+    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(ttfb.name, 'TTFB');
+    assert.strictEqual(ttfb.value, ttfb.delta);
+    assert.strictEqual(ttfb.rating, 'good');
+    assert.strictEqual(ttfb.navigationType, 'navigate');
+    assert.strictEqual(ttfb.entries.length, 1);
+    assertValidEntry(ttfb.entries[0]);
+
+    assert.strictEqual(softTtfb.value, 0);
+    assert(softTtfb.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softTtfb.name, 'TTFB');
+    assert.strictEqual(softTtfb.value, softTtfb.delta);
+    assert.strictEqual(softTtfb.rating, 'good');
+    assert.strictEqual(softTtfb.navigationType, 'soft-navigation');
+    assert.strictEqual(softTtfb.entries.length, 1);
   });
 
   describe('attribution', function () {

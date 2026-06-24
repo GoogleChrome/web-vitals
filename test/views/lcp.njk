@@ -27,6 +27,11 @@
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
   {% if prerender %}<p><a id="prerender-link" href="/test/lcp{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
+  <p><button id="soft-nav">Soft navigate</button></p>
+
+  <p id="softnav-title"></p>
+  <p id="softnav-paragraph"></p>
+
   <!-- Include a tall element to ensure scrolling is possible. -->
   <div style="height: 100vh"></div>
 
@@ -70,6 +75,7 @@
         }
       }, {
         reportAllChanges: self.__reportAllChanges,
+        reportSoftNavs: self.__reportSoftNavs,
         generateTarget: self.__generateTarget && ((el) => el.dataset.target),
       });
     }
@@ -108,6 +114,7 @@
         navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
       }, {
         reportAllChanges: self.__reportAllChanges2,
+        reportSoftNavs: self.__reportSoftNavs2,
         generateTarget: self.__generateTarget2 && ((el) => el.dataset.target),
       });
     }

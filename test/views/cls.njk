@@ -31,6 +31,11 @@
   <p id="p5"><a id="navigate-away" href="https://example.com">Navigate away</a></p>
   {% if prerender %}<p id="p6"><a id="prerender-link" href="/test/cls{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
+  <p><button id="soft-nav">Soft navigate</button></p>
+
+  <p id="softnav-title"></p>
+  <p id="softnav-paragraph"></p>
+
   <script type="module">
     const {onCLS} = await __testImport('{{ modulePath }}');
 
@@ -54,6 +59,7 @@
       }
     }, {
       reportAllChanges: self.__reportAllChanges,
+      reportSoftNavs: self.__reportSoftNavs,
       generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
 
@@ -80,6 +86,7 @@
         navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
       }, {
         reportAllChanges: self.__reportAllChanges2,
+        reportSoftNavs: self.__reportSoftNavs2,
         generateTarget: self.__generateTarget2 && ((el) => el.dataset.target),
       });
     }

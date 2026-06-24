@@ -28,10 +28,16 @@ describe('onFCP()', async function () {
 
   let browserSupportsFCP;
   let browserSupportsPrerender;
+  let browserSupportsSoftNavs;
   before(async function () {
     browserSupportsFCP = await browserSupportsEntry('paint');
     browserSupportsPrerender = await browser.execute(() => {
       return 'onprerenderingchange' in document;
+    });
+    browserSupportsSoftNavs = await browser.execute(() => {
+      return PerformanceObserver.supportedEntryTypes.includes(
+        'soft-navigation',
+      );
     });
   });
 
@@ -309,6 +315,105 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp2.rating, fcp1.rating);
     assert.deepEqual(fcp2.entries, fcp1.entries);
     assert.strictEqual(fcp2.navigationType, fcp1.navigationType);
+  });
+
+  it('reports hard nav FCP and soft navs (reportAllChanges === false)', async function () {
+    if (!browserSupportsFCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/fcp?reportSoftNavs=1');
+
+    await beaconCountIs(1);
+
+    const [fcp] = await getBeacons();
+    assert(fcp.value >= 0);
+    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(fcp.name, 'FCP');
+    assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'good');
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.match(fcp.navigationType, /navigate|reload/);
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+
+    const [softFcp] = await getBeacons();
+    assert(softFcp.value >= 0);
+    assert(softFcp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softFcp.name, 'FCP');
+    assert.strictEqual(softFcp.value, softFcp.delta);
+    assert.strictEqual(softFcp.rating, 'good');
+    assert.strictEqual(softFcp.entries.length, 0);
+    assert.strictEqual(softFcp.navigationType, 'soft-navigation');
+  });
+
+  it('reports hard nav FCP and soft navs (reportAllChanges === true)', async function () {
+    if (!browserSupportsFCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/fcp?reportSoftNavs=1&reportAllChanges=1');
+
+    await beaconCountIs(1);
+
+    const [fcp] = await getBeacons();
+    assert(fcp.value >= 0);
+    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(fcp.name, 'FCP');
+    assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'good');
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.match(fcp.navigationType, /navigate|reload/);
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+
+    const [softFcp] = await getBeacons();
+    assert(softFcp.value >= 0);
+    assert(softFcp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softFcp.name, 'FCP');
+    assert.strictEqual(softFcp.value, softFcp.delta);
+    assert.strictEqual(softFcp.rating, 'good');
+    assert.strictEqual(softFcp.entries.length, 0);
+    assert.strictEqual(softFcp.navigationType, 'soft-navigation');
+  });
+
+  it('reports soft navs when loaded late (reportAllChanges === false)', async function () {
+    if (!browserSupportsFCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/fcp?reportSoftNavs=1&loadAfterInput=1');
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(2, {instance: 'All'});
+
+    const [fcp, softFcp] = await getBeacons({instance: 'All'});
+    assert(fcp.value >= 0);
+    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(fcp.name, 'FCP');
+    assert.strictEqual(fcp.value, fcp.delta);
+    assert.strictEqual(fcp.rating, 'good');
+    assert.strictEqual(fcp.entries.length, 1);
+    assert.match(fcp.navigationType, /navigate|reload/);
+
+    assert(softFcp.value >= 0);
+    assert(softFcp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softFcp.name, 'FCP');
+    assert.strictEqual(softFcp.value, softFcp.delta);
+    assert.strictEqual(softFcp.rating, 'good');
+    assert.strictEqual(softFcp.entries.length, 0);
+    assert.strictEqual(softFcp.navigationType, 'soft-navigation');
   });
 
   describe('attribution', function () {

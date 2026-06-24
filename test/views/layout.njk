@@ -155,12 +155,14 @@
       }
 
       self.__reportAllChanges = Boolean(infer('reportAllChanges'));
+      self.__reportSoftNavs = Boolean(infer('reportSoftNavs'));
       self.__durationThreshold = infer('durationThreshold');
       self.__generateTarget = infer('generateTarget');
       self.__includeProcessedEventEntries = infer('includeProcessedEventEntries');
 
       self.__doubleCall = Boolean(infer('doubleCall'));
       self.__reportAllChanges2 = Boolean(infer('reportAllChanges2'));
+      self.__reportSoftNavs2 = Boolean(infer('reportSoftNavs2'));
       self.__durationThreshold2 = infer('durationThreshold2');
       self.__generateTarget2 = infer('generateTarget2');
 
@@ -220,6 +222,44 @@
       if (self.__loadAfterInput) {
         self.__readyPromises.push(self.__afterFirstInput);
       }
+
+
+      document.nav=parseInt(window.location.hash.substring(1)) || 1;
+
+      document.addEventListener("DOMContentLoaded", (event) => {
+
+        const main=document.querySelector('main');
+
+        function loadPage(page) {
+          window.history.pushState({}, '', location.protocol+'//'+location.host+location.pathname + '#' + document.nav);
+          document.getElementById('softnav-title').innerText = "Page " + document.nav;
+
+          const newDiv = document.createElement("div");
+          // To test LCP images:
+          //   - set below code to "=== 2"
+          //   - comment out the image above
+          //   - start from first page (not middle of a soft nav)
+          // To test reusing a cached resource do above and
+          //   - uncomment the one with width and height of 100
+          if (document.nav === 2) {
+            const newImage = new Image();
+            newImage.src = `./img/square.png?delay=200&id=${document.nav}`
+            newDiv.appendChild(newImage);
+          } else {
+            const newContent = document.createTextNode(document.nav + ' Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum');
+            newDiv.appendChild(newContent);
+          }
+          const currentDiv = document.getElementById("softnav-paragraph");
+          main.insertBefore(newDiv, currentDiv);
+        }
+
+        function doSoftNav() {
+          document.nav = ++document.nav;
+          loadPage(document.nav);
+        }
+
+        document.getElementById('soft-nav').addEventListener('click',doSoftNav);
+      });
 
       // Import a module and automatically add that to the list of ready promises.
       self.__testImport = async (modulePath) => {

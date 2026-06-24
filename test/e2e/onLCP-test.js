@@ -32,12 +32,18 @@ describe('onLCP()', async function () {
   let browserSupportsLCP;
   let browserSupportsVisibilityState;
   let browserSupportsPrerender;
+  let browserSupportsSoftNavs;
   before(async function () {
     browserSupportsLCP = await browserSupportsEntry('largest-contentful-paint');
     browserSupportsVisibilityState =
       await browserSupportsEntry('visibility-state');
     browserSupportsPrerender = await browser.execute(() => {
       return 'onprerenderingchange' in document;
+    });
+    browserSupportsSoftNavs = await browser.execute(() => {
+      return PerformanceObserver.supportedEntryTypes.includes(
+        'soft-navigation',
+      );
     });
   });
 
@@ -613,6 +619,101 @@ describe('onLCP()', async function () {
     await beaconCountIs(1);
     const [lcp] = await getBeacons();
     assertStandardReportsAreCorrect([lcp]);
+  });
+
+  it('reports hard nav LCP and soft navs (reportAllChanges === false)', async function () {
+    if (!browserSupportsLCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/lcp?reportSoftNavs=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize LCP.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+
+    const [softlcp1] = await getBeacons();
+
+    assert(softlcp1.value > 0);
+    assert.strictEqual(softlcp1.name, 'LCP');
+    assert.strictEqual(softlcp1.value, softlcp1.delta);
+    assert.strictEqual(softlcp1.rating, 'good');
+    assert.strictEqual(softlcp1.entries.length, 1);
+    assert.match(softlcp1.navigationType, /soft-navigation/);
+  });
+
+  it('reports hard nav LCP and soft navs (reportAllChanges === true)', async function () {
+    if (!browserSupportsLCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/lcp?reportSoftNavs=1&reportAllChanges=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    await beaconCountIs(2);
+    assertFullReportsAreCorrect(await getBeacons());
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Click on the soft nav button to finalize LCP and start a new beacon
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [softlcp1] = await getBeacons();
+
+    assert(softlcp1.value > 0);
+    assert.strictEqual(softlcp1.name, 'LCP');
+    assert.strictEqual(softlcp1.value, softlcp1.delta);
+    assert.strictEqual(softlcp1.rating, 'good');
+    assert.strictEqual(softlcp1.entries.length, 1);
+    assert.match(softlcp1.navigationType, /soft-navigation/);
+  });
+
+  it('reports soft navs when loaded late (reportAllChanges === false)', async function () {
+    if (!browserSupportsLCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/lcp?reportSoftNavs=1&loadAfterInput=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize LCP.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+
+    const [softlcp1] = await getBeacons();
+
+    assert(softlcp1.value > 0);
+    assert.strictEqual(softlcp1.name, 'LCP');
+    assert.strictEqual(softlcp1.value, softlcp1.delta);
+    assert.strictEqual(softlcp1.rating, 'good');
+    assert.strictEqual(softlcp1.entries.length, 1);
+    assert.match(softlcp1.navigationType, /soft-navigation/);
   });
 
   describe('attribution', function () {

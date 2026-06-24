@@ -163,7 +163,11 @@ export const onINP = (
         // (otherwise run into lots of errors later for empty INP entries)
         if (!entries.some((entry) => entry.interactionId)) return;
         for (const entry of entries) {
-          if ('largestInteractionContentfulPaint' in entry) {
+          // TODO Remove second check after OT ends
+          if (
+            'getLargestInteractionContentfulPaint' in entry ||
+            'largestInteractionContentfulPaint' in entry
+          ) {
             handleSoftNavEntry(entry);
             continue;
           }

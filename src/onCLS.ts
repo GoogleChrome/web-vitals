@@ -110,7 +110,11 @@ export const onCLS = (
         entries: (LayoutShift | PerformanceSoftNavigation)[],
       ) => {
         for (const entry of entries) {
-          if ('largestInteractionContentfulPaint' in entry) {
+          // TODO Remove second check after OT ends
+          if (
+            'getLargestInteractionContentfulPaint' in entry ||
+            'largestInteractionContentfulPaint' in entry
+          ) {
             handleSoftNavEntry(entry);
             continue;
           }
