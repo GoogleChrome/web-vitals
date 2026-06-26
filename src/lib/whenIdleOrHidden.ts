@@ -23,7 +23,7 @@ import {runOnce} from './runOnce.js';
  * https://github.com/GoogleChrome/web-vitals/issues/754
  */
 export const whenIdleOrHidden = (cb: () => void) => {
-  const rIC = (callback: IdleRequestCallback) => {
+  const rIC = (callback: () => void) => {
     if ('requestIdleCallback' in globalThis) {
       return globalThis.requestIdleCallback(callback, {timeout: 1000});
     }
