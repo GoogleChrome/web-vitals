@@ -19,9 +19,16 @@ import {runOnce} from './runOnce.js';
 /**
  * Runs the passed callback during the next idle period, or immediately
  * if the browser's visibility state is (or becomes) hidden.
+ * Cap the requestIdleCallback for very busy apps
+ * https://github.com/GoogleChrome/web-vitals/issues/754
  */
 export const whenIdleOrHidden = (cb: () => void) => {
-  const rIC = globalThis.requestIdleCallback || setTimeout;
+  const rIC = (callback: IdleRequestCallback) => {
+    if ('requestIdleCallback' in globalThis) {
+      return globalThis.requestIdleCallback(callback, {timeout: 1000});
+    }
+    return setTimeout(callback);
+  };
   const cIC = globalThis.cancelIdleCallback || clearTimeout;
 
   // If the document is hidden, run the callback immediately, otherwise
