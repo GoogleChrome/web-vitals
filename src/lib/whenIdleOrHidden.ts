@@ -29,7 +29,12 @@ export const whenIdleOrHidden = (cb: () => void) => {
     }
     return setTimeout(callback);
   };
-  const cIC = globalThis.cancelIdleCallback || clearTimeout;
+  const cIC = (ref: number | ReturnType<typeof setTimeout>) => {
+    if ('requestIdleCallback' in globalThis && typeof ref === 'number') {
+      return globalThis.cancelIdleCallback(ref);
+    }
+    return clearTimeout(ref);
+  };
 
   // If the document is hidden, run the callback immediately, otherwise
   // race an idle callback with the next `visibilitychange` event.
@@ -38,7 +43,7 @@ export const whenIdleOrHidden = (cb: () => void) => {
   } else {
     const wrappedCb = runOnce(cb);
 
-    let idleHandle = -1;
+    let idleHandle: number | ReturnType<typeof setTimeout> = -1;
     const onHidden = () => {
       cIC(idleHandle);
       wrappedCb();
