@@ -23,18 +23,13 @@ import {runOnce} from './runOnce.js';
  * https://github.com/GoogleChrome/web-vitals/issues/754
  */
 export const whenIdleOrHidden = (cb: () => void) => {
-  const rIC = (callback: () => void) => {
-    if ('requestIdleCallback' in globalThis) {
-      return globalThis.requestIdleCallback(callback, {timeout: 1000});
-    }
-    return setTimeout(callback);
-  };
-  const cIC = (ref: number | ReturnType<typeof setTimeout>) => {
-    if ('requestIdleCallback' in globalThis && typeof ref === 'number') {
-      return globalThis.cancelIdleCallback(ref);
-    }
-    return clearTimeout(ref);
-  };
+  // Cap the requestIdleCallback to 1 sec for very busy apps
+  // https://github.com/GoogleChrome/web-vitals/issues/754
+  // If not using rIC, then the setTimeout timeout should be 0
+  const timeout = 'requestIdleCallback' in globalThis ? 1000 : 0;
+
+  const rIC = globalThis.requestIdleCallback || setTimeout;
+  const cIC = globalThis.cancelIdleCallback || clearTimeout;
 
   // If the document is hidden, run the callback immediately, otherwise
   // race an idle callback with the next `visibilitychange` event.
@@ -43,16 +38,19 @@ export const whenIdleOrHidden = (cb: () => void) => {
   } else {
     const wrappedCb = runOnce(cb);
 
-    let idleHandle: number | ReturnType<typeof setTimeout> = -1;
+    let idleHandle = -1;
     const onHidden = () => {
       cIC(idleHandle);
       wrappedCb();
     };
 
     addEventListener('visibilitychange', onHidden, {once: true, capture: true});
-    idleHandle = rIC(() => {
-      removeEventListener('visibilitychange', onHidden, {capture: true});
-      wrappedCb();
-    });
+    idleHandle = rIC(
+      () => {
+        removeEventListener('visibilitychange', onHidden, {capture: true});
+        wrappedCb();
+      },
+      {timeout: timeout},
+    );
   }
 };
