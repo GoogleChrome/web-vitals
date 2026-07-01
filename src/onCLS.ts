@@ -110,15 +110,11 @@ export const onCLS = (
         entries: (LayoutShift | PerformanceSoftNavigation)[],
       ) => {
         for (const entry of entries) {
-          // TODO Remove second check after OT ends
-          if (
-            'getLargestInteractionContentfulPaint' in entry ||
-            'largestInteractionContentfulPaint' in entry
-          ) {
-            handleSoftNavEntry(entry);
+          if (entry.entryType === 'soft-navigation') {
+            handleSoftNavEntry(entry as PerformanceSoftNavigation);
             continue;
           }
-          layoutShiftManager._processEntry(entry);
+          layoutShiftManager._processEntry(entry as LayoutShift);
         }
 
         // If the current session value is larger than the current CLS value,

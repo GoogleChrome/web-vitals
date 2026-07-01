@@ -42,15 +42,18 @@ export const observe = <K extends keyof PerformanceEntryMap>(
   callback: (entries: PerformanceEntryMap[K]) => void,
   opts: PerformanceObserverInit = {},
 ): PerformanceObserver | undefined => {
-  // Observe extra types if using SoftNavs
   const typesToMonitor: (keyof PerformanceEntryMap)[] = [type];
-  const reportSoftNavs = checkSoftNavsEnabled(opts);
   if (type === 'event') {
     // Also observe entries of type `first-input`. This is useful in cases
     // where the first interaction is less than the `durationThreshold`.
     typesToMonitor.push('first-input');
   }
-  if (reportSoftNavs) {
+  if (checkSoftNavsEnabled(opts)) {
+    // Observe extra types if using SoftNavs for LCP, INP, and CLS.
+    // We observe together, rather than as separate observers to observe
+    // entries in order.
+    // FCP has concerns on on order so can observe separately which is simpler.
+    // TTFB doesn't need to monitor soft navs
     if (
       type === 'largest-contentful-paint' ||
       type === 'event' ||

@@ -1185,7 +1185,7 @@ interface LCPAttribution {
    */
   lcpResourceEntry?: PerformanceResourceTiming;
   /**
-   * The `LargestContentfulPaint` entry corresponding to LCP
+   * The `LargestContentfulPaint` entry corresponding to LCP.
    */
   lcpEntry?: LargestContentfulPaint;
 }

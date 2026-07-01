@@ -48,10 +48,7 @@ export const onLCP = (
   opts = Object.assign({}, opts);
 
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
-  const lcpTargetMap: WeakMap<
-    LargestContentfulPaint | InteractionContentfulPaint,
-    string
-  > = new WeakMap();
+  const lcpTargetMap: WeakMap<LargestContentfulPaint, string> = new WeakMap();
 
   lcpEntryManager._onBeforeProcessingEntry = (
     entry: LargestContentfulPaint,
@@ -113,7 +110,7 @@ export const onLCP = (
             ? navigationEntry.responseStart
             : 0;
       } else {
-        // Set activationStart to the SoftNav start time
+        // Set activationStart to the navigation start time
         activationStart = metric.navigationStartTime || 0;
       }
 

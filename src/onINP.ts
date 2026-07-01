@@ -163,15 +163,11 @@ export const onINP = (
         // (otherwise run into lots of errors later for empty INP entries)
         if (!entries.some((entry) => entry.interactionId)) return;
         for (const entry of entries) {
-          // TODO Remove second check after OT ends
-          if (
-            'getLargestInteractionContentfulPaint' in entry ||
-            'largestInteractionContentfulPaint' in entry
-          ) {
-            handleSoftNavEntry(entry);
+          if (entry.entryType === 'soft-navigation') {
+            handleSoftNavEntry(entry as PerformanceSoftNavigation);
             continue;
           }
-          interactionManager._processEntry(entry);
+          interactionManager._processEntry(entry as PerformanceEventTiming);
         }
 
         updateINPMetric();

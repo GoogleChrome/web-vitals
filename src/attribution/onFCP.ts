@@ -40,23 +40,22 @@ const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
 
     let ttfb = 0;
     // For hard navs use an actual TTFB
+    // For soft navs and bfcache can use the default of 0 TTFB
     if (!metric.navigationId || metric.navigationId === hardNavId) {
       navigationEntry = getNavigationEntry();
       if (navigationEntry) {
         const responseStart = navigationEntry.responseStart;
         const activationStart = navigationEntry.activationStart || 0;
         ttfb = Math.max(0, responseStart - activationStart);
-      }
-    }
 
-    if (navigationEntry) {
-      attribution = {
-        timeToFirstByte: ttfb,
-        firstByteToFCP: metric.value - ttfb,
-        loadState: getLoadState(metric.entries[0].startTime),
-        navigationEntry,
-        fcpEntry,
-      };
+        attribution = {
+          timeToFirstByte: ttfb,
+          firstByteToFCP: metric.value - ttfb,
+          loadState: getLoadState(metric.entries[0].startTime),
+          navigationEntry,
+          fcpEntry,
+        };
+      }
     }
   }
 

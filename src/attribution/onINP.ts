@@ -384,7 +384,9 @@ export const onINP = (
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
     // Soft navs and bfcache can have a dummy INP as no first-input entry to
-    // fall back on. See https://github.com/GoogleChrome/web-vitals/issues/724
+    // fall back on so we report dummy values when the interactionCount has
+    // gone up, even if no entry was emitted.
+    // See https://github.com/GoogleChrome/web-vitals/issues/724
     if (
       metric.entries.length === 0 &&
       (metric.navigationType === 'soft-navigation' ||
@@ -395,7 +397,7 @@ export const onINP = (
         // For simplicity make some assumptions for values we can't get
         // to avoid undefined/null values which would be unexpected.
         // - Assume interactionType as pointer as the most common
-        // - Assume interactionTime of soft nav start time
+        // - Assume interactionTime of nav start time
         // - Assume nextPaintTime as interactionTime + length
         const attribution: INPAttribution = {
           interactionTarget: '',

@@ -133,18 +133,14 @@ export const onLCP = (
       for (const entry of entries) {
         if (!entry) continue;
 
-        // TODO Remove second check after OT ends
-        if (
-          'getLargestInteractionContentfulPaint' in entry ||
-          'largestInteractionContentfulPaint' in entry
-        ) {
-          handleSoftNavEntry(entry);
+        if (entry.entryType === 'soft-navigation') {
+          handleSoftNavEntry(entry as PerformanceSoftNavigation);
           continue;
         }
 
         let value = 0;
         let entries: LargestContentfulPaint[] = [];
-        if (entry instanceof LargestContentfulPaint) {
+        if (entry.entryType === 'largest-contentful-paint') {
           // The startTime attribute returns the value of the renderTime if it is
           // not 0, and the value of the loadTime otherwise. The activationStart
           // reference is used because LCP should be relative to page activation
@@ -153,9 +149,10 @@ export const onLCP = (
           // clamped at 0.
           value = Math.max(entry.startTime - getActivationStart(), 0);
 
-          lcpEntryManager._processEntry(entry);
-          entries = [entry];
-        } else {
+          lcpEntryManager._processEntry(entry as LargestContentfulPaint);
+          entries = [entry as LargestContentfulPaint];
+        } else if (entry.entryType === 'interaction-contentful-paint') {
+          const ICPEntry = entry as InteractionContentfulPaint;
           // InteractionContentfulPaints should only happen after a
           // PerformanceSoftNavigation so the metric should have been set
           // with a non-zero navigationId mapping to a soft nav.
@@ -165,8 +162,8 @@ export const onLCP = (
           // (either paints that have bled into this interaction or paints when
           // we should have already finalized)
           if (
-            'interactionId' in entry &&
-            entry.interactionId != metric.interactionId
+            'interactionId' in ICPEntry &&
+            ICPEntry.interactionId != metric.interactionId
           ) {
             continue;
           }
@@ -174,16 +171,18 @@ export const onLCP = (
           // We're changing the shape to nest LCP entries within
           // interaction-contentful-paint so handle both for now
           const renderTime =
-            entry?.largestContentfulPaint?.renderTime || entry.renderTime || 0;
+            ICPEntry.largestContentfulPaint?.renderTime ||
+            (entry as InteractionContentfulPaint).renderTime ||
+            0;
 
           // Paints should never be less than 0 but add cap just in case
           value = Math.max(renderTime - entry.startTime, 0);
 
-          if (entry.largestContentfulPaint) {
-            lcpEntryManager._processEntry(entry.largestContentfulPaint);
+          if (ICPEntry.largestContentfulPaint) {
+            lcpEntryManager._processEntry(ICPEntry.largestContentfulPaint);
           }
-          if (entry.largestContentfulPaint) {
-            entries = [entry.largestContentfulPaint];
+          if (ICPEntry.largestContentfulPaint) {
+            entries = [ICPEntry.largestContentfulPaint];
           }
         }
 
