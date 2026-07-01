@@ -193,9 +193,12 @@ export const onINP = (
     if (po) {
       visibilityWatcher.onHidden(() => {
         handleEntries(po.takeRecords() as INPMetric['entries']);
-        // For soft navigations we may also need to report on hidden, even
-        // if there are no entries if the only interactions are < 16ms.
-        if (metric.navigationType === 'soft-navigation') {
+        // For soft navigations and bfcache we may also need to report on hidden,
+        // even if there are no entries if the only interactions are < 16ms.
+        if (
+          metric.navigationType === 'soft-navigation' ||
+          metric.navigationType === 'back-forward-cache'
+        ) {
           updateINPMetric();
         }
         report(true);

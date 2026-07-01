@@ -383,14 +383,15 @@ export const onINP = (
   };
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
-    // Soft navs can have a dummy INP as no first-input entry to fall back on
-    // See https://github.com/GoogleChrome/web-vitals/issues/724
+    // Soft navs and bfcache can have a dummy INP as no first-input entry to
+    // fall back on. See https://github.com/GoogleChrome/web-vitals/issues/724
     if (
       metric.entries.length === 0 &&
-      metric.navigationType === 'soft-navigation'
+      (metric.navigationType === 'soft-navigation' ||
+        metric.navigationType === 'back-forward-cache')
     ) {
-      const softNavEntryStartTime = metric.navigationStartTime;
-      if (softNavEntryStartTime) {
+      const navStartTime = metric.navigationStartTime;
+      if (navStartTime) {
         // For simplicity make some assumptions for values we can't get
         // to avoid undefined/null values which would be unexpected.
         // - Assume interactionType as pointer as the most common
@@ -399,14 +400,14 @@ export const onINP = (
         const attribution: INPAttribution = {
           interactionTarget: '',
           interactionType: 'pointer',
-          interactionTime: softNavEntryStartTime,
-          nextPaintTime: softNavEntryStartTime + metric.value,
+          interactionTime: navStartTime,
+          nextPaintTime: navStartTime + metric.value,
           processedEventEntries: [],
           longAnimationFrameEntries: [],
           inputDelay: 0,
           processingDuration: 0,
           presentationDelay: metric.value,
-          loadState: getLoadState(softNavEntryStartTime),
+          loadState: getLoadState(navStartTime),
           longestScript: undefined,
           totalScriptDuration: undefined,
           totalStyleAndLayoutDuration: undefined,

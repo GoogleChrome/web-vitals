@@ -80,11 +80,14 @@ export class InteractionManager {
 
     // If we have a non-zero interactionCountForNavigation but no
     // candidateInteractionIndex, then it's below the 16ms limit
-    // so report a dummy 8ms interaction.
+    // so report a dummy 8ms interaction. This is only needed for
+    // soft-navs and bfcache restores as `first-input` handles the
+    // rest.
     if (
       interactionCountForNavigation &&
       candidateInteractionIndex === -1 &&
-      navigationType === 'soft-navigation'
+      (navigationType === 'soft-navigation' ||
+        navigationType === 'back-forward-cache')
     ) {
       return {
         _latency: 8,
