@@ -156,6 +156,7 @@
 
       self.__reportAllChanges = Boolean(infer('reportAllChanges'));
       self.__reportSoftNavs = Boolean(infer('reportSoftNavs'));
+      self.__delayURLupdate = Boolean(infer('delayURLupdate'));
       self.__durationThreshold = infer('durationThreshold');
       self.__generateTarget = infer('generateTarget');
       self.__includeProcessedEventEntries = infer('includeProcessedEventEntries');
@@ -163,6 +164,7 @@
       self.__doubleCall = Boolean(infer('doubleCall'));
       self.__reportAllChanges2 = Boolean(infer('reportAllChanges2'));
       self.__reportSoftNavs2 = Boolean(infer('reportSoftNavs2'));
+      self.__delayURLupdate2 = Boolean(infer('delayURLupdate2'));
       self.__durationThreshold2 = infer('durationThreshold2');
       self.__generateTarget2 = infer('generateTarget2');
 
@@ -231,7 +233,13 @@
         const main=document.querySelector('main');
 
         function loadPage(page) {
-          window.history.pushState({}, '', location.protocol+'//'+location.host+location.pathname + '#' + document.nav);
+          if (self.__delayURLupdate) {
+            setTimeout(() => {
+              window.history.pushState({}, '', location.protocol+'//'+location.host+location.pathname + '#' + document.nav);
+            }, 1000)
+          } else {
+            window.history.pushState({}, '', location.protocol+'//'+location.host+location.pathname + '#' + document.nav);
+          }
           document.getElementById('softnav-title').innerText = "Page " + document.nav;
 
           const newDiv = document.createElement("div");

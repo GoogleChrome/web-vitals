@@ -515,6 +515,109 @@ describe('onINP()', async function () {
     assert.strictEqual(inp3.navigationType, 'back-forward-cache');
   });
 
+  it('reports short <16m bfcache INPs (reportAllChanges === false)', async function () {
+    if (!browserSupportsINP) this.skip();
+
+    await navigateTo('/test/inp?click=5');
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    await stubForwardBack();
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
+
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    // Load a new page to trigger the hidden state.
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [softInp] = await getBeacons();
+    assertIsCloseTo(softInp.value, 8, 1);
+    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softInp.name, 'INP');
+    assert.strictEqual(softInp.value, softInp.delta);
+    assert.strictEqual(softInp.rating, 'good');
+    assert.strictEqual(softInp.entries.length, 0);
+    assert.strictEqual(softInp.navigationType, 'back-forward-cache');
+  });
+
+  it('reports short <16m bfcache INPs (reportAllChanges === true)', async function () {
+    if (!browserSupportsINP) this.skip();
+
+    await navigateTo('/test/inp?reportSoftNavs=1&click=5&reportAllChanges=1');
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    await stubForwardBack();
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
+
+    await clearBeacons();
+
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+
+    // Load a new page to trigger the hidden state.
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [softInp] = await getBeacons();
+    assertIsCloseTo(softInp.value, 8, 1);
+    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softInp.name, 'INP');
+    assert.strictEqual(softInp.value, softInp.delta);
+    assert.strictEqual(softInp.rating, 'good');
+    assert.strictEqual(softInp.navigationType, 'back-forward-cache');
+
+    await stubVisibilityChange('visible');
+  });
+
   it('does not report if there were no interactions', async function () {
     if (!browserSupportsINP) this.skip();
 
@@ -873,6 +976,113 @@ describe('onINP()', async function () {
     // '[object HTMLHeadingElement]'));
     // assert(allEntriesPresentTogether(softInp.entries));
     assert.strictEqual(softInp.navigationType, 'soft-navigation');
+  });
+
+  it('reports short <16m soft navs INPs (reportAllChanges === false)', async function () {
+    if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/inp?reportSoftNavs=1&click=5');
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
+
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    // Load a new page to trigger the hidden state.
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [softInp] = await getBeacons();
+    assertIsCloseTo(softInp.value, 8, 1);
+    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softInp.name, 'INP');
+    assert.strictEqual(softInp.value, softInp.delta);
+    assert.strictEqual(softInp.rating, 'good');
+    assert.strictEqual(softInp.entries.length, 0);
+    assert.strictEqual(softInp.navigationType, 'soft-navigation');
+  });
+
+  it('reports short <16m soft navs INPs (reportAllChanges === true)', async function () {
+    if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/inp?reportSoftNavs=1&click=5&reportAllChanges=1');
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+
+    const [inp] = await getBeacons();
+    assert(inp.value >= 0);
+    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(inp.name, 'INP');
+    assert.strictEqual(inp.value, inp.delta);
+    assert.strictEqual(inp.rating, 'good');
+    assert(allEntriesPresentTogether(inp.entries));
+    assert.match(inp.navigationType, /navigate|reload/);
+
+    await clearBeacons();
+
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+
+    // Load a new page to trigger the hidden state.
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [softInp] = await getBeacons();
+    assertIsCloseTo(softInp.value, 8, 1);
+    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(softInp.name, 'INP');
+    assert.strictEqual(softInp.value, softInp.delta);
+    assert.strictEqual(softInp.rating, 'good');
+    assert.strictEqual(softInp.navigationType, 'soft-navigation');
+
+    await stubVisibilityChange('visible');
   });
 
   describe('attribution', function () {

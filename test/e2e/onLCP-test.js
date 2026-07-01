@@ -716,6 +716,39 @@ describe('onLCP()', async function () {
     assert.match(softlcp1.navigationType, /soft-navigation/);
   });
 
+  it('reports soft nav LCP even if all paints before URL update (reportAllChanges === false)', async function () {
+    if (!browserSupportsLCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/lcp?reportSoftNavs=1&delayURLupdate=1#3');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize LCP.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+
+    const [softlcp1] = await getBeacons();
+
+    assert(softlcp1.value > 0);
+    assert.strictEqual(softlcp1.name, 'LCP');
+    assert.strictEqual(softlcp1.value, softlcp1.delta);
+    assert.strictEqual(softlcp1.rating, 'good');
+    assert.strictEqual(softlcp1.entries.length, 1);
+    assert.match(softlcp1.navigationType, /soft-navigation/);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsLCP) this.skip();
