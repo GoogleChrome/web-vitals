@@ -946,19 +946,36 @@ describe('onCLS()', async function () {
     const softNavButton = await $('#soft-nav');
     await softNavButton.click();
 
-    // Click on the soft nav button to finalize CLS and start a new beacon
-    await softNavButton.click();
-
     await beaconCountIs(1);
 
     const [softcls1] = await getBeacons();
 
-    assert.strictEqual(softcls1.value, 0);
+    assert(softcls1.value > 0);
     assert.strictEqual(softcls1.name, 'CLS');
     assert.strictEqual(softcls1.value, softcls1.delta);
     assert.strictEqual(softcls1.rating, 'good');
-    assert.strictEqual(softcls1.entries.length, 0);
+    assert.strictEqual(softcls1.entries.length, 1);
     assert.match(softcls1.navigationType, /soft-navigation/);
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Click on the soft nav button to finalize CLS and start a new beacon
+    await softNavButton.click();
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+
+    const [softcls2] = await getBeacons();
+
+    assert.strictEqual(softcls2.value, 0);
+    assert.strictEqual(softcls2.name, 'CLS');
+    assert.strictEqual(softcls2.value, softcls2.delta);
+    assert.strictEqual(softcls2.rating, 'good');
+    assert.strictEqual(softcls2.entries.length, 0);
+    assert.match(softcls2.navigationType, /soft-navigation/);
   });
 
   it('reports soft navs when loaded late (reportAllChanges === false)', async function () {
