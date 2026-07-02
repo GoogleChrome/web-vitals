@@ -124,8 +124,8 @@ export const onLCP = (
         | PerformanceSoftNavigation
       )[],
     ) => {
-      // If reportAllChanges is set then call this function for each entry,
-      // otherwise only consider the last one, unless soft navs are enabled.
+      // If reportAllChanges is set or soft navs is enabled then call this
+      // function for each entry, otherwise only consider the last one.
       if (!opts!.reportAllChanges && !softNavsEnabled) {
         entries = entries.slice(-1);
       }
@@ -172,7 +172,7 @@ export const onLCP = (
           // interaction-contentful-paint so handle both for now
           const renderTime =
             ICPEntry.largestContentfulPaint?.renderTime ||
-            (entry as InteractionContentfulPaint).renderTime ||
+            ICPEntry.renderTime ||
             0;
 
           // Paints should never be less than 0 but add cap just in case
@@ -180,8 +180,6 @@ export const onLCP = (
 
           if (ICPEntry.largestContentfulPaint) {
             lcpEntryManager._processEntry(ICPEntry.largestContentfulPaint);
-          }
-          if (ICPEntry.largestContentfulPaint) {
             entries = [ICPEntry.largestContentfulPaint];
           }
         }

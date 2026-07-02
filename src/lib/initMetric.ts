@@ -24,27 +24,27 @@ export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
   value: number = -1,
   interactionId?: number,
-  navigation?: MetricType['navigationType'],
+  navigationType?: MetricType['navigationType'],
   navigationId: number = 0,
   navigationURL?: string,
   navigationStartTime?: number,
 ) => {
   const hardNavId = getNavigationEntry()?.navigationId || 0;
   const hardNavEntry = getNavigationEntry();
-  let navigationType: MetricType['navigationType'] = 'navigate';
+  let _navigationType: MetricType['navigationType'] = 'navigate';
 
-  if (navigation) {
+  if (navigationType) {
     // If it was passed in, then use that
-    navigationType = navigation;
+    _navigationType = navigationType;
   } else if (getBFCacheRestoreTime() >= 0) {
-    navigationType = 'back-forward-cache';
+    _navigationType = 'back-forward-cache';
   } else if (hardNavEntry) {
     if (document.prerendering || getActivationStart() > 0) {
-      navigationType = 'prerender';
+      _navigationType = 'prerender';
     } else if (document.wasDiscarded) {
-      navigationType = 'restore';
+      _navigationType = 'restore';
     } else if (hardNavEntry.type) {
-      navigationType = hardNavEntry.type.replace(
+      _navigationType = hardNavEntry.type.replace(
         /_/g,
         '-',
       ) as MetricType['navigationType'];
@@ -61,7 +61,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
     delta: 0,
     entries,
     id: generateUniqueID(),
-    navigationType,
+    navigationType: _navigationType,
     navigationId: navigationId || hardNavId,
     interactionId: interactionId,
     navigationURL: navigationURL || hardNavEntry?.name,

@@ -21,7 +21,7 @@ import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
-import {observe} from './lib/observe.js';
+import {getEntryTypesToObserveFor, observe} from './lib/observe.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
 import {
@@ -126,7 +126,10 @@ export const onCLS = (
         }
       };
 
-      const po = observe('layout-shift', handleEntries, opts);
+      const typesToMonitor = getEntryTypesToObserveFor('CLS', opts);
+      // const typesToMonitor = ['layout-shift', 'soft-navigation'];
+      const po = observe(typesToMonitor, handleEntries, opts);
+      // const po = observe(['layout-shift', 'soft-navigation'], handleEntries, opts);
       if (po) {
         report = bindReporter(
           onReport,

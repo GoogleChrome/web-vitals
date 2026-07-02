@@ -111,8 +111,7 @@ export const onFCP = (
       const handleSoftNavEntries = (entries: PerformanceSoftNavigation[]) => {
         entries.forEach((entry) => {
           handleEntries(po!.takeRecords() as FCPMetric['entries']);
-          // Cap FCP at 0 as it's possible the first paint is before the soft
-          // nav is emitted.
+          // Cap FCP at 0. It should never be less, but better safe than sorry.
           const FCPTime = Math.max(
             (entry.presentationTime || entry.paintTime || 0) - entry.startTime,
             0,
