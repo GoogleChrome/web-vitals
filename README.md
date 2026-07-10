@@ -693,7 +693,7 @@ interface LCPMetric extends Metric {
 ```ts
 interface TTFBMetric extends Metric {
   name: 'TTFB';
-  entries: PerformanceNavigationTiming[];
+  entries: (PerformanceNavigationTiming | PeformanceSoftNavigation)[];
 }
 ```
 
@@ -991,7 +991,7 @@ interface FCPAttribution {
    * general page load issues. This can be used to access `serverTiming` for example:
    * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming;
+  navigationEntry?: PerformanceNavigationTiming | PerformanceSoftNavigation;
 }
 ```
 
@@ -1178,7 +1178,7 @@ interface LCPAttribution {
    * general page load issues. This can be used to access `serverTiming` for example:
    * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming;
+  navigationEntry?: PerformanceNavigationTiming | PerformanceSoftNavigation;
   /**
    * The `resource` entry for the LCP resource (if applicable), which is useful
    * for diagnosing resource load issues.
@@ -1228,7 +1228,7 @@ interface TTFBAttribution {
    * general page load issues. This can be used to access `serverTiming` for
    * example: navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming;
+  navigationEntry?: PerformanceNavigationTiming | PerformanceSoftNavigation;
 }
 ```
 
