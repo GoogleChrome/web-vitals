@@ -94,7 +94,6 @@ export const onLCP = (
     };
 
     const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
-      handleEntries(po!.takeRecords() as LCPMetric['entries']);
       if (!isFinalized) report(true);
       initNewLCPMetric(
         'soft-navigation',

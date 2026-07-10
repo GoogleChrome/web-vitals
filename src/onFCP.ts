@@ -110,7 +110,6 @@ export const onFCP = (
       // observe both and sort the entries like for the other metrics
       const handleSoftNavEntries = (entries: PerformanceSoftNavigation[]) => {
         entries.forEach((entry) => {
-          handleEntries(po!.takeRecords() as FCPMetric['entries']);
           // Cap FCP at 0. It should never be less, but better safe than sorry.
           const FCPTime = Math.max(
             (entry.presentationTime || entry.paintTime || 0) - entry.startTime,
