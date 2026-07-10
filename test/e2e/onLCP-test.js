@@ -724,18 +724,21 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
-    // Click on the soft nav button to finalize LCP.
+    // Click on the h1 to finalize LCP.
+    const h1 = await $('h1');
+    await h1.click();
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
+    await clearBeacons();
+
     const softNavButton = await $('#soft-nav');
     await softNavButton.click();
 
-    await beaconCountIs(1);
-    assertStandardReportsAreCorrect(await getBeacons());
+    // Wait until the paused URL update happens
+    await browser.pause(2000);
 
-    // clear the beacons
-    await clearBeacons();
-
-    // Load a new page to trigger the hidden state.
-    await navigateTo('about:blank');
+    // Click on the soft nav button to finalize LCP.
+    await softNavButton.click();
 
     await beaconCountIs(1);
 

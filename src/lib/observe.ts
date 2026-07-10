@@ -14,8 +14,6 @@
  * limitations under the License.
  */
 
-import {checkSoftNavsEnabled} from './softNavs.js';
-
 interface PerformanceEntryMap {
   'event': PerformanceEventTiming[];
   'first-input': PerformanceEventTiming[];
@@ -38,36 +36,15 @@ interface PerformanceEntryMap {
  * try/catch to avoid errors in unsupporting browsers.
  */
 export const observe = <K extends keyof PerformanceEntryMap>(
-  type: K,
-  callback: (entries: PerformanceEntryMap[K]) => void,
+  types: K[],
+  callback: (entries: Array<PerformanceEntryMap[K][number]>) => void,
   opts: PerformanceObserverInit = {},
 ): PerformanceObserver | undefined => {
-  const typesToMonitor: (keyof PerformanceEntryMap)[] = [type];
-  if (type === 'event') {
-    // Also observe entries of type `first-input`. This is useful in cases
-    // where the first interaction is less than the `durationThreshold`.
-    typesToMonitor.push('first-input');
-  }
-  if (checkSoftNavsEnabled(opts)) {
-    // Observe extra types if using SoftNavs for LCP, INP, and CLS.
-    // We observe together, rather than as separate observers to observe
-    // entries in order.
-    // FCP has concerns on on order so can observe separately which is simpler.
-    // TTFB doesn't need to monitor soft navs
-    if (
-      type === 'largest-contentful-paint' ||
-      type === 'event' ||
-      type === 'layout-shift'
-    ) {
-      typesToMonitor.push('soft-navigation');
-    }
-
-    if (type === 'largest-contentful-paint') {
-      typesToMonitor.push('interaction-contentful-paint');
-    }
-  }
   try {
-    if (PerformanceObserver.supportedEntryTypes.includes(type)) {
+    const supportedTypes = types.filter((t) =>
+      PerformanceObserver.supportedEntryTypes.includes(t),
+    );
+    if (supportedTypes.length > 0) {
       const po = new PerformanceObserver((list) => {
         // Delay by a microtask to workaround a bug in Safari where the
         // callback is invoked immediately, rather than in a separate task.
@@ -83,11 +60,11 @@ export const observe = <K extends keyof PerformanceEntryMap>(
 
             return scoreA - scoreB;
           });
-          callback(entries as PerformanceEntryMap[K]);
+          callback(entries as Array<PerformanceEntryMap[K][number]>);
         });
       });
 
-      for (const t of typesToMonitor) {
+      for (const t of supportedTypes) {
         po.observe(
           Object.assign(
             {

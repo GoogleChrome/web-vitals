@@ -743,7 +743,7 @@ describe('onCLS()', async function () {
 
     // Wait a bit to allow the prerender to happen
     // and all loading shifts to complete
-    await browser.pause(2000);
+    await browser.pause(4000);
 
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();

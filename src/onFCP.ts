@@ -68,7 +68,7 @@ export const onFCP = (
       }
     };
 
-    const po = observe('paint', handleEntries, opts);
+    const po = observe(['paint'], handleEntries, opts);
 
     if (po) {
       report = bindReporter(
@@ -134,7 +134,7 @@ export const onFCP = (
           report(true);
         });
       };
-      observe('soft-navigation', handleSoftNavEntries, opts);
+      observe(['soft-navigation'], handleSoftNavEntries, opts);
     }
   });
 };

@@ -133,7 +133,7 @@ export const onTTFB = (
             }
           });
         };
-        observe('soft-navigation', reportSoftNavTTFBs, opts);
+        observe(['soft-navigation'], reportSoftNavTTFBs, opts);
       }
     }
   });

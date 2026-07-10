@@ -20,6 +20,7 @@ import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {InteractionManager} from './lib/InteractionManager.js';
 import {observe} from './lib/observe.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
@@ -174,7 +175,15 @@ export const onINP = (
       });
     };
 
-    const po = observe('event', handleEntries, {
+    const types = ['event', 'first-input'] as (
+      | 'event'
+      | 'first-input'
+      | 'soft-navigation'
+    )[];
+    if (checkSoftNavsEnabled(opts)) {
+      types.push('soft-navigation');
+    }
+    const po = observe(types, handleEntries, {
       ...opts,
       durationThreshold: opts.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
     } as PerformanceObserverInit);

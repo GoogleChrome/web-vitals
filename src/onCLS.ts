@@ -22,6 +22,7 @@ import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
 import {observe} from './lib/observe.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
 import {
@@ -126,7 +127,11 @@ export const onCLS = (
         }
       };
 
-      const po = observe('layout-shift', handleEntries, opts);
+      const types = ['layout-shift'] as ('layout-shift' | 'soft-navigation')[];
+      if (checkSoftNavsEnabled(opts)) {
+        types.push('soft-navigation');
+      }
+      const po = observe(types, handleEntries, opts);
       if (po) {
         report = bindReporter(
           onReport,

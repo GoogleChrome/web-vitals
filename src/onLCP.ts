@@ -199,7 +199,15 @@ export const onLCP = (
       }
     };
 
-    const po = observe('largest-contentful-paint', handleEntries, opts);
+    const types = ['largest-contentful-paint'] as (
+      | 'largest-contentful-paint'
+      | 'interaction-contentful-paint'
+      | 'soft-navigation'
+    )[];
+    if (softNavsEnabled) {
+      types.push('interaction-contentful-paint', 'soft-navigation');
+    }
+    const po = observe(types, handleEntries, opts);
 
     if (po) {
       report = bindReporter(
