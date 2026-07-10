@@ -28,7 +28,7 @@ let marginTop = 0;
 
 describe('onCLS()', async function () {
   // Retry all tests in this suite up to 2 times.
-  this.retries(2);
+  this.retries(0);
 
   let browserSupportsCLS;
   let browserSupportsPrerender;
@@ -213,6 +213,8 @@ describe('onCLS()', async function () {
       }, 50);
     });
 
+    // Pause to allow the CLS to happen
+    await browser.pause(200);
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -245,6 +247,9 @@ describe('onCLS()', async function () {
         }, 50);
       }, 50);
     });
+
+    // Pause to allow the CLS to happen
+    await browser.pause(500);
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
