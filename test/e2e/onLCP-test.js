@@ -1114,6 +1114,44 @@ describe('onLCP()', async function () {
 
       assert.equal(lcp.attribution.target, '#lcp-image');
     });
+
+    it('reports soft navigation LCP attribution', async function () {
+      if (!browserSupportsLCP || !browserSupportsSoftNavs) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1&reportSoftNavs=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Click on the soft nav button to finalize LCP.
+      const softNavButton = await $('#soft-nav');
+      await softNavButton.click();
+
+      await beaconCountIs(1);
+      await clearBeacons();
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+
+      assert(lcp.value > 0);
+      assert.strictEqual(lcp.name, 'LCP');
+      assert.strictEqual(lcp.value, lcp.delta);
+      assert.strictEqual(lcp.rating, 'good');
+      assert.strictEqual(lcp.entries.length, 1);
+      assert.match(lcp.navigationType, /soft-navigation/);
+
+      assert.equal(lcp.attribution.timeToFirstByte, 0);
+      assert.equal(lcp.attribution.resourceLoadDelay, 0);
+      assert.equal(lcp.attribution.resourceLoadDuration, 0);
+      assert.equal(lcp.attribution.elementRenderDelay, lcp.value);
+      const navEntry = lcp.attribution.navigationEntry;
+      assert.equal(navEntry.entryType, 'soft-navigation');
+      assert.equal(navEntry.navigationId, lcp.navigationId);
+    });
   });
 });
 

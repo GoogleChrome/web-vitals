@@ -23,6 +23,7 @@ import {
 } from '../types.js';
 
 const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
+  const navigationEntry = metric?.entries?.[0];
   // Use a default object if no other attribution has been set.
   let attribution: TTFBAttribution = {
     waitingDuration: 0,
@@ -30,12 +31,11 @@ const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
     dnsDuration: 0,
     connectionDuration: 0,
     requestDuration: 0,
+    // There should only be one instance per TTFB metric
+    navigationEntry: navigationEntry,
   };
 
   if (metric.entries.length) {
-    // There should only be one instance per TTFB metric
-    const navigationEntry = metric.entries[0];
-
     // If it's the hard nav, then can give attribution.
     // Otherwise it's 0 so the defaults are fine.
     if (navigationEntry instanceof PerformanceNavigationTiming) {

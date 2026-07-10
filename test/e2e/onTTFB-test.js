@@ -572,6 +572,39 @@ describe('onTTFB()', async function () {
         );
       }
     });
+
+    it('reports soft navigation TTFB attribution', async function () {
+      if (!browserSupportsSoftNavs) this.skip();
+
+      await navigateTo('/test/ttfb?attribution=1&reportSoftNavs=1');
+
+      await beaconCountIs(1);
+      await clearBeacons();
+
+      // Click on the soft nav button to start new soft nav.
+      const softNavButton = await $('#soft-nav');
+      await softNavButton.click();
+
+      await beaconCountIs(1);
+
+      const [ttfb] = await getBeacons();
+
+      assert.strictEqual(ttfb.value, 0);
+      assert.strictEqual(ttfb.name, 'TTFB');
+      assert.strictEqual(ttfb.value, ttfb.delta);
+      assert.strictEqual(ttfb.rating, 'good');
+      assert.strictEqual(ttfb.entries.length, 1);
+      assert.match(ttfb.navigationType, /soft-navigation/);
+
+      assert.equal(ttfb.attribution.waitingDuration, 0);
+      assert.equal(ttfb.attribution.cacheDuration, 0);
+      assert.equal(ttfb.attribution.dnsDuration, 0);
+      assert.equal(ttfb.attribution.connectionDuration, 0);
+      assert.equal(ttfb.attribution.requestDuration, 0);
+      const navEntry = ttfb.attribution.navigationEntry;
+      assert.equal(navEntry.entryType, 'soft-navigation');
+      assert.equal(navEntry.navigationId, ttfb.navigationId);
+    });
   });
 });
 

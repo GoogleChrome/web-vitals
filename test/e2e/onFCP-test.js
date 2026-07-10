@@ -549,5 +549,35 @@ describe('onFCP()', async function () {
       assert.equal(fcp.attribution.loadState, 'complete');
       assert.equal(fcp.attribution.navigationEntry, undefined);
     });
+
+    it('reports soft navigation FCP attribution', async function () {
+      if (!browserSupportsFCP || !browserSupportsSoftNavs) this.skip();
+
+      await navigateTo('/test/fcp?attribution=1&reportSoftNavs=1');
+
+      await beaconCountIs(1);
+      await clearBeacons();
+
+      // Click on the soft nav button to start new soft nav.
+      const softNavButton = await $('#soft-nav');
+      await softNavButton.click();
+
+      await beaconCountIs(1);
+
+      const [fcp] = await getBeacons();
+
+      assert(fcp.value >= 0);
+      assert.strictEqual(fcp.name, 'FCP');
+      assert.strictEqual(fcp.value, fcp.delta);
+      assert.strictEqual(fcp.rating, 'good');
+      assert.strictEqual(fcp.entries.length, 0);
+      assert.match(fcp.navigationType, /soft-navigation/);
+
+      assert.equal(fcp.attribution.timeToFirstByte, 0);
+      assert.equal(fcp.attribution.firstByteToFCP, fcp.value);
+      const navEntry = fcp.attribution.navigationEntry;
+      assert.equal(navEntry.entryType, 'soft-navigation');
+      assert.equal(navEntry.navigationId, fcp.navigationId);
+    });
   });
 });

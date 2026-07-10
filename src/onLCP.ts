@@ -94,6 +94,21 @@ export const onLCP = (
     };
 
     const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
+      if (lcpEntryManager._softNavigationEntryMap && entry.navigationId) {
+        lcpEntryManager._softNavigationEntryMap.set(entry.navigationId, entry);
+
+        // Clean up older entries to prevent memory leaks, keeping only
+        // the 2 most recent entries.
+        if (lcpEntryManager._softNavigationEntryMap.size > 2) {
+          const firstKey = lcpEntryManager._softNavigationEntryMap
+            .keys()
+            .next().value;
+          if (firstKey !== undefined) {
+            lcpEntryManager._softNavigationEntryMap.delete(firstKey);
+          }
+        }
+      }
+
       if (!isFinalized) report(true);
       initNewLCPMetric(
         'soft-navigation',

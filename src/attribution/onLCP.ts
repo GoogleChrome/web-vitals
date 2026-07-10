@@ -18,6 +18,7 @@ import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
+import {checkSoftNavsEnabled} from '../lib/softNavs.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import {
   LCPAttribution,
@@ -49,6 +50,10 @@ export const onLCP = (
 
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
   const lcpTargetMap: WeakMap<LargestContentfulPaint, string> = new WeakMap();
+
+  if (checkSoftNavsEnabled(opts)) {
+    lcpEntryManager._softNavigationEntryMap = new Map();
+  }
 
   lcpEntryManager._onBeforeProcessingEntry = (
     entry: LargestContentfulPaint,
@@ -112,6 +117,12 @@ export const onLCP = (
       } else {
         // Set activationStart to the navigation start time
         activationStart = metric.navigationStartTime || 0;
+        // Lookup the soft navigation entry. Do not use getEntriesByType since
+        // that is limited to the first 50 navigation entries due to buffer
+        // size.
+        navigationEntry = lcpEntryManager._softNavigationEntryMap?.get(
+          metric.navigationId,
+        );
       }
 
       if (navigationEntry) {

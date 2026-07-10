@@ -20,6 +20,8 @@ import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
+import {initUnique} from './lib/initUnique.js';
+import {FCPEntryManager} from './lib/FCPEntryManager.js';
 import {observe} from './lib/observe.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {whenActivated} from './lib/whenActivated.js';
@@ -43,6 +45,10 @@ export const onFCP = (
   const softNavsEnabled = checkSoftNavsEnabled(opts);
 
   whenActivated(() => {
+    // Create a new FCP entry manager for each page activation
+    // This allows us to track soft navigations separately
+    // needed when attribution is enabled.
+    const fcpEntryManager = initUnique(opts, FCPEntryManager);
     const visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('FCP');
     let report: ReturnType<typeof bindReporter>;
@@ -110,6 +116,28 @@ export const onFCP = (
       // observe both and sort the entries like for the other metrics
       const handleSoftNavEntries = (entries: PerformanceSoftNavigation[]) => {
         entries.forEach((entry) => {
+          // Store the soft navigation entries in the entry manager so that
+          // they can be retrieved for attribution if necessary. This code
+          // is only used when attribution is enabled which sets the
+          // _softNavigationEntryMap.
+          if (fcpEntryManager._softNavigationEntryMap && entry.navigationId) {
+            fcpEntryManager._softNavigationEntryMap.set(
+              entry.navigationId,
+              entry,
+            );
+
+            // Clean up older entries to prevent memory leaks, keeping only
+            // the 2 most recent entries.
+            if (fcpEntryManager._softNavigationEntryMap.size > 2) {
+              const firstKey = fcpEntryManager._softNavigationEntryMap
+                .keys()
+                .next().value;
+              if (firstKey !== undefined) {
+                fcpEntryManager._softNavigationEntryMap.delete(firstKey);
+              }
+            }
+          }
+
           // Cap FCP at 0. It should never be less, but better safe than sorry.
           const FCPTime = Math.max(
             (entry.presentationTime || entry.paintTime || 0) - entry.startTime,
