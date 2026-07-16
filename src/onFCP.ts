@@ -66,7 +66,7 @@ export const onFCP = (
             // after the FCP, this time should be clamped at 0.
             metric.value = Math.max(entry.startTime - getActivationStart(), 0);
             metric.entries.push(entry);
-            metric.navigationId = entry.navigationId || 0;
+            metric.navigationId = entry.navigationId || metric.navigationId;
             // FCP should only be reported once so can report right away
             report(true);
           }
