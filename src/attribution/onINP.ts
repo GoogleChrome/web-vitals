@@ -397,11 +397,6 @@ export const onINP = (
     // processing if they don't for some reason.
     if (metric.entries.length === 0) {
       const navStartTime = metric.navigationStartTime || 0;
-      // For simplicity make some assumptions for values we can't get
-      // to avoid undefined/null values which would be unexpected.
-      // - Assume interactionType as pointer as the most common
-      // - Assume interactionTime of nav start time
-      // - Assume nextPaintTime as interactionTime + length
       const attribution: INPAttribution = {
         processedEventEntries: [],
         longAnimationFrameEntries: [],

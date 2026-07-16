@@ -1007,12 +1007,16 @@ interface INPAttribution {
    * `generateTarget` configuration option was passed, then this will instead
    * be the return value of that function, falling back to the default if that
    * returns null or undefined.
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
   interactionTarget?: string;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred
    * within the frame, only the first time is reported).
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
   interactionTime?: DOMHighResTimeStamp;
   /**
@@ -1021,6 +1025,8 @@ interface INPAttribution {
    * containing an `interactionId` dispatched in a given animation frame).
    * For "pointerdown", "pointerup", or "click" events this will be "pointer",
    * and for "keydown" or "keyup" events this will be "keyboard".
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
   interactionType?: 'pointer' | 'keyboard';
   /**
@@ -1029,6 +1035,8 @@ interface INPAttribution {
    * the event timing entry. However, since duration values are rounded to the
    * nearest 8ms (and can be rounded down), this value is clamped to always be
    * reported after the processing times.
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
   nextPaintTime?: DOMHighResTimeStamp;
   /**
