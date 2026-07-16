@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
@@ -96,7 +96,6 @@ export const onCLS = (
       };
 
       const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
-        handleEntries(po?.takeRecords() as CLSMetric['entries']);
         report(true);
         initNewCLSMetric(
           entry.interactionId,
@@ -141,7 +140,9 @@ export const onCLS = (
         );
 
         visibilityWatcher.onHidden(() => {
-          handleEntries(po.takeRecords() as CLSMetric['entries']);
+          handleEntries(
+            po.takeRecords() as [LayoutShift | PerformanceSoftNavigation],
+          );
           report(true);
         });
 
@@ -153,7 +154,7 @@ export const onCLS = (
             'back-forward-cache',
             metric.navigationId,
             metric.navigationURL,
-            metric.navigationStartTime,
+            getBFCacheRestoreTime(),
           );
 
           doubleRAF(report);

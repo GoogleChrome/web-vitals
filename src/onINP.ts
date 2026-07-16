@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
@@ -138,7 +138,6 @@ export const onINP = (
     };
 
     const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
-      handleEntries(po?.takeRecords() as INPMetric['entries']);
       updateINPMetric();
       report(true);
       initNewINPMetric(
@@ -160,9 +159,6 @@ export const onINP = (
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
       whenIdleOrHidden(() => {
-        // Only process entries, if at least some of them have interaction ids
-        // (otherwise run into lots of errors later for empty INP entries)
-        if (!entries.some((entry) => entry.interactionId)) return;
         for (const entry of entries) {
           if (entry.entryType === 'soft-navigation') {
             handleSoftNavEntry(entry as PerformanceSoftNavigation);
@@ -197,16 +193,11 @@ export const onINP = (
 
     if (po) {
       visibilityWatcher.onHidden(() => {
-        handleEntries(po.takeRecords() as INPMetric['entries']);
-        // For soft navigations and bfcache we may also need to report on hidden,
-        // even if there are no entries if the only interactions are < 16ms.
-        if (
-          metric.navigationType === 'soft-navigation' ||
-          metric.navigationType === 'back-forward-cache'
-        ) {
-          updateINPMetric();
-        }
-        report(true);
+        handleEntries(
+          po.takeRecords() as [
+            PerformanceEventTiming | PerformanceSoftNavigation,
+          ],
+        );
       });
 
       // Only report after a bfcache restore if the `PerformanceObserver`
@@ -217,7 +208,7 @@ export const onINP = (
           'back-forward-cache',
           metric.navigationId,
           metric.navigationURL,
-          metric.navigationStartTime,
+          getBFCacheRestoreTime(),
         );
       });
     }

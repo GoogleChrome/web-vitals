@@ -70,7 +70,6 @@ export const onLCP = (
   };
 
   const attributeLCP = (metric: LCPMetric): LCPMetricWithAttribution => {
-    const hardNavId = getNavigationEntry()?.navigationId || 0;
     // Use a default object if no other attribution has been set.
     let attribution: LCPAttribution = {
       timeToFirstByte: 0,
@@ -104,16 +103,10 @@ export const onLCP = (
       let activationStart = 0;
       let responseStart = 0;
 
-      if (!metric.navigationId || metric.navigationId === hardNavId) {
+      if (metric.navigationType !== 'soft-navigation') {
         navigationEntry = getNavigationEntry();
-        activationStart =
-          navigationEntry && navigationEntry.activationStart
-            ? navigationEntry.activationStart
-            : 0;
-        responseStart =
-          navigationEntry && navigationEntry.responseStart
-            ? navigationEntry.responseStart
-            : 0;
+        activationStart = navigationEntry?.activationStart ?? 0;
+        responseStart = navigationEntry?.responseStart ?? 0;
       } else {
         // Set activationStart to the navigation start time
         activationStart = metric.navigationStartTime || 0;
@@ -140,11 +133,10 @@ export const onLCP = (
           // Cap at LCP time (videos continue downloading after LCP for example)
           metric.value,
           Math.max(
-            lcpRequestStart - activationStart,
+            lcpRequestStart,
             lcpResourceEntry
               ? lcpResourceEntry.responseEnd - activationStart
               : 0,
-            0,
           ),
         );
 

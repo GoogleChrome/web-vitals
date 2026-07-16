@@ -43,7 +43,6 @@ export const onFCP = (
   }
 
   const attributeFCP = (metric: FCPMetric): FCPMetricWithAttribution => {
-    const hardNavId = getNavigationEntry()?.navigationId || 0;
     // Use a default object if no other attribution has been set.
     let attribution: FCPAttribution = {
       timeToFirstByte: 0,
@@ -51,7 +50,7 @@ export const onFCP = (
       loadState: getLoadState(getBFCacheRestoreTime()),
     };
 
-    if (!metric.navigationId || metric.navigationId === hardNavId) {
+    if (metric.navigationType !== 'soft-navigation') {
       if (metric.entries.length) {
         const navigationEntry = getNavigationEntry();
         const fcpEntry = metric.entries.at(-1);

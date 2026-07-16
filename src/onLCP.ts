@@ -15,7 +15,7 @@
  */
 
 import {LCPEntryManager} from './lib/LCPEntryManager.js';
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
@@ -72,7 +72,7 @@ export const onLCP = (
     ) => {
       metric = initMetric(
         'LCP',
-        0,
+        -1,
         interactionId,
         navigation,
         navigationId,
@@ -229,10 +229,16 @@ export const onLCP = (
           // https://github.com/GoogleChrome/web-vitals/issues/383
           whenIdleOrHidden(() => {
             if (!isFinalized) {
-              handleEntries(po!.takeRecords() as LCPMetric['entries']);
+              handleEntries(
+                po!.takeRecords() as [
+                  | InteractionContentfulPaint
+                  | LargestContentfulPaint
+                  | PerformanceSoftNavigation,
+                ],
+              );
               if (!softNavsEnabled) {
                 po!.disconnect();
-                removeEventListener(event.type, finalizeLCP);
+                removeEventListener(event.type, finalizeLCP, {capture: true});
               }
               isFinalized = true;
               report(true);
@@ -259,7 +265,7 @@ export const onLCP = (
           metric.interactionId,
           metric.navigationId,
           metric.navigationURL,
-          metric.navigationStartTime,
+          getBFCacheRestoreTime(),
         );
         report = bindReporter(
           onReport,

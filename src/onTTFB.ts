@@ -20,7 +20,7 @@ import {getNavigationEntry} from './lib/getNavigationEntry.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
 
@@ -94,7 +94,7 @@ export const onTTFB = (
           'back-forward-cache',
           metric.navigationId,
           metric.navigationURL,
-          metric.navigationStartTime,
+          getBFCacheRestoreTime(),
         );
         report = bindReporter(
           onReport,
