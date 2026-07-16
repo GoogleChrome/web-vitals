@@ -15,7 +15,7 @@
  */
 
 import {bindReporter} from './lib/bindReporter.js';
-import {checkSoftNavsEnabled} from './lib/softNavs.js';
+import {checkSoftNavsEnabled, storeSoftNavEntry} from './lib/softNavs.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
@@ -40,8 +40,6 @@ export const onFCP = (
   onReport: (metric: FCPMetric) => void,
   opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
   const softNavsEnabled = checkSoftNavsEnabled(opts);
 
   whenActivated(() => {
@@ -121,21 +119,7 @@ export const onFCP = (
           // is only used when attribution is enabled which sets the
           // _softNavigationEntryMap.
           if (fcpEntryManager._softNavigationEntryMap && entry.navigationId) {
-            fcpEntryManager._softNavigationEntryMap.set(
-              entry.navigationId,
-              entry,
-            );
-
-            // Clean up older entries to prevent memory leaks, keeping only
-            // the 2 most recent entries.
-            if (fcpEntryManager._softNavigationEntryMap.size > 2) {
-              const firstKey = fcpEntryManager._softNavigationEntryMap
-                .keys()
-                .next().value;
-              if (firstKey !== undefined) {
-                fcpEntryManager._softNavigationEntryMap.delete(firstKey);
-              }
-            }
+            storeSoftNavEntry(fcpEntryManager._softNavigationEntryMap, entry);
           }
 
           // Clamp FCP at 0. It should never be less, but better safe than sorry.

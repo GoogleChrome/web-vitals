@@ -101,14 +101,19 @@ declare global {
   interface InteractionContentfulPaint extends PerformanceEntry {
     readonly interactionId: number;
     readonly largestContentfulPaint?: LargestContentfulPaint;
-    readonly renderTime?: DOMHighResTimeStamp; // TODO: remove
+    // Older implementations expose the render time directly on this entry
+    // rather than nested under `largestContentfulPaint`.
+    // TODO: remove after the origin trial ends.
+    readonly renderTime?: DOMHighResTimeStamp;
   }
   interface PerformanceSoftNavigation extends PerformanceEntry {
     readonly interactionId: number;
     readonly navigationType?: NavigationType;
     readonly paintTime?: number;
     readonly presentationTime?: number;
-    // TODO Remove the largestInteractionContentfulPaint when OT ends as moved to function
+    // Older implementations expose this as an attribute rather than via
+    // `getLargestInteractionContentfulPaint()`.
+    // TODO: remove after the origin trial ends.
     readonly largestInteractionContentfulPaint: InteractionContentfulPaint;
     readonly getLargestInteractionContentfulPaint?: () => InteractionContentfulPaint | null;
   }

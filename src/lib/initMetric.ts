@@ -29,8 +29,8 @@ export const initMetric = <MetricName extends MetricType['name']>(
   navigationURL?: string,
   navigationStartTime?: number,
 ) => {
-  const hardNavId = getNavigationEntry()?.navigationId || 0;
   const hardNavEntry = getNavigationEntry();
+  const hardNavId = hardNavEntry?.navigationId || 0;
   let _navigationType: MetricType['navigationType'] = 'navigate';
 
   if (navigationType) {

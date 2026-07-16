@@ -19,7 +19,7 @@ import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getActivationStart} from './lib/getActivationStart.js';
-import {checkSoftNavsEnabled} from './lib/softNavs.js';
+import {checkSoftNavsEnabled, storeSoftNavEntry} from './lib/softNavs.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
@@ -95,18 +95,7 @@ export const onLCP = (
 
     const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
       if (lcpEntryManager._softNavigationEntryMap && entry.navigationId) {
-        lcpEntryManager._softNavigationEntryMap.set(entry.navigationId, entry);
-
-        // Clean up older entries to prevent memory leaks, keeping only
-        // the 2 most recent entries.
-        if (lcpEntryManager._softNavigationEntryMap.size > 2) {
-          const firstKey = lcpEntryManager._softNavigationEntryMap
-            .keys()
-            .next().value;
-          if (firstKey !== undefined) {
-            lcpEntryManager._softNavigationEntryMap.delete(firstKey);
-          }
-        }
+        storeSoftNavEntry(lcpEntryManager._softNavigationEntryMap, entry);
       }
 
       if (!isFinalized) report(true);
@@ -123,8 +112,9 @@ export const onLCP = (
       // (see https://github.com/GoogleChrome/web-vitals/issues/725)
       const largestInteractionContentfulPaint =
         entry.getLargestInteractionContentfulPaint?.() ||
-        // TODO to remove this, after OT ends as this has been replaced
-        // with above function
+        // Older implementations expose the value as an attribute rather
+        // than the method above.
+        // TODO: remove this fallback after the origin trial ends.
         entry.largestInteractionContentfulPaint;
       if (largestInteractionContentfulPaint) {
         handleEntries([largestInteractionContentfulPaint]);
@@ -153,7 +143,7 @@ export const onLCP = (
         }
 
         let value = 0;
-        let entries: LargestContentfulPaint[] = [];
+        let metricEntries: LargestContentfulPaint[] = [];
         if (entry.entryType === 'largest-contentful-paint') {
           // The startTime attribute returns the value of the renderTime if it is
           // not 0, and the value of the loadTime otherwise. The activationStart
@@ -164,7 +154,7 @@ export const onLCP = (
           value = Math.max(entry.startTime - getActivationStart(), 0);
 
           lcpEntryManager._processEntry(entry as LargestContentfulPaint);
-          entries = [entry as LargestContentfulPaint];
+          metricEntries = [entry as LargestContentfulPaint];
         } else if (entry.entryType === 'interaction-contentful-paint') {
           const ICPEntry = entry as InteractionContentfulPaint;
           // InteractionContentfulPaints should only happen after a
@@ -182,8 +172,9 @@ export const onLCP = (
             continue;
           }
 
-          // We're changing the shape to nest LCP entries within
-          // interaction-contentful-paint so handle both for now
+          // Older implementations expose the render time directly on the entry
+          // rather than nested under `largestContentfulPaint`.
+          // TODO: remove after the origin trial ends.
           const renderTime =
             ICPEntry.largestContentfulPaint?.renderTime ||
             ICPEntry.renderTime ||
@@ -194,7 +185,7 @@ export const onLCP = (
 
           if (ICPEntry.largestContentfulPaint) {
             lcpEntryManager._processEntry(ICPEntry.largestContentfulPaint);
-            entries = [ICPEntry.largestContentfulPaint];
+            metricEntries = [ICPEntry.largestContentfulPaint];
           }
         }
 
@@ -207,7 +198,7 @@ export const onLCP = (
           // where `activationStart` occurs after the LCP, this time should be
           // clamped at 0.
           metric.value = value;
-          metric.entries = entries;
+          metric.entries = metricEntries;
           report();
         }
       }

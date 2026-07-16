@@ -23,3 +23,21 @@ export const checkSoftNavsEnabled = (opts?: ReportOpts) => {
     opts.reportSoftNavs
   );
 };
+
+// Stores a soft navigation entry keyed by its navigationId, keeping only
+// the 2 most recent entries so the map cannot grow unbounded.
+export const storeSoftNavEntry = (
+  map: Map<number, PerformanceSoftNavigation>,
+  entry: PerformanceSoftNavigation,
+) => {
+  map.set(entry.navigationId!, entry);
+
+  // Clean up older entries to prevent memory leaks, keeping only
+  // the 2 most recent entries.
+  if (map.size > 2) {
+    const firstKey = map.keys().next().value;
+    if (firstKey !== undefined) {
+      map.delete(firstKey);
+    }
+  }
+};

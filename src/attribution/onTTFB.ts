@@ -23,7 +23,7 @@ import {
 } from '../types.js';
 
 const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
-  const navigationEntry = metric?.entries?.[0];
+  const navigationEntry = metric.entries[0];
   // Use a default object if no other attribution has been set.
   let attribution: TTFBAttribution = {
     waitingDuration: 0,
