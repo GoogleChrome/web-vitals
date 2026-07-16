@@ -140,11 +140,10 @@ export const onLCP = (
           // Cap at LCP time (videos continue downloading after LCP for example)
           metric.value,
           Math.max(
-            lcpRequestStart - activationStart,
+            lcpRequestStart,
             lcpResourceEntry
               ? lcpResourceEntry.responseEnd - activationStart
               : 0,
-            0,
           ),
         );
 

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
@@ -160,9 +160,6 @@ export const onINP = (
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
       whenIdleOrHidden(() => {
-        // Only process entries, if at least some of them have interaction ids
-        // (otherwise run into lots of errors later for empty INP entries)
-        if (!entries.some((entry) => entry.interactionId)) return;
         for (const entry of entries) {
           if (entry.entryType === 'soft-navigation') {
             handleSoftNavEntry(entry as PerformanceSoftNavigation);
@@ -217,7 +214,7 @@ export const onINP = (
           'back-forward-cache',
           metric.navigationId,
           metric.navigationURL,
-          metric.navigationStartTime,
+          getBFCacheRestoreTime(),
         );
       });
     }

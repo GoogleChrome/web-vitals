@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
@@ -153,7 +153,7 @@ export const onCLS = (
             'back-forward-cache',
             metric.navigationId,
             metric.navigationURL,
-            metric.navigationStartTime,
+            getBFCacheRestoreTime(),
           );
 
           doubleRAF(report);

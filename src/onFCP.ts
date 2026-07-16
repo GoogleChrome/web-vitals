@@ -23,7 +23,7 @@ import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {FCPEntryManager} from './lib/FCPEntryManager.js';
 import {observe} from './lib/observe.js';
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {FCPMetric, MetricRatingThresholds, ReportOpts} from './types.js';
 
@@ -89,12 +89,12 @@ export const onFCP = (
       onBFCacheRestore((event) => {
         metric = initMetric(
           'FCP',
-          0,
+          -1,
           metric.interactionId,
           'back-forward-cache',
           metric.navigationId,
           metric.navigationURL,
-          metric.navigationStartTime,
+          getBFCacheRestoreTime(),
         );
         report = bindReporter(
           onReport,
@@ -138,7 +138,7 @@ export const onFCP = (
             }
           }
 
-          // Cap FCP at 0. It should never be less, but better safe than sorry.
+          // Clamp FCP at 0. It should never be less, but better safe than sorry.
           const FCPTime = Math.max(
             (entry.presentationTime || entry.paintTime || 0) - entry.startTime,
             0,
