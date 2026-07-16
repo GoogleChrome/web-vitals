@@ -151,6 +151,7 @@ export const onINP = (
 
     const handleEntries = (
       entries: (PerformanceEventTiming | PerformanceSoftNavigation)[],
+      forceReport: boolean = false,
     ) => {
       // Queue the `handleEntries()` callback in the next idle task.
       // This is needed to increase the chances that all event entries that
@@ -166,8 +167,10 @@ export const onINP = (
           }
           interactionManager._processEntry(entry as PerformanceEventTiming);
         }
-
         updateINPMetric();
+        if (forceReport) {
+          report(true);
+        }
       });
     };
 
@@ -197,6 +200,7 @@ export const onINP = (
           po.takeRecords() as [
             PerformanceEventTiming | PerformanceSoftNavigation,
           ],
+          true, // forceReport after processing all entries
         );
       });
 
