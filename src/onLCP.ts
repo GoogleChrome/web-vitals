@@ -231,36 +231,42 @@ export const onLCP = (
         opts!.reportAllChanges,
       );
 
+      const finalizeEventTypes = ['keydown', 'click', 'visibilitychange'];
+
       const finalizeLCP = (event: Event) => {
         if (event.isTrusted && !isFinalized) {
           // Wrap the listener in an idle callback so it's run in a separate
           // task to reduce potential INP impact.
           // https://github.com/GoogleChrome/web-vitals/issues/383
+          const metricIdToFinalize = metric.id;
           whenIdleOrHidden(() => {
             if (!isFinalized) {
-              handleEntries(
-                po!.takeRecords() as [
-                  | InteractionContentfulPaint
-                  | LargestContentfulPaint
-                  | PerformanceSoftNavigation,
-                ],
-              );
               if (!softNavsEnabled) {
+                // Do some clean up since these won't be needed anymore.
                 po!.disconnect();
-                removeEventListener(event.type, finalizeLCP, {capture: true});
+                for (const type of finalizeEventTypes) {
+                  removeEventListener(type, finalizeLCP, {capture: true});
+                }
               }
-              isFinalized = true;
-              report(true);
+              // As this is in a whenIdleOrHidden check, whether we're still
+              // on the metric you meant to finalize, and ignore if we've moved
+              // on in the meantime.
+              if (metricIdToFinalize === metric.id) {
+                isFinalized = true;
+                report(true);
+              }
             }
           });
         }
       };
 
-      // Stop listening after input or visibilitychange.
+      // Finalize the current LCP after input or visibilitychange.
+      // Although the browser will automatically stop emitting entries in these
+      // cases, we don't know it's finalized, so we track to allow early report.
       // Note: while scrolling is an input that stops LCP observation, it's
       // unreliable since it can be programmatically generated.
       // See: https://github.com/GoogleChrome/web-vitals/issues/75
-      for (const type of ['keydown', 'click', 'visibilitychange']) {
+      for (const type of finalizeEventTypes) {
         addEventListener(type, finalizeLCP, {
           capture: true,
         });
