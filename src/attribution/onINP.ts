@@ -392,32 +392,32 @@ export const onINP = (
       (metric.navigationType === 'soft-navigation' ||
         metric.navigationType === 'back-forward-cache')
     ) {
-      const navStartTime = metric.navigationStartTime;
-      if (navStartTime) {
-        // For simplicity make some assumptions for values we can't get
-        // to avoid undefined/null values which would be unexpected.
-        // - Assume interactionType as pointer as the most common
-        // - Assume interactionTime of nav start time
-        // - Assume nextPaintTime as interactionTime + length
-        const attribution: INPAttribution = {
-          interactionTarget: '',
-          interactionType: 'pointer',
-          interactionTime: navStartTime,
-          nextPaintTime: navStartTime + metric.value,
-          processedEventEntries: [],
-          longAnimationFrameEntries: [],
-          inputDelay: 0,
-          processingDuration: 0,
-          presentationDelay: metric.value,
-          loadState: getLoadState(navStartTime),
-          longestScript: undefined,
-          totalScriptDuration: undefined,
-          totalStyleAndLayoutDuration: undefined,
-          totalPaintDuration: undefined,
-          totalUnattributedDuration: undefined,
-        };
-        return Object.assign(metric, {attribution});
-      }
+      // A hard-navigation metric carried into a bfcache restore has a
+      // `navigationStartTime` of 0, so default to 0 if not set.
+      const navStartTime = metric.navigationStartTime || 0;
+      // For simplicity make some assumptions for values we can't get
+      // to avoid undefined/null values which would be unexpected.
+      // - Assume interactionType as pointer as the most common
+      // - Assume interactionTime of nav start time
+      // - Assume nextPaintTime as interactionTime + length
+      const attribution: INPAttribution = {
+        interactionTarget: '',
+        interactionType: 'pointer',
+        interactionTime: navStartTime,
+        nextPaintTime: navStartTime + metric.value,
+        processedEventEntries: [],
+        longAnimationFrameEntries: [],
+        inputDelay: 0,
+        processingDuration: 0,
+        presentationDelay: metric.value,
+        loadState: getLoadState(navStartTime),
+        longestScript: undefined,
+        totalScriptDuration: undefined,
+        totalStyleAndLayoutDuration: undefined,
+        totalPaintDuration: undefined,
+        totalUnattributedDuration: undefined,
+      };
+      return Object.assign(metric, {attribution});
     }
 
     const firstEntry = metric.entries[0];

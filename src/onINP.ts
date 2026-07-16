@@ -138,7 +138,10 @@ export const onINP = (
     };
 
     const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
-      handleEntries(po?.takeRecords() as INPMetric['entries']);
+      // Flush any pending entries into the current (old) navigation's metric
+      // synchronously, so they're reported against that navigation before the
+      // metric is reported and reset below.
+      processEntries(po?.takeRecords() as INPMetric['entries']);
       updateINPMetric();
       report(true);
       initNewINPMetric(
@@ -150,29 +153,33 @@ export const onINP = (
       );
     };
 
+    const processEntries = (
+      entries: (PerformanceEventTiming | PerformanceSoftNavigation)[],
+    ) => {
+      // Only process entries, if at least some of them have interaction ids
+      // (otherwise run into lots of errors later for empty INP entries).
+      if (!entries.some((entry) => entry.interactionId)) return;
+      for (const entry of entries) {
+        if (entry.entryType === 'soft-navigation') {
+          handleSoftNavEntry(entry as PerformanceSoftNavigation);
+          continue;
+        }
+        interactionManager._processEntry(entry as PerformanceEventTiming);
+      }
+
+      updateINPMetric();
+    };
+
     const handleEntries = (
       entries: (PerformanceEventTiming | PerformanceSoftNavigation)[],
     ) => {
-      // Queue the `handleEntries()` callback in the next idle task.
+      // Queue the `processEntries()` call in the next idle task.
       // This is needed to increase the chances that all event entries that
       // occurred between the user interaction and the next paint
       // have been dispatched. Note: there is currently an experiment
       // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
       // 123+ that if rolled out fully may make this no longer necessary.
-      whenIdleOrHidden(() => {
-        // Only process entries, if at least some of them have interaction ids
-        // (otherwise run into lots of errors later for empty INP entries)
-        if (!entries.some((entry) => entry.interactionId)) return;
-        for (const entry of entries) {
-          if (entry.entryType === 'soft-navigation') {
-            handleSoftNavEntry(entry as PerformanceSoftNavigation);
-            continue;
-          }
-          interactionManager._processEntry(entry as PerformanceEventTiming);
-        }
-
-        updateINPMetric();
-      });
+      whenIdleOrHidden(() => processEntries(entries));
     };
 
     const types = ['event', 'first-input'] as (
