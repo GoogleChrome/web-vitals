@@ -51,15 +51,18 @@ export const onLCP = (
   onReport: (metric: LCPMetric) => void,
   opts: ReportOpts = {},
 ) => {
-  // As InteractionContentfulPaint entries used by soft navs can emit after
-  // LCP is finalized, we need a flag to know to ignore them.
-  let isFinalized = false;
   const softNavsEnabled = checkSoftNavsEnabled(opts);
 
   whenActivated(() => {
     let visibilityWatcher = getVisibilityWatcher();
     let metric = initMetric('LCP');
     let report: ReturnType<typeof bindReporter>;
+
+    const finalizedMetrics = new WeakSet<Metric>();
+    const isFinalized = (m: Metric) => finalizedMetrics.has(m);
+    const markFinalized = (m: Metric) => {
+      finalizedMetrics.add(m);
+    };
 
     const lcpEntryManager = initUnique(opts, LCPEntryManager);
 
@@ -72,7 +75,7 @@ export const onLCP = (
     ) => {
       metric = initMetric(
         'LCP',
-        0,
+        -1,
         interactionId,
         navigation,
         navigationId,
@@ -85,8 +88,6 @@ export const onLCP = (
         LCPThresholds,
         opts!.reportAllChanges,
       );
-      // Reset the finalized flag
-      isFinalized = false;
       // If it's a soft nav, then need to reset the visibilityWatcher
       if (navigation === 'soft-navigation') {
         visibilityWatcher = getVisibilityWatcher(true);
@@ -109,7 +110,10 @@ export const onLCP = (
         }
       }
 
-      if (!isFinalized) report(true);
+      if (!isFinalized(metric)) {
+        report(true);
+        markFinalized(metric);
+      }
       initNewLCPMetric(
         'soft-navigation',
         entry.interactionId,
@@ -151,6 +155,7 @@ export const onLCP = (
           handleSoftNavEntry(entry as PerformanceSoftNavigation);
           continue;
         }
+        if (isFinalized(metric)) continue;
 
         let value = 0;
         let entries: LargestContentfulPaint[] = [];
@@ -231,30 +236,39 @@ export const onLCP = (
         opts!.reportAllChanges,
       );
 
+      // Stop listening after input or visibilitychange.
+      // Note: while scrolling is an input that stops LCP observation, it's
+      // unreliable since it can be programmatically generated.
+      // See: https://github.com/GoogleChrome/web-vitals/issues/75
+      const finalizeEventTypes = ['keydown', 'click', 'visibilitychange'];
+
       const finalizeLCP = (event: Event) => {
-        if (event.isTrusted && !isFinalized) {
+        if (event.isTrusted && !isFinalized(metric)) {
+          const metricToFinalize = metric;
+          const reportToFinalize = report;
           // Wrap the listener in an idle callback so it's run in a separate
           // task to reduce potential INP impact.
           // https://github.com/GoogleChrome/web-vitals/issues/383
           whenIdleOrHidden(() => {
-            if (!isFinalized) {
+            if (!isFinalized(metricToFinalize)) {
               handleEntries(po!.takeRecords() as LCPMetric['entries']);
               if (!softNavsEnabled) {
                 po!.disconnect();
-                removeEventListener(event.type, finalizeLCP);
+                for (const type of finalizeEventTypes) {
+                  removeEventListener(type, finalizeLCP, {capture: true});
+                }
               }
-              isFinalized = true;
-              report(true);
+              markFinalized(metricToFinalize);
+              // If a soft navigation in the taken records already reported and
+              // finalized this metric, this forced report is a no-op: the value
+              // is unchanged, so the reporter's delta check skips the callback.
+              reportToFinalize(true);
             }
           });
         }
       };
 
-      // Stop listening after input or visibilitychange.
-      // Note: while scrolling is an input that stops LCP observation, it's
-      // unreliable since it can be programmatically generated.
-      // See: https://github.com/GoogleChrome/web-vitals/issues/75
-      for (const type of ['keydown', 'click', 'visibilitychange']) {
+      for (const type of finalizeEventTypes) {
         addEventListener(type, finalizeLCP, {
           capture: true,
         });
@@ -279,7 +293,7 @@ export const onLCP = (
 
         doubleRAF(() => {
           metric.value = performance.now() - event.timeStamp;
-          isFinalized = true;
+          markFinalized(metric);
           report(true);
         });
       });
