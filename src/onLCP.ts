@@ -172,9 +172,9 @@ export const onLCP = (
             continue;
           }
 
-          // The LCP entry is exposed either nested under
-          // `largestContentfulPaint` or directly via `renderTime`, depending
-          // on the implementation, so handle both.
+          // Older implementations expose the render time directly on the entry
+          // rather than nested under `largestContentfulPaint`.
+          // TODO: remove after the origin trial ends.
           const renderTime =
             ICPEntry.largestContentfulPaint?.renderTime ||
             ICPEntry.renderTime ||
