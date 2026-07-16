@@ -144,6 +144,7 @@ export const onLCP = (
 
         let value = 0;
         let metricEntries: LargestContentfulPaint[] = [];
+        let renderTime = entry.startTime;
         if (entry.entryType === 'largest-contentful-paint') {
           // The startTime attribute returns the value of the renderTime if it is
           // not 0, and the value of the loadTime otherwise. The activationStart
@@ -175,7 +176,7 @@ export const onLCP = (
           // Older implementations expose the render time directly on the entry
           // rather than nested under `largestContentfulPaint`.
           // TODO: remove after the origin trial ends.
-          const renderTime =
+          renderTime =
             ICPEntry.largestContentfulPaint?.renderTime ||
             ICPEntry.renderTime ||
             0;
@@ -190,13 +191,7 @@ export const onLCP = (
         }
 
         // Only report if the page wasn't hidden prior to LCP.
-        if (entry.startTime < visibilityWatcher.firstHiddenTime) {
-          // The startTime attribute returns the value of the renderTime if it is
-          // not 0, and the value of the loadTime otherwise. The activationStart
-          // reference is used because LCP should be relative to page activation
-          // rather than navigation start if the page was prerendered. But in cases
-          // where `activationStart` occurs after the LCP, this time should be
-          // clamped at 0.
+        if (renderTime < visibilityWatcher.firstHiddenTime) {
           metric.value = value;
           metric.entries = metricEntries;
           report();
