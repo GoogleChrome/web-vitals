@@ -221,7 +221,7 @@ export const onLCP = (
     if (softNavsEnabled) {
       types.push('interaction-contentful-paint', 'soft-navigation');
     }
-    const po = observe(types, handleEntries, opts);
+    const po = observe(types, handleEntries);
 
     if (po) {
       report = bindReporter(

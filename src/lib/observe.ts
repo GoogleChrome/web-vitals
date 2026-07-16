@@ -65,16 +65,7 @@ export const observe = <K extends keyof PerformanceEntryMap>(
       });
 
       for (const t of supportedTypes) {
-        po.observe(
-          Object.assign(
-            {
-              type: t,
-              buffered: true,
-              ...opts,
-            },
-            opts || {},
-          ) as PerformanceObserverInit,
-        );
+        po.observe({type: t, buffered: true, ...opts});
       }
       return po;
     }

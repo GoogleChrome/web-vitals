@@ -74,7 +74,7 @@ export const onFCP = (
       }
     };
 
-    const po = observe(['paint'], handleEntries, opts);
+    const po = observe(['paint'], handleEntries);
 
     if (po) {
       report = bindReporter(

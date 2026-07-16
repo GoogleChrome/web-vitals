@@ -130,7 +130,7 @@ export const onCLS = (
       if (checkSoftNavsEnabled(opts)) {
         types.push('soft-navigation');
       }
-      const po = observe(types, handleEntries, opts);
+      const po = observe(types, handleEntries);
       if (po) {
         report = bindReporter(
           onReport,
