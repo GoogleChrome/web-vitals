@@ -397,21 +397,12 @@ export const onINP = (
       // - Assume interactionTime of nav start time
       // - Assume nextPaintTime as interactionTime + length
       const attribution: INPAttribution = {
-        interactionTarget: '',
-        interactionType: 'pointer',
-        interactionTime: navStartTime,
-        nextPaintTime: navStartTime + metric.value,
         processedEventEntries: [],
         longAnimationFrameEntries: [],
         inputDelay: 0,
         processingDuration: 0,
         presentationDelay: metric.value,
         loadState: getLoadState(navStartTime),
-        longestScript: undefined,
-        totalScriptDuration: undefined,
-        totalStyleAndLayoutDuration: undefined,
-        totalPaintDuration: undefined,
-        totalUnattributedDuration: undefined,
       };
       return Object.assign(metric, {attribution});
     }
