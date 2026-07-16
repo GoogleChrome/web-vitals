@@ -50,31 +50,29 @@ export const observe = <K extends keyof PerformanceEntryMap>(
         // callback is invoked immediately, rather than in a separate task.
         // See: https://github.com/GoogleChrome/web-vitals/issues/277
         queueMicrotask(() => {
-          // sort entries to ensure they're in the right order
           const entries = list.getEntries();
-          // Best to sort by end time (startTime + duration)
+          // When observing more than one entry type, entries from different
+          // types can be delivered out of order, so sort by end time
+          // (startTime + duration) to ensure they're in the right order.
           // See: https://github.com/w3c/performance-timeline/issues/224
-          entries.sort((a, b) => {
-            const scoreA = a.startTime + a.duration;
-            const scoreB = b.startTime + b.duration;
+          if (supportedTypes.length > 1) {
+            entries.sort((a, b) => {
+              const scoreA = a.startTime + a.duration;
+              const scoreB = b.startTime + b.duration;
 
-            return scoreA - scoreB;
-          });
+              return scoreA - scoreB;
+            });
+          }
           callback(entries as Array<PerformanceEntryMap[K][number]>);
         });
       });
 
       for (const t of supportedTypes) {
-        po.observe(
-          Object.assign(
-            {
-              type: t,
-              buffered: true,
-              ...opts,
-            },
-            opts || {},
-          ) as PerformanceObserverInit,
-        );
+        po.observe({
+          type: t,
+          buffered: true,
+          ...opts,
+        } as PerformanceObserverInit);
       }
       return po;
     }

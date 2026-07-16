@@ -61,8 +61,6 @@ export const onTTFB = (
   onReport: (metric: TTFBMetric) => void,
   opts: ReportOpts = {},
 ) => {
-  // Set defaults
-  opts = opts || {};
   const softNavsEnabled = checkSoftNavsEnabled(opts);
 
   let metric = initMetric('TTFB');
