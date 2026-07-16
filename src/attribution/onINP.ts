@@ -293,12 +293,18 @@ export const onINP = (
   };
 
   const attributeLoAFDetails = (attribution: INPAttribution) => {
-    // If there is no LoAF data then nothing further to attribute
-    if (!attribution.longAnimationFrameEntries?.length) {
+    const interactionTime = attribution.interactionTime;
+    const nextPaintTime = attribution.nextPaintTime;
+
+    // If there is no LoAF data, interactionTime or paintTime
+    // then nothing further to attribute here.
+    if (
+      !attribution.longAnimationFrameEntries?.length ||
+      !interactionTime ||
+      !nextPaintTime
+    ) {
       return;
     }
-
-    const interactionTime = attribution.interactionTime;
     const inputDelay = attribution.inputDelay;
     const processingDuration = attribution.processingDuration;
 
@@ -361,7 +367,7 @@ export const onINP = (
       ? lastLoAF.startTime + lastLoAF.duration
       : 0;
     if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
-      totalPaintDuration = attribution.nextPaintTime - lastLoAFEndTime;
+      totalPaintDuration = nextPaintTime - lastLoAFEndTime;
     }
 
     if (longestScriptEntry && longestScriptSubpart) {
@@ -375,7 +381,7 @@ export const onINP = (
     attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
     attribution.totalPaintDuration = totalPaintDuration;
     attribution.totalUnattributedDuration =
-      attribution.nextPaintTime -
+      nextPaintTime -
       interactionTime -
       totalScriptDuration -
       totalStyleAndLayoutDuration -
