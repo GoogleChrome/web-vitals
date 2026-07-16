@@ -65,17 +65,17 @@ export const onLCP = (
 
     const initNewLCPMetric = (
       navigation?: Metric['navigationType'],
-      interactionId?: number,
       navigationId?: number,
+      navigationInteractionId?: number,
       navigationURL?: string,
       navigationStartTime?: number,
     ) => {
       metric = initMetric(
         'LCP',
         -1,
-        interactionId,
         navigation,
         navigationId,
+        navigationInteractionId,
         navigationURL,
         navigationStartTime,
       );
@@ -101,8 +101,8 @@ export const onLCP = (
       if (!isFinalized) report(true);
       initNewLCPMetric(
         'soft-navigation',
-        entry.interactionId,
         entry.navigationId,
+        entry.interactionId,
         entry.name,
         entry.startTime,
       );
@@ -168,7 +168,7 @@ export const onLCP = (
           // we should have already finalized)
           if (
             'interactionId' in ICPEntry &&
-            ICPEntry.interactionId != metric.interactionId
+            ICPEntry.interactionId != metric.navigationInteractionId
           ) {
             continue;
           }
@@ -263,8 +263,8 @@ export const onLCP = (
       onBFCacheRestore((event) => {
         initNewLCPMetric(
           'back-forward-cache',
-          metric.interactionId,
           metric.navigationId,
+          metric.navigationInteractionId,
           metric.navigationURL,
           getBFCacheRestoreTime(),
         );

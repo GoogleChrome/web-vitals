@@ -101,9 +101,9 @@ export const onINP = (
     const interactionManager = initUnique(opts, InteractionManager);
 
     const initNewINPMetric = (
-      interactionId?: number,
       navigationType?: Metric['navigationType'],
       navigationId?: number,
+      navigationInteractionId?: number,
       navigationURL?: string,
       navigationStartTime?: number,
     ) => {
@@ -111,9 +111,9 @@ export const onINP = (
       metric = initMetric(
         'INP',
         -1,
-        interactionId,
         navigationType,
         navigationId,
+        navigationInteractionId,
         navigationURL,
         navigationStartTime,
       );
@@ -141,9 +141,9 @@ export const onINP = (
       updateINPMetric();
       report(true);
       initNewINPMetric(
-        entry.interactionId,
         'soft-navigation',
         entry.navigationId,
+        entry.interactionId,
         entry.name,
         entry.startTime,
       );
@@ -208,9 +208,9 @@ export const onINP = (
       // successfully registered.
       onBFCacheRestore(() => {
         initNewINPMetric(
-          metric.interactionId,
           'back-forward-cache',
           metric.navigationId,
+          metric.navigationInteractionId,
           metric.navigationURL,
           getBFCacheRestoreTime(),
         );

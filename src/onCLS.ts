@@ -71,18 +71,18 @@ export const onCLS = (
       const layoutShiftManager = initUnique(opts, LayoutShiftManager);
 
       const initNewCLSMetric = (
-        interactionId?: number,
         navigationType?: Metric['navigationType'],
         navigationId?: number,
+        navigationInteractionId?: number,
         navigationURL?: string,
         navigationStartTime?: number,
       ) => {
         metric = initMetric(
           'CLS',
           0,
-          interactionId,
           navigationType,
           navigationId,
+          navigationInteractionId,
           navigationURL,
           navigationStartTime,
         );
@@ -98,9 +98,9 @@ export const onCLS = (
       const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
         report(true);
         initNewCLSMetric(
-          entry.interactionId,
           'soft-navigation',
           entry.navigationId,
+          entry.interactionId,
           entry.name,
           entry.startTime,
         );
@@ -150,9 +150,9 @@ export const onCLS = (
         // successfully registered.
         onBFCacheRestore(() => {
           initNewCLSMetric(
-            metric.interactionId,
             'back-forward-cache',
             metric.navigationId,
+            metric.navigationInteractionId,
             metric.navigationURL,
             getBFCacheRestoreTime(),
           );

@@ -55,11 +55,6 @@ export interface Metric {
   id: string;
 
   /**
-   * The interactionId that started this interaction for soft navigations
-   */
-  interactionId?: number;
-
-  /**
    * Any performance entries relevant to the metric value calculation.
    * The array may also be empty if the metric value was not based on any
    * entries (e.g. a CLS value of 0 given no layout shifts).
@@ -93,6 +88,11 @@ export interface Metric {
    * the metric may be reported for a previous URL.
    */
   navigationId: number;
+
+  /**
+   * The interactionId that started this interaction for soft navigations
+   */
+  navigationInteractionId?: number;
 
   /**
    * The navigation startTime the metric is based from. This is particularly

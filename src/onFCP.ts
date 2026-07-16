@@ -88,9 +88,9 @@ export const onFCP = (
         metric = initMetric(
           'FCP',
           -1,
-          metric.interactionId,
           'back-forward-cache',
           metric.navigationId,
+          metric.navigationInteractionId,
           metric.navigationURL,
           getBFCacheRestoreTime(),
         );
@@ -130,9 +130,9 @@ export const onFCP = (
           metric = initMetric(
             'FCP',
             FCPTime,
-            entry.interactionId,
             'soft-navigation',
             entry.navigationId,
+            entry.interactionId,
             entry.name,
             entry.startTime,
           );

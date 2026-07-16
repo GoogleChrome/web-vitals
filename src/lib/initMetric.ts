@@ -23,9 +23,9 @@ import {MetricType} from '../types.js';
 export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
   value: number = -1,
-  interactionId?: number,
   navigationType?: MetricType['navigationType'],
   navigationId: number = 0,
+  navigationInteractionId?: number,
   navigationURL?: string,
   navigationStartTime?: number,
 ) => {
@@ -63,7 +63,7 @@ export const initMetric = <MetricName extends MetricType['name']>(
     id: generateUniqueID(),
     navigationType: _navigationType,
     navigationId: navigationId || hardNavId,
-    interactionId: interactionId,
+    navigationInteractionId: navigationInteractionId,
     navigationURL: navigationURL || hardNavEntry?.name,
     navigationStartTime: navigationStartTime || 0,
   };

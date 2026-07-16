@@ -90,9 +90,9 @@ export const onTTFB = (
         metric = initMetric(
           'TTFB',
           0,
-          metric.interactionId,
           'back-forward-cache',
           metric.navigationId,
+          metric.navigationInteractionId,
           metric.navigationURL,
           getBFCacheRestoreTime(),
         );
@@ -114,9 +114,9 @@ export const onTTFB = (
               metric = initMetric(
                 'TTFB',
                 0,
-                entry.interactionId,
                 'soft-navigation',
                 entry.navigationId,
+                entry.interactionId,
                 entry.name,
                 entry.startTime,
               );
