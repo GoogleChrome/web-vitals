@@ -387,37 +387,33 @@ export const onINP = (
     // fall back on so we report dummy values when the interactionCount has
     // gone up, even if no entry was emitted.
     // See https://github.com/GoogleChrome/web-vitals/issues/724
-    if (
-      metric.entries.length === 0 &&
-      (metric.navigationType === 'soft-navigation' ||
-        metric.navigationType === 'back-forward-cache')
-    ) {
-      const navStartTime = metric.navigationStartTime;
-      if (navStartTime) {
-        // For simplicity make some assumptions for values we can't get
-        // to avoid undefined/null values which would be unexpected.
-        // - Assume interactionType as pointer as the most common
-        // - Assume interactionTime of nav start time
-        // - Assume nextPaintTime as interactionTime + length
-        const attribution: INPAttribution = {
-          interactionTarget: '',
-          interactionType: 'pointer',
-          interactionTime: navStartTime,
-          nextPaintTime: navStartTime + metric.value,
-          processedEventEntries: [],
-          longAnimationFrameEntries: [],
-          inputDelay: 0,
-          processingDuration: 0,
-          presentationDelay: metric.value,
-          loadState: getLoadState(navStartTime),
-          longestScript: undefined,
-          totalScriptDuration: undefined,
-          totalStyleAndLayoutDuration: undefined,
-          totalPaintDuration: undefined,
-          totalUnattributedDuration: undefined,
-        };
-        return Object.assign(metric, {attribution});
-      }
+    // All other INPs should have at least one entry, but we'll do same dummy
+    // processing if they don't for some reason.
+    if (metric.entries.length === 0) {
+      const navStartTime = metric.navigationStartTime || 0;
+      // For simplicity make some assumptions for values we can't get
+      // to avoid undefined/null values which would be unexpected.
+      // - Assume interactionType as pointer as the most common
+      // - Assume interactionTime of nav start time
+      // - Assume nextPaintTime as interactionTime + length
+      const attribution: INPAttribution = {
+        interactionTarget: '',
+        interactionType: 'pointer',
+        interactionTime: navStartTime,
+        nextPaintTime: navStartTime + metric.value,
+        processedEventEntries: [],
+        longAnimationFrameEntries: [],
+        inputDelay: 0,
+        processingDuration: 0,
+        presentationDelay: metric.value,
+        loadState: getLoadState(navStartTime),
+        longestScript: undefined,
+        totalScriptDuration: undefined,
+        totalStyleAndLayoutDuration: undefined,
+        totalPaintDuration: undefined,
+        totalUnattributedDuration: undefined,
+      };
+      return Object.assign(metric, {attribution});
     }
 
     const firstEntry = metric.entries[0];

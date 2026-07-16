@@ -138,7 +138,6 @@ export const onINP = (
     };
 
     const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
-      handleEntries(po?.takeRecords() as INPMetric['entries']);
       updateINPMetric();
       report(true);
       initNewINPMetric(
@@ -194,16 +193,11 @@ export const onINP = (
 
     if (po) {
       visibilityWatcher.onHidden(() => {
-        handleEntries(po.takeRecords() as INPMetric['entries']);
-        // For soft navigations and bfcache we may also need to report on hidden,
-        // even if there are no entries if the only interactions are < 16ms.
-        if (
-          metric.navigationType === 'soft-navigation' ||
-          metric.navigationType === 'back-forward-cache'
-        ) {
-          updateINPMetric();
-        }
-        report(true);
+        handleEntries(
+          po.takeRecords() as [
+            PerformanceEventTiming | PerformanceSoftNavigation,
+          ],
+        );
       });
 
       // Only report after a bfcache restore if the `PerformanceObserver`

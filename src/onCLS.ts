@@ -96,7 +96,6 @@ export const onCLS = (
       };
 
       const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
-        handleEntries(po?.takeRecords() as CLSMetric['entries']);
         report(true);
         initNewCLSMetric(
           entry.interactionId,
@@ -141,7 +140,9 @@ export const onCLS = (
         );
 
         visibilityWatcher.onHidden(() => {
-          handleEntries(po.takeRecords() as CLSMetric['entries']);
+          handleEntries(
+            po.takeRecords() as [LayoutShift | PerformanceSoftNavigation],
+          );
           report(true);
         });
 
