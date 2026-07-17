@@ -28,7 +28,7 @@
 
 ## Overview
 
-The `web-vitals` library is a tiny (~2K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/articles/vitals) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
+The `web-vitals` library is a tiny (~3K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/articles/vitals) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
 
 The library supports all of the [Core Web Vitals](https://web.dev/articles/vitals#core_web_vitals) as well as a number of other metrics that are useful in diagnosing [real-user](https://web.dev/articles/user-centric-performance-metrics) performance issues.
 
