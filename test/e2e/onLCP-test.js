@@ -752,6 +752,96 @@ describe('onLCP()', async function () {
     assert.match(softlcp1.navigationType, /soft-navigation/);
   });
 
+  it('reports hard nav LCP and 3 consecutive soft navs (reportAllChanges === false)', async function () {
+    if (!browserSupportsLCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/lcp?reportSoftNavs=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize hard nav LCP.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
+
+    // 1st soft nav is now active.
+    await clearBeacons();
+
+    // Click to finalize 1st soft nav and start 2nd soft nav.
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [softlcp1] = await getBeacons();
+    assert(softlcp1.value > 0);
+    assert.strictEqual(softlcp1.name, 'LCP');
+    assert.strictEqual(softlcp1.navigationType, 'soft-navigation');
+    assert.strictEqual(softlcp1.entries.length, 1);
+
+    await clearBeacons();
+
+    // Click to finalize 2nd soft nav and start 3rd soft nav.
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [softlcp2] = await getBeacons();
+    assert(softlcp2.value > 0);
+    assert.strictEqual(softlcp2.name, 'LCP');
+    assert.strictEqual(softlcp2.navigationType, 'soft-navigation');
+    assert.strictEqual(softlcp2.entries.length, 1);
+
+    await clearBeacons();
+
+    // Load a new page to trigger the hidden state, finalising the 3rd soft nav.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+    const [softlcp3] = await getBeacons();
+    assert(softlcp3.value > 0);
+    assert.strictEqual(softlcp3.name, 'LCP');
+    assert.strictEqual(softlcp3.navigationType, 'soft-navigation');
+    assert.strictEqual(softlcp3.entries.length, 1);
+  });
+
+  it('reports LCP on soft nav after a bfcache restore', async function () {
+    if (!browserSupportsLCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/lcp?reportSoftNavs=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    const h1 = await $('h1');
+    await h1.click();
+    await beaconCountIs(1);
+    assertStandardReportsAreCorrect(await getBeacons());
+    await clearBeacons();
+
+    // 1. Trigger a bfcache restore
+    await stubForwardBack();
+
+    await beaconCountIs(1);
+    const [lcp2] = await getBeacons();
+    assert.strictEqual(lcp2.navigationType, 'back-forward-cache');
+    await clearBeacons();
+
+    // 2. Trigger a soft navigation on the restored page
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // 3. Load a new page to trigger the hidden state, finalising the soft nav.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+    const [lcp3] = await getBeacons();
+
+    assert(lcp3.value > 0);
+    assert.strictEqual(lcp3.name, 'LCP');
+    assert.strictEqual(lcp3.navigationType, 'soft-navigation');
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsLCP) this.skip();

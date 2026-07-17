@@ -173,9 +173,7 @@ export const onINP = (
     };
 
     const types = ['event', 'first-input'] as (
-      | 'event'
-      | 'first-input'
-      | 'soft-navigation'
+      'event' | 'first-input' | 'soft-navigation'
     )[];
     if (checkSoftNavsEnabled(opts)) {
       types.push('soft-navigation');

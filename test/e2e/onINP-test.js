@@ -978,6 +978,70 @@ describe('onINP()', async function () {
     assert.strictEqual(softInp.navigationType, 'soft-navigation');
   });
 
+  it('reports INP on multiple consecutive soft navigations with varying latencies', async function () {
+    if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+    // Start with 150ms click blocking on hard nav
+    await navigateTo('/test/inp?reportSoftNavs=1&click=150');
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    await waitUntilIdle();
+
+    // Click on the soft nav button to start soft nav 1
+    // (finalizing hard nav INP).
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [inp] = await getBeacons();
+    assertIsCloseTo(inp.value, 150, 50);
+    assert.strictEqual(inp.navigationType, 'navigate');
+
+    await clearBeacons();
+
+    // 1. Soft Nav 1: Set blocking to 200ms
+    const clickBlockingInput = await $('#click-blocking-time');
+    await clickBlockingInput.setValue(200);
+
+    // Trigger an interaction on Soft Nav 1
+    await simulateUserLikeClick(h1);
+    await nextFrame();
+    await waitUntilIdle();
+
+    // Click on soft nav button to start soft nav 2 (finalizing Soft Nav 1 INP).
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [softInp1] = await getBeacons();
+    assertIsCloseTo(softInp1.value, 200, 50);
+    assert.strictEqual(softInp1.navigationType, 'soft-navigation');
+
+    await clearBeacons();
+
+    // 2. Soft Nav 2: Set blocking to 100ms
+    await clickBlockingInput.setValue(100);
+
+    // Trigger an interaction on Soft Nav 2
+    await simulateUserLikeClick(h1);
+    await nextFrame();
+    await waitUntilIdle();
+
+    // Finalize Soft Nav 2 by hiding the page (no click needed to transition).
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+    const [softInp2] = await getBeacons();
+    assertIsCloseTo(softInp2.value, 100, 50);
+    assert.strictEqual(softInp2.navigationType, 'soft-navigation');
+  });
+
   it('reports short <16m soft navs INPs (reportAllChanges === false)', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 

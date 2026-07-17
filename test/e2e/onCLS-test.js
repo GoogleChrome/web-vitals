@@ -1024,6 +1024,104 @@ describe('onCLS()', async function () {
     assert.match(softcls1.navigationType, /soft-navigation/);
   });
 
+  it('reports hard nav CLS and 3 consecutive soft navs (reportAllChanges === false)', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?reportSoftNavs=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize CLS for hard nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [cls] = await getBeacons();
+    assert(cls.value > 0);
+    assert.strictEqual(cls.navigationType, 'navigate');
+
+    await clearBeacons();
+
+    // Wait 600ms to clear the hadRecentInput window from the previous click!
+    await browser.pause(600);
+
+    // 1. Soft Nav 1: Trigger layout shift and then finalize.
+    await triggerLayoutShift();
+
+    // Click again to finalize soft nav 1 and start soft nav 2.
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [softcls1] = await getBeacons();
+    assert(softcls1.value > 0);
+    assert.strictEqual(softcls1.name, 'CLS');
+    assert.strictEqual(softcls1.navigationType, 'soft-navigation');
+    assert(softcls1.entries.length >= 1);
+
+    await clearBeacons();
+
+    // Wait 600ms to clear the hadRecentInput window from the previous click!
+    await browser.pause(600);
+
+    // 2. Soft Nav 2: Trigger layout shift and then finalize.
+    await triggerLayoutShift();
+
+    // Click again to finalize soft nav 2 and start soft nav 3.
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [softcls2] = await getBeacons();
+    assert(softcls2.value > 0);
+    assert.strictEqual(softcls2.name, 'CLS');
+    assert.strictEqual(softcls2.navigationType, 'soft-navigation');
+    assert(softcls2.entries.length >= 1);
+
+    await clearBeacons();
+
+    // 3. Soft Nav 3: Perform NO layout shifts (should report 0).
+    // Load a new page to trigger the hidden state, finalising soft nav 3.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+    const [softcls3] = await getBeacons();
+    assert.strictEqual(softcls3.value, 0); // No shifts after URL update
+    assert.strictEqual(softcls3.name, 'CLS');
+    assert.strictEqual(softcls3.navigationType, 'soft-navigation');
+  });
+
+  it('reports soft nav CLS even if layout shifts occur before URL update (reportAllChanges === false)', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?reportSoftNavs=1&delayURLupdate=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button. This will cause layout shifts immediately,
+    // but delay the URL update by 1000ms.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Wait for the URL update to finish (takes 1000ms).
+    await browser.pause(2000);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    // There should be 2 beacons: hard nav CLS (finalized by soft nav)
+    // and soft nav CLS (finalized by navigation to blank)
+    await beaconCountIs(2, {instance: 'All'});
+
+    const [cls, softcls] = await getBeacons({instance: 'All'});
+
+    assert(cls.value > 0);
+    assert.strictEqual(cls.navigationType, 'navigate');
+    // Shifts happened before soft nav URL updated, so attributed to hard nav
+    assert.strictEqual(softcls.value, 0);
+    assert.strictEqual(softcls.navigationType, 'soft-navigation');
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsCLS) this.skip();
