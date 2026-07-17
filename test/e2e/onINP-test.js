@@ -96,10 +96,7 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName !== 'Safari') {
-      assert.strictEqual(inp.rating, 'good');
-    }
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
@@ -125,12 +122,7 @@ describe('onINP()', async function () {
     // Give INP a chance to report
     await waitUntilIdle();
 
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
+    await browser.pause(1000);
 
     await stubVisibilityChange('hidden');
 
@@ -141,10 +133,7 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName !== 'Safari') {
-      assert.strictEqual(inp.rating, 'good');
-    }
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
@@ -167,10 +156,7 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName !== 'Safari') {
-      assert.strictEqual(inp.rating, 'good');
-    }
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
@@ -184,13 +170,6 @@ describe('onINP()', async function () {
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
-
     await navigateTo('about:blank', {readyState: 'interactive'});
 
     await beaconCountIs(1);
@@ -200,10 +179,7 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName !== 'Safari') {
-      assert.strictEqual(inp.rating, 'good');
-    }
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
@@ -219,13 +195,6 @@ describe('onINP()', async function () {
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
-
     await navigateTo('about:blank');
 
     await beaconCountIs(1);
@@ -235,10 +204,7 @@ describe('onINP()', async function () {
     assert(inp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName !== 'Safari') {
-      assert.strictEqual(inp.rating, 'good');
-    }
+    assert.strictEqual(inp.rating, 'good');
     assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
@@ -267,13 +233,6 @@ describe('onINP()', async function () {
     // Give INP a chance to report
     await waitUntilIdle();
 
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
-
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -296,13 +255,6 @@ describe('onINP()', async function () {
     // Give INP a chance to report
     await waitUntilIdle();
 
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
-
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -324,13 +276,6 @@ describe('onINP()', async function () {
 
     // Give INP a chance to report
     await waitUntilIdle();
-
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -366,13 +311,6 @@ describe('onINP()', async function () {
       count++;
       // Ensure the interaction completes.
       await nextFrame();
-    }
-
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
     }
 
     await beaconCountIs(3);
@@ -436,13 +374,6 @@ describe('onINP()', async function () {
     // Give INP a chance to report
     await waitUntilIdle();
 
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
-
     await stubForwardBack();
     await beaconCountIs(1);
 
@@ -454,12 +385,9 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
     assert.strictEqual(inp2.rating, 'good');
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName === 'Safari') {
-      assert(
-        containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
-      );
-    }
+    assert(
+      containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+    );
     assert(allEntriesPresentTogether(inp1.entries));
     assert(inp2.entries[0].startTime > inp1.entries[0].startTime);
     assert.strictEqual(inp2.navigationType, 'back-forward-cache');
@@ -477,13 +405,6 @@ describe('onINP()', async function () {
     // Give INP a chance to report
     await waitUntilIdle();
 
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
-
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -493,19 +414,12 @@ describe('onINP()', async function () {
     assert(inp1.id !== inp3.id);
     assert.strictEqual(inp3.name, 'INP');
     assert.strictEqual(inp3.value, inp3.delta);
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName !== 'Safari') {
-      assert.strictEqual(inp3.rating, 'needs-improvement');
-      assert(
-        containsEntry(
-          inp3.entries,
-          'pointerdown',
-          '[object HTMLButtonElement]',
-        ),
-      );
-      assert(allEntriesPresentTogether(inp3.entries));
-      assert(inp3.entries[0].startTime > inp2.entries[0].startTime);
-    }
+    assert.strictEqual(inp3.rating, 'needs-improvement');
+    assert(
+      containsEntry(inp3.entries, 'pointerdown', '[object HTMLButtonElement]'),
+    );
+    assert(allEntriesPresentTogether(inp3.entries));
+    assert(inp3.entries[0].startTime > inp2.entries[0].startTime);
     assert.strictEqual(inp3.navigationType, 'back-forward-cache');
   });
 
@@ -583,13 +497,6 @@ describe('onINP()', async function () {
     // Give INP a chance to report
     await waitUntilIdle();
 
-    // Safari doesn't emit an entry immediately when no paint
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    // So need to give it a moment to make sure the entry was emitted.
-    if (browser.capabilities.browserName === 'Safari') {
-      await browser.pause(1000);
-    }
-
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);
@@ -644,17 +551,10 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2_2.name, 'INP');
     assert.strictEqual(inp2_2.value, inp2_2.delta + inp2_1.delta);
     assert.strictEqual(inp2_2.delta, inp2_2.value - inp2_1.delta);
-    // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-    if (browser.capabilities.browserName !== 'Safari') {
-      assert.strictEqual(inp2_2.rating, 'needs-improvement');
-      assert(
-        containsEntry(
-          inp2_2.entries,
-          'keydown',
-          '[object HTMLTextAreaElement]',
-        ),
-      );
-    }
+    assert.strictEqual(inp2_2.rating, 'needs-improvement');
+    assert(
+      containsEntry(inp2_2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+    );
     assert(allEntriesValid(inp2_2.entries));
     assert.match(inp2_2.navigationType, /navigate|reload/);
 
@@ -1038,10 +938,7 @@ describe('onINP()', async function () {
       assert(inp1.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(inp1.name, 'INP');
       assert.strictEqual(inp1.value, inp1.delta);
-      // See Safari bug - https://bugs.webkit.org/show_bug.cgi?id=305251
-      if (browser.capabilities.browserName !== 'Safari') {
-        assert.strictEqual(inp1.rating, 'good');
-      }
+      assert.strictEqual(inp1.rating, 'good');
       assert(
         containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
       );
@@ -1102,8 +999,6 @@ describe('onINP()', async function () {
       assert.equal(inp2.attribution.loadState, 'loading');
     });
 
-    // TODO: remove this test once the following bug is fixed:
-    // https://bugs.chromium.org/p/chromium/issues/detail?id=1367329
     it('reports the interaction target from any entry where target is defined', async function () {
       if (!browserSupportsINP) this.skip();
 
