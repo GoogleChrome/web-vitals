@@ -72,12 +72,10 @@ export const onINP = (
   opts: INPReportOpts = {},
 ) => {
   // Return if the browser doesn't support all APIs needed to measure INP.
-  if (
-    !(
-      globalThis.PerformanceEventTiming &&
-      'interactionId' in PerformanceEventTiming.prototype
-    )
-  ) {
+  if (!(
+    globalThis.PerformanceEventTiming &&
+    'interactionId' in PerformanceEventTiming.prototype
+  )) {
     return;
   }
 

@@ -84,11 +84,7 @@ export interface Metric {
 
 /** The union of supported metric types. */
 export type MetricType =
-  | CLSMetric
-  | FCPMetric
-  | INPMetric
-  | LCPMetric
-  | TTFBMetric;
+  CLSMetric | FCPMetric | INPMetric | LCPMetric | TTFBMetric;
 
 /** The union of supported metric attribution types. */
 export type MetricWithAttribution =
@@ -146,7 +142,4 @@ export interface AttributionReportOpts extends ReportOpts {
  *   loading. This is equivalent to the corresponding `readyState` value.
  */
 export type LoadState =
-  | 'loading'
-  | 'dom-interactive'
-  | 'dom-content-loaded'
-  | 'complete';
+  'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';
