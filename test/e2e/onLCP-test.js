@@ -440,6 +440,7 @@ describe('onLCP()', async function () {
 
     await beaconCountIs(1);
     // Firefox sometimes sends a <p> and then <h1> beacon, so grab last one
+    // https://bugzilla.mozilla.org/show_bug.cgi?id=1977827
     await browser.pause(1000);
     let beacons = await getBeacons();
     const lcp = beacons.at(-1);
@@ -952,9 +953,6 @@ describe('onLCP()', async function () {
     it('handles image resources with incomplete timing data', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      // TODO - this whole test is flakey in Safari. Need to find out why.
-      if (browser.capabilities.browserName === 'Safari') this.skip();
-
       await navigateTo('/test/lcp?attribution=1');
 
       // Wait until all images are loaded and fully rendered.
@@ -1260,6 +1258,7 @@ const assertStandardReportsAreCorrect = (beacons) => {
 const assertFullReportsAreCorrect = (beacons) => {
   // Firefox sometimes sends <p>, then <h1>
   // so grab last two
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1977827
   assert(beacons.length >= 2);
   const lcp1 = beacons.at(-2);
   const lcp2 = beacons.at(-1);

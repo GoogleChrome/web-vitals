@@ -71,11 +71,6 @@ describe('onTTFB()', async function () {
     });
   });
   beforeEach(async function () {
-    // In Safari when navigating to 'about:blank' between tests the
-    // Navigation Timing data is consistently negative, so the tests fail.
-    if (browser.capabilities.browserName !== 'Safari') {
-      await navigateTo('about:blank');
-    }
     await clearBeacons();
   });
 
