@@ -161,6 +161,7 @@ describe('onLCP()', async function () {
 
       assert(beacons.length >= 1);
       const lcp2 = beacons.at(-1);
+
       assert(lcp2.value > 500); // Greater than the image load delay.
       assert(lcp2.id.match(/^v5-\d+-\d+$/));
       assert.strictEqual(lcp2.name, 'LCP');

@@ -65,7 +65,6 @@ describe('onTTFB()', async function () {
     });
   });
   beforeEach(async function () {
-    await navigateTo('about:blank');
     await clearBeacons();
   });
 
