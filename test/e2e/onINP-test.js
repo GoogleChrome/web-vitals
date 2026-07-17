@@ -122,8 +122,6 @@ describe('onINP()', async function () {
     // Give INP a chance to report
     await waitUntilIdle();
 
-    await browser.pause(1000);
-
     await stubVisibilityChange('hidden');
 
     await beaconCountIs(1);

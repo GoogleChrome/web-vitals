@@ -128,32 +128,47 @@ describe('onLCP()', async function () {
     // Wait until all images are loaded and fully rendered.
     await imagesPainted();
 
-    await beaconCountIs(2);
-    const beacons = await getBeacons();
-    // Firefox sometimes sends <p>, then <h1>
-    // so grab last two
-    // https://bugzilla.mozilla.org/show_bug.cgi?id=1977827
-    await browser.pause(500);
+    // Safari has an LCP buffer bug - https://bugs.webkit.org/show_bug.cgi?id=305256
+    if (browser.capabilities.browserName !== 'Safari') {
+      await beaconCountIs(2);
+      const beacons = await getBeacons();
+      // Firefox sometimes sends <p>, then <h1>
+      // so grab last two
+      await browser.pause(500);
 
-    assert(beacons.length >= 2);
-    const lcp1 = beacons.at(-2);
-    const lcp2 = beacons.at(-1);
+      assert(beacons.length >= 2);
+      const lcp1 = beacons.at(-2);
+      const lcp2 = beacons.at(-1);
 
-    assert(lcp1.value > 0);
-    assert(lcp1.id.match(/^v5-\d+-\d+$/));
-    assert.strictEqual(lcp1.name, 'LCP');
-    assert.strictEqual(lcp1.value, lcp1.delta);
-    assert.strictEqual(lcp1.rating, 'good');
-    assert.strictEqual(lcp1.entries.length, 1);
-    assert.strictEqual(lcp1.navigationType, 'navigate');
+      assert(lcp1.value > 0);
+      assert(lcp1.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(lcp1.name, 'LCP');
+      assert.strictEqual(lcp1.value, lcp1.delta);
+      assert.strictEqual(lcp1.rating, 'good');
+      assert.strictEqual(lcp1.entries.length, 1);
+      assert.strictEqual(lcp1.navigationType, 'navigate');
 
-    assert(lcp2.value > 500); // Greater than the image load delay.
-    assert(lcp2.id.match(/^v5-\d+-\d+$/));
-    assert.strictEqual(lcp2.name, 'LCP');
-    assert(lcp2.value > lcp2.delta);
-    assert.strictEqual(lcp2.rating, 'good');
-    assert.strictEqual(lcp2.entries.length, 1);
-    assert.strictEqual(lcp2.navigationType, 'navigate');
+      assert(lcp2.value > 500); // Greater than the image load delay.
+      assert(lcp2.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(lcp2.name, 'LCP');
+      assert(lcp2.value > lcp2.delta);
+      assert.strictEqual(lcp2.rating, 'good');
+      assert.strictEqual(lcp2.entries.length, 1);
+      assert.strictEqual(lcp2.navigationType, 'navigate');
+    } else {
+      await beaconCountIs(1);
+      const beacons = await getBeacons();
+
+      assert(beacons.length >= 1);
+      const lcp2 = beacons.at(-1);
+      assert(lcp2.value > 500); // Greater than the image load delay.
+      assert(lcp2.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(lcp2.name, 'LCP');
+      // assert(lcp2.value > lcp2.delta);
+      assert.strictEqual(lcp2.rating, 'good');
+      assert.strictEqual(lcp2.entries.length, 1);
+      assert.strictEqual(lcp2.navigationType, 'navigate');
+    }
   });
 
   it('accounts for time prerendering the page', async function () {
