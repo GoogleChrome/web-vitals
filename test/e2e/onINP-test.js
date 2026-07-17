@@ -750,6 +750,128 @@ describe('onINP()', async function () {
       assert.equal(inp1.attribution.interactionType, 'pointer');
       assert.equal(inp1.attribution.interactionTime, inp1.entries[0].startTime);
       assert.equal(inp1.attribution.loadState, 'complete');
+
+      // Assert that the reported `nextPaintTime` estimate is not more than 8ms
+      // different from `startTime+duration` in the Event Timing API.
+      assert(
+        inp1.attribution.nextPaintTime -
+          (inp1.entries[0].startTime + inp1.entries[0].duration) <=
+          8,
+      );
+      // Assert that `nextPaintTime` is after processing ends.
+      assert(
+        inp1.attribution.nextPaintTime >=
+          inp1.attribution.interactionTime +
+            (inp1.attribution.inputDelay + inp1.attribution.processingDuration),
+      );
+      // Assert that the INP subpart durations adds up to the total duration
+      // with a tolerance of 1 for rounding error issues
+      assertIsCloseTo(
+        inp1.attribution.nextPaintTime - inp1.attribution.interactionTime,
+        inp1.attribution.inputDelay +
+          inp1.attribution.processingDuration +
+          inp1.attribution.presentationDelay,
+        1,
+      );
+
+      await clearBeacons();
+
+      await stubVisibilityChange('visible');
+      await setBlockingTime('keydown', 300);
+
+      const textarea = await $('#textarea');
+      await textarea.click();
+      await browser.keys(['x']);
+
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
+      await stubVisibilityChange('hidden');
+      await beaconCountIs(1);
+
+      const [inp2] = await getBeacons();
+
+      assert(inp2.value >= 300 - ROUNDING_ERROR);
+      assert(inp2.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp2.name, 'INP');
+      assert.strictEqual(inp2.value, inp1.value + inp2.delta);
+      assert.strictEqual(inp2.rating, 'needs-improvement');
+      assert(allEntriesPresentTogether(inp2.entries));
+      assert.match(inp2.navigationType, /navigate|reload/);
+
+      assert.equal(inp2.attribution.interactionTarget, '#textarea');
+      assert.equal(inp2.attribution.interactionType, 'keyboard');
+      assert.equal(inp2.attribution.interactionTime, inp2.entries[0].startTime);
+      assert.equal(inp2.attribution.loadState, 'complete');
+
+      // Assert that the reported `nextPaintTime` estimate is not more than 8ms
+      // different from `startTime+duration` in the Event Timing API.
+      assert(
+        inp2.attribution.nextPaintTime -
+          (inp2.entries[0].startTime + inp2.entries[0].duration) <=
+          8,
+      );
+      // Assert that `nextPaintTime` is after processing ends.
+      assert(
+        inp2.attribution.nextPaintTime >=
+          inp2.attribution.interactionTime +
+            (inp2.attribution.inputDelay + inp2.attribution.processingDuration),
+      );
+      // Assert that the INP subpart durations adds up to the total duration.
+      assert.equal(
+        inp2.attribution.nextPaintTime - inp2.attribution.interactionTime,
+        inp2.attribution.inputDelay +
+          inp2.attribution.processingDuration +
+          inp2.attribution.presentationDelay,
+      );
+    });
+
+    it('attribution data matches processedEventEntries', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo(
+        '/test/inp?click=100&attribution=1&includeProcessedEventEntries=true',
+        {
+          readyState: 'complete',
+        },
+      );
+
+      // Wait until the library is loaded and the first paint occurs to ensure
+      // The 40ms event duration is set
+      await webVitalsLoaded();
+      await firstContentfulPaint();
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp1] = await getBeacons();
+
+      assert(inp1.value >= 100 - ROUNDING_ERROR);
+      assert(inp1.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp1.name, 'INP');
+      assert.strictEqual(inp1.value, inp1.delta);
+      assert.strictEqual(inp1.rating, 'good');
+      assert(
+        containsEntry(inp1.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+      assert(allEntriesPresentTogether(inp1.entries));
+      assert.match(inp1.navigationType, /navigate|reload/);
+
+      assert.equal(inp1.attribution.interactionTarget, 'html>body>main>h1');
+      assert.equal(inp1.attribution.interactionType, 'pointer');
+      assert.equal(inp1.attribution.interactionTime, inp1.entries[0].startTime);
+      assert.equal(inp1.attribution.loadState, 'complete');
       assert(allEntriesPresentTogether(inp1.attribution.processedEventEntries));
 
       // Assert that the reported `nextPaintTime` estimate is not more than 8ms
@@ -899,6 +1021,35 @@ describe('onINP()', async function () {
           readyState: 'complete',
         },
       );
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp] = await getBeacons();
+
+      assert(inp.value >= 0);
+      assert(inp.id.match(/^v5-\d+-\d+$/));
+      assert.strictEqual(inp.name, 'INP');
+      assert.strictEqual(inp.value, inp.delta);
+      assert(allEntriesPresentTogether(inp.entries));
+      assert.equal(inp.attribution.processedEventEntries.length, 0);
+    });
+
+    it('processedEventEntries is disabled by default', async function () {
+      if (!browserSupportsINP) this.skip();
+
+      await navigateTo('/test/inp?click=100&attribution=1', {
+        readyState: 'complete',
+      });
 
       const h1 = await $('h1');
       await simulateUserLikeClick(h1);

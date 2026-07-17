@@ -812,7 +812,7 @@ In the [attribution build](#attribution-build) each of the metric functions has 
    onLCP(sendToAnalytics, {generateTarget: customGenerateTarget});
    ```
 
-3. The `onINP` `AttributionReportOpts` supports an additional, optional, `includeProcessedEventEntries` configuration option. When set to `false`, the `event` performance entries will not be included in the `attribution` object to conserve memory if these entries are not needed. The default value is `true`.
+3. The `onINP` `AttributionReportOpts` supports an additional, optional, `includeProcessedEventEntries` configuration option. When set to `true`, _all_ the `event` performance entries processed during the INP duration will be included in the `attribution.processedEventEntries` object. This can include a lot of events and increased memory on very interactive or event-heavy pages. The default value is `false`. Regardless of this setting, the `entries` object will include the entries with an `interactionId` (which are the entries relevant for INP), but use this setting to include all entries (whether they have an `interactionId` or not) in `attribution.processedEventEntries` if you need more attribution information to identify delays to INP events.
 
 ```ts
 interface INPAttributionReportOpts extends AttributionReportOpts {
@@ -937,8 +937,8 @@ interface INPAttribution {
   /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
-   * This array can be quite large so it will be empty if the
-   * `includeProcessedEventEntries` configuration option is set to `false` to
+   * This array can be quite large so it will be empty unless the
+   * `includeProcessedEventEntries` configuration option is set to `true` to
    * conserve memory if these entries are not required.
    */
   processedEventEntries: PerformanceEventTiming[];
