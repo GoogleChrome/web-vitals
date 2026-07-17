@@ -17,11 +17,14 @@
 import {getLoadState} from '../lib/getLoadState.js';
 import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
-import {InteractionManager, Interaction} from '../lib/InteractionManager.js';
+import {
+  InteractionManager,
+  type Interaction,
+} from '../lib/InteractionManager.js';
 import {observe} from '../lib/observe.js';
 import {whenIdleOrHidden} from '../lib/whenIdleOrHidden.js';
 import {onINP as unattributedOnINP} from '../onINP.js';
-import {
+import type {
   INPAttribution,
   INPAttributionReportOpts,
   INPMetric,

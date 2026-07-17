@@ -15,7 +15,7 @@
  */
 
 import {onTTFB as unattributedOnTTFB} from '../onTTFB.js';
-import {
+import type {
   TTFBMetric,
   TTFBMetricWithAttribution,
   AttributionReportOpts,

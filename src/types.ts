@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-export * from './types/base.js';
+export type * from './types/base.js';
 
-export * from './types/cls.js';
-export * from './types/fcp.js';
-export * from './types/inp.js';
-export * from './types/lcp.js';
-export * from './types/ttfb.js';
+export type * from './types/cls.js';
+export type * from './types/fcp.js';
+export type * from './types/inp.js';
+export type * from './types/lcp.js';
+export type * from './types/ttfb.js';
 
 // --------------------------------------------------------------------------
 // Everything below is modifications to built-in modules.

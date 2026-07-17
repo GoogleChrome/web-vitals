@@ -26,7 +26,7 @@ import {whenActivated} from './lib/whenActivated.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
-import {
+import type {
   INPMetric,
   Metric,
   MetricRatingThresholds,

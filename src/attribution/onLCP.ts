@@ -20,7 +20,7 @@ import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
 import {checkSoftNavsEnabled} from '../lib/softNavs.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
-import {
+import type {
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,

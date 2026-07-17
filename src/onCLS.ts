@@ -25,7 +25,7 @@ import {observe} from './lib/observe.js';
 import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
-import {
+import type {
   CLSMetric,
   Metric,
   MetricRatingThresholds,

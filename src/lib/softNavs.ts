@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import {ReportOpts} from '../types.js';
+import type {ReportOpts} from '../types.js';
 
 export const checkSoftNavsEnabled = (opts?: ReportOpts) => {
   return (

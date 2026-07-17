@@ -21,7 +21,7 @@ import {initUnique} from '../lib/initUnique.js';
 import {FCPEntryManager} from '../lib/FCPEntryManager.js';
 import {checkSoftNavsEnabled} from '../lib/softNavs.js';
 import {onFCP as unattributedOnFCP} from '../onFCP.js';
-import {
+import type {
   FCPAttribution,
   FCPMetric,
   FCPMetricWithAttribution,

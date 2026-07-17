@@ -22,7 +22,7 @@ import {initMetric} from './lib/initMetric.js';
 import {observe} from './lib/observe.js';
 import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {whenActivated} from './lib/whenActivated.js';
-import {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
+import type {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
 
 /** Thresholds for TTFB. See https://web.dev/articles/ttfb#what_is_a_good_ttfb_score */
 export const TTFBThresholds: MetricRatingThresholds = [800, 1800];

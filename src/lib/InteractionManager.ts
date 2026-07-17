@@ -15,7 +15,7 @@
  */
 
 import {getInteractionCount} from './polyfills/interactionCountPolyfill.js';
-import {Metric} from '../types.js';
+import type {Metric} from '../types.js';
 
 export interface Interaction {
   _latency: number;
