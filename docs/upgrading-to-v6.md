@@ -1,6 +1,6 @@
 # Upgrading to v6
 
-This document lists the full set of changes between version 5 and version 6 that are relevant to anyone wanting to upgrade to the new version. This document groups changes into "breaking changes", "new features", and "deprecations" across both the "standard" and "attribution" builds (see [build options](../#build-options) for details).
+This document lists the full set of changes between version 5 and version 6 that are relevant to anyone wanting to upgrade to the new version. This document groups changes into "breaking changes", "new features", and "deprecations" across both the "standard" and "attribution" builds (see [build options](../README.md#build-options) for details).
 
 ## ❌ Breaking changes
 

@@ -1,6 +1,6 @@
 # Upgrading to v4
 
-This document lists the full set of changes between version 3 and version 4 that are relevant to anyone wanting to upgrade to the new version. This document groups changes into "breaking changes", "new features", and "deprecations" across both the "standard" and "attribution" builds (see [build options](../#build-options) for details).
+This document lists the full set of changes between version 3 and version 4 that are relevant to anyone wanting to upgrade to the new version. This document groups changes into "breaking changes", "new features", and "deprecations" across both the "standard" and "attribution" builds (see [build options](../README.md#build-options) for details).
 
 ## ❌ Breaking changes
 
