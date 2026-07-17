@@ -30,7 +30,7 @@ const ROUNDING_ERROR = 8;
 
 describe('onINP()', async function () {
   // Retry all tests in this suite up to 2 times.
-  this.retries(0);
+  this.retries(2);
 
   let browserSupportsINP;
   let browserSupportsLoAF;
@@ -365,6 +365,11 @@ describe('onINP()', async function () {
     const textarea = await $('#textarea');
     await textarea.click();
 
+    // Ensure the button click is not in same frame
+    // as the next key presses.
+    await nextFrame();
+    await waitUntilIdle();
+
     await browser.keys(['a', 'b', 'c']);
 
     // Ensure the interaction completes.
@@ -383,15 +388,16 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
     assert.strictEqual(inp2.rating, 'good');
-    console.log(inp2.entries);
-    assert(
-      containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
-    );
+    // Entry name can be keydown or keyup or keypress depending which frame
+    // is processed to just use key (the containsEntry does an `includes` so
+    // supports this).
+    assert(containsEntry(inp2.entries, 'key', '[object HTMLTextAreaElement]'));
     assert(allEntriesPresentTogether(inp1.entries));
     assert(inp2.entries[0].startTime > inp1.entries[0].startTime);
     assert.strictEqual(inp2.navigationType, 'back-forward-cache');
 
     await stubForwardBack();
+    await clearBeacons();
 
     await setBlockingTime('keydown', 0);
     await setBlockingTime('pointerdown', 300);
@@ -551,8 +557,11 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2_2.value, inp2_2.delta + inp2_1.delta);
     assert.strictEqual(inp2_2.delta, inp2_2.value - inp2_1.delta);
     assert.strictEqual(inp2_2.rating, 'needs-improvement');
+    // Entry name can be keydown or keyup or keypress depending which frame
+    // is processed to just use key (the containsEntry does an `includes` so
+    // supports this).
     assert(
-      containsEntry(inp2_2.entries, 'keydown', '[object HTMLTextAreaElement]'),
+      containsEntry(inp2_2.entries, 'key', '[object HTMLTextAreaElement]'),
     );
     assert(allEntriesValid(inp2_2.entries));
     assert.match(inp2_2.navigationType, /navigate|reload/);
@@ -709,6 +718,12 @@ describe('onINP()', async function () {
 
       const textarea = await $('#textarea');
       await textarea.click();
+
+      // Ensure the button click is not in same frame
+      // as the next key presses.
+      await nextFrame();
+      await waitUntilIdle();
+
       await browser.keys(['x']);
 
       // Ensure the interaction completes.
@@ -734,10 +749,13 @@ describe('onINP()', async function () {
       assert.equal(inp2.attribution.interactionTime, inp2.entries[0].startTime);
       assert.equal(inp2.attribution.loadState, 'complete');
       assert(allEntriesPresentTogether(inp2.attribution.processedEventEntries));
+      // Entry name can be keydown or keyup or keypress depending which frame
+      // is processed to just use key (the containsEntry does an `includes` so
+      // supports this).
       assert(
         containsEntry(
           inp2.attribution.processedEventEntries,
-          'keydown',
+          'key',
           '[object HTMLTextAreaElement]',
         ),
       );
@@ -1107,7 +1125,9 @@ describe('onINP()', async function () {
 });
 
 const containsEntry = (entries, name, target) => {
-  return entries.findIndex((e) => e.name === name && e.target === target) > -1;
+  return (
+    entries.findIndex((e) => e.name.includes(name) && e.target === target) > -1
+  );
 };
 
 const allEntriesValid = (entries) => {
