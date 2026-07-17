@@ -779,10 +779,7 @@ The `LoadState` type is used in several of the metric [attribution objects](#att
  *   loading. This is equivalent to the corresponding `readyState` value.
  */
 type LoadState =
-  | 'loading'
-  | 'dom-interactive'
-  | 'dom-content-loaded'
-  | 'complete';
+  'loading' | 'dom-interactive' | 'dom-content-loaded' | 'complete';
 ```
 
 ### Functions:
