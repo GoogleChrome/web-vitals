@@ -18,7 +18,7 @@ import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {onBFCacheRestore} from './lib/bfcache.js';
 import {getNavigationEntry} from './lib/getNavigationEntry.js';
-import {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
+import type {MetricRatingThresholds, ReportOpts, TTFBMetric} from './types.js';
 import {getActivationStart} from './lib/getActivationStart.js';
 import {whenActivated} from './lib/whenActivated.js';
 

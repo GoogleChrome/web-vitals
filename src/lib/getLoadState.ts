@@ -15,7 +15,7 @@
  */
 
 import {getNavigationEntry} from './getNavigationEntry.js';
-import {LoadState} from '../types.js';
+import type {LoadState} from '../types.js';
 
 export const getLoadState = (timestamp: number): LoadState => {
   if (document.readyState === 'loading') {
