@@ -1,5 +1,18 @@
 # Changelog
 
+### v6.0.0 (2026-07-20)
+
+- Cap RequestIdleCallback to 1 second to ensure metrics report even when busy
+  ([#755](https://github.com/GoogleChrome/web-vitals/pull/755))
+- Remove unneeded modules with tsconfig `verbatimModuleSyntax`
+  ([#741](https://github.com/GoogleChrome/web-vitals/pull/741))
+- Flip default for `includeProcessedEventEntries` to false for v6
+  ([#763](https://github.com/GoogleChrome/web-vitals/pull/763))
+- Add Soft Navigation support
+  ([#308](https://github.com/GoogleChrome/web-vitals/pull/308))
+- Add bfcache support for reporting small INP interactions
+  (part of [#308](https://github.com/GoogleChrome/web-vitals/pull/308))
+
 ### v5.3.0 (2026-05-28)
 
 - Remove `getFirstHiddenTimePolyfill`
