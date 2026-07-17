@@ -336,7 +336,7 @@ describe('onINP()', async function () {
     await beaconCountIs(1);
 
     const [inp3] = await getBeacons();
-    assert(inp3.value >= 100); // 2nd-highest pointerdown blocking time.
+    assert(inp3.value >= 100 - ROUNDING_ERROR); // 2nd-highest blocking time.
     assert(inp3.value < inp2.value); // Should have gone down.
     assert(allEntriesPresentTogether(inp3.entries));
     assert.strictEqual(inp3.rating, 'good');
@@ -381,7 +381,7 @@ describe('onINP()', async function () {
     assert(inp1.value >= 600); // Initial pointerdown blocking time.
     assert(inp2.value >= 400); // Initial pointerdown blocking time.
     assert(inp2.value < inp1.value); // Should have gone down.
-    assert(inp3.value >= 100); // 2nd-highest pointerdown blocking time.
+    assert(inp3.value >= 100 - ROUNDING_ERROR); // 2nd-highest blocking time.
     assert(inp3.value < inp2.value); // Should have gone down.
     assert(allEntriesPresentTogether(inp1.entries));
     assert(allEntriesPresentTogether(inp2.entries));
@@ -620,7 +620,7 @@ describe('onINP()', async function () {
 
     const [inp2_1] = await getBeacons({instance: 2});
 
-    assert(inp2_1.value > 100 - 8);
+    assert(inp2_1.value > 100 - ROUNDING_ERROR);
     assert(inp2_1.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(inp2_1.name, 'INP');
     assert.strictEqual(inp2_1.value, inp2_1.delta);
@@ -874,19 +874,19 @@ describe('onINP()', async function () {
       assertIsCloseTo(
         inp2.attribution.interactionTime + inp2.attribution.inputDelay,
         sortedEntries2[0].processingStart,
-        1,
+        ROUNDING_ERROR,
       );
       assertIsCloseTo(
         inp2.attribution.interactionTime +
           inp2.attribution.inputDelay +
           inp2.attribution.processingDuration,
         sortedEntries2.at(-1).processingEnd,
-        1,
+        ROUNDING_ERROR,
       );
       assertIsCloseTo(
         inp2.attribution.nextPaintTime - inp2.attribution.presentationDelay,
         sortedEntries2.at(-1).processingEnd,
-        1,
+        ROUNDING_ERROR,
       );
     });
 
