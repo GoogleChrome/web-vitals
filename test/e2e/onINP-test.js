@@ -30,7 +30,7 @@ const ROUNDING_ERROR = 8;
 
 describe('onINP()', async function () {
   // Retry all tests in this suite up to 2 times.
-  this.retries(2);
+  this.retries(0);
 
   let browserSupportsINP;
   let browserSupportsLoAF;
@@ -383,6 +383,7 @@ describe('onINP()', async function () {
     assert.strictEqual(inp2.name, 'INP');
     assert.strictEqual(inp2.value, inp2.delta);
     assert.strictEqual(inp2.rating, 'good');
+    console.log(inp2.entries);
     assert(
       containsEntry(inp2.entries, 'keydown', '[object HTMLTextAreaElement]'),
     );
