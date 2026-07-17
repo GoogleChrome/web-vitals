@@ -210,7 +210,7 @@ In other cases, a metric callback may be called more than once:
 - All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/articles/bfcache).
 
 > [!WARNING]
-> Do not call any of the Web Vitals functions (e.g. `onCLS()`, `onINP()`, `onLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak.
+> Avoid calling the Web Vitals functions (e.g. `onCLS()`, `onINP()`, `onLCP()`) repeatedly per page load without a good reason. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result increased memory overhead.
 
 ### Report the value on every change
 
