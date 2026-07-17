@@ -437,7 +437,7 @@ describe('onINP()', async function () {
   it('reports short <16m bfcache INPs (reportAllChanges === false)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?click=5');
+    await navigateTo('/test/inp?click=8');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -488,7 +488,7 @@ describe('onINP()', async function () {
   it('reports short <16m bfcache INPs (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?reportSoftNavs=1&click=5&reportAllChanges=1');
+    await navigateTo('/test/inp?reportSoftNavs=1&click=8&reportAllChanges=1');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -953,7 +953,7 @@ describe('onINP()', async function () {
   it('reports short <16m soft navs INPs (reportAllChanges === false)', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo('/test/inp?reportSoftNavs=1&click=5');
+    await navigateTo('/test/inp?reportSoftNavs=1&click=8');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -1006,7 +1006,7 @@ describe('onINP()', async function () {
   it('reports short <16m soft navs INPs (reportAllChanges === true)', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo('/test/inp?reportSoftNavs=1&click=5&reportAllChanges=1');
+    await navigateTo('/test/inp?reportSoftNavs=1&click=8&reportAllChanges=1');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
