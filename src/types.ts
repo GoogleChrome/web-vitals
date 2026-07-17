@@ -99,11 +99,7 @@ declare global {
 
   // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
   export type ScriptWindowAttribution =
-    | 'self'
-    | 'descendant'
-    | 'ancestor'
-    | 'same-page'
-    | 'other';
+    'self' | 'descendant' | 'ancestor' | 'same-page' | 'other';
 
   // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
   interface PerformanceScriptTiming extends PerformanceEntry {
