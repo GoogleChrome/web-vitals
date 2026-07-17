@@ -8,7 +8,7 @@ This document lists the full set of changes between version 5 and version 6 that
 
 #### General
 
-- **Changed** Types are now exported as explicit types, which may require the addition of the `type` keyword for those explicitly importing the types from this library ([#741](https://github.com/GoogleChrome/web-vitals/pull/741))
+- **Changed** Types are now exported as explicit types, which may require the use of `import type` metrics (for example `import type {Metrics} from web-vitals`) for those explicitly importing the types from this library. Not this does not include the functions like `onLCP`. ([#741](https://github.com/GoogleChrome/web-vitals/pull/741))
 - **Changed** Cap `requestIdleCallback` to 1 second to ensure metrics report even when busy. This may result in metrics being reported more often with the `reportAllChanges` option for very busy pages, when previously they were not reported ([#755](https://github.com/GoogleChrome/web-vitals/pull/755))
 
 ### Attribution build
