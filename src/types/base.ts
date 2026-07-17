@@ -90,7 +90,8 @@ export interface Metric {
   navigationId: number;
 
   /**
-   * The interactionId that started this interaction for soft navigations
+   * For metrics specific to a soft navigation, the interactionId of the
+   * interaction that triggered that soft navigation.
    */
   navigationInteractionId?: number;
 
