@@ -76,7 +76,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -94,7 +94,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -112,7 +112,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 1000);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'needs-improvement');
@@ -197,7 +197,7 @@ describe('onTTFB()', async function () {
     assert(ttfb1.value >= 0);
     assert(ttfb1.value >= ttfb1.entries[0].requestStart);
     assert(ttfb1.value <= ttfb1.entries[0].loadEventEnd);
-    assert(ttfb1.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb1.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb1.name, 'TTFB');
     assert.strictEqual(ttfb1.rating, 'good');
     assert.strictEqual(ttfb1.value, ttfb1.delta);
@@ -211,7 +211,7 @@ describe('onTTFB()', async function () {
 
     const ttfb2 = await getTTFBBeacon();
 
-    assert(ttfb2.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb2.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb2.value, 0);
     assert.strictEqual(ttfb2.name, 'TTFB');
     assert.strictEqual(ttfb2.value, ttfb2.delta);
@@ -252,7 +252,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -274,7 +274,7 @@ describe('onTTFB()', async function () {
     assert(ttfb1.value >= 0);
     assert(ttfb1.value >= ttfb1.entries[0].requestStart);
     assert(ttfb1.value <= ttfb1.entries[0].loadEventEnd);
-    assert(ttfb1.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb1.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb1.name, 'TTFB');
     assert.strictEqual(ttfb1.value, ttfb1.delta);
     assert.strictEqual(ttfb1.rating, 'good');
@@ -282,7 +282,7 @@ describe('onTTFB()', async function () {
     assert.strictEqual(ttfb1.entries.length, 1);
     assertValidEntry(ttfb1.entries[0]);
 
-    assert(ttfb2.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb2.id.match(/^v6-\d+-\d+$/));
     assert(ttfb2.id !== ttfb1.id);
     assert.strictEqual(ttfb2.value, ttfb1.value);
     assert.strictEqual(ttfb2.delta, ttfb1.delta);
@@ -301,7 +301,7 @@ describe('onTTFB()', async function () {
       assert(ttfb.value >= 0);
       assert(ttfb.value >= ttfb.entries[0].requestStart);
       assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-      assert(ttfb.id.match(/^v5-\d+-\d+$/));
+      assert(ttfb.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
       assert.strictEqual(ttfb.rating, 'good');
@@ -416,7 +416,7 @@ describe('onTTFB()', async function () {
       const ttfb = await getTTFBBeacon();
 
       assert(ttfb.value >= 0);
-      assert(ttfb.id.match(/^v5-\d+-\d+$/));
+      assert(ttfb.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(ttfb.name, 'TTFB');
       assert.strictEqual(ttfb.value, ttfb.delta);
       assert.strictEqual(ttfb.rating, 'good');

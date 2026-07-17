@@ -141,7 +141,7 @@ describe('onLCP()', async function () {
       const lcp2 = beacons.at(-1);
 
       assert(lcp1.value > 0);
-      assert(lcp1.id.match(/^v5-\d+-\d+$/));
+      assert(lcp1.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(lcp1.name, 'LCP');
       assert.strictEqual(lcp1.value, lcp1.delta);
       assert.strictEqual(lcp1.rating, 'good');
@@ -149,7 +149,7 @@ describe('onLCP()', async function () {
       assert.strictEqual(lcp1.navigationType, 'navigate');
 
       assert(lcp2.value > 500); // Greater than the image load delay.
-      assert(lcp2.id.match(/^v5-\d+-\d+$/));
+      assert(lcp2.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(lcp2.name, 'LCP');
       assert(lcp2.value > lcp2.delta);
       assert.strictEqual(lcp2.rating, 'good');
@@ -163,7 +163,7 @@ describe('onLCP()', async function () {
       const lcp2 = beacons.at(-1);
 
       assert(lcp2.value > 500); // Greater than the image load delay.
-      assert(lcp2.id.match(/^v5-\d+-\d+$/));
+      assert(lcp2.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(lcp2.name, 'LCP');
       // assert(lcp2.value > lcp2.delta);
       assert.strictEqual(lcp2.rating, 'good');
@@ -485,7 +485,7 @@ describe('onLCP()', async function () {
     const [lcp1] = await getBeacons();
 
     assert(lcp1.value > 0);
-    assert(lcp1.id.match(/^v5-\d+-\d+$/));
+    assert(lcp1.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(lcp1.name, 'LCP');
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'good');
@@ -499,7 +499,7 @@ describe('onLCP()', async function () {
     const [lcp2] = await getBeacons();
 
     assert(lcp2.value > 0);
-    assert(lcp2.id.match(/^v5-\d+-\d+$/));
+    assert(lcp2.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(lcp2.name, 'LCP');
     assert.strictEqual(lcp2.value, lcp2.delta);
     assert.strictEqual(lcp2.rating, 'good');
@@ -530,7 +530,7 @@ describe('onLCP()', async function () {
     const [lcp1] = await getBeacons();
 
     assert(lcp1.value > 0);
-    assert(lcp1.id.match(/^v5-\d+-\d+$/));
+    assert(lcp1.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(lcp1.name, 'LCP');
     assert.strictEqual(lcp1.value, lcp1.delta);
     assert.strictEqual(lcp1.rating, 'good');
@@ -544,7 +544,7 @@ describe('onLCP()', async function () {
     const [lcp2] = await getBeacons();
 
     assert(lcp2.value > 0);
-    assert(lcp2.id.match(/^v5-\d+-\d+$/));
+    assert(lcp2.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(lcp2.name, 'LCP');
     assert.strictEqual(lcp2.value, lcp2.delta);
     assert.strictEqual(lcp2.rating, 'good');
@@ -568,7 +568,7 @@ describe('onLCP()', async function () {
     const [lcp] = await getBeacons();
 
     assert(lcp.value > 0);
-    assert(lcp.id.match(/^v5-\d+-\d+$/));
+    assert(lcp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(lcp.name, 'LCP');
     assert.strictEqual(lcp.value, lcp.delta);
     assert.strictEqual(lcp.rating, 'good');
@@ -931,7 +931,7 @@ describe('onLCP()', async function () {
       const [lcp2] = await getBeacons();
 
       assert(lcp2.value > 0);
-      assert(lcp2.id.match(/^v5-\d+-\d+$/));
+      assert(lcp2.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(lcp2.name, 'LCP');
       assert.strictEqual(lcp2.value, lcp2.delta);
       assert.strictEqual(lcp2.entries.length, 0);
@@ -968,7 +968,7 @@ describe('onLCP()', async function () {
       const [lcp] = await getBeacons();
 
       assert(lcp.value > 500);
-      assert(lcp.id.match(/^v5-\d+-\d+$/));
+      assert(lcp.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(lcp.name, 'LCP');
       assert.strictEqual(lcp.rating, 'good');
       assert.strictEqual(lcp.entries.length, 1);
@@ -982,7 +982,7 @@ const assertStandardReportsAreCorrect = (beacons) => {
   const [lcp] = beacons;
 
   assert(lcp.value > 500); // Greater than the image load delay.
-  assert(lcp.id.match(/^v5-\d+-\d+$/));
+  assert(lcp.id.match(/^v6-\d+-\d+$/));
   assert.strictEqual(lcp.name, 'LCP');
   assert.strictEqual(lcp.value, lcp.delta);
   assert.strictEqual(lcp.rating, 'good');
@@ -999,7 +999,7 @@ const assertFullReportsAreCorrect = (beacons) => {
   const lcp2 = beacons.at(-1);
 
   assert(lcp1.value < 500); // Less than the image load delay.
-  assert(lcp1.id.match(/^v5-\d+-\d+$/));
+  assert(lcp1.id.match(/^v6-\d+-\d+$/));
   assert.strictEqual(lcp1.name, 'LCP');
   assert.strictEqual(lcp1.value, lcp1.delta);
   assert.strictEqual(lcp1.rating, 'good');
