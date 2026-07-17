@@ -252,26 +252,24 @@ onLCP(logDelta);
 
 In addition to using the `id` field to group multiple deltas for the same metric, it can also be used to differentiate different metrics reported on the same page. For example, after a back/forward cache restore, a new metric object is created with a new `id` (since back/forward cache restores are considered separate page visits).
 
-### Report metrics for soft navigations (experimental)
+### Report metrics for soft navigations
 
-_**Note:** this is experimental and subject to change._
+When originally launched, Core Web Vitals are only tracked for full page navigations, which can affect how [Single Page Applications](https://web.dev/vitals-spa-faq/) that use so called "soft navigations" to update the browser URL and history outside of the normal browser's handling of this.
 
-Currently Core Web Vitals are only tracked for full page navigations, which can affect how [Single Page Applications](https://web.dev/vitals-spa-faq/) that use so called "soft navigations" to update the browser URL and history outside of the normal browser's handling of this. The Chrome team are working on a feature to enable [measuring these soft navigations](https://github.com/WICG/soft-navigations) separately and report on Core Web Vitals separately for them.
+The Chrome team have added a feature from Chrome 151 to enable [measuring these soft navigations](https://github.com/WICG/soft-navigations) and report on Core Web Vitals separately for them.
 
-This allows sites to measure how their Core Web Vitals might be measured differently should this happen.
-
-At present a "soft navigation" is defined as happening after the following three things happen:
+A "soft navigation" is tracked automatically when the following three things happen:
 
 - A user interaction occurs
 - The URL changes
 - Something is painted to screen.
 
-For some sites, these heuristics may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not missing the above criteria). We welcome feedback at https://github.com/WICG/soft-navigations/issues on the heuristics, at https://crbug.com for bugs in the Chrome implementation, and on [https://github.com/GoogleChrome/web-vitals/pull/308](this pull request) for implementation issues with web-vitals.js.
+For some sites, this definition may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not missing the above criteria). However, by having the browser define the soft navigation, rather than depending on SPA frameworks to call an API when happens, allows for soft navigations to be measured for existing SPA applications and also provides a more consistent experience across frameworks.
 
 Some important points to note:
 
 - TTFB is reported as 0, and not the time of the first network call (if any) after the soft navigation.
-- FCP and LCP are the first and largest contentful paints after the soft navigation. Prior reported paint times will not be counted for these metrics, even though these elements may remain between soft navigations, and may be the first or largest contentful item.
+- FCP and LCP are the first and largest contentful paints after the soft navigation. Elements that remain between soft navigations will not count since they are not repainted. This can lead to differences between measuring performance for a page from a soft navigation and a hard navigation.
 - INP is reset to measure only interactions after the the soft navigation.
 - CLS is reset to measure again separate to the first page.
 
@@ -289,7 +287,11 @@ onINP(console.log, {reportSoftNavs: true});
 onLCP(console.log, {reportSoftNavs: true});
 ```
 
-Note that this will change the way the first page loads are measured as the metrics for the initial URL will be finalized once the first soft nav occurs. To measure both you need to register two callbacks:
+Note that this will change the way the first page loads are measured as the metrics for the initial URL will be finalized once the first soft nav occurs.
+
+This will also lead to differences with browsers that support soft navigations (Chromium-based browsers on version 151+) and other browsers (that will not change reporting even with the `reportSoftNavs` flag).
+
+To measure both you need to register two callbacks:
 
 ```js
 import {
@@ -360,7 +362,7 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
     metric_value: value, // Optional.
     metric_delta: delta, // Optional.
 
-    // Override the page location for soft nav support
+    // Override the page location as metrics can be reported late for soft navs
     page_location: navigationURL,
 
     // OPTIONAL: any additional params or debug info here.
@@ -377,8 +379,6 @@ onLCP(sendToGoogleAnalytics);
 ```
 
 For details on how to query this data in [BigQuery](https://cloud.google.com/bigquery), or visualise it in [Looker Studio](https://lookerstudio.google.com/), see [Measure and debug performance with Google Analytics 4 and BigQuery](https://web.dev/articles/vitals-ga4).
-
-For the soft navigations
 
 ### Send the results to Google Tag Manager
 
@@ -685,7 +685,7 @@ interface INPMetric extends Metric {
 ```ts
 interface LCPMetric extends Metric {
   name: 'LCP';
-  entries: (LargestContentfulPaint | InteractionContentfulPaint)[];
+  entries: LargestContentfulPaint[];
 }
 ```
 
@@ -1242,13 +1242,14 @@ interface TTFBAttribution {
 
 The `web-vitals` code is tested in Chrome, Firefox, and Safari. In addition, all JavaScript features used in the code are part of ([Baseline Widely Available](https://web.dev/baseline)), and thus should run without error in all versions of these browsers released within the last 30 months.
 
-However, some of the APIs required to capture these metrics (notable CLS) are currently only available in some browsers. The latest browser support for each function is as follows:
+However, some of the APIs required to capture these metrics (notable CLS and soft navigations) are currently only available in some browsers. The latest browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari
 - `onINP()`: Chromium, Firefox, Safari
 - `onLCP()`: Chromium, Firefox, Safari
 - `onTTFB()`: Chromium, Firefox, Safari
+- Core Web Vitals for soft navigations: Chromium 151+
 
 ## Limitations
 
