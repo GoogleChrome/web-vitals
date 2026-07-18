@@ -100,7 +100,7 @@ export const onTTFB = (
           onReport,
           metric,
           TTFBThresholds,
-          opts!.reportAllChanges,
+          opts.reportAllChanges,
         );
 
         report(true);
@@ -125,7 +125,7 @@ export const onTTFB = (
                 onReport,
                 metric,
                 TTFBThresholds,
-                opts!.reportAllChanges,
+                opts.reportAllChanges,
               );
               report(true);
             }

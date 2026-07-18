@@ -91,7 +91,7 @@ export const onCLS = (
           onReport,
           metric,
           CLSThresholds,
-          opts!.reportAllChanges,
+          opts.reportAllChanges,
         );
       };
 
@@ -136,7 +136,7 @@ export const onCLS = (
           onReport,
           metric,
           CLSThresholds,
-          opts!.reportAllChanges,
+          opts.reportAllChanges,
         );
 
         visibilityWatcher.onHidden(() => {
