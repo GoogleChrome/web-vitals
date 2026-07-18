@@ -119,7 +119,7 @@ export const onINP = (
         onReport,
         metric,
         INPThresholds,
-        opts!.reportAllChanges,
+        opts.reportAllChanges,
       );
     };
 

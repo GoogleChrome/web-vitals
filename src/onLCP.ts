@@ -83,7 +83,7 @@ export const onLCP = (
         onReport,
         metric,
         LCPThresholds,
-        opts!.reportAllChanges,
+        opts.reportAllChanges,
       );
       // Reset the finalized flag
       isFinalized = false;
@@ -130,7 +130,7 @@ export const onLCP = (
     ) => {
       // If reportAllChanges is set or soft navs is enabled then call this
       // function for each entry, otherwise only consider the last one.
-      if (!opts!.reportAllChanges && !softNavsEnabled) {
+      if (!opts.reportAllChanges && !softNavsEnabled) {
         entries = entries.slice(-1);
       }
 
@@ -214,7 +214,7 @@ export const onLCP = (
         onReport,
         metric,
         LCPThresholds,
-        opts!.reportAllChanges,
+        opts.reportAllChanges,
       );
 
       const finalizeEventTypes = ['keydown', 'click', 'visibilitychange'];
@@ -272,7 +272,7 @@ export const onLCP = (
           onReport,
           metric,
           LCPThresholds,
-          opts!.reportAllChanges,
+          opts.reportAllChanges,
         );
 
         doubleRAF(() => {

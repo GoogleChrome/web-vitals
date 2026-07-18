@@ -79,7 +79,7 @@ export const onFCP = (
         onReport,
         metric,
         FCPThresholds,
-        opts!.reportAllChanges,
+        opts.reportAllChanges,
       );
 
       // Only report after a bfcache restore if the `PerformanceObserver`
@@ -98,7 +98,7 @@ export const onFCP = (
           onReport,
           metric,
           FCPThresholds,
-          opts!.reportAllChanges,
+          opts.reportAllChanges,
         );
 
         doubleRAF(() => {
@@ -140,7 +140,7 @@ export const onFCP = (
             onReport,
             metric,
             FCPThresholds,
-            opts!.reportAllChanges,
+            opts.reportAllChanges,
           );
           report(true);
         });
