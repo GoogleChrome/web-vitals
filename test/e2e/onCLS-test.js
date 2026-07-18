@@ -893,6 +893,11 @@ describe('onCLS()', async function () {
     // clear the beacons
     await clearBeacons();
 
+    // Give it a second until the soft nav image is painted
+    // Can't use "await imagesPainted();" as that only works
+    // for hard nav
+    await browser.pause(1000);
+
     // Load a new page to trigger the hidden state.
     await navigateTo('about:blank');
 
@@ -900,11 +905,11 @@ describe('onCLS()', async function () {
 
     const [softcls1] = await getBeacons();
 
-    assert.strictEqual(softcls1.value, 0);
+    assert(softcls1.value > 0);
     assert.strictEqual(softcls1.name, 'CLS');
     assert.strictEqual(softcls1.value, softcls1.delta);
     assert.strictEqual(softcls1.rating, 'good');
-    assert.strictEqual(softcls1.entries.length, 0);
+    assert.strictEqual(softcls1.entries.length, 1);
     assert.match(softcls1.navigationType, /soft-navigation/);
   });
 
@@ -1016,6 +1021,11 @@ describe('onCLS()', async function () {
     // clear the beacons
     await clearBeacons();
 
+    // Give it a second until the soft nav image is painted
+    // Can't use "await imagesPainted();" as that only works
+    // for hard nav
+    await browser.pause(1000);
+
     // Load a new page to trigger the hidden state.
     await navigateTo('about:blank');
 
@@ -1023,11 +1033,11 @@ describe('onCLS()', async function () {
 
     const [softcls1] = await getBeacons();
 
-    assert.strictEqual(softcls1.value, 0);
+    assert(softcls1.value > 0);
     assert.strictEqual(softcls1.name, 'CLS');
     assert.strictEqual(softcls1.value, softcls1.delta);
     assert.strictEqual(softcls1.rating, 'good');
-    assert.strictEqual(softcls1.entries.length, 0);
+    assert.strictEqual(softcls1.entries.length, 1);
     assert.match(softcls1.navigationType, /soft-navigation/);
   });
 
