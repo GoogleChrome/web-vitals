@@ -951,16 +951,23 @@ describe('onCLS()', async function () {
     const softNavButton = await $('#soft-nav');
     await softNavButton.click();
 
-    await beaconCountIs(1);
+    await beaconCountIs(2);
 
-    const [softcls1] = await getBeacons();
+    const [softcls1, softcls2] = await getBeacons();
 
-    assert(softcls1.value > 0);
+    assert.strictEqual(softcls1.value, 0);
     assert.strictEqual(softcls1.name, 'CLS');
     assert.strictEqual(softcls1.value, softcls1.delta);
     assert.strictEqual(softcls1.rating, 'good');
-    assert.strictEqual(softcls1.entries.length, 1);
+    assert.strictEqual(softcls1.entries.length, 0);
     assert.match(softcls1.navigationType, /soft-navigation/);
+
+    assert(softcls2.value > 0);
+    assert.strictEqual(softcls2.name, 'CLS');
+    assert.strictEqual(softcls2.value, softcls2.delta);
+    assert.strictEqual(softcls2.rating, 'good');
+    assert.strictEqual(softcls2.entries.length, 1);
+    assert.match(softcls2.navigationType, /soft-navigation/);
 
     // clear the beacons
     await clearBeacons();
@@ -973,14 +980,14 @@ describe('onCLS()', async function () {
 
     await beaconCountIs(1);
 
-    const [softcls2] = await getBeacons();
+    const [softcls3] = await getBeacons();
 
-    assert.strictEqual(softcls2.value, 0);
-    assert.strictEqual(softcls2.name, 'CLS');
-    assert.strictEqual(softcls2.value, softcls2.delta);
-    assert.strictEqual(softcls2.rating, 'good');
-    assert.strictEqual(softcls2.entries.length, 0);
-    assert.match(softcls2.navigationType, /soft-navigation/);
+    assert.strictEqual(softcls3.value, 0);
+    assert.strictEqual(softcls3.name, 'CLS');
+    assert.strictEqual(softcls3.value, softcls3.delta);
+    assert.strictEqual(softcls3.rating, 'good');
+    assert.strictEqual(softcls3.entries.length, 0);
+    assert.match(softcls3.navigationType, /soft-navigation/);
   });
 
   it('reports soft navs when loaded late (reportAllChanges === false)', async function () {

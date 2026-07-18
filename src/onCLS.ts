@@ -95,8 +95,18 @@ export const onCLS = (
         );
       };
 
+      const updateAndReportMetric = (forceReport: boolean = false) => {
+        // If the current session value is larger than the current CLS value,
+        // update CLS and the entries contributing to it.
+        if (layoutShiftManager._sessionValue > metric.value) {
+          metric.value = layoutShiftManager._sessionValue;
+          metric.entries = layoutShiftManager._sessionEntries;
+        }
+        report(forceReport);
+      };
+
       const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
-        report(true);
+        updateAndReportMetric(true);
         initNewCLSMetric(
           'soft-navigation',
           entry.navigationId,
@@ -117,13 +127,7 @@ export const onCLS = (
           layoutShiftManager._processEntry(entry as LayoutShift);
         }
 
-        // If the current session value is larger than the current CLS value,
-        // update CLS and the entries contributing to it.
-        if (layoutShiftManager._sessionValue > metric.value) {
-          metric.value = layoutShiftManager._sessionValue;
-          metric.entries = layoutShiftManager._sessionEntries;
-          report();
-        }
+        updateAndReportMetric();
       };
 
       const types = ['layout-shift'] as ('layout-shift' | 'soft-navigation')[];
