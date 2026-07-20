@@ -54,63 +54,6 @@
   </p>
 
   <script>
-  /*
-    // Set the blocking values based on query params if present.
-    const params = new URLSearchParams(location.search);
-    for (const [key, value] of params) {
-      const el = document.getElementById(`${key}-blocking-time`);
-      if (el?.nodeName.toLowerCase() === 'input') {
-        el.value = value;
-      }
-    }
-
-    function block(event) {
-      // Return early for soft nav clicks since blocking this interrupts content creation.
-      if (event.target === 'button#soft-nav') {
-        return;
-      }
-      const blockingTime = Number(document.getElementById(`${event.type}-blocking-time`).value);
-      const startTime = performance.now();
-      while (performance.now() < startTime + blockingTime) {
-        // Block...
-      }
-    }
-
-    function onInput(event) {
-      const input = event.target;
-      const eventName = input.id.slice(0, input.id.indexOf('-'));
-      if (input.value > 0) {
-        addEventListener(eventName, block, true);
-      } else {
-        removeEventListener(eventName, block, true);
-      }
-    }
-
-    function addBlockingListeners() {
-      const eventNames = [
-        'mousedown',
-        'mouseup',
-        'pointerdown',
-        'pointerup',
-        'keydown',
-        'keyup',
-        'click',
-      ];
-      for (const eventName of eventNames) {
-        const input = document.getElementById(`${eventName}-blocking-time`);
-        input.addEventListener('input', onInput, true);
-        if (input.value > 0) {
-          addEventListener(eventName, block, true);
-        }
-      }
-    }
-
-    document.getElementById('reset').addEventListener('click', () => {
-      [...document.querySelectorAll('label>input')].forEach((n) => n.value = 0);
-    });
-
-    addBlockingListeners();
-    */
   </script>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
