@@ -39,6 +39,8 @@ describe('onFCP()', async function () {
         'soft-navigation',
       );
     });
+    // Set a standard screen size so soft nav paints show
+    browser.setWindowSize(1280, 1024);
   });
 
   beforeEach(async function () {
