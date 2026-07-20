@@ -49,7 +49,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert(fcp.id.match(/v6-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -66,7 +66,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert(fcp.id.match(/v6-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -97,7 +97,7 @@ describe('onFCP()', async function () {
     });
 
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert(fcp.id.match(/v6-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -168,7 +168,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert(fcp.id.match(/v6-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'needs-improvement');
@@ -185,7 +185,7 @@ describe('onFCP()', async function () {
 
     const [fcp1] = await getBeacons();
     assert(fcp1.value >= 0);
-    assert(fcp1.id.match(/^v5-\d+-\d+$/));
+    assert(fcp1.id.match(/v6-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
     assert.strictEqual(fcp1.rating, 'good');
@@ -199,7 +199,7 @@ describe('onFCP()', async function () {
 
     const [fcp2] = await getBeacons();
     assert(fcp2.value >= 0);
-    assert(fcp2.id.match(/^v5-\d+-\d+$/));
+    assert(fcp2.id.match(/v6-\d+-\d+$/));
     assert(fcp2.id !== fcp1.id);
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
@@ -214,7 +214,7 @@ describe('onFCP()', async function () {
 
     const [fcp3] = await getBeacons();
     assert(fcp3.value >= 0);
-    assert(fcp3.id.match(/^v5-\d+-\d+$/));
+    assert(fcp3.id.match(/v6-\d+-\d+$/));
     assert(fcp3.id !== fcp2.id);
     assert.strictEqual(fcp3.name, 'FCP');
     assert.strictEqual(fcp3.value, fcp3.delta);
@@ -242,7 +242,7 @@ describe('onFCP()', async function () {
 
     const [fcp1] = await getBeacons();
     assert(fcp1.value >= 0);
-    assert(fcp1.id.match(/^v5-\d+-\d+$/));
+    assert(fcp1.id.match(/v6-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
     assert.strictEqual(fcp1.rating, 'good');
@@ -256,7 +256,7 @@ describe('onFCP()', async function () {
 
     const [fcp2] = await getBeacons();
     assert(fcp2.value >= 0);
-    assert(fcp2.id.match(/^v5-\d+-\d+$/));
+    assert(fcp2.id.match(/v6-\d+-\d+$/));
     assert(fcp2.id !== fcp1.id);
     assert.strictEqual(fcp2.name, 'FCP');
     assert.strictEqual(fcp2.value, fcp2.delta);
@@ -274,7 +274,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert(fcp.id.match(/v6-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -294,14 +294,14 @@ describe('onFCP()', async function () {
     const [fcp2] = await getBeacons({instance: 2});
 
     assert(fcp1.value >= 0);
-    assert(fcp1.id.match(/^v5-\d+-\d+$/));
+    assert(fcp1.id.match(/v6-\d+-\d+$/));
     assert.strictEqual(fcp1.name, 'FCP');
     assert.strictEqual(fcp1.value, fcp1.delta);
     assert.strictEqual(fcp1.rating, 'good');
     assert.strictEqual(fcp1.entries.length, 1);
     assert.match(fcp1.navigationType, /navigate|reload/);
 
-    assert(fcp2.id.match(/^v5-\d+-\d+$/));
+    assert(fcp2.id.match(/v6-\d+-\d+$/));
     assert(fcp2.id !== fcp1.id);
     assert.strictEqual(fcp2.value, fcp1.value);
     assert.strictEqual(fcp2.delta, fcp1.delta);
@@ -331,7 +331,7 @@ describe('onFCP()', async function () {
       const [fcp] = await getBeacons();
 
       assert(fcp.value >= 0);
-      assert(fcp.id.match(/^v5-\d+-\d+$/));
+      assert(fcp.id.match(/v6-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
       assert.strictEqual(fcp.rating, 'good');
@@ -389,7 +389,7 @@ describe('onFCP()', async function () {
 
       const [fcp] = await getBeacons();
       assert(fcp.value >= 0);
-      assert(fcp.id.match(/^v5-\d+-\d+$/));
+      assert(fcp.id.match(/v6-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
       assert.strictEqual(fcp.rating, 'good');
@@ -432,7 +432,7 @@ describe('onFCP()', async function () {
 
       const [fcp] = await getBeacons();
       assert(fcp.value >= 0);
-      assert(fcp.id.match(/^v5-\d+-\d+$/));
+      assert(fcp.id.match(/v6-\d+-\d+$/));
       assert.strictEqual(fcp.name, 'FCP');
       assert.strictEqual(fcp.value, fcp.delta);
       assert.strictEqual(fcp.rating, 'good');
