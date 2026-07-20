@@ -764,7 +764,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     // Wait a bit to allow the entries to report
     await browser.pause(1000);
