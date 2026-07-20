@@ -95,7 +95,6 @@
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           for (const lcp of queue) {
-            console.log('document.addEventListener');
             navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(lcp)));
           }
           queue.clear();

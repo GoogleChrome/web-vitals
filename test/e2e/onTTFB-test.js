@@ -323,7 +323,7 @@ describe('onTTFB()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     const softTtfb = await getTTFBBeacon();
 
@@ -361,7 +361,7 @@ describe('onTTFB()', async function () {
     await clearBeacons();
 
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     const softTtfb = await getTTFBBeacon();
 
@@ -381,7 +381,7 @@ describe('onTTFB()', async function () {
     await navigateTo('/test/ttfb?reportSoftNavs=1&loadAfterInput=1');
 
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(2, {instance: 'All'});
 
@@ -431,7 +431,7 @@ describe('onTTFB()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     // Instance 1 should report, but instance 2 should not.
     await beaconCountIs(1, {instance: 1});
@@ -467,7 +467,7 @@ describe('onTTFB()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     // Instance 1 should report, but instance 2 should not.
     await beaconCountIs(1, {instance: 1});
@@ -659,7 +659,7 @@ describe('onTTFB()', async function () {
 
       // Click on the soft nav button to start new soft nav.
       const softNavButton = await $('#soft-nav');
-      await softNavButton.click();
+      await simulateUserLikeClick(softNavButton);
 
       await beaconCountIs(1);
 
@@ -693,4 +693,14 @@ const getTTFBBeacon = async () => {
   await beaconCountIs(1);
   const [ttfb] = await getBeacons();
   return ttfb;
+};
+
+const simulateUserLikeClick = async (element) => {
+  await browser
+    .action('pointer')
+    .move({x: 0, y: 0, origin: element})
+    .down({button: 0}) // left button
+    .pause(50)
+    .up({button: 0})
+    .perform();
 };
