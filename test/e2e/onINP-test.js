@@ -735,6 +735,9 @@ describe('onINP()', async function () {
     // Wait until the library is loaded
     await webVitalsLoaded();
 
+    const hardNavId = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].navigationId;
+    });
     await browser.execute(() => {
       window.events = [];
       const observer = new PerformanceObserver((list) => {
@@ -753,6 +756,10 @@ describe('onINP()', async function () {
       });
       observer2.observe({type: 'soft-navigation', buffered: true});
     });
+    const currentUrl = await browser.execute(() => {
+      return document.location.href;
+    });
+    console.log(currentUrl);
 
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
@@ -768,6 +775,7 @@ describe('onINP()', async function () {
 
     // Wait a bit to allow the entries to report
     await browser.pause(1000);
+    console.log(`hardNavId: ${hardNavId}`);
     const events = await browser.execute(() => {
       return window.events;
     });
