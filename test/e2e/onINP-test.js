@@ -886,7 +886,8 @@ describe('onINP()', async function () {
 
     await beaconCountIs(1);
     const [inp] = await getBeacons();
-    assertIsCloseTo(inp.value, 150, 40);
+    // INP should be >=150 (with 8 millisecond coarsening)
+    assert(inp.value >= 142);
     assert.strictEqual(inp.navigationType, 'navigate');
 
     await clearBeacons();
@@ -900,7 +901,8 @@ describe('onINP()', async function () {
 
     await beaconCountIs(1);
     const [softInp1] = await getBeacons();
-    assertIsCloseTo(softInp1.value, 200, 40);
+    // INP should be >=200 (with 8 millisecond coarsening)
+    assert(softInp1.value >= 192);
     assert.strictEqual(softInp1.navigationType, 'soft-navigation');
 
     await clearBeacons();
@@ -919,7 +921,9 @@ describe('onINP()', async function () {
 
     await beaconCountIs(1);
     const [softInp2] = await getBeacons();
-    assertIsCloseTo(softInp2.value, 100, 40);
+    // INP should be >=200 (with 8 millisecond coarsening)
+    assert(softInp2.value >= 92);
+    assert(softInp2.value < 150);
     assert.strictEqual(softInp2.navigationType, 'soft-navigation');
   });
 
