@@ -361,9 +361,6 @@ describe('onLCP()', async function () {
     const h1 = await $('h1');
     await h1.click();
 
-    // Wait a bit to ensure no beacons were sent.
-    await browser.pause(1000);
-
     const beacons = await getBeacons();
     assert.strictEqual(beacons.length, 0);
   });
@@ -635,7 +632,8 @@ describe('onLCP()', async function () {
     await softNavButton.click();
 
     await beaconCountIs(1);
-    assertStandardReportsAreCorrect(await getBeacons());
+    const [lcp] = await getBeacons();
+    assertStandardReportsAreCorrect([lcp]);
 
     // clear the beacons
     await clearBeacons();
@@ -645,14 +643,15 @@ describe('onLCP()', async function () {
 
     await beaconCountIs(1);
 
-    const [softlcp1] = await getBeacons();
+    const [softLcp] = await getBeacons();
 
-    assert(softlcp1.value > 0);
-    assert.strictEqual(softlcp1.name, 'LCP');
-    assert.strictEqual(softlcp1.value, softlcp1.delta);
-    assert.strictEqual(softlcp1.rating, 'good');
-    assert.strictEqual(softlcp1.entries.length, 1);
-    assert.match(softlcp1.navigationType, /soft-navigation/);
+    assert(softLcp.value > 0);
+    assert.strictEqual(softLcp.name, 'LCP');
+    assert.strictEqual(softLcp.value, softLcp.delta);
+    assert.strictEqual(softLcp.rating, 'good');
+    assert.strictEqual(softLcp.entries.length, 1);
+    assert.match(softLcp.navigationType, /soft-navigation/);
+    assert.notEqual(softLcp.navigationId, lcp.navigationId);
   });
 
   it('reports hard nav LCP and soft navs (reportAllChanges === true)', async function () {
@@ -664,7 +663,14 @@ describe('onLCP()', async function () {
     await imagesPainted();
 
     await beaconCountIs(2);
-    assertFullReportsAreCorrect(await getBeacons());
+    const [lcp1, lcp2] = await getBeacons();
+    assertFullReportsAreCorrect([lcp1, lcp2]);
+
+    const hardNavId = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].navigationId;
+    });
+    assert.strictEqual(lcp1.navigationId, lcp2.navigationId);
+    assert.strictEqual(lcp1.navigationId, hardNavId);
 
     // clear the beacons
     await clearBeacons();
@@ -674,14 +680,20 @@ describe('onLCP()', async function () {
     await softNavButton.click();
 
     await beaconCountIs(1);
-    const [softlcp1] = await getBeacons();
+    const [softLcp] = await getBeacons();
 
-    assert(softlcp1.value > 0);
-    assert.strictEqual(softlcp1.name, 'LCP');
-    assert.strictEqual(softlcp1.value, softlcp1.delta);
-    assert.strictEqual(softlcp1.rating, 'good');
-    assert.strictEqual(softlcp1.entries.length, 1);
-    assert.match(softlcp1.navigationType, /soft-navigation/);
+    assert(softLcp.value > 0);
+    assert.strictEqual(softLcp.name, 'LCP');
+    assert.strictEqual(softLcp.value, softLcp.delta);
+    assert.strictEqual(softLcp.rating, 'good');
+    assert.strictEqual(softLcp.entries.length, 1);
+    assert.match(softLcp.navigationType, /soft-navigation/);
+
+    const softNavId = await browser.execute(() => {
+      return performance.getEntriesByType('soft-navigation')[0].navigationId;
+    });
+    assert.notEqual(softLcp.navigationId, hardNavId);
+    assert.strictEqual(softLcp.navigationId, softNavId);
   });
 
   it('reports soft navs when loaded late (reportAllChanges === false)', async function () {
@@ -697,24 +709,36 @@ describe('onLCP()', async function () {
     await softNavButton.click();
 
     await beaconCountIs(1);
-    assertStandardReportsAreCorrect(await getBeacons());
+    const [lcp] = await getBeacons();
+    assertStandardReportsAreCorrect([lcp]);
+
+    const hardNavId = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].navigationId;
+    });
+    assert.strictEqual(lcp.navigationId, hardNavId);
 
     // clear the beacons
     await clearBeacons();
+
+    const softNavId = await browser.execute(() => {
+      return performance.getEntriesByType('soft-navigation')[0].navigationId;
+    });
 
     // Load a new page to trigger the hidden state.
     await navigateTo('about:blank');
 
     await beaconCountIs(1);
 
-    const [softlcp1] = await getBeacons();
+    const [softLcp] = await getBeacons();
 
-    assert(softlcp1.value > 0);
-    assert.strictEqual(softlcp1.name, 'LCP');
-    assert.strictEqual(softlcp1.value, softlcp1.delta);
-    assert.strictEqual(softlcp1.rating, 'good');
-    assert.strictEqual(softlcp1.entries.length, 1);
-    assert.match(softlcp1.navigationType, /soft-navigation/);
+    assert(softLcp.value > 0);
+    assert.strictEqual(softLcp.name, 'LCP');
+    assert.strictEqual(softLcp.value, softLcp.delta);
+    assert.strictEqual(softLcp.rating, 'good');
+    assert.strictEqual(softLcp.entries.length, 1);
+    assert.match(softLcp.navigationType, /soft-navigation/);
+    assert.notEqual(softLcp.navigationId, hardNavId);
+    assert.strictEqual(softLcp.navigationId, softNavId);
   });
 
   it('reports soft nav LCP even if all paints before URL update (reportAllChanges === false)', async function () {
@@ -729,7 +753,14 @@ describe('onLCP()', async function () {
     const h1 = await $('h1');
     await h1.click();
     await beaconCountIs(1);
-    assertStandardReportsAreCorrect(await getBeacons());
+    const [lcp] = await getBeacons();
+    assertStandardReportsAreCorrect([lcp]);
+
+    const hardNavId = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].navigationId;
+    });
+    assert.strictEqual(lcp.navigationId, hardNavId);
+
     await clearBeacons();
 
     const softNavButton = await $('#soft-nav');
@@ -743,14 +774,20 @@ describe('onLCP()', async function () {
 
     await beaconCountIs(1);
 
-    const [softlcp1] = await getBeacons();
+    const [softLcp] = await getBeacons();
 
-    assert(softlcp1.value > 0);
-    assert.strictEqual(softlcp1.name, 'LCP');
-    assert.strictEqual(softlcp1.value, softlcp1.delta);
-    assert.strictEqual(softlcp1.rating, 'good');
-    assert.strictEqual(softlcp1.entries.length, 1);
-    assert.match(softlcp1.navigationType, /soft-navigation/);
+    assert(softLcp.value > 0);
+    assert.strictEqual(softLcp.name, 'LCP');
+    assert.strictEqual(softLcp.value, softLcp.delta);
+    assert.strictEqual(softLcp.rating, 'good');
+    assert.strictEqual(softLcp.entries.length, 1);
+    assert.match(softLcp.navigationType, /soft-navigation/);
+
+    const softNavId = await browser.execute(() => {
+      return performance.getEntriesByType('soft-navigation')[0].navigationId;
+    });
+    assert.notEqual(softLcp.navigationId, hardNavId);
+    assert.strictEqual(softLcp.navigationId, softNavId);
   });
 
   it('reports hard nav LCP and 3 consecutive soft navs (reportAllChanges === false)', async function () {
@@ -765,8 +802,19 @@ describe('onLCP()', async function () {
     const softNavButton = await $('#soft-nav');
     await softNavButton.click();
 
+    // Give it a second until the soft nav image is painted
+    // Can't use "await imagesPainted();" as that only works
+    // for hard nav
+    await browser.pause(1000);
+
     await beaconCountIs(1);
-    assertStandardReportsAreCorrect(await getBeacons());
+    const [lcp] = await getBeacons();
+    assertStandardReportsAreCorrect([lcp]);
+
+    const hardNavId = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].navigationId;
+    });
+    assert.strictEqual(lcp.navigationId, hardNavId);
 
     // 1st soft nav is now active.
     await clearBeacons();
@@ -775,11 +823,17 @@ describe('onLCP()', async function () {
     await softNavButton.click();
 
     await beaconCountIs(1);
-    const [softlcp1] = await getBeacons();
-    assert(softlcp1.value > 0);
-    assert.strictEqual(softlcp1.name, 'LCP');
-    assert.strictEqual(softlcp1.navigationType, 'soft-navigation');
-    assert.strictEqual(softlcp1.entries.length, 1);
+    const [softLcp1] = await getBeacons();
+    assert(softLcp1.value > 0);
+    assert.strictEqual(softLcp1.name, 'LCP');
+    assert.strictEqual(softLcp1.navigationType, 'soft-navigation');
+    assert.strictEqual(softLcp1.entries.length, 1);
+
+    assert.notEqual(softLcp1.navigationId, hardNavId);
+    const softNavId0 = await browser.execute(() => {
+      return performance.getEntriesByType('soft-navigation')[0]?.navigationId;
+    });
+    assert.strictEqual(softLcp1.navigationId, softNavId0);
 
     await clearBeacons();
 
@@ -787,23 +841,33 @@ describe('onLCP()', async function () {
     await softNavButton.click();
 
     await beaconCountIs(1);
-    const [softlcp2] = await getBeacons();
-    assert(softlcp2.value > 0);
-    assert.strictEqual(softlcp2.name, 'LCP');
-    assert.strictEqual(softlcp2.navigationType, 'soft-navigation');
-    assert.strictEqual(softlcp2.entries.length, 1);
+    const [softLcp2] = await getBeacons();
+    assert(softLcp2.value > 0);
+    assert.strictEqual(softLcp2.name, 'LCP');
+    assert.strictEqual(softLcp2.navigationType, 'soft-navigation');
+    assert.strictEqual(softLcp2.entries.length, 1);
+
+    const softNavId1 = await browser.execute(() => {
+      return performance.getEntriesByType('soft-navigation')[1].navigationId;
+    });
+    assert.notEqual(softLcp2.navigationId, hardNavId);
+    assert.strictEqual(softLcp2.navigationId, softNavId1);
 
     await clearBeacons();
 
-    // Load a new page to trigger the hidden state, finalising the 3rd soft nav.
+    // Load a new page to trigger the hidden state, finalizing the 3rd soft nav.
     await navigateTo('about:blank');
 
     await beaconCountIs(1);
-    const [softlcp3] = await getBeacons();
-    assert(softlcp3.value > 0);
-    assert.strictEqual(softlcp3.name, 'LCP');
-    assert.strictEqual(softlcp3.navigationType, 'soft-navigation');
-    assert.strictEqual(softlcp3.entries.length, 1);
+    const [softLcp3] = await getBeacons();
+    assert(softLcp3.value > 0);
+    assert.strictEqual(softLcp3.name, 'LCP');
+    assert.strictEqual(softLcp3.navigationType, 'soft-navigation');
+    assert.strictEqual(softLcp3.entries.length, 1);
+    assert.notEqual(softLcp3.navigationId, hardNavId);
+    // We don't wait for soft nav navId as navigating away,
+    // so just check it's changed.
+    assert.notEqual(softLcp3.navigationId, softNavId1);
   });
 
   it('reports LCP on soft nav after a bfcache restore', async function () {
@@ -1216,6 +1280,7 @@ describe('onLCP()', async function () {
       await softNavButton.click();
 
       await beaconCountIs(1);
+      const [lcp] = await getBeacons();
       await clearBeacons();
 
       // Load a new page to trigger the hidden state.
@@ -1223,22 +1288,34 @@ describe('onLCP()', async function () {
 
       await beaconCountIs(1);
 
-      const [lcp] = await getBeacons();
+      const [softLcp] = await getBeacons();
 
-      assert(lcp.value > 0);
-      assert.strictEqual(lcp.name, 'LCP');
-      assert.strictEqual(lcp.value, lcp.delta);
-      assert.strictEqual(lcp.rating, 'good');
-      assert.strictEqual(lcp.entries.length, 1);
-      assert.match(lcp.navigationType, /soft-navigation/);
+      assert(softLcp.value > 0);
+      assert.strictEqual(softLcp.name, 'LCP');
+      assert.strictEqual(softLcp.value, softLcp.delta);
+      assert.strictEqual(softLcp.rating, 'good');
+      assert.strictEqual(softLcp.entries.length, 1);
+      assert.match(softLcp.navigationType, /soft-navigation/);
+      assert(softLcp.navigationId > lcp.navigationId);
 
-      assert.equal(lcp.attribution.timeToFirstByte, 0);
-      assert.equal(lcp.attribution.resourceLoadDelay, 0);
-      assert.equal(lcp.attribution.resourceLoadDuration, 0);
-      assert.equal(lcp.attribution.elementRenderDelay, lcp.value);
-      const navEntry = lcp.attribution.navigationEntry;
+      assert.equal(softLcp.attribution.url, undefined);
+      assert.equal(softLcp.attribution.target, 'html>body>main>div>p');
+      assert.equal(
+        softLcp.attribution.timeToFirstByte +
+          softLcp.attribution.resourceLoadDelay +
+          softLcp.attribution.resourceLoadDuration +
+          softLcp.attribution.elementRenderDelay,
+        softLcp.value,
+      );
+
+      const navEntry = softLcp.attribution.navigationEntry;
       assert.equal(navEntry.entryType, 'soft-navigation');
-      assert.equal(navEntry.navigationId, lcp.navigationId);
+      assert.equal(navEntry.navigationId, softLcp.navigationId);
+
+      assert.deepEqual(
+        softLcp.attribution.lcpEntry,
+        softLcp.entries.slice(-1)[0],
+      );
     });
   });
 });

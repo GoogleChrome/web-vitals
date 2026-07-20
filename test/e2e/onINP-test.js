@@ -488,7 +488,7 @@ describe('onINP()', async function () {
   it('reports short <16m bfcache INPs (reportAllChanges === true)', async function () {
     if (!browserSupportsINP) this.skip();
 
-    await navigateTo('/test/inp?reportSoftNavs=1&click=8&reportAllChanges=1');
+    await navigateTo('/test/inp?click=8&reportAllChanges=1');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -754,6 +754,7 @@ describe('onINP()', async function () {
     assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
+    assert(inp.navigationId > 0);
 
     await stubVisibilityChange('visible');
     await clearBeacons();
@@ -788,6 +789,8 @@ describe('onINP()', async function () {
     );
     assert(allEntriesPresentTogether(softInp.entries));
     assert.strictEqual(softInp.navigationType, 'soft-navigation');
+    assert(softInp.navigationId > 0);
+    assert(softInp.navigationId > inp.navigationId);
   });
 
   it('reports hard nav INP and soft navs (reportAllChanges === true)', async function () {
@@ -1561,6 +1564,65 @@ describe('onINP()', async function () {
           inp1.attribution.totalUnattributedDuration,
         0.1,
       );
+    });
+
+    it('reports soft navigation INP attribution', async function () {
+      if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+      await navigateTo('/test/inp?attribution=1&reportSoftNavs=1&click=150');
+
+      // Wait until the library is loaded
+      await webVitalsLoaded();
+
+      const h1 = await $('h1');
+      await simulateUserLikeClick(h1);
+
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+      await stubVisibilityChange('visible');
+      await clearBeacons();
+
+      // Click on the soft nav button to start new soft nav.
+      const softNavButton = await $('#soft-nav');
+      await softNavButton.click();
+
+      await beaconCountIs(1);
+      await clearBeacons();
+
+      await simulateUserLikeClick(h1);
+
+      // Ensure the interaction completes.
+      await nextFrame();
+      // Give INP a chance to report
+      await waitUntilIdle();
+
+      // Load a new page to trigger the hidden state.
+      await stubVisibilityChange('hidden');
+
+      await beaconCountIs(1);
+
+      const [inp] = await getBeacons();
+
+      assert(inp.value >= 150 - ROUNDING_ERROR);
+      assert.strictEqual(inp.name, 'INP');
+      assert.strictEqual(inp.value, inp.delta);
+      assert.strictEqual(inp.rating, 'good');
+      assert(
+        containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'),
+      );
+      assert(allEntriesPresentTogether(inp.entries));
+      assert.strictEqual(inp.navigationType, 'soft-navigation');
+
+      assert.equal(inp.attribution.interactionTarget, 'html>body>main>h1');
+      assert.equal(inp.attribution.interactionType, 'pointer');
+      assert.equal(inp.attribution.interactionTime, inp.entries[0].startTime);
+      assert(inp.navigationId > 1);
     });
   });
 });

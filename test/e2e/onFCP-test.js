@@ -324,6 +324,10 @@ describe('onFCP()', async function () {
 
     await beaconCountIs(1);
 
+    const hardNavId = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].navigationId;
+    });
+
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
     assert(fcp.id.match(/^v5-\d+-\d+$/));
@@ -332,6 +336,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp.rating, 'good');
     assert.strictEqual(fcp.entries.length, 1);
     assert.match(fcp.navigationType, /navigate|reload/);
+    assert.strictEqual(fcp.navigationId, hardNavId);
 
     // clear the beacons
     await clearBeacons();
@@ -350,6 +355,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(softFcp.rating, 'good');
     assert.strictEqual(softFcp.entries.length, 0);
     assert.strictEqual(softFcp.navigationType, 'soft-navigation');
+    assert(softFcp.navigationId > hardNavId);
   });
 
   it('reports hard nav FCP and soft navs (reportAllChanges === true)', async function () {
@@ -359,6 +365,10 @@ describe('onFCP()', async function () {
 
     await beaconCountIs(1);
 
+    const hardNavId = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].navigationId;
+    });
+
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
     assert(fcp.id.match(/^v5-\d+-\d+$/));
@@ -367,6 +377,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(fcp.rating, 'good');
     assert.strictEqual(fcp.entries.length, 1);
     assert.match(fcp.navigationType, /navigate|reload/);
+    assert.strictEqual(fcp.navigationId, hardNavId);
 
     // clear the beacons
     await clearBeacons();
@@ -385,6 +396,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(softFcp.rating, 'good');
     assert.strictEqual(softFcp.entries.length, 0);
     assert.strictEqual(softFcp.navigationType, 'soft-navigation');
+    assert(softFcp.navigationId > hardNavId);
   });
 
   it('reports soft navs when loaded late (reportAllChanges === false)', async function () {
@@ -397,6 +409,10 @@ describe('onFCP()', async function () {
     await softNavButton.click();
 
     await beaconCountIs(2, {instance: 'All'});
+
+    const hardNavId = await browser.execute(() => {
+      return performance.getEntriesByType('navigation')[0].navigationId;
+    });
 
     const [fcp, softFcp] = await getBeacons({instance: 'All'});
     assert(fcp.value >= 0);
@@ -414,6 +430,7 @@ describe('onFCP()', async function () {
     assert.strictEqual(softFcp.rating, 'good');
     assert.strictEqual(softFcp.entries.length, 0);
     assert.strictEqual(softFcp.navigationType, 'soft-navigation');
+    assert(softFcp.navigationId > hardNavId);
   });
 
   describe('attribution', function () {
@@ -556,6 +573,12 @@ describe('onFCP()', async function () {
       await navigateTo('/test/fcp?attribution=1&reportSoftNavs=1');
 
       await beaconCountIs(1);
+      const [fcp] = await getBeacons();
+      const hardNavId = await browser.execute(() => {
+        return performance.getEntriesByType('navigation')[0].navigationId;
+      });
+      assert.strictEqual(fcp.navigationId, hardNavId);
+
       await clearBeacons();
 
       // Click on the soft nav button to start new soft nav.
@@ -564,20 +587,27 @@ describe('onFCP()', async function () {
 
       await beaconCountIs(1);
 
-      const [fcp] = await getBeacons();
+      const [softFcp] = await getBeacons();
 
-      assert(fcp.value >= 0);
-      assert.strictEqual(fcp.name, 'FCP');
-      assert.strictEqual(fcp.value, fcp.delta);
-      assert.strictEqual(fcp.rating, 'good');
-      assert.strictEqual(fcp.entries.length, 0);
-      assert.match(fcp.navigationType, /soft-navigation/);
+      assert(softFcp.value >= 0);
+      assert.strictEqual(softFcp.name, 'FCP');
+      assert.strictEqual(softFcp.value, softFcp.delta);
+      assert.strictEqual(softFcp.rating, 'good');
+      assert.strictEqual(softFcp.entries.length, 0);
+      assert.match(softFcp.navigationType, /soft-navigation/);
 
-      assert.equal(fcp.attribution.timeToFirstByte, 0);
-      assert.equal(fcp.attribution.firstByteToFCP, fcp.value);
-      const navEntry = fcp.attribution.navigationEntry;
-      assert.equal(navEntry.entryType, 'soft-navigation');
-      assert.equal(navEntry.navigationId, fcp.navigationId);
+      const softNavEntry = await browser.execute(() => {
+        return performance.getEntriesByType('soft-navigation')[0].toJSON();
+      });
+      assert.notEqual(softFcp.navigationId, fcp.navigationId);
+      assert.strictEqual(softFcp.navigationId, softNavEntry.navigationId);
+
+      assert.equal(softFcp.attribution.timeToFirstByte, 0);
+      assert.equal(softFcp.attribution.firstByteToFCP, softFcp.value);
+      assert.equal(softFcp.attribution.loadState, 'complete');
+
+      const navEntry = softFcp.attribution.navigationEntry;
+      assert.deepEqual(navEntry, softNavEntry);
     });
   });
 });
