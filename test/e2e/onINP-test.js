@@ -1529,8 +1529,6 @@ describe('onINP()', async function () {
           '?attribution=1&reportAllChanges=1&click=150&delayResponse=2000',
       );
 
-      await webVitalsLoaded();
-
       // Click on the <button>.
       const reset = await $('#reset');
       await reset.click();
