@@ -465,6 +465,8 @@ describe('onINP()', async function () {
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
 
+    await clearBeacons();
+
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
@@ -735,15 +737,9 @@ describe('onINP()', async function () {
     // Wait until the library is loaded
     await webVitalsLoaded();
 
-    const h1 = await $('h1');
-    await simulateUserLikeClick(h1);
-
-    // Ensure the interaction completes.
-    await nextFrame();
-    // Give INP a chance to report
-    await waitUntilIdle();
-
-    await stubVisibilityChange('hidden');
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -753,21 +749,14 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLButtonElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
     assert(inp.navigationId > 0);
 
-    await stubVisibilityChange('visible');
     await clearBeacons();
 
-    // Click on the soft nav button to start new soft nav.
-    const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
-
-    await beaconCountIs(1);
-    await clearBeacons();
-
+    const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
@@ -803,13 +792,9 @@ describe('onINP()', async function () {
     // Wait until the library is loaded
     await webVitalsLoaded();
 
-    const h1 = await $('h1');
-    await simulateUserLikeClick(h1);
-
-    // Ensure the interaction completes.
-    await nextFrame();
-    // Give INP a chance to report
-    await waitUntilIdle();
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -819,20 +804,14 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    assert(containsEntry(inp.entries, 'click', '[object HTMLHeadingElement]'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLButtonElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
 
     await clearBeacons();
 
     // Click on the soft nav button to start new soft nav.
-    const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
-
-    await beaconCountIs(1);
-    await clearBeacons();
-
-    await simulateUserLikeClick(h1);
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -843,7 +822,7 @@ describe('onINP()', async function () {
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
     assert(
-      containsEntry(softInp.entries, 'click', '[object HTMLHeadingElement]'),
+      containsEntry(softInp.entries, 'click', '[object HTMLButtonElement]'),
     );
     assert(allEntriesPresentTogether(softInp.entries));
     assert.strictEqual(softInp.navigationType, 'soft-navigation');
@@ -856,7 +835,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -874,7 +853,7 @@ describe('onINP()', async function () {
 
     await clearBeacons();
 
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -900,21 +879,14 @@ describe('onINP()', async function () {
     // Wait until the library is loaded
     await webVitalsLoaded();
 
-    const h1 = await $('h1');
-    await simulateUserLikeClick(h1);
-
-    // Ensure the interaction completes.
-    await nextFrame();
-    await waitUntilIdle();
-
     // Click on the soft nav button to start soft nav 1
     // (finalizing hard nav INP).
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
     const [inp] = await getBeacons();
-    assertIsCloseTo(inp.value, 150, 50);
+    assertIsCloseTo(inp.value, 150, 40);
     assert.strictEqual(inp.navigationType, 'navigate');
 
     await clearBeacons();
@@ -923,17 +895,12 @@ describe('onINP()', async function () {
     const clickBlockingInput = await $('#click-blocking-time');
     await clickBlockingInput.setValue(200);
 
-    // Trigger an interaction on Soft Nav 1
-    await simulateUserLikeClick(h1);
-    await nextFrame();
-    await waitUntilIdle();
-
     // Click on soft nav button to start soft nav 2 (finalizing Soft Nav 1 INP).
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
     const [softInp1] = await getBeacons();
-    assertIsCloseTo(softInp1.value, 200, 50);
+    assertIsCloseTo(softInp1.value, 200, 40);
     assert.strictEqual(softInp1.navigationType, 'soft-navigation');
 
     await clearBeacons();
@@ -942,6 +909,7 @@ describe('onINP()', async function () {
     await clickBlockingInput.setValue(100);
 
     // Trigger an interaction on Soft Nav 2
+    const h1 = await $('h1');
     await simulateUserLikeClick(h1);
     await nextFrame();
     await waitUntilIdle();
@@ -951,7 +919,7 @@ describe('onINP()', async function () {
 
     await beaconCountIs(1);
     const [softInp2] = await getBeacons();
-    assertIsCloseTo(softInp2.value, 100, 50);
+    assertIsCloseTo(softInp2.value, 100, 40);
     assert.strictEqual(softInp2.navigationType, 'soft-navigation');
   });
 
@@ -963,17 +931,9 @@ describe('onINP()', async function () {
     // Wait until the library is loaded
     await webVitalsLoaded();
 
-    const h1 = await $('h1');
-    await simulateUserLikeClick(h1);
-
-    // Ensure the interaction completes.
-    await nextFrame();
-    // Give INP a chance to report
-    await waitUntilIdle();
-
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -986,6 +946,9 @@ describe('onINP()', async function () {
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
 
+    await clearBeacons();
+
+    const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
@@ -1016,17 +979,9 @@ describe('onINP()', async function () {
     // Wait until the library is loaded
     await webVitalsLoaded();
 
-    const h1 = await $('h1');
-    await simulateUserLikeClick(h1);
-
-    // Ensure the interaction completes.
-    await nextFrame();
-    // Give INP a chance to report
-    await waitUntilIdle();
-
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -1041,6 +996,7 @@ describe('onINP()', async function () {
 
     await clearBeacons();
 
+    const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
@@ -1067,27 +1023,15 @@ describe('onINP()', async function () {
 
     await navigateTo(
       '/test/inp?doubleCall=1&reportSoftNavs=1&reportSoftNavs2=0&click=150',
-      {readyState: 'interactive'},
     );
 
     // Wait until the library is loaded
     await webVitalsLoaded();
 
-    const h1 = await $('h1');
-    await simulateUserLikeClick(h1);
-
-    // Ensure the interaction completes.
-    await nextFrame();
-    // Give INP a chance to report
-    await waitUntilIdle();
-
-    await setBlockingTime('click', 50);
-    await simulateUserLikeClick(h1);
-
     // Click on the soft nav button to start new soft nav.
     // This will finalize and report the hard-nav INP for instance 1.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1, {instance: 1});
 
@@ -1101,7 +1045,10 @@ describe('onINP()', async function () {
 
     await clearBeacons();
 
+    await setBlockingTime('click', 50);
+
     // Generate a soft-nav interaction
+    const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
@@ -1124,39 +1071,26 @@ describe('onINP()', async function () {
     assert.strictEqual(softInp1.name, 'INP');
     assert.strictEqual(softInp1.navigationType, 'soft-navigation');
 
-    const [hardInp2] = await getBeacons({instance: 2});
-    assert(hardInp2.value >= 0);
+    const [hardInp] = await getBeacons({instance: 2});
+    assert(hardInp.value >= 0);
     // Hard nav INP should be > 150ms
-    assert(hardInp2.value >= 150);
-    assert.strictEqual(hardInp2.name, 'INP');
-    assert.strictEqual(hardInp2.navigationType, 'navigate');
+    assert(hardInp.value >= 150);
+    assert.strictEqual(hardInp.name, 'INP');
+    assert.strictEqual(hardInp.navigationType, 'navigate');
   });
 
   it('works when calling the function twice with reportSoftNavs=1 and default for 2', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo('/test/inp?doubleCall=1&reportSoftNavs=1&click=150', {
-      readyState: 'interactive',
-    });
+    await navigateTo('/test/inp?doubleCall=1&reportSoftNavs=1&click=150');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
 
-    const h1 = await $('h1');
-    await simulateUserLikeClick(h1);
-
-    // Ensure the interaction completes.
-    await nextFrame();
-    // Give INP a chance to report
-    await waitUntilIdle();
-
-    await setBlockingTime('click', 50);
-    await simulateUserLikeClick(h1);
-
     // Click on the soft nav button to start new soft nav.
     // This will finalize and report the hard-nav INP for instance 1.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1, {instance: 1});
 
@@ -1170,7 +1104,10 @@ describe('onINP()', async function () {
 
     await clearBeacons();
 
+    await setBlockingTime('click', 50);
+
     // Generate a soft-nav interaction
+    const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
@@ -1193,12 +1130,12 @@ describe('onINP()', async function () {
     assert.strictEqual(softInp1.name, 'INP');
     assert.strictEqual(softInp1.navigationType, 'soft-navigation');
 
-    const [hardInp2] = await getBeacons({instance: 2});
-    assert(hardInp2.value >= 0);
+    const [hardInp] = await getBeacons({instance: 2});
+    assert(hardInp.value >= 0);
     // Hard nav INP should be > 150ms
-    assert(hardInp2.value >= 150);
-    assert.strictEqual(hardInp2.name, 'INP');
-    assert.strictEqual(hardInp2.navigationType, 'navigate');
+    assert(hardInp.value >= 150);
+    assert.strictEqual(hardInp.name, 'INP');
+    assert.strictEqual(hardInp.navigationType, 'navigate');
   });
 
   describe('attribution', function () {
@@ -1715,27 +1652,14 @@ describe('onINP()', async function () {
       // Wait until the library is loaded
       await webVitalsLoaded();
 
-      const h1 = await $('h1');
-      await simulateUserLikeClick(h1);
-
-      // Ensure the interaction completes.
-      await nextFrame();
-      // Give INP a chance to report
-      await waitUntilIdle();
-
-      await stubVisibilityChange('hidden');
-
-      await beaconCountIs(1);
-      await stubVisibilityChange('visible');
-      await clearBeacons();
-
       // Click on the soft nav button to start new soft nav.
       const softNavButton = await $('#soft-nav');
-      await softNavButton.click();
+      await simulateUserLikeClick(softNavButton);
 
       await beaconCountIs(1);
       await clearBeacons();
 
+      const h1 = await $('h1');
       await simulateUserLikeClick(h1);
 
       // Ensure the interaction completes.
