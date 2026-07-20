@@ -47,6 +47,9 @@ describe('onINP()', async function () {
 
     await navigateTo('/test/inp?reportSoftNavs=1', {readyState: 'complete'});
 
+    // Wait a bit to ensure page is fully loaded and console debug is logged.
+    await browser.pause(1000);
+
     // Wait until the library is loaded
     await webVitalsLoaded();
 
