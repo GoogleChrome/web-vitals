@@ -518,6 +518,9 @@ describe('onCLS()', async function () {
     await clearBeacons();
     await triggerLayoutShift();
 
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
+
     await stubForwardBack();
     await beaconCountIs(1);
 
@@ -535,6 +538,9 @@ describe('onCLS()', async function () {
 
     await clearBeacons();
     await triggerLayoutShift();
+
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
