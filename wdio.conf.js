@@ -92,11 +92,12 @@ export const config = {
         // Can remove next line after puppeteer 21.2.1 lands
         args: [
           'disable-search-engine-choice-screen',
+          // TODO remove the next line when 151 is available in WDIO
           '--enable-features=SoftNavigationHeuristics',
         ],
         // Uncomment to test on Chrome Canary.
         // binary:
-        //   '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
+        // '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
       };
     }
     if (browserName === 'firefox') {
