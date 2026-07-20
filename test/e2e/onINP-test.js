@@ -737,7 +737,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -793,7 +793,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -833,7 +833,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -851,7 +851,7 @@ describe('onINP()', async function () {
 
     await clearBeacons();
 
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -882,7 +882,7 @@ describe('onINP()', async function () {
     // Click on the soft nav button to start soft nav 1
     // (finalizing hard nav INP).
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
     const [inp] = await getBeacons();
@@ -896,7 +896,7 @@ describe('onINP()', async function () {
     await clickBlockingInput.setValue(200);
 
     // Click on soft nav button to start soft nav 2 (finalizing Soft Nav 1 INP).
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
     const [softInp1] = await getBeacons();
@@ -933,7 +933,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -987,7 +987,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -1048,7 +1048,7 @@ describe('onINP()', async function () {
     // Click on the soft nav button to start new soft nav.
     // This will finalize and report the hard-nav INP for instance 1.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1, {instance: 1});
 
@@ -1117,7 +1117,7 @@ describe('onINP()', async function () {
     // Click on the soft nav button to start new soft nav.
     // This will finalize and report the hard-nav INP for instance 1.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1, {instance: 1});
 
@@ -1678,7 +1678,7 @@ describe('onINP()', async function () {
 
       // Click on the soft nav button to start new soft nav.
       const softNavButton = await $('#soft-nav');
-      await softNavButton.click();
+      await simulateUserLikeClick(softNavButton);
 
       await beaconCountIs(1);
       await clearBeacons();
