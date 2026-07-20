@@ -82,6 +82,9 @@ export const config = {
       maxInstances: 1,
       pageLoadStrategy: 'none',
       'wdio:enforceWebDriverClassic': true,
+      'goog:loggingPrefs': {
+        browser: 'ALL', // Options: 'OFF', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST', 'ALL'
+      },
     };
     if (browserName === 'chrome') {
       capability['goog:chromeOptions'] = {
