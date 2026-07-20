@@ -64,6 +64,10 @@
     }
 
     function block(event) {
+      // Return early for soft nav clicks since blocking this interrupts content creation.
+      if (event.target === 'button#soft-nav') {
+        return;
+      }
       const blockingTime = Number(document.getElementById(`${event.type}-blocking-time`).value);
       const startTime = performance.now();
       while (performance.now() < startTime + blockingTime) {

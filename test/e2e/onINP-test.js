@@ -30,7 +30,7 @@ const ROUNDING_ERROR = 8;
 
 describe('onINP()', async function () {
   // Retry all tests in this suite up to 2 times.
-  this.retries(2);
+  this.retries(0);
 
   let browserSupportsINP;
   let browserSupportsLoAF;
@@ -728,9 +728,7 @@ describe('onINP()', async function () {
   it('reports hard nav INP and soft navs (reportAllChanges === false)', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo('/test/inp?reportSoftNavs=1&click=150', {
-      readyState: 'interactive',
-    });
+    await navigateTo('/test/inp?reportSoftNavs=1&click=150');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -831,10 +829,7 @@ describe('onINP()', async function () {
   it('reports hard nav INP and soft navs (reportAllChanges === true)', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo(
-      '/test/inp?reportSoftNavs=1&reportAllChanges=1&click=150',
-      {readyState: 'interactive'},
-    );
+    await navigateTo('/test/inp?reportSoftNavs=1&reportAllChanges=1&click=150');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -920,9 +915,7 @@ describe('onINP()', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
     // Start with 150ms click blocking on hard nav
-    await navigateTo('/test/inp?reportSoftNavs=1&click=150', {
-      readyState: 'interactive',
-    });
+    await navigateTo('/test/inp?reportSoftNavs=1&click=150');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -1076,7 +1069,6 @@ describe('onINP()', async function () {
 
     await navigateTo(
       '/test/inp?doubleCall=1&reportSoftNavs=1&reportSoftNavs2=0&click=150',
-      {readyState: 'interactive'},
     );
 
     // Wait until the library is loaded
@@ -1144,9 +1136,7 @@ describe('onINP()', async function () {
   it('works when calling the function twice with reportSoftNavs=1 and default for 2', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo('/test/inp?doubleCall=1&reportSoftNavs=1&click=150', {
-      readyState: 'interactive',
-    });
+    await navigateTo('/test/inp?doubleCall=1&reportSoftNavs=1&click=150');
 
     // Wait until the library is loaded
     await webVitalsLoaded();
