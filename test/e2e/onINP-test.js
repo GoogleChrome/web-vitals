@@ -735,6 +735,25 @@ describe('onINP()', async function () {
     // Wait until the library is loaded
     await webVitalsLoaded();
 
+    await browser.execute(() => {
+      window.events = [];
+      const observer = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          if (entry.interactionId) {
+            window.events.push(entry.toJSON());
+          }
+        });
+      });
+      observer.observe({type: 'event', durationThreshold: 16, buffered: true});
+      window.softNavs = [];
+      const observer2 = new PerformanceObserver((list) => {
+        list.getEntries().forEach((entry) => {
+          window.softNavs.push(entry.toJSON());
+        });
+      });
+      observer2.observe({type: 'soft-navigation', buffered: true});
+    });
+
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
@@ -746,6 +765,20 @@ describe('onINP()', async function () {
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
     await softNavButton.click();
+
+    // Wait a bit to allow the entries to report
+    await browser.pause(1000);
+    const events = await browser.execute(() => {
+      return window.events;
+    });
+    console.log(events);
+    const softNavs = await browser.execute(() => {
+      return window.softNavs;
+    });
+    console.log(softNavs);
+
+    // Wait a bit to allow the entries to report
+    await browser.pause(1000);
 
     await beaconCountIs(1);
 
