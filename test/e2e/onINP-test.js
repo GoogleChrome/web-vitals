@@ -728,7 +728,9 @@ describe('onINP()', async function () {
   it('reports hard nav INP and soft navs (reportAllChanges === false)', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo('/test/inp?reportSoftNavs=1&click=150');
+    await navigateTo('/test/inp?reportSoftNavs=1&click=150', {
+      readyState: 'interactive',
+    });
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -781,7 +783,10 @@ describe('onINP()', async function () {
   it('reports hard nav INP and soft navs (reportAllChanges === true)', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo('/test/inp?reportSoftNavs=1&reportAllChanges=1&click=150');
+    await navigateTo(
+      '/test/inp?reportSoftNavs=1&reportAllChanges=1&click=150',
+      {readyState: 'interactive'},
+    );
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -867,7 +872,9 @@ describe('onINP()', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
     // Start with 150ms click blocking on hard nav
-    await navigateTo('/test/inp?reportSoftNavs=1&click=150');
+    await navigateTo('/test/inp?reportSoftNavs=1&click=150', {
+      readyState: 'interactive',
+    });
 
     // Wait until the library is loaded
     await webVitalsLoaded();
@@ -879,7 +886,7 @@ describe('onINP()', async function () {
 
     await beaconCountIs(1);
     const [inp] = await getBeacons();
-    assertIsCloseTo(inp.value, 150, 50);
+    assertIsCloseTo(inp.value, 150, 40);
     assert.strictEqual(inp.navigationType, 'navigate');
 
     await clearBeacons();
@@ -893,7 +900,7 @@ describe('onINP()', async function () {
 
     await beaconCountIs(1);
     const [softInp1] = await getBeacons();
-    assertIsCloseTo(softInp1.value, 200, 50);
+    assertIsCloseTo(softInp1.value, 200, 40);
     assert.strictEqual(softInp1.navigationType, 'soft-navigation');
 
     await clearBeacons();
@@ -912,7 +919,7 @@ describe('onINP()', async function () {
 
     await beaconCountIs(1);
     const [softInp2] = await getBeacons();
-    assertIsCloseTo(softInp2.value, 100, 50);
+    assertIsCloseTo(softInp2.value, 100, 40);
     assert.strictEqual(softInp2.navigationType, 'soft-navigation');
   });
 
