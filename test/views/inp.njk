@@ -17,43 +17,65 @@
 
 {% block content %}
   <h1 elementtiming="main-heading" data-target="main-heading">INP Test</h1>
-  <p>
-    <label id="label1"><input type="number" value="0" id="mousedown-blocking-time">
-    <code>mousedown</code> blocking time</label>
-  </p>
-  <p>
-    <label><input type="number" value="0" id="mouseup-blocking-time">
-    <code>mouseup</code> blocking time</label>
-  </p>
-  <p>
-    <label><input type="number" value="0" id="pointerdown-blocking-time">
-    <code>pointerdown</code> blocking time</label>
-  </p>
-  <p>
-    <label><input type="number" value="0" id="pointerup-blocking-time">
-    <code>pointerup</code> blocking time</label>
-  </p>
-  <p>
-    <label><input type="number" value="0" id="keydown-blocking-time">
-    <code>keydown</code> blocking time</label>
-  </p>
-  <p>
-    <label><input type="number" value="0" id="keyup-blocking-time">
-    <code>keyup</code> blocking time</label>
-  </p>
-  <p>
-    <label><input type="number" value="0" id="click-blocking-time">
-    <code>click</code> blocking time</label>
-  </p>
-  <p>
-    <button id="reset">Reset blocking time to zero</button>
-  </p>
-
-  <p>
-    <textarea id="textarea" style="width:40em;height:5em"></textarea>
-  </p>
 
   <script>
+  /*
+    // Set the blocking values based on query params if present.
+    const params = new URLSearchParams(location.search);
+    for (const [key, value] of params) {
+      const el = document.getElementById(`${key}-blocking-time`);
+      if (el?.nodeName.toLowerCase() === 'input') {
+        el.value = value;
+      }
+    }
+
+    function block(event) {
+      // Return early for soft nav clicks since blocking this interrupts content creation.
+      if (event.target === 'button#soft-nav') {
+        return;
+      }
+      const blockingTime = Number(document.getElementById(`${event.type}-blocking-time`).value);
+      const startTime = performance.now();
+      while (performance.now() < startTime + blockingTime) {
+        // Block...
+      }
+    }
+
+    function onInput(event) {
+      const input = event.target;
+      const eventName = input.id.slice(0, input.id.indexOf('-'));
+      if (input.value > 0) {
+        addEventListener(eventName, block, true);
+      } else {
+        removeEventListener(eventName, block, true);
+      }
+    }
+
+    function addBlockingListeners() {
+      const eventNames = [
+        'mousedown',
+        'mouseup',
+        'pointerdown',
+        'pointerup',
+        'keydown',
+        'keyup',
+        'click',
+      ];
+      for (const eventName of eventNames) {
+        const input = document.getElementById(`${eventName}-blocking-time`);
+        input.addEventListener('input', onInput, true);
+        if (input.value > 0) {
+          addEventListener(eventName, block, true);
+        }
+      }
+    }
+
+    document.getElementById('reset').addEventListener('click', () => {
+      [...document.querySelectorAll('label>input')].forEach((n) => n.value = 0);
+    });
+
+    addBlockingListeners();
+    */
   </script>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
