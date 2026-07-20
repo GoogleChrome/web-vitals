@@ -735,6 +735,9 @@ describe('onINP()', async function () {
     // Wait until the library is loaded
     await webVitalsLoaded();
 
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
     await simulateUserLikeClick(softNavButton);
@@ -752,7 +755,6 @@ describe('onINP()', async function () {
     assert(inp.navigationId > 0);
     await clearBeacons();
 
-    const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
     // Ensure the interaction completes.
