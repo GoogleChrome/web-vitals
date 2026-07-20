@@ -54,7 +54,6 @@
   </p>
 
   <script>
-  /*
     // Set the blocking values based on query params if present.
     const params = new URLSearchParams(location.search);
     for (const [key, value] of params) {
@@ -65,10 +64,6 @@
     }
 
     function block(event) {
-      // Return early for soft nav clicks since blocking this interrupts content creation.
-      if (event.target === 'button#soft-nav') {
-        return;
-      }
       const blockingTime = Number(document.getElementById(`${event.type}-blocking-time`).value);
       const startTime = performance.now();
       while (performance.now() < startTime + blockingTime) {
@@ -110,7 +105,6 @@
     });
 
     addBlockingListeners();
-    */
   </script>
 
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
