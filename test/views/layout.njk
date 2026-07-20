@@ -264,11 +264,14 @@
         }
 
         function doSoftNav() {
+          console.log('Started doing a soft nav', document.nav);
           document.nav++;
           loadPage(document.nav);
+          console.log('Finished doing a soft nav', document.nav);
         }
 
         document.getElementById('soft-nav').addEventListener('click',doSoftNav,true);
+        console.log('Added event listener to soft nav button');
       });
 
       // Import a module and automatically add that to the list of ready promises.
