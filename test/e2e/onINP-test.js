@@ -738,9 +738,14 @@ describe('onINP()', async function () {
     const h1 = await $('h1');
     await simulateUserLikeClick(h1);
 
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
 
