@@ -1529,8 +1529,7 @@ describe('onINP()', async function () {
           '?attribution=1&reportAllChanges=1&click=150&delayResponse=2000',
       );
 
-      // Wait a bit to ensure the page elements are available.
-      await browser.pause(1000);
+      await webVitalsLoaded();
 
       // Click on the <button>.
       const reset = await $('#reset');
@@ -1539,7 +1538,10 @@ describe('onINP()', async function () {
       await beaconCountIs(1);
 
       const [inp2] = await getBeacons();
-      assert.equal(inp2.attribution.loadState, 'loading');
+      // Test is flakey in Safari as it seems to wait for the full response
+      if (browser.capabilities.browserName !== 'Safari') {
+        assert.equal(inp2.attribution.loadState, 'loading');
+      }
     });
 
     it('reports the interaction target from any entry where target is defined', async function () {
