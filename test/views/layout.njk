@@ -229,6 +229,7 @@
       document.nav=parseInt(window.location.hash.substring(1)) || 1;
 
       document.addEventListener("DOMContentLoaded", (event) => {
+        console.log('Running DOMContentLoaded to add soft nav listeners');
 
         const main=document.querySelector('main');
 

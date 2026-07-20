@@ -728,7 +728,7 @@ describe('onINP()', async function () {
   it('reports hard nav INP and soft navs (reportAllChanges === false)', async function () {
     if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
 
-    await navigateTo('/test/inp?reportSoftNavs=1');
+    await navigateTo('/test/inp?reportSoftNavs=1', {readyState: 'complete'});
 
     // Wait until the library is loaded
     await webVitalsLoaded();
