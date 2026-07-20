@@ -103,8 +103,12 @@ describe('onINP()', async function () {
     });
     console.log(softNavs);
 
+    // Wait a bit to allow the entries to report
+    await browser.pause(1000);
     const logs = await browser.getLogs('browser');
-    console.log(logs);
+    logs.forEach((log) => {
+      console.log(log);
+    });
 
     await beaconCountIs(1);
 
