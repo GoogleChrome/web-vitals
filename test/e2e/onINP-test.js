@@ -1060,6 +1060,145 @@ describe('onINP()', async function () {
     await stubVisibilityChange('visible');
   });
 
+  it('works when calling the function twice with reportSoftNavs=1 and reportSoftNavs2=0', async function () {
+    if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo(
+      '/test/inp?doubleCall=1&reportSoftNavs=1&reportSoftNavs2=0&click=150',
+      {readyState: 'interactive'},
+    );
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    await setBlockingTime('click', 50);
+    await simulateUserLikeClick(h1);
+
+    // Click on the soft nav button to start new soft nav.
+    // This will finalize and report the hard-nav INP for instance 1.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1, {instance: 1});
+
+    // Instance 2 should NOT report yet.
+    assert.strictEqual((await getBeacons({instance: 2})).length, 0);
+
+    const [inp1] = await getBeacons({instance: 1});
+    assert(inp1.value >= 150);
+    assert.strictEqual(inp1.name, 'INP');
+    assert.strictEqual(inp1.navigationType, 'navigate');
+
+    await clearBeacons();
+
+    // Generate a soft-nav interaction
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    // Load a new page to trigger the hidden state.
+    await stubVisibilityChange('hidden');
+
+    // Instance 1 should report soft nav INP
+    // and instance 2 should report hard nav INP.
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [softInp1] = await getBeacons({instance: 1});
+    assert(softInp1.value >= 0);
+    // Soft nav INP should be ~ 50ms
+    assert(softInp1.value < 100);
+    assert.strictEqual(softInp1.name, 'INP');
+    assert.strictEqual(softInp1.navigationType, 'soft-navigation');
+
+    const [hardInp2] = await getBeacons({instance: 2});
+    assert(hardInp2.value >= 0);
+    // Hard nav INP should be > 150ms
+    assert(hardInp2.value >= 150);
+    assert.strictEqual(hardInp2.name, 'INP');
+    assert.strictEqual(hardInp2.navigationType, 'navigate');
+  });
+
+  it('works when calling the function twice with reportSoftNavs=1 and default for 2', async function () {
+    if (!browserSupportsINP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/inp?doubleCall=1&reportSoftNavs=1&click=150', {
+      readyState: 'interactive',
+    });
+
+    // Wait until the library is loaded
+    await webVitalsLoaded();
+
+    const h1 = await $('h1');
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    await setBlockingTime('click', 50);
+    await simulateUserLikeClick(h1);
+
+    // Click on the soft nav button to start new soft nav.
+    // This will finalize and report the hard-nav INP for instance 1.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1, {instance: 1});
+
+    // Instance 2 should NOT report yet.
+    assert.strictEqual((await getBeacons({instance: 2})).length, 0);
+
+    const [inp1] = await getBeacons({instance: 1});
+    assert(inp1.value >= 150);
+    assert.strictEqual(inp1.name, 'INP');
+    assert.strictEqual(inp1.navigationType, 'navigate');
+
+    await clearBeacons();
+
+    // Generate a soft-nav interaction
+    await simulateUserLikeClick(h1);
+
+    // Ensure the interaction completes.
+    await nextFrame();
+    // Give INP a chance to report
+    await waitUntilIdle();
+
+    // Load a new page to trigger the hidden state.
+    await stubVisibilityChange('hidden');
+
+    // Instance 1 should report soft nav INP
+    // and instance 2 should report hard nav INP.
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [softInp1] = await getBeacons({instance: 1});
+    assert(softInp1.value >= 0);
+    // Soft nav INP should be ~ 50ms
+    assert(softInp1.value < 100);
+    assert.strictEqual(softInp1.name, 'INP');
+    assert.strictEqual(softInp1.navigationType, 'soft-navigation');
+
+    const [hardInp2] = await getBeacons({instance: 2});
+    assert(hardInp2.value >= 0);
+    // Hard nav INP should be > 150ms
+    assert(hardInp2.value >= 150);
+    assert.strictEqual(hardInp2.name, 'INP');
+    assert.strictEqual(hardInp2.navigationType, 'navigate');
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsINP) this.skip();

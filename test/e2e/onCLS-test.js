@@ -1152,6 +1152,104 @@ describe('onCLS()', async function () {
     assert.strictEqual(softCls.navigationType, 'soft-navigation');
   });
 
+  it('works when calling the function twice with reportSoftNavs=1 and reportSoftNavs2=0', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo(
+      '/test/cls?doubleCall=1&reportSoftNavs=1&reportSoftNavs2=0',
+    );
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize CLS.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Wait for the hard nav CLS from instance 1.
+    await beaconCountIs(1, {instance: 1});
+
+    // Instance 2 should NOT report yet.
+    assert.strictEqual((await getBeacons({instance: 2})).length, 0);
+
+    const [cls1] = await getBeacons({instance: 1});
+    assert(cls1.value > 0);
+    assert.strictEqual(cls1.name, 'CLS');
+    assert.strictEqual(cls1.navigationType, 'navigate');
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Give it a second until the soft nav image is painted
+    await browser.pause(1000);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    // Instance 1 should report soft nav CLS
+    // and instance 2 should report hard nav CLS.
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [softCls1] = await getBeacons({instance: 1});
+    assert(softCls1.value > 0);
+    assert.strictEqual(softCls1.name, 'CLS');
+    assert.strictEqual(softCls1.navigationType, 'soft-navigation');
+
+    const [hardCls2] = await getBeacons({instance: 2});
+    assert(hardCls2.value > 0);
+    assert.strictEqual(hardCls2.name, 'CLS');
+    assert.strictEqual(hardCls2.navigationType, 'navigate');
+  });
+
+  it('works when calling the function twice with reportSoftNavs=1 and default for 2', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?doubleCall=1&reportSoftNavs=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize CLS.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Wait for the hard nav CLS from instance 1.
+    await beaconCountIs(1, {instance: 1});
+
+    // Instance 2 should NOT report yet.
+    assert.strictEqual((await getBeacons({instance: 2})).length, 0);
+
+    const [cls1] = await getBeacons({instance: 1});
+    assert(cls1.value > 0);
+    assert.strictEqual(cls1.name, 'CLS');
+    assert.strictEqual(cls1.navigationType, 'navigate');
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Give it a second until the soft nav image is painted
+    await browser.pause(1000);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    // Instance 1 should report soft nav CLS
+    // and instance 2 should report hard nav CLS.
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [softCls1] = await getBeacons({instance: 1});
+    assert(softCls1.value > 0);
+    assert.strictEqual(softCls1.name, 'CLS');
+    assert.strictEqual(softCls1.navigationType, 'soft-navigation');
+
+    const [hardCls2] = await getBeacons({instance: 2});
+    assert(hardCls2.value > 0);
+    assert.strictEqual(hardCls2.name, 'CLS');
+    assert.strictEqual(hardCls2.navigationType, 'navigate');
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsCLS) this.skip();

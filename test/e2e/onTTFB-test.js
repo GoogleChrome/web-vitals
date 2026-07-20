@@ -409,6 +409,80 @@ describe('onTTFB()', async function () {
     assert(softTtfb.navigationId > ttfb.navigationId);
   });
 
+  it('works when calling the function twice with reportSoftNavs=1 and reportSoftNavs2=0', async function () {
+    if (!browserSupportsSoftNavs) this.skip();
+
+    await navigateTo(
+      '/test/ttfb?doubleCall=1&reportSoftNavs=1&reportSoftNavs2=0',
+    );
+
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [ttfb1] = await getBeacons({instance: 1});
+    const [ttfb2] = await getBeacons({instance: 2});
+
+    assert(ttfb1.value >= 0);
+    assert.strictEqual(ttfb1.name, 'TTFB');
+    assert(ttfb2.value >= 0);
+    assert.strictEqual(ttfb2.name, 'TTFB');
+
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Instance 1 should report, but instance 2 should not.
+    await beaconCountIs(1, {instance: 1});
+
+    const [softTtfb1] = await getBeacons({instance: 1});
+    assert.strictEqual(softTtfb1.value, 0);
+    assert.strictEqual(softTtfb1.name, 'TTFB');
+    assert.strictEqual(softTtfb1.navigationType, 'soft-navigation');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+    const beacons = await getBeacons({instance: 2});
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('works when calling the function twice with reportSoftNavs=1 and default for 2', async function () {
+    if (!browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/ttfb?doubleCall=1&reportSoftNavs=1');
+
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [ttfb1] = await getBeacons({instance: 1});
+    const [ttfb2] = await getBeacons({instance: 2});
+
+    assert(ttfb1.value >= 0);
+    assert.strictEqual(ttfb1.name, 'TTFB');
+    assert(ttfb2.value >= 0);
+    assert.strictEqual(ttfb2.name, 'TTFB');
+
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Instance 1 should report, but instance 2 should not.
+    await beaconCountIs(1, {instance: 1});
+
+    const [softTtfb1] = await getBeacons({instance: 1});
+    assert.strictEqual(softTtfb1.value, 0);
+    assert.strictEqual(softTtfb1.name, 'TTFB');
+    assert.strictEqual(softTtfb1.navigationType, 'soft-navigation');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+    const beacons = await getBeacons({instance: 2});
+    assert.strictEqual(beacons.length, 0);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       await navigateTo('/test/ttfb?attribution=1');

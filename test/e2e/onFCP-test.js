@@ -433,6 +433,80 @@ describe('onFCP()', async function () {
     assert(softFcp.navigationId > hardNavId);
   });
 
+  it('works when calling the function twice with reportSoftNavs=1 and reportSoftNavs2=0', async function () {
+    if (!browserSupportsFCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo(
+      '/test/fcp?doubleCall=1&reportSoftNavs=1&reportSoftNavs2=0',
+    );
+
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [fcp1] = await getBeacons({instance: 1});
+    const [fcp2] = await getBeacons({instance: 2});
+
+    assert(fcp1.value >= 0);
+    assert.strictEqual(fcp1.name, 'FCP');
+    assert(fcp2.value >= 0);
+    assert.strictEqual(fcp2.name, 'FCP');
+
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Instance 1 should report, but instance 2 should not.
+    await beaconCountIs(1, {instance: 1});
+
+    const [softFcp1] = await getBeacons({instance: 1});
+    assert(softFcp1.value >= 0);
+    assert.strictEqual(softFcp1.name, 'FCP');
+    assert.strictEqual(softFcp1.navigationType, 'soft-navigation');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+    const beacons = await getBeacons({instance: 2});
+    assert.strictEqual(beacons.length, 0);
+  });
+
+  it('works when calling the function twice with reportSoftNavs=1 and default for 2', async function () {
+    if (!browserSupportsFCP || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/fcp?doubleCall=1&reportSoftNavs=1');
+
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [fcp1] = await getBeacons({instance: 1});
+    const [fcp2] = await getBeacons({instance: 2});
+
+    assert(fcp1.value >= 0);
+    assert.strictEqual(fcp1.name, 'FCP');
+    assert(fcp2.value >= 0);
+    assert.strictEqual(fcp2.name, 'FCP');
+
+    await clearBeacons();
+
+    // Click on the soft nav button to start new soft nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Instance 1 should report, but instance 2 should not.
+    await beaconCountIs(1, {instance: 1});
+
+    const [softFcp1] = await getBeacons({instance: 1});
+    assert(softFcp1.value >= 0);
+    assert.strictEqual(softFcp1.name, 'FCP');
+    assert.strictEqual(softFcp1.navigationType, 'soft-navigation');
+
+    // Wait a bit to ensure no beacons were sent.
+    await browser.pause(1000);
+    const beacons = await getBeacons({instance: 2});
+    assert.strictEqual(beacons.length, 0);
+  });
+
   describe('attribution', function () {
     it('includes attribution data on the metric object', async function () {
       if (!browserSupportsFCP) this.skip();
