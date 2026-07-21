@@ -19,6 +19,11 @@ import type {ReportOpts} from '../types.js';
 export const checkSoftNavsEnabled = (opts?: ReportOpts) => {
   return (
     PerformanceObserver.supportedEntryTypes.includes('soft-navigation') &&
+    // Older implementations expose the value as an attribute rather than the
+    // method. We only support the newer method as that was what was launched
+    // to stable unflagged.
+    typeof globalThis.PerformanceSoftNavigation?.prototype
+      ?.getLargestInteractionContentfulPaint === 'function' &&
     opts &&
     opts.reportSoftNavs
   );

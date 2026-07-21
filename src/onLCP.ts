@@ -111,11 +111,7 @@ export const onLCP = (
       // It can however be null in rare circumstances
       // (see https://github.com/GoogleChrome/web-vitals/issues/725)
       const largestInteractionContentfulPaint =
-        entry.getLargestInteractionContentfulPaint?.() ||
-        // Older implementations expose the value as an attribute rather
-        // than the method above.
-        // TODO: remove this fallback after the origin trial ends.
-        entry.largestInteractionContentfulPaint;
+        entry.getLargestInteractionContentfulPaint?.();
       if (largestInteractionContentfulPaint) {
         handleEntries([largestInteractionContentfulPaint]);
       }
@@ -173,13 +169,7 @@ export const onLCP = (
             continue;
           }
 
-          // Older implementations expose the render time directly on the entry
-          // rather than nested under `largestContentfulPaint`.
-          // TODO: remove after the origin trial ends.
-          renderTime =
-            ICPEntry.largestContentfulPaint?.renderTime ||
-            ICPEntry.renderTime ||
-            0;
+          renderTime = ICPEntry.largestContentfulPaint?.renderTime || 0;
 
           // Paints should never be less than 0 but add cap just in case
           value = Math.max(renderTime - entry.startTime, 0);

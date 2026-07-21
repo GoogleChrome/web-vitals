@@ -35,8 +35,10 @@ describe('onFCP()', async function () {
       return 'onprerenderingchange' in document;
     });
     browserSupportsSoftNavs = await browser.execute(() => {
-      return PerformanceObserver.supportedEntryTypes.includes(
-        'soft-navigation',
+      return (
+        PerformanceObserver.supportedEntryTypes.includes('soft-navigation') &&
+        typeof globalThis.PerformanceSoftNavigation?.prototype
+          ?.getLargestInteractionContentfulPaint === 'function'
       );
     });
     // Set a standard screen size so soft nav paints show
