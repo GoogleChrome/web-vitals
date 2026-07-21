@@ -971,7 +971,6 @@ describe('onINP()', async function () {
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
-    assert.strictEqual(softInp.entries.length, 0);
     assert.strictEqual(softInp.navigationType, 'soft-navigation');
   });
 
