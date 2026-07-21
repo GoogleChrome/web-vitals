@@ -21,7 +21,7 @@
     <p id="p1">This text does not shift.</p>
   {% else %}
     <p id="p2">
-      <img id="img1" elementtiming="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay=500" alt="Gray square" />
+      <img id="img1" elementtiming="main-image" {% if imgHidden %}hidden{% endif %} src="/test/img/square.png?delay=600" alt="Gray square" />
       [text node contents]
     </p>
     <p id="p3" data-target="secondary-image-wrapper"><img id="img3" elementtiming="secondary-image" {% if img2Hidden %}hidden{% endif %} src="/test/img/square.png?delay=1000" alt="Gray square" /></p>
@@ -30,6 +30,11 @@
 
   <p id="p5"><a id="navigate-away" href="https://example.com">Navigate away</a></p>
   {% if prerender %}<p id="p6"><a id="prerender-link" href="/test/cls{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
+
+  <p><button id="soft-nav">Soft navigate</button></p>
+
+  <p id="softnav-title"></p>
+  <p id="softnav-paragraph"></p>
 
   <script type="module">
     const {onCLS} = await __testImport('{{ modulePath }}');
@@ -54,6 +59,7 @@
       }
     }, {
       reportAllChanges: self.__reportAllChanges,
+      reportSoftNavs: self.__reportSoftNavs,
       generateTarget: self.__generateTarget && ((el) => el.dataset.target),
     });
 
@@ -61,7 +67,6 @@
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           for (const cls of queue) {
-            console.log('document.addEventListener');
             navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
           }
           queue.clear();
@@ -80,6 +85,7 @@
         navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(cls)));
       }, {
         reportAllChanges: self.__reportAllChanges2,
+        reportSoftNavs: self.__reportSoftNavs2,
         generateTarget: self.__generateTarget2 && ((el) => el.dataset.target),
       });
     }

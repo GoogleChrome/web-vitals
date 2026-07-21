@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {InteractionManager} from './lib/InteractionManager.js';
 import {observe} from './lib/observe.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {initInteractionCountPolyfill} from './lib/polyfills/interactionCountPolyfill.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
@@ -27,6 +28,7 @@ import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 
 import type {
   INPMetric,
+  Metric,
   MetricRatingThresholds,
   INPReportOpts,
 } from './types.js';
@@ -36,6 +38,12 @@ export const INPThresholds: MetricRatingThresholds = [200, 500];
 
 // The default `durationThreshold` used across this library for observing
 // `event` entries via PerformanceObserver.
+// Event Timing entries have their durations rounded to the nearest 8ms,
+// so a duration of 40ms would be any event that spans 2.5 or more frames
+// at 60Hz. This threshold is chosen to strike a balance between usefulness
+// and performance. Running this callback for any interaction that spans
+// just one or two frames is likely not worth the insight that could be
+// gained.
 const DEFAULT_DURATION_THRESHOLD = 40;
 
 /**
@@ -90,7 +98,59 @@ export const onINP = (
 
     const interactionManager = initUnique(opts, InteractionManager);
 
-    const handleEntries = (entries: INPMetric['entries']) => {
+    const initNewINPMetric = (
+      navigationType?: Metric['navigationType'],
+      navigationId?: number,
+      navigationInteractionId?: number,
+      navigationURL?: string,
+      navigationStartTime?: number,
+    ) => {
+      interactionManager._resetInteractions();
+      metric = initMetric(
+        'INP',
+        -1,
+        navigationType,
+        navigationId,
+        navigationInteractionId,
+        navigationURL,
+        navigationStartTime,
+      );
+      report = bindReporter(
+        onReport,
+        metric,
+        INPThresholds,
+        opts.reportAllChanges,
+      );
+    };
+
+    const updateINPMetric = () => {
+      const inp = interactionManager._estimateP98LongestInteraction(
+        metric.navigationType,
+      );
+
+      if (inp && inp._latency !== metric.value) {
+        metric.value = inp._latency;
+        metric.entries = inp.entries;
+        report();
+      }
+    };
+
+    const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
+      updateINPMetric();
+      report(true);
+      initNewINPMetric(
+        'soft-navigation',
+        entry.navigationId,
+        entry.interactionId,
+        entry.name,
+        entry.startTime,
+      );
+    };
+
+    const handleEntries = (
+      entries: (PerformanceEventTiming | PerformanceSoftNavigation)[],
+      forceReport: boolean = false,
+    ) => {
       // Queue the `handleEntries()` callback in the next idle task.
       // This is needed to increase the chances that all event entries that
       // occurred between the user interaction and the next paint
@@ -99,28 +159,29 @@ export const onINP = (
       // 123+ that if rolled out fully may make this no longer necessary.
       whenIdleOrHidden(() => {
         for (const entry of entries) {
-          interactionManager._processEntry(entry);
+          if (entry.entryType === 'soft-navigation') {
+            handleSoftNavEntry(entry as PerformanceSoftNavigation);
+            continue;
+          }
+          interactionManager._processEntry(entry as PerformanceEventTiming);
         }
-
-        const inp = interactionManager._estimateP98LongestInteraction();
-
-        if (inp && inp._latency !== metric.value) {
-          metric.value = inp._latency;
-          metric.entries = inp.entries;
-          report();
+        updateINPMetric();
+        if (forceReport) {
+          report(true);
         }
       });
     };
 
-    const po = observe('event', handleEntries, {
-      // Event Timing entries have their durations rounded to the nearest 8ms,
-      // so a duration of 40ms would be any event that spans 2.5 or more frames
-      // at 60Hz. This threshold is chosen to strike a balance between usefulness
-      // and performance. Running this callback for any interaction that spans
-      // just one or two frames is likely not worth the insight that could be
-      // gained.
+    const types = ['event', 'first-input'] as (
+      'event' | 'first-input' | 'soft-navigation'
+    )[];
+    if (checkSoftNavsEnabled(opts)) {
+      types.push('soft-navigation');
+    }
+    const po = observe(types, handleEntries, {
+      ...opts,
       durationThreshold: opts.durationThreshold ?? DEFAULT_DURATION_THRESHOLD,
-    });
+    } as PerformanceObserverInit);
 
     report = bindReporter(
       onReport,
@@ -130,26 +191,24 @@ export const onINP = (
     );
 
     if (po) {
-      // Also observe entries of type `first-input`. This is useful in cases
-      // where the first interaction is less than the `durationThreshold`.
-      po.observe({type: 'first-input', buffered: true});
-
       visibilityWatcher.onHidden(() => {
-        handleEntries(po.takeRecords() as INPMetric['entries']);
-        report(true);
+        handleEntries(
+          po.takeRecords() as [
+            PerformanceEventTiming | PerformanceSoftNavigation,
+          ],
+          true, // forceReport after processing all entries
+        );
       });
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
       onBFCacheRestore(() => {
-        interactionManager._resetInteractions();
-
-        metric = initMetric('INP');
-        report = bindReporter(
-          onReport,
-          metric,
-          INPThresholds,
-          opts.reportAllChanges,
+        initNewINPMetric(
+          'back-forward-cache',
+          metric.navigationId,
+          metric.navigationInteractionId,
+          metric.navigationURL,
+          getBFCacheRestoreTime(),
         );
       });
     }

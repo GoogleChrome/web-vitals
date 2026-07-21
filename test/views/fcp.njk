@@ -28,6 +28,11 @@
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
   {% if prerender %}<p><a id="prerender-link" href="/test/fcp{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
+  <p><button id="soft-nav">Soft navigate</button></p>
+
+  <p id="softnav-title"></p>
+  <p id="softnav-paragraph"></p>
+
   <script type="module">
     const {onFCP} = await __testImport('{{ modulePath }}');
 
@@ -41,6 +46,7 @@
       navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
     }, {
       reportAllChanges: self.__reportAllChanges,
+      reportSoftNavs: self.__reportSoftNavs,
     });
 
     if (self.__doubleCall) {
@@ -54,6 +60,7 @@
         navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(fcp)));
       }, {
         reportAllChanges: self.__reportAllChanges2,
+        reportSoftNavs: self.__reportSoftNavs2,
       });
     }
   </script>

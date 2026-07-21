@@ -14,17 +14,23 @@
  * limitations under the License.
  */
 
-import {onBFCacheRestore} from './lib/bfcache.js';
+import {getBFCacheRestoreTime, onBFCacheRestore} from './lib/bfcache.js';
 import {bindReporter} from './lib/bindReporter.js';
 import {doubleRAF} from './lib/doubleRAF.js';
+import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
 import {initMetric} from './lib/initMetric.js';
 import {initUnique} from './lib/initUnique.js';
 import {LayoutShiftManager} from './lib/LayoutShiftManager.js';
 import {observe} from './lib/observe.js';
+import {checkSoftNavsEnabled} from './lib/softNavs.js';
 import {runOnce} from './lib/runOnce.js';
 import {onFCP} from './onFCP.js';
-import {getVisibilityWatcher} from './lib/getVisibilityWatcher.js';
-import type {CLSMetric, MetricRatingThresholds, ReportOpts} from './types.js';
+import type {
+  CLSMetric,
+  Metric,
+  MetricRatingThresholds,
+  ReportOpts,
+} from './types.js';
 
 /** Thresholds for CLS. See https://web.dev/articles/cls#what_is_a_good_cls_score */
 export const CLSThresholds: MetricRatingThresholds = [0.1, 0.25];
@@ -64,44 +70,95 @@ export const onCLS = (
 
       const layoutShiftManager = initUnique(opts, LayoutShiftManager);
 
-      const handleEntries = (entries: LayoutShift[]) => {
-        for (const entry of entries) {
-          layoutShiftManager._processEntry(entry);
-        }
+      const initNewCLSMetric = (
+        navigationType?: Metric['navigationType'],
+        navigationId?: number,
+        navigationInteractionId?: number,
+        navigationURL?: string,
+        navigationStartTime?: number,
+      ) => {
+        metric = initMetric(
+          'CLS',
+          0,
+          navigationType,
+          navigationId,
+          navigationInteractionId,
+          navigationURL,
+          navigationStartTime,
+        );
+        layoutShiftManager._sessionValue = 0;
+        report = bindReporter(
+          onReport,
+          metric,
+          CLSThresholds,
+          opts.reportAllChanges,
+        );
+      };
 
+      const updateAndReportMetric = (forceReport: boolean = false) => {
         // If the current session value is larger than the current CLS value,
         // update CLS and the entries contributing to it.
         if (layoutShiftManager._sessionValue > metric.value) {
           metric.value = layoutShiftManager._sessionValue;
           metric.entries = layoutShiftManager._sessionEntries;
-          report();
         }
+        report(forceReport);
       };
 
-      const po = observe('layout-shift', handleEntries);
+      const handleSoftNavEntry = (entry: PerformanceSoftNavigation) => {
+        updateAndReportMetric(true);
+        initNewCLSMetric(
+          'soft-navigation',
+          entry.navigationId,
+          entry.interactionId,
+          entry.name,
+          entry.startTime,
+        );
+      };
+
+      const handleEntries = (
+        entries: (LayoutShift | PerformanceSoftNavigation)[],
+      ) => {
+        for (const entry of entries) {
+          if (entry.entryType === 'soft-navigation') {
+            handleSoftNavEntry(entry as PerformanceSoftNavigation);
+            continue;
+          }
+          layoutShiftManager._processEntry(entry as LayoutShift);
+        }
+
+        updateAndReportMetric();
+      };
+
+      const types = ['layout-shift'] as ('layout-shift' | 'soft-navigation')[];
+      if (checkSoftNavsEnabled(opts)) {
+        types.push('soft-navigation');
+      }
+      const po = observe(types, handleEntries);
       if (po) {
         report = bindReporter(
           onReport,
           metric,
           CLSThresholds,
-          opts!.reportAllChanges,
+          opts.reportAllChanges,
         );
 
         visibilityWatcher.onHidden(() => {
-          handleEntries(po.takeRecords() as CLSMetric['entries']);
+          handleEntries(
+            po.takeRecords() as [LayoutShift | PerformanceSoftNavigation],
+          );
           report(true);
         });
 
         // Only report after a bfcache restore if the `PerformanceObserver`
         // successfully registered.
         onBFCacheRestore(() => {
-          layoutShiftManager._sessionValue = 0;
-          metric = initMetric('CLS', 0);
-          report = bindReporter(
-            onReport,
-            metric,
-            CLSThresholds,
-            opts!.reportAllChanges,
+          initNewCLSMetric(
+            'back-forward-cache',
+            metric.navigationId,
+            metric.navigationInteractionId,
+            metric.navigationURL,
+            getBFCacheRestoreTime(),
           );
 
           doubleRAF(report);

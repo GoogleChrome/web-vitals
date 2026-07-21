@@ -23,19 +23,28 @@ import type {MetricType} from '../types.js';
 export const initMetric = <MetricName extends MetricType['name']>(
   name: MetricName,
   value: number = -1,
+  navigationType?: MetricType['navigationType'],
+  navigationId: number = 0,
+  navigationInteractionId?: number,
+  navigationURL?: string,
+  navigationStartTime?: number,
 ) => {
-  const navEntry = getNavigationEntry();
-  let navigationType: MetricType['navigationType'] = 'navigate';
+  const hardNavEntry = getNavigationEntry();
+  const hardNavId = hardNavEntry?.navigationId || 0;
+  let _navigationType: MetricType['navigationType'] = 'navigate';
 
-  if (getBFCacheRestoreTime() >= 0) {
-    navigationType = 'back-forward-cache';
-  } else if (navEntry) {
+  if (navigationType) {
+    // If it was passed in, then use that
+    _navigationType = navigationType;
+  } else if (getBFCacheRestoreTime() >= 0) {
+    _navigationType = 'back-forward-cache';
+  } else if (hardNavEntry) {
     if (document.prerendering || getActivationStart() > 0) {
-      navigationType = 'prerender';
+      _navigationType = 'prerender';
     } else if (document.wasDiscarded) {
-      navigationType = 'restore';
-    } else if (navEntry.type) {
-      navigationType = navEntry.type.replace(
+      _navigationType = 'restore';
+    } else if (hardNavEntry.type) {
+      _navigationType = hardNavEntry.type.replace(
         /_/g,
         '-',
       ) as MetricType['navigationType'];
@@ -52,6 +61,10 @@ export const initMetric = <MetricName extends MetricType['name']>(
     delta: 0,
     entries,
     id: generateUniqueID(),
-    navigationType,
+    navigationType: _navigationType,
+    navigationId: navigationId || hardNavId,
+    navigationInteractionId: navigationInteractionId,
+    navigationURL: navigationURL || hardNavEntry?.name,
+    navigationStartTime: navigationStartTime || 0,
   };
 };

@@ -28,7 +28,7 @@
 
 ## Overview
 
-The `web-vitals` library is a tiny (~2K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/articles/vitals) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
+The `web-vitals` library is a tiny (~3K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/articles/vitals) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
 
 The library supports all of the [Core Web Vitals](https://web.dev/articles/vitals#core_web_vitals) as well as a number of other metrics that are useful in diagnosing [real-user](https://web.dev/articles/user-centric-performance-metrics) performance issues.
 
@@ -210,7 +210,7 @@ In other cases, a metric callback may be called more than once:
 - All metrics are reported again (with the above exceptions) after a page is restored from the [back/forward cache](https://web.dev/articles/bfcache).
 
 > [!WARNING]
-> Do not call any of the Web Vitals functions (e.g. `onCLS()`, `onINP()`, `onLCP()`) more than once per page load. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result in a memory leak.
+> Avoid calling the Web Vitals functions (e.g. `onCLS()`, `onINP()`, `onLCP()`) repeatedly per page load without a good reason. Each of these functions creates a `PerformanceObserver` instance and registers event listeners for the lifetime of the page. While the overhead of calling these functions once is negligible, calling them repeatedly on the same page may eventually result increased memory overhead.
 
 ### Report the value on every change
 
@@ -252,6 +252,65 @@ onLCP(logDelta);
 
 In addition to using the `id` field to group multiple deltas for the same metric, it can also be used to differentiate different metrics reported on the same page. For example, after a back/forward cache restore, a new metric object is created with a new `id` (since back/forward cache restores are considered separate page visits).
 
+### Report metrics for soft navigations
+
+When originally launched, Core Web Vitals are only tracked for full page navigations, which can affect how [Single Page Applications](https://web.dev/vitals-spa-faq/) that use so called "soft navigations" to update the browser URL and history outside of the normal browser's handling of this.
+
+The Chrome team have added a feature from Chrome 151 to enable [measuring these soft navigations](https://github.com/WICG/soft-navigations) and report on Core Web Vitals separately for them.
+
+A "soft navigation" is tracked automatically when the following three things happen:
+
+- A user interaction occurs
+- The URL changes
+- Something is painted to screen.
+
+For some sites, this definition may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not missing the above criteria). However, by having the browser define the soft navigation, rather than depending on SPA frameworks to call an API when happens, allows for soft navigations to be measured for existing SPA applications and also provides a more consistent experience across frameworks.
+
+Some important points to note:
+
+- TTFB is reported as 0, and not the time of the first network call (if any) after the soft navigation.
+- FCP and LCP are the first and largest contentful paints after the soft navigation. Elements that remain between soft navigations will not count since they are not repainted. This can lead to differences between measuring performance for a page from a soft navigation and a hard navigation.
+- INP is reset to measure only interactions after the the soft navigation.
+- CLS is reset to measure again separate to the first page.
+
+The metrics can be reported for Soft Navigations using the `reportSoftNavs: true` reporting option:
+
+```js
+import {
+  onCLS,
+  onINP,
+  onLCP,
+} from 'https://unpkg.com/web-vitals@soft-navs/dist/web-vitals.js?module';
+
+onCLS(console.log, {reportSoftNavs: true});
+onINP(console.log, {reportSoftNavs: true});
+onLCP(console.log, {reportSoftNavs: true});
+```
+
+Note that this will change the way the first page loads are measured as the metrics for the initial URL will be finalized once the first soft nav occurs.
+
+This will also lead to differences with browsers that support soft navigations (Chromium-based browsers on version 151+) and other browsers (that will not change reporting even with the `reportSoftNavs` flag).
+
+To measure both you need to register two callbacks:
+
+```js
+import {
+  onCLS,
+  onINP,
+  onLCP,
+} from 'https://unpkg.com/web-vitals@soft-navs/dist/web-vitals.js?module';
+
+onCLS(doTraditionalProcessing);
+onINP(doTraditionalProcessing);
+onLCP(doTraditionalProcessing);
+
+onCLS(doSoftNavProcessing, {reportSoftNavs: true});
+onINP(doSoftNavProcessing, {reportSoftNavs: true});
+onLCP(doSoftNavProcessing, {reportSoftNavs: true});
+```
+
+In both cases the `navigationURL` property will provide the URL the metrics are for. This should be used rather than assuming the current URL is the page URL, since metrics may be reported after the fact.
+
 ### Send the results to an analytics endpoint
 
 The following example measures each of the Core Web Vitals metrics and reports them to a hypothetical `/analytics` endpoint, as soon as each is ready to be sent.
@@ -266,6 +325,9 @@ function sendToAnalytics(metric) {
     name: metric.name,
     value: metric.value,
     id: metric.id,
+
+    // Override the page location for soft nav support
+    page_location: navigationURL,
 
     // Include additional data as needed...
   });
@@ -299,6 +361,9 @@ function sendToGoogleAnalytics({name, delta, value, id}) {
     metric_id: id, // Needed to aggregate events.
     metric_value: value, // Optional.
     metric_delta: delta, // Optional.
+
+    // Override the page location as metrics can be reported late for soft navs
+    page_location: navigationURL,
 
     // OPTIONAL: any additional params or debug info here.
     // See: https://web.dev/articles/debug-performance-in-the-field
@@ -339,6 +404,9 @@ function sendToGoogleAnalytics({name, delta, value, id, attribution}) {
     metric_id: id, // Needed to aggregate events.
     metric_value: value, // Optional.
     metric_delta: delta, // Optional.
+
+    // Override the page location for soft nav support
+    page_location: navigationURL,
   };
 
   switch (name) {
@@ -546,6 +614,7 @@ interface Metric {
    * - 'prerender': for pages that were prerendered.
    * - 'restore': for pages that were discarded by the browser and then
    * restored by the user.
+   * - 'soft-navigation': for soft navigations.
    */
   navigationType:
     | 'navigate'
@@ -553,7 +622,32 @@ interface Metric {
     | 'back-forward'
     | 'back-forward-cache'
     | 'prerender'
-    | 'restore';
+    | 'restore'
+    | 'soft-navigation';
+
+  /**
+   * The navigationId the metric happened for. This is particularly relevant for soft navigations where
+   * the metric may be reported for a previous URL.
+   */
+  navigationId: number;
+
+  /**
+   * For metrics specific to a soft navigation, the interactionId of the
+   * interaction that triggered that soft navigation.
+   */
+  navigationInteractionId?: number;
+
+  /**
+   * The navigation startTime the metric is based from. This is particularly
+   * relevant for soft navigations where time origin is not 0.
+   */
+  navigationStartTime?: number;
+
+  /**
+   * The navigation URL the metric happened for. This is particularly relevant for soft navigations where
+   * the metric may be reported for a previous URL.
+   */
+  navigationURL?: string;
 }
 ```
 
@@ -600,7 +694,7 @@ interface LCPMetric extends Metric {
 ```ts
 interface TTFBMetric extends Metric {
   name: 'TTFB';
-  entries: PerformanceNavigationTiming[];
+  entries: (PerformanceNavigationTiming | PeformanceSoftNavigation)[];
 }
 ```
 
@@ -660,6 +754,7 @@ Metric-specific subclasses:
 interface INPAttributionReportOpts extends AttributionReportOpts {
   durationThreshold?: number;
   includeProcessedEventEntries?: boolean;
+  reportSoftNavs?: boolean;
 }
 ```
 
@@ -894,7 +989,7 @@ interface FCPAttribution {
    * general page load issues. This can be used to access `serverTiming` for example:
    * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming;
+  navigationEntry?: PerformanceNavigationTiming | PerformanceSoftNavigation;
 }
 ```
 
@@ -910,30 +1005,38 @@ interface INPAttribution {
    * `generateTarget` configuration option was passed, then this will instead
    * be the return value of that function, falling back to the default if that
    * returns null or undefined.
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
-  interactionTarget: string;
+  interactionTarget?: string;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred
    * within the frame, only the first time is reported).
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
-  interactionTime: DOMHighResTimeStamp;
+  interactionTime?: DOMHighResTimeStamp;
   /**
    * The type of interaction, based on the event type of the `event` entry
    * that corresponds to the interaction (i.e. the first `event` entry
    * containing an `interactionId` dispatched in a given animation frame).
    * For "pointerdown", "pointerup", or "click" events this will be "pointer",
    * and for "keydown" or "keyup" events this will be "keyboard".
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
-  interactionType: 'pointer' | 'keyboard';
+  interactionType?: 'pointer' | 'keyboard';
   /**
    * The best-guess timestamp of the next paint after the interaction.
    * In general, this timestamp is the same as the `startTime + duration` of
    * the event timing entry. However, since duration values are rounded to the
    * nearest 8ms (and can be rounded down), this value is clamped to always be
    * reported after the processing times.
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
-  nextPaintTime: DOMHighResTimeStamp;
+  nextPaintTime?: DOMHighResTimeStamp;
   /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
@@ -1081,7 +1184,7 @@ interface LCPAttribution {
    * general page load issues. This can be used to access `serverTiming` for example:
    * navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming;
+  navigationEntry?: PerformanceNavigationTiming | PerformanceSoftNavigation;
   /**
    * The `resource` entry for the LCP resource (if applicable), which is useful
    * for diagnosing resource load issues.
@@ -1131,7 +1234,7 @@ interface TTFBAttribution {
    * general page load issues. This can be used to access `serverTiming` for
    * example: navigationEntry?.serverTiming
    */
-  navigationEntry?: PerformanceNavigationTiming;
+  navigationEntry?: PerformanceNavigationTiming | PerformanceSoftNavigation;
 }
 ```
 
@@ -1139,13 +1242,14 @@ interface TTFBAttribution {
 
 The `web-vitals` code is tested in Chrome, Firefox, and Safari. In addition, all JavaScript features used in the code are part of ([Baseline Widely Available](https://web.dev/baseline)), and thus should run without error in all versions of these browsers released within the last 30 months.
 
-However, some of the APIs required to capture these metrics (notable CLS) are currently only available in some browsers. The latest browser support for each function is as follows:
+However, some of the APIs required to capture these metrics (notable CLS and soft navigations) are currently only available in some browsers. The latest browser support for each function is as follows:
 
 - `onCLS()`: Chromium
 - `onFCP()`: Chromium, Firefox, Safari
 - `onINP()`: Chromium, Firefox, Safari
 - `onLCP()`: Chromium, Firefox, Safari
 - `onTTFB()`: Chromium, Firefox, Safari
+- Core Web Vitals for soft navigations: Chromium 151+
 
 ## Limitations
 

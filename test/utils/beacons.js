@@ -42,7 +42,7 @@ export async function getBeacons(opts = {}) {
   if (allBeacons.length) {
     const lastBeacon = allBeacons.findLast((beacon) => {
       if (opts.instance) {
-        return opts.instance === beacon.instance;
+        return opts.instance === beacon.instance || opts.instance === 'All';
       }
       return true;
     });
@@ -51,11 +51,11 @@ export async function getBeacons(opts = {}) {
       return allBeacons.filter((beacon) => {
         if (beacon.id === lastBeacon.id) {
           if (opts.instance) {
-            return opts.instance === beacon.instance;
+            return opts.instance === beacon.instance || opts.instance === 'All';
           }
           return true;
         }
-        return false;
+        return opts.instance === 'All';
       });
     }
   }
