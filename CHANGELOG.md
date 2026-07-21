@@ -8,8 +8,11 @@ v6 introduces [Soft Navigation support for the Web Vitals metrics](https://devel
 > See the [upgrading to v6](/docs/upgrading-to-v6.md) guide for a complete list of all API changes in version 6.
 
 - **[BREAKING]** Remove unneeded modules with tsconfig `verbatimModuleSyntax`
+- Add source maps
+  ([#771](https://github.com/GoogleChrome/web-vitals/pull/771))
 - Cap RequestIdleCallback to 1 second to ensure metrics report even when busy
   ([#755](https://github.com/GoogleChrome/web-vitals/pull/755))
+- Remove unneeded modules with tsconfig `verbatimModuleSyntax`
   ([#741](https://github.com/GoogleChrome/web-vitals/pull/741))
 - Flip default for `includeProcessedEventEntries` to false for v6
   ([#763](https://github.com/GoogleChrome/web-vitals/pull/763))

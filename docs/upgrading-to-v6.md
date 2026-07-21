@@ -20,6 +20,7 @@ This document lists the full set of changes between version 5 and version 6 that
 ## 🚀 New features
 
 - **Added** support for Soft Navigation reporting of Core Web Vitals metrics for browsers that support the new [Soft Navigations and Interaction Contentful Paint](https://github.com/WICG/soft-navigations) performance entries (Chromium 151+ at the time of writing). More details in the [Measuring soft navigations](https://developer.chrome.com/docs/web-platform/soft-navigations) post ([#308](https://github.com/GoogleChrome/web-vitals/pull/308)).
+- **Added** sourcemaps ([#771](https://github.com/GoogleChrome/web-vitals/pull/771)).
 
 ## ⚠️ Deprecations
 
