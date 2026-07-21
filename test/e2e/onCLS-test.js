@@ -891,7 +891,7 @@ describe('onCLS()', async function () {
 
     const [cls] = await getBeacons();
     assert(cls.value > 0);
-    assert(cls.id.match(/^v5-\d+-\d+$/));
+    assert(cls.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.rating, 'good');
@@ -937,7 +937,7 @@ describe('onCLS()', async function () {
     const [cls1, cls2, cls3] = await getBeacons();
 
     assert.strictEqual(cls1.value, 0);
-    assert(cls1.id.match(/^v5-\d+-\d+$/));
+    assert(cls1.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(cls1.name, 'CLS');
     assert.strictEqual(cls1.value, cls1.delta);
     assert.strictEqual(cls1.rating, 'good');
@@ -946,7 +946,7 @@ describe('onCLS()', async function () {
     assert(cls1.navigationId > 0);
 
     assert(cls2.value > 0);
-    assert(cls2.id.match(/^v5-\d+-\d+$/));
+    assert(cls2.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(cls2.name, 'CLS');
     assert.strictEqual(cls2.value, cls2.delta);
     assert.strictEqual(cls2.rating, 'good');
@@ -955,7 +955,7 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls2.navigationId, cls1.navigationId);
 
     assert(cls3.value > 0);
-    assert(cls3.id.match(/^v5-\d+-\d+$/));
+    assert(cls3.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(cls3.name, 'CLS');
     assert.equal(cls3.value, cls2.value + cls3.delta);
     assert.strictEqual(cls3.rating, 'good');
@@ -1030,7 +1030,7 @@ describe('onCLS()', async function () {
 
     const [cls] = await getBeacons();
     assert(cls.value > 0);
-    assert(cls.id.match(/^v5-\d+-\d+$/));
+    assert(cls.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(cls.name, 'CLS');
     assert.strictEqual(cls.value, cls.delta);
     assert.strictEqual(cls.rating, 'good');

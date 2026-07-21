@@ -334,7 +334,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert(fcp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -353,7 +353,7 @@ describe('onFCP()', async function () {
 
     const [softFcp] = await getBeacons();
     assert(softFcp.value >= 0);
-    assert(softFcp.id.match(/^v5-\d+-\d+$/));
+    assert(softFcp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softFcp.name, 'FCP');
     assert.strictEqual(softFcp.value, softFcp.delta);
     assert.strictEqual(softFcp.rating, 'good');
@@ -375,7 +375,7 @@ describe('onFCP()', async function () {
 
     const [fcp] = await getBeacons();
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert(fcp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -394,7 +394,7 @@ describe('onFCP()', async function () {
 
     const [softFcp] = await getBeacons();
     assert(softFcp.value >= 0);
-    assert(softFcp.id.match(/^v5-\d+-\d+$/));
+    assert(softFcp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softFcp.name, 'FCP');
     assert.strictEqual(softFcp.value, softFcp.delta);
     assert.strictEqual(softFcp.rating, 'good');
@@ -420,7 +420,7 @@ describe('onFCP()', async function () {
 
     const [fcp, softFcp] = await getBeacons({instance: 'All'});
     assert(fcp.value >= 0);
-    assert(fcp.id.match(/^v5-\d+-\d+$/));
+    assert(fcp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(fcp.name, 'FCP');
     assert.strictEqual(fcp.value, fcp.delta);
     assert.strictEqual(fcp.rating, 'good');
@@ -428,7 +428,7 @@ describe('onFCP()', async function () {
     assert.match(fcp.navigationType, /navigate|reload/);
 
     assert(softFcp.value >= 0);
-    assert(softFcp.id.match(/^v5-\d+-\d+$/));
+    assert(softFcp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softFcp.name, 'FCP');
     assert.strictEqual(softFcp.value, softFcp.delta);
     assert.strictEqual(softFcp.rating, 'good');

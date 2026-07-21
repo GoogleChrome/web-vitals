@@ -460,7 +460,7 @@ describe('onINP()', async function () {
 
     const [inp] = await getBeacons();
     assert(inp.value >= 0);
-    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert(inp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
@@ -483,7 +483,7 @@ describe('onINP()', async function () {
 
     const [softInp] = await getBeacons();
     assertIsCloseTo(softInp.value, 8, 1);
-    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert(softInp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
@@ -513,7 +513,7 @@ describe('onINP()', async function () {
 
     const [inp] = await getBeacons();
     assert(inp.value >= 0);
-    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert(inp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
@@ -534,7 +534,7 @@ describe('onINP()', async function () {
 
     const [softInp] = await getBeacons();
     assertIsCloseTo(softInp.value, 8, 1);
-    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert(softInp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
@@ -747,7 +747,7 @@ describe('onINP()', async function () {
 
     const [inp] = await getBeacons();
     assert(inp.value >= 0);
-    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert(inp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
@@ -773,7 +773,7 @@ describe('onINP()', async function () {
 
     const [softInp] = await getBeacons();
     assert(softInp.value >= 0);
-    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert(softInp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
@@ -802,7 +802,7 @@ describe('onINP()', async function () {
 
     const [inp] = await getBeacons();
     assert(inp.value >= 0);
-    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert(inp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
@@ -819,7 +819,7 @@ describe('onINP()', async function () {
 
     const [softInp] = await getBeacons();
     assert(softInp.value >= 0);
-    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert(softInp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
@@ -843,7 +843,7 @@ describe('onINP()', async function () {
 
     const [inp] = await getBeacons();
     assert(inp.value >= 0);
-    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert(inp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
@@ -859,7 +859,7 @@ describe('onINP()', async function () {
 
     const [softInp] = await getBeacons();
     assert(softInp.value >= 0);
-    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert(softInp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
@@ -943,7 +943,7 @@ describe('onINP()', async function () {
 
     const [inp] = await getBeacons();
     assert(inp.value >= 0);
-    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert(inp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
@@ -967,7 +967,7 @@ describe('onINP()', async function () {
 
     const [softInp] = await getBeacons();
     assert(softInp.value >= 0);
-    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert(softInp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
@@ -990,7 +990,7 @@ describe('onINP()', async function () {
 
     const [inp] = await getBeacons();
     assert(inp.value >= 0);
-    assert(inp.id.match(/^v5-\d+-\d+$/));
+    assert(inp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
@@ -1012,7 +1012,7 @@ describe('onINP()', async function () {
 
     const [softInp] = await getBeacons();
     assert(softInp.value >= 0);
-    assert(softInp.id.match(/^v5-\d+-\d+$/));
+    assert(softInp.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
@@ -1227,7 +1227,7 @@ describe('onINP()', async function () {
       const [inp2] = await getBeacons();
 
       assert(inp2.value >= 300 - ROUNDING_ERROR);
-      assert(inp2.id.match(/^v5-\d+-\d+$/));
+      assert(inp2.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(inp2.name, 'INP');
       assert.strictEqual(inp2.value, inp1.value + inp2.delta);
       assert.strictEqual(inp2.rating, 'needs-improvement');
@@ -1291,7 +1291,7 @@ describe('onINP()', async function () {
       const [inp1] = await getBeacons();
 
       assert(inp1.value >= 100 - ROUNDING_ERROR);
-      assert(inp1.id.match(/^v5-\d+-\d+$/));
+      assert(inp1.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(inp1.name, 'INP');
       assert.strictEqual(inp1.value, inp1.delta);
       assert.strictEqual(inp1.rating, 'good');
@@ -1508,7 +1508,7 @@ describe('onINP()', async function () {
       const [inp] = await getBeacons();
 
       assert(inp.value >= 0);
-      assert(inp.id.match(/^v5-\d+-\d+$/));
+      assert(inp.id.match(/^v6-\d+-\d+$/));
       assert.strictEqual(inp.name, 'INP');
       assert.strictEqual(inp.value, inp.delta);
       assert(allEntriesPresentTogether(inp.entries));

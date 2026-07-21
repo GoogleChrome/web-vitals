@@ -310,7 +310,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -330,7 +330,7 @@ describe('onTTFB()', async function () {
     const softTtfb = await getTTFBBeacon();
 
     assert.strictEqual(softTtfb.value, 0);
-    assert(softTtfb.id.match(/^v5-\d+-\d+$/));
+    assert(softTtfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softTtfb.name, 'TTFB');
     assert.strictEqual(softTtfb.value, softTtfb.delta);
     assert.strictEqual(softTtfb.rating, 'good');
@@ -349,7 +349,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -368,7 +368,7 @@ describe('onTTFB()', async function () {
     const softTtfb = await getTTFBBeacon();
 
     assert.strictEqual(softTtfb.value, 0);
-    assert(softTtfb.id.match(/^v5-\d+-\d+$/));
+    assert(softTtfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softTtfb.name, 'TTFB');
     assert.strictEqual(softTtfb.value, softTtfb.delta);
     assert.strictEqual(softTtfb.rating, 'good');
@@ -392,7 +392,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.value >= 0);
     assert(ttfb.value >= ttfb.entries[0].requestStart);
     assert(ttfb.value <= ttfb.entries[0].loadEventEnd);
-    assert(ttfb.id.match(/^v5-\d+-\d+$/));
+    assert(ttfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(ttfb.name, 'TTFB');
     assert.strictEqual(ttfb.value, ttfb.delta);
     assert.strictEqual(ttfb.rating, 'good');
@@ -402,7 +402,7 @@ describe('onTTFB()', async function () {
     assert(ttfb.navigationId > 0);
 
     assert.strictEqual(softTtfb.value, 0);
-    assert(softTtfb.id.match(/^v5-\d+-\d+$/));
+    assert(softTtfb.id.match(/^v6-\d+-\d+$/));
     assert.strictEqual(softTtfb.name, 'TTFB');
     assert.strictEqual(softTtfb.value, softTtfb.delta);
     assert.strictEqual(softTtfb.rating, 'good');
