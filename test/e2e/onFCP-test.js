@@ -347,7 +347,7 @@ describe('onFCP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
 
@@ -388,7 +388,7 @@ describe('onFCP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
 
@@ -410,7 +410,7 @@ describe('onFCP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(2, {instance: 'All'});
 
@@ -459,7 +459,7 @@ describe('onFCP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // Instance 1 should report, but instance 2 should not.
     await beaconCountIs(1, {instance: 1});
@@ -495,7 +495,7 @@ describe('onFCP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // Instance 1 should report, but instance 2 should not.
     await beaconCountIs(1, {instance: 1});
@@ -661,7 +661,7 @@ describe('onFCP()', async function () {
 
       // Click on the soft nav button to start new soft nav.
       const softNavButton = await $('#soft-nav');
-      await simulateUserLikeClick(softNavButton);
+      await softNavButton.click();
 
       await beaconCountIs(1);
 
@@ -689,13 +689,3 @@ describe('onFCP()', async function () {
     });
   });
 });
-
-const simulateUserLikeClick = async (element) => {
-  await browser
-    .action('pointer')
-    .move({x: 0, y: 0, origin: element})
-    .down({button: 0}) // left button
-    .pause(50)
-    .up({button: 0})
-    .perform();
-};

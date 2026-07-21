@@ -885,7 +885,7 @@ describe('onCLS()', async function () {
 
     // Click on the soft nav button to finalize CLS.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
 
@@ -968,7 +968,7 @@ describe('onCLS()', async function () {
 
     // Click on the soft nav button to finalize CLS and start a new beacon
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(2);
 
@@ -996,7 +996,7 @@ describe('onCLS()', async function () {
     await clearBeacons();
 
     // Click on the soft nav button to finalize CLS and start a new beacon
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // Load a new page to trigger the hidden state.
     await navigateTo('about:blank');
@@ -1024,7 +1024,7 @@ describe('onCLS()', async function () {
 
     // Click on the soft nav button to finalize CLS.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
 
@@ -1072,7 +1072,7 @@ describe('onCLS()', async function () {
 
     // Click on the soft nav button to finalize CLS for hard nav.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
     const [cls] = await getBeacons();
@@ -1088,7 +1088,7 @@ describe('onCLS()', async function () {
     await triggerLayoutShift();
 
     // Click again to finalize soft nav 1 and start soft nav 2.
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
     const [softCls1] = await getBeacons();
@@ -1106,7 +1106,7 @@ describe('onCLS()', async function () {
     await triggerLayoutShift();
 
     // Click again to finalize soft nav 2 and start soft nav 3.
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
     const [softCls2] = await getBeacons();
@@ -1139,7 +1139,7 @@ describe('onCLS()', async function () {
     // Click on the soft nav button. This will cause layout shifts immediately,
     // but delay the URL update by 1000ms.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // Wait for the URL update to finish (takes 1000ms).
     await browser.pause(2000);
@@ -1172,7 +1172,7 @@ describe('onCLS()', async function () {
 
     // Click on the soft nav button to finalize CLS.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // Wait for the hard nav CLS from instance 1.
     await beaconCountIs(1, {instance: 1});
@@ -1220,7 +1220,7 @@ describe('onCLS()', async function () {
 
     // Click on the soft nav button to finalize CLS.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // Wait for the hard nav CLS from instance 1.
     await beaconCountIs(1, {instance: 1});
@@ -1466,7 +1466,7 @@ describe('onCLS()', async function () {
 
       // Click on the soft nav button to finalize CLS.
       const softNavButton = await $('#soft-nav');
-      await simulateUserLikeClick(softNavButton);
+      await softNavButton.click();
 
       await beaconCountIs(1);
       const [cls] = await getBeacons();
@@ -1569,14 +1569,4 @@ const hideAndReshowPage = async () => {
     await browser.pause(500);
     await browser.maximizeWindow();
   }
-};
-
-const simulateUserLikeClick = async (element) => {
-  await browser
-    .action('pointer')
-    .move({x: 0, y: 0, origin: element})
-    .down({button: 0}) // left button
-    .pause(50)
-    .up({button: 0})
-    .perform();
 };

@@ -631,7 +631,7 @@ describe('onLCP()', async function () {
 
     // Click on the soft nav button to finalize LCP.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
     const [lcp] = await getBeacons();
@@ -679,7 +679,7 @@ describe('onLCP()', async function () {
 
     // Click on the soft nav button to finalize LCP and start a new beacon
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
     const [softLcp] = await getBeacons();
@@ -708,7 +708,7 @@ describe('onLCP()', async function () {
 
     // Click on the soft nav button to finalize LCP.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
     const [lcp] = await getBeacons();
@@ -766,13 +766,13 @@ describe('onLCP()', async function () {
     await clearBeacons();
 
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // Wait until the paused URL update happens
     await browser.pause(2000);
 
     // Click on the soft nav button to finalize LCP.
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
 
@@ -802,7 +802,7 @@ describe('onLCP()', async function () {
 
     // Click on the soft nav button to finalize hard nav LCP.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // Give it a second until the soft nav image is painted
     // Can't use "await imagesPainted();" as that only works
@@ -822,7 +822,7 @@ describe('onLCP()', async function () {
     await clearBeacons();
 
     // Click to finalize 1st soft nav and start 2nd soft nav.
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
     const [softLcp1] = await getBeacons();
@@ -840,7 +840,7 @@ describe('onLCP()', async function () {
     await clearBeacons();
 
     // Click to finalize 2nd soft nav and start 3rd soft nav.
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1);
     const [softLcp2] = await getBeacons();
@@ -896,7 +896,7 @@ describe('onLCP()', async function () {
 
     // 2. Trigger a soft navigation on the restored page
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     // 3. Load a new page to trigger the hidden state, finalising the soft nav.
     await navigateTo('about:blank');
@@ -921,7 +921,7 @@ describe('onLCP()', async function () {
 
     // Click on the soft nav button to finalize LCP.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1, {instance: 1});
     await beaconCountIs(1, {instance: 2});
@@ -964,7 +964,7 @@ describe('onLCP()', async function () {
 
     // Click on the soft nav button to finalize LCP.
     const softNavButton = await $('#soft-nav');
-    await simulateUserLikeClick(softNavButton);
+    await softNavButton.click();
 
     await beaconCountIs(1, {instance: 1});
     await beaconCountIs(1, {instance: 2});
@@ -1367,7 +1367,7 @@ describe('onLCP()', async function () {
 
       // Click on the soft nav button to finalize LCP.
       const softNavButton = await $('#soft-nav');
-      await simulateUserLikeClick(softNavButton);
+      await softNavButton.click();
 
       await beaconCountIs(1);
       const [lcp] = await getBeacons();
@@ -1463,14 +1463,4 @@ const hideAndReshowPage = async () => {
     await browser.pause(500);
     await browser.maximizeWindow();
   }
-};
-
-const simulateUserLikeClick = async (element) => {
-  await browser
-    .action('pointer')
-    .move({x: 0, y: 0, origin: element})
-    .down({button: 0}) // left button
-    .pause(50)
-    .up({button: 0})
-    .perform();
 };
