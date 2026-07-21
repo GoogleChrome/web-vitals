@@ -66,7 +66,7 @@ const MAX_PENDING_FRAMES = 10;
  *
  * A custom `includeProcessedEventEntries` configuration option can optionally
  * be passed to control whether the `processedEventEntries` array in the
- * attribution object is populated. The default value is `true`.
+ * attribution object is populated. The default value is `false`.
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
  * `callback` function will be called as soon as the value is initially
@@ -186,7 +186,7 @@ export const onINP = (
         );
         // processedEventEntries can be quite large, so only include them if
         // the user explicitly requests them (default is to include).
-        if (opts.includeProcessedEventEntries !== false) {
+        if (opts.includeProcessedEventEntries) {
           group.entries.push(entry);
         }
 
@@ -203,7 +203,7 @@ export const onINP = (
         renderTime,
         // processedEventEntries can be quite large, so only include them if
         // the user explicitly requests them (default is to include).
-        entries: opts.includeProcessedEventEntries !== false ? [entry] : [],
+        entries: opts.includeProcessedEventEntries ? [entry] : [],
       };
 
       pendingEntriesGroups.push(group);
