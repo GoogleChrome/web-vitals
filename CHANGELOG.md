@@ -1,6 +1,6 @@
 # Changelog
 
-### v6.0.0 (2026-07-20)
+### v6.0.0 (2026-07-21)
 
 v6 introduces [Soft Navigation support for the Web Vitals metrics](https://developer.chrome.com/docs/web-platform/soft-navigations) when supported by the browser.
 
