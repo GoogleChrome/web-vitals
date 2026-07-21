@@ -8,6 +8,7 @@
   - [Basic usage](#basic-usage)
   - [Report the value on every change](#report-the-value-on-every-change)
   - [Report only the delta of changes](#report-only-the-delta-of-changes)
+  - [Report metrics for soft navigations](#report-metrics-for-soft-navigations)
   - [Send the results to an analytics endpoint](#send-the-results-to-an-analytics-endpoint)
   - [Send the results to Google Analytics](#send-the-results-to-google-analytics)
   - [Send the results to Google Tag Manager](#send-the-results-to-google-tag-manager)
@@ -28,7 +29,7 @@
 
 ## Overview
 
-The `web-vitals` library is a tiny (~3K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/articles/vitals) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developers.google.com/web/tools/chrome-user-experience-report), [Page Speed Insights](https://developers.google.com/speed/pagespeed/insights/), [Search Console's Speed Report](https://webmasters.googleblog.com/2019/11/search-console-speed-report.html)).
+The `web-vitals` library is a tiny (~3K, brotli'd), modular library for measuring all the [Web Vitals](https://web.dev/articles/vitals) metrics on real users, in a way that accurately matches how they're measured by Chrome and reported to other Google tools (e.g. [Chrome User Experience Report](https://developer.chrome.com/docs/crux/), [Page Speed Insights](https://pagespeed.web.dev/), [Search Console's Speed Report](https://support.google.com/webmasters/answer/9205520?hl=en)).
 
 The library supports all of the [Core Web Vitals](https://web.dev/articles/vitals#core_web_vitals) as well as a number of other metrics that are useful in diagnosing [real-user](https://web.dev/articles/user-centric-performance-metrics) performance issues.
 
@@ -479,7 +480,7 @@ addEventListener('visibilitychange', () => {
 ```
 
 > [!NOTE]
-> See [the Page Lifecycle guide](https://developers.google.com/web/updates/2018/07/page-lifecycle-api#legacy-lifecycle-apis-to-avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`.
+> See [the Page Lifecycle guide](https://developer.chrome.com/docs/web-platform/page-lifecycle-api#legacy_lifecycle_apis_to_avoid) for an explanation of why `visibilitychange` is recommended over events like `beforeunload` and `unload`.
 
 <a name="bundle-versions"></a>
 
@@ -551,7 +552,7 @@ Most developers will generally want to use "standard" build (via either the ES m
 
 However, if you'd like to collect additional debug information to help you diagnose performance bottlenecks based on real-user issues, use the ["attribution" build](#attribution-build).
 
-For guidance on how to collect and use real-user data to debug performance issues, see [Debug performance in the field](https://web.dev/debug-performance-in-the-field/).
+For guidance on how to collect and use real-user data to debug performance issues, see [Debug performance in the field](https://web.dev/articles/debug-performance-in-the-field).
 
 ## API
 
@@ -858,9 +859,6 @@ onTTFB((metric) => {
   console.log('Request time:', requestTime);
 });
 ```
-
-> [!NOTE]
-> Browsers that do not support `navigation` entries will fall back to using `performance.timing` (with the timestamps converted from epoch time to [`DOMHighResTimeStamp`](https://developer.mozilla.org/docs/Web/API/DOMHighResTimeStamp)). This ensures code referencing these values (like in the example above) will work the same in all browsers.
 
 ### Rating Thresholds:
 
