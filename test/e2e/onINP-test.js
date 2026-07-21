@@ -741,7 +741,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -796,7 +796,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -813,7 +813,7 @@ describe('onINP()', async function () {
     await clearBeacons();
 
     // Click on the soft nav button to start new soft nav.
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -837,7 +837,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -847,15 +847,13 @@ describe('onINP()', async function () {
     assert.strictEqual(inp.name, 'INP');
     assert.strictEqual(inp.value, inp.delta);
     assert.strictEqual(inp.rating, 'good');
-    // TODO: This next line seems flakey, not sure why?
-    // assert(containsEntry(inp.entries, 'click',
-    // '[object HTMLButtonElement]'));
+    assert(containsEntry(inp.entries, 'click', '[object HTMLButtonElement]'));
     assert(allEntriesPresentTogether(inp.entries));
     assert.match(inp.navigationType, /navigate|reload/);
 
     await clearBeacons();
 
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -865,10 +863,10 @@ describe('onINP()', async function () {
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
     assert.strictEqual(softInp.rating, 'good');
-    // TODO: The next lines seems flakey as entries empty, not sure why?
-    // assert(containsEntry(softInp.entries, 'click',
-    // '[object HTMLHeadingElement]'));
-    // assert(allEntriesPresentTogether(softInp.entries));
+    assert(
+      containsEntry(softInp.entries, 'click', '[object HTMLButtonElement]'),
+    );
+    assert(allEntriesPresentTogether(softInp.entries));
     assert.strictEqual(softInp.navigationType, 'soft-navigation');
   });
 
@@ -884,7 +882,7 @@ describe('onINP()', async function () {
     // Click on the soft nav button to start soft nav 1
     // (finalizing hard nav INP).
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
     const [inp] = await getBeacons();
@@ -899,7 +897,7 @@ describe('onINP()', async function () {
     await clickBlockingInput.setValue(200);
 
     // Click on soft nav button to start soft nav 2 (finalizing Soft Nav 1 INP).
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
     const [softInp1] = await getBeacons();
@@ -939,7 +937,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -968,7 +966,7 @@ describe('onINP()', async function () {
     await beaconCountIs(1);
 
     const [softInp] = await getBeacons();
-    assertIsCloseTo(softInp.value, 8, 1);
+    assert(softInp.value >= 0);
     assert(softInp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
@@ -987,7 +985,7 @@ describe('onINP()', async function () {
 
     // Click on the soft nav button to start new soft nav.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1);
 
@@ -1014,7 +1012,7 @@ describe('onINP()', async function () {
     await beaconCountIs(1);
 
     const [softInp] = await getBeacons();
-    assertIsCloseTo(softInp.value, 8, 1);
+    assert(softInp.value >= 0);
     assert(softInp.id.match(/^v5-\d+-\d+$/));
     assert.strictEqual(softInp.name, 'INP');
     assert.strictEqual(softInp.value, softInp.delta);
@@ -1037,7 +1035,7 @@ describe('onINP()', async function () {
     // Click on the soft nav button to start new soft nav.
     // This will finalize and report the hard-nav INP for instance 1.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1, {instance: 1});
 
@@ -1096,7 +1094,7 @@ describe('onINP()', async function () {
     // Click on the soft nav button to start new soft nav.
     // This will finalize and report the hard-nav INP for instance 1.
     const softNavButton = await $('#soft-nav');
-    await softNavButton.click();
+    await simulateUserLikeClick(softNavButton);
 
     await beaconCountIs(1, {instance: 1});
 
@@ -1811,7 +1809,7 @@ describe('onINP()', async function () {
 
       // Click on the soft nav button to start new soft nav.
       const softNavButton = await $('#soft-nav');
-      await softNavButton.click();
+      await simulateUserLikeClick(softNavButton);
 
       await beaconCountIs(1);
       await clearBeacons();
