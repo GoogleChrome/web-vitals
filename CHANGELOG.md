@@ -2,8 +2,10 @@
 
 ### v6.0.0 (2026-07-20)
 
-[!NOTE]
-See the [upgrading to v6](/docs/upgrading-to-v6.md) guide for a complete list of all API changes in version 4.
+v6 introduces [Soft Navigation support for the Web Vitals metrics](https://developer.chrome.com/docs/web-platform/soft-navigations) when supported by the browser.
+
+> [!NOTE]
+> See the [upgrading to v6](/docs/upgrading-to-v6.md) guide for a complete list of all API changes in version 6.
 
 - **[BREAKING]** Remove unneeded modules with tsconfig `verbatimModuleSyntax`
 - Cap RequestIdleCallback to 1 second to ensure metrics report even when busy
@@ -59,8 +61,8 @@ See the [upgrading to v6](/docs/upgrading-to-v6.md) guide for a complete list of
 
 ### v5.0.0 (2025-05-07)
 
-[!NOTE]
-See the [upgrading to v5](/docs/upgrading-to-v5.md) guide for a complete list of all API changes in version 5.
+> [!NOTE]
+> See the [upgrading to v5](/docs/upgrading-to-v5.md) guide for a complete list of all API changes in version 5.
 
 - **[BREAKING]** Remove the deprecated `onFID()` function ([#519](https://github.com/GoogleChrome/web-vitals/pull/519))
 - **[BREAKING]** Change browser support policy to Baseline Widely available ([#525](https://github.com/GoogleChrome/web-vitals/pull/525))
@@ -109,8 +111,8 @@ See the [upgrading to v5](/docs/upgrading-to-v5.md) guide for a complete list of
 
 ### v4.0.0 (2024-05-13)
 
-[!NOTE]
-See the [upgrading to v4](/docs/upgrading-to-v4.md) guide for a complete list of all API changes in version 4.
+> [!NOTE]
+> See the [upgrading to v4](/docs/upgrading-to-v4.md) guide for a complete list of all API changes in version 4.
 
 - **[BREAKING]** Update types to support more generic usage ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
 - **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
