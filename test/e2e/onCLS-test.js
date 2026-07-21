@@ -32,12 +32,19 @@ describe('onCLS()', async function () {
 
   let browserSupportsCLS;
   let browserSupportsPrerender;
+  let browserSupportsSoftNavs;
   before(async function () {
     browserSupportsCLS = await browserSupportsEntry('layout-shift');
     browserSupportsPrerender = await browser.execute(() => {
       return 'onprerenderingchange' in document;
     });
-
+    browserSupportsSoftNavs = await browser.execute(() => {
+      return (
+        PerformanceObserver.supportedEntryTypes.includes('soft-navigation') &&
+        typeof globalThis.PerformanceSoftNavigation?.prototype
+          ?.getLargestInteractionContentfulPaint === 'function'
+      );
+    });
     // Set a standard screen size so thresholds are the same
     browser.setWindowSize(1280, 1024);
   });
@@ -208,6 +215,8 @@ describe('onCLS()', async function () {
       }, 50);
     });
 
+    // Pause to allow the CLS to happen
+    await browser.pause(200);
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
 
@@ -240,6 +249,9 @@ describe('onCLS()', async function () {
         }, 50);
       }, 50);
     });
+
+    // Pause to allow the CLS to happen
+    await browser.pause(500);
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -508,6 +520,9 @@ describe('onCLS()', async function () {
     await clearBeacons();
     await triggerLayoutShift();
 
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
+
     await stubForwardBack();
     await beaconCountIs(1);
 
@@ -525,6 +540,9 @@ describe('onCLS()', async function () {
 
     await clearBeacons();
     await triggerLayoutShift();
+
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
 
     await stubVisibilityChange('hidden');
     await beaconCountIs(1);
@@ -738,7 +756,7 @@ describe('onCLS()', async function () {
 
     // Wait a bit to allow the prerender to happen
     // and all loading shifts to complete
-    await browser.pause(2000);
+    await browser.pause(4000);
 
     const prerenderLink = await $('#prerender-link');
     await prerenderLink.click();
@@ -855,6 +873,389 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls.rating, 'good');
     assert.strictEqual(cls.entries.length, 2);
     assert.match(cls.navigationType, /navigate|reload/);
+  });
+
+  it('reports hard nav CLS and soft navs (reportAllChanges === false)', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?reportSoftNavs=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize CLS.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+    assert(cls.value > 0);
+    assert(cls.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.match(cls.navigationType, /navigate|reload/);
+    assert(cls.navigationId > 0);
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Give it a second until the soft nav image is painted
+    // Can't use "await imagesPainted();" as that only works
+    // for hard nav
+    await browser.pause(1000);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+
+    const [softCls1] = await getBeacons();
+
+    assert(softCls1.value > 0);
+    assert.strictEqual(softCls1.name, 'CLS');
+    assert.strictEqual(softCls1.value, softCls1.delta);
+    assert.strictEqual(softCls1.rating, 'good');
+    assert.strictEqual(softCls1.entries.length, 1);
+    assert.match(softCls1.navigationType, /soft-navigation/);
+    assert(softCls1.navigationId > 0);
+    assert(softCls1.navigationId > cls.navigationId);
+  });
+
+  it('reports hard nav CLS and soft navs (reportAllChanges === true)', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?reportSoftNavs=1&reportAllChanges=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    await beaconCountIs(3);
+
+    const [cls1, cls2, cls3] = await getBeacons();
+
+    assert.strictEqual(cls1.value, 0);
+    assert(cls1.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls1.name, 'CLS');
+    assert.strictEqual(cls1.value, cls1.delta);
+    assert.strictEqual(cls1.rating, 'good');
+    assert.strictEqual(cls1.entries.length, 0);
+    assert.match(cls1.navigationType, /navigate|reload/);
+    assert(cls1.navigationId > 0);
+
+    assert(cls2.value > 0);
+    assert(cls2.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls2.name, 'CLS');
+    assert.strictEqual(cls2.value, cls2.delta);
+    assert.strictEqual(cls2.rating, 'good');
+    assert.strictEqual(cls2.entries.length, 1);
+    assert.match(cls2.navigationType, /navigate|reload/);
+    assert.strictEqual(cls2.navigationId, cls1.navigationId);
+
+    assert(cls3.value > 0);
+    assert(cls3.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls3.name, 'CLS');
+    assert.equal(cls3.value, cls2.value + cls3.delta);
+    assert.strictEqual(cls3.rating, 'good');
+    assert.strictEqual(cls3.entries.length, 2);
+    assert.match(cls3.navigationType, /navigate|reload/);
+    assert.strictEqual(cls3.navigationId, cls2.navigationId);
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Click on the soft nav button to finalize CLS and start a new beacon
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(2);
+
+    const [softCls1, softCls2] = await getBeacons();
+
+    assert.strictEqual(softCls1.value, 0);
+    assert.strictEqual(softCls1.name, 'CLS');
+    assert.strictEqual(softCls1.value, softCls1.delta);
+    assert.strictEqual(softCls1.rating, 'good');
+    assert.strictEqual(softCls1.entries.length, 0);
+    assert.match(softCls1.navigationType, /soft-navigation/);
+    assert(softCls1.navigationId > 0);
+    assert(softCls1.navigationId > cls3.navigationId);
+
+    assert(softCls2.value > 0);
+    assert.strictEqual(softCls2.name, 'CLS');
+    assert.strictEqual(softCls2.value, softCls2.delta);
+    assert.strictEqual(softCls2.rating, 'good');
+    assert.strictEqual(softCls2.entries.length, 1);
+    assert.match(softCls2.navigationType, /soft-navigation/);
+    assert(softCls2.navigationId > 0);
+    assert(softCls2.navigationId > cls3.navigationId);
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Click on the soft nav button to finalize CLS and start a new beacon
+    await softNavButton.click();
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+
+    const [softCls3] = await getBeacons();
+
+    assert.strictEqual(softCls3.value, 0);
+    assert.strictEqual(softCls3.name, 'CLS');
+    assert.strictEqual(softCls3.value, softCls3.delta);
+    assert.strictEqual(softCls3.rating, 'good');
+    assert.strictEqual(softCls3.entries.length, 0);
+    assert.match(softCls3.navigationType, /soft-navigation/);
+    assert(softCls3.navigationId > softCls2.navigationId);
+  });
+
+  it('reports soft navs when loaded late (reportAllChanges === false)', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?reportSoftNavs=1&loadAfterInput=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize CLS.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+    assert(cls.value > 0);
+    assert(cls.id.match(/^v5-\d+-\d+$/));
+    assert.strictEqual(cls.name, 'CLS');
+    assert.strictEqual(cls.value, cls.delta);
+    assert.strictEqual(cls.rating, 'good');
+    assert.strictEqual(cls.entries.length, 2);
+    assert.match(cls.navigationType, /navigate|reload/);
+    assert(cls.navigationId > 0);
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Give it a second until the soft nav image is painted
+    // Can't use "await imagesPainted();" as that only works
+    // for hard nav
+    await browser.pause(1000);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+
+    const [softCls] = await getBeacons();
+
+    assert(softCls.value > 0);
+    assert.strictEqual(softCls.name, 'CLS');
+    assert.strictEqual(softCls.value, softCls.delta);
+    assert.strictEqual(softCls.rating, 'good');
+    assert.strictEqual(softCls.entries.length, 1);
+    assert.match(softCls.navigationType, /soft-navigation/);
+    assert(softCls.navigationId > cls.navigationId);
+  });
+
+  it('reports hard nav CLS and 3 consecutive soft navs (reportAllChanges === false)', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?reportSoftNavs=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize CLS for hard nav.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [cls] = await getBeacons();
+    assert(cls.value > 0);
+    assert.strictEqual(cls.navigationType, 'navigate');
+
+    await clearBeacons();
+
+    // Wait 600ms to clear the hadRecentInput window from the previous click!
+    await browser.pause(600);
+
+    // 1. Soft Nav 1: Trigger layout shift and then finalize.
+    await triggerLayoutShift();
+
+    // Click again to finalize soft nav 1 and start soft nav 2.
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [softCls1] = await getBeacons();
+    assert(softCls1.value > 0);
+    assert.strictEqual(softCls1.name, 'CLS');
+    assert.strictEqual(softCls1.navigationType, 'soft-navigation');
+    assert(softCls1.entries.length >= 1);
+
+    await clearBeacons();
+
+    // Wait 600ms to clear the hadRecentInput window from the previous click!
+    await browser.pause(600);
+
+    // 2. Soft Nav 2: Trigger layout shift and then finalize.
+    await triggerLayoutShift();
+
+    // Click again to finalize soft nav 2 and start soft nav 3.
+    await softNavButton.click();
+
+    await beaconCountIs(1);
+    const [softCls2] = await getBeacons();
+    assert(softCls2.value > 0);
+    assert.strictEqual(softCls2.name, 'CLS');
+    assert.strictEqual(softCls2.navigationType, 'soft-navigation');
+    assert(softCls2.entries.length >= 1);
+
+    await clearBeacons();
+
+    // 3. Soft Nav 3: Perform NO layout shifts (should report 0).
+    // Load a new page to trigger the hidden state, finalising soft nav 3.
+    await navigateTo('about:blank');
+
+    await beaconCountIs(1);
+    const [softCls3] = await getBeacons();
+    assert.strictEqual(softCls3.value, 0); // No shifts after URL update
+    assert.strictEqual(softCls3.name, 'CLS');
+    assert.strictEqual(softCls3.navigationType, 'soft-navigation');
+  });
+
+  it('reports soft nav CLS even if layout shifts occur before URL update (reportAllChanges === false)', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?reportSoftNavs=1&delayURLupdate=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button. This will cause layout shifts immediately,
+    // but delay the URL update by 1000ms.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Wait for the URL update to finish (takes 1000ms).
+    await browser.pause(2000);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    // There should be 2 beacons: hard nav CLS (finalized by soft nav)
+    // and soft nav CLS (finalized by navigation to blank)
+    await beaconCountIs(2, {instance: 'All'});
+
+    const [cls, softCls] = await getBeacons({instance: 'All'});
+
+    assert(cls.value > 0);
+    assert.strictEqual(cls.navigationType, 'navigate');
+    // Shifts happened before soft nav URL updated, so attributed to hard nav
+    assert.strictEqual(softCls.value, 0);
+    assert.strictEqual(softCls.navigationType, 'soft-navigation');
+  });
+
+  it('works when calling the function twice with reportSoftNavs=1 and reportSoftNavs2=0', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo(
+      '/test/cls?doubleCall=1&reportSoftNavs=1&reportSoftNavs2=0',
+    );
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize CLS.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Wait for the hard nav CLS from instance 1.
+    await beaconCountIs(1, {instance: 1});
+
+    // Instance 2 should NOT report yet.
+    assert.strictEqual((await getBeacons({instance: 2})).length, 0);
+
+    const [cls1] = await getBeacons({instance: 1});
+    assert(cls1.value > 0);
+    assert.strictEqual(cls1.name, 'CLS');
+    assert.strictEqual(cls1.navigationType, 'navigate');
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Give it a second until the soft nav image is painted
+    await browser.pause(1000);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    // Instance 1 should report soft nav CLS
+    // and instance 2 should report hard nav CLS.
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [softCls1] = await getBeacons({instance: 1});
+    assert(softCls1.value > 0);
+    assert.strictEqual(softCls1.name, 'CLS');
+    assert.strictEqual(softCls1.navigationType, 'soft-navigation');
+
+    const [hardCls2] = await getBeacons({instance: 2});
+    assert(hardCls2.value > 0);
+    assert.strictEqual(hardCls2.name, 'CLS');
+    assert.strictEqual(hardCls2.navigationType, 'navigate');
+  });
+
+  it('works when calling the function twice with reportSoftNavs=1 and default for 2', async function () {
+    if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+    await navigateTo('/test/cls?doubleCall=1&reportSoftNavs=1');
+
+    // Wait until all images are loaded and fully rendered.
+    await imagesPainted();
+
+    // Click on the soft nav button to finalize CLS.
+    const softNavButton = await $('#soft-nav');
+    await softNavButton.click();
+
+    // Wait for the hard nav CLS from instance 1.
+    await beaconCountIs(1, {instance: 1});
+
+    // Instance 2 should NOT report yet.
+    assert.strictEqual((await getBeacons({instance: 2})).length, 0);
+
+    const [cls1] = await getBeacons({instance: 1});
+    assert(cls1.value > 0);
+    assert.strictEqual(cls1.name, 'CLS');
+    assert.strictEqual(cls1.navigationType, 'navigate');
+
+    // clear the beacons
+    await clearBeacons();
+
+    // Give it a second until the soft nav image is painted
+    await browser.pause(1000);
+
+    // Load a new page to trigger the hidden state.
+    await navigateTo('about:blank');
+
+    // Instance 1 should report soft nav CLS
+    // and instance 2 should report hard nav CLS.
+    await beaconCountIs(1, {instance: 1});
+    await beaconCountIs(1, {instance: 2});
+
+    const [softCls1] = await getBeacons({instance: 1});
+    assert(softCls1.value > 0);
+    assert.strictEqual(softCls1.name, 'CLS');
+    assert.strictEqual(softCls1.navigationType, 'soft-navigation');
+
+    const [hardCls2] = await getBeacons({instance: 2});
+    assert(hardCls2.value > 0);
+    assert.strictEqual(hardCls2.name, 'CLS');
+    assert.strictEqual(hardCls2.navigationType, 'navigate');
   });
 
   describe('attribution', function () {
@@ -1053,6 +1454,70 @@ describe('onCLS()', async function () {
       assert.match(cls.navigationType, /navigate|reload/);
 
       assert.deepEqual(cls.attribution, {});
+    });
+
+    it('reports soft navigation CLS attribution', async function () {
+      if (!browserSupportsCLS || !browserSupportsSoftNavs) this.skip();
+
+      await navigateTo('/test/cls?attribution=1&reportSoftNavs=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Click on the soft nav button to finalize CLS.
+      const softNavButton = await $('#soft-nav');
+      await softNavButton.click();
+
+      await beaconCountIs(1);
+      const [cls] = await getBeacons();
+      await clearBeacons();
+
+      // Give it a second until the soft nav image is painted.
+      await browser.pause(1000);
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [softCls] = await getBeacons();
+
+      assert(softCls.value > 0);
+      assert.strictEqual(softCls.name, 'CLS');
+      assert.strictEqual(softCls.value, softCls.delta);
+      assert.strictEqual(softCls.rating, 'good');
+      assert.strictEqual(softCls.entries.length, 1);
+      assert.match(softCls.navigationType, /soft-navigation/);
+      assert(softCls.navigationId > cls.navigationId);
+
+      const {largestShiftEntry, largestShiftSource} = getAttribution(
+        softCls.entries,
+      );
+
+      assert.deepEqual(
+        softCls.attribution.largestShiftEntry,
+        largestShiftEntry,
+      );
+      assert.deepEqual(
+        softCls.attribution.largestShiftSource,
+        largestShiftSource,
+      );
+
+      assert.equal(
+        softCls.attribution.largestShiftValue,
+        largestShiftEntry.value,
+      );
+      assert.equal(
+        softCls.attribution.largestShiftTarget,
+        'html>body>main>div>p',
+      );
+      assert.equal(
+        softCls.attribution.largestShiftTime,
+        largestShiftEntry.startTime,
+      );
+
+      // The first shift (before the second image loads) is the largest.
+      assert.equal(softCls.attribution.loadState, 'complete');
     });
   });
 });

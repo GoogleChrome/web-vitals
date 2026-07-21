@@ -18,6 +18,7 @@ import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
+import {checkSoftNavsEnabled} from '../lib/softNavs.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import type {
   LCPAttribution,
@@ -49,6 +50,10 @@ export const onLCP = (
 
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
   const lcpTargetMap: WeakMap<LargestContentfulPaint, string> = new WeakMap();
+
+  if (checkSoftNavsEnabled(opts)) {
+    lcpEntryManager._softNavigationEntryMap = new Map();
+  }
 
   lcpEntryManager._onBeforeProcessingEntry = (
     entry: LargestContentfulPaint,
@@ -94,14 +99,27 @@ export const onLCP = (
 
       // Get subparts from navigation entry. Do this last as occasionally
       // Safari seems to fail to find a navigation entry.
-      const navigationEntry = getNavigationEntry();
-      if (navigationEntry) {
-        const activationStart = navigationEntry.activationStart || 0;
+      let navigationEntry;
+      let activationStart = 0;
+      let responseStart = 0;
 
-        const ttfb = Math.max(
-          0,
-          navigationEntry.responseStart - activationStart,
+      if (metric.navigationType !== 'soft-navigation') {
+        navigationEntry = getNavigationEntry();
+        activationStart = navigationEntry?.activationStart ?? 0;
+        responseStart = navigationEntry?.responseStart ?? 0;
+      } else {
+        // Set activationStart to the navigation start time
+        activationStart = metric.navigationStartTime || 0;
+        // Lookup the soft navigation entry. Do not use getEntriesByType since
+        // that is limited to the first 50 navigation entries due to buffer
+        // size.
+        navigationEntry = lcpEntryManager._softNavigationEntryMap?.get(
+          metric.navigationId,
         );
+      }
+
+      if (navigationEntry) {
+        const ttfb = Math.max(0, responseStart - activationStart);
 
         const lcpRequestStart = Math.max(
           ttfb,

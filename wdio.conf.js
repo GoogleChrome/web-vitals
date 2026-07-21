@@ -82,14 +82,22 @@ export const config = {
       maxInstances: 1,
       pageLoadStrategy: 'none',
       'wdio:enforceWebDriverClassic': true,
+      'goog:loggingPrefs': {
+        browser: 'ALL', // Options: 'OFF', 'SEVERE', 'WARNING', 'INFO', 'CONFIG', 'FINE', 'FINER', 'FINEST', 'ALL'
+      },
     };
     if (browserName === 'chrome') {
       capability['goog:chromeOptions'] = {
         excludeSwitches: ['enable-automation'],
         // Can remove next line after puppeteer 21.2.1 lands
-        args: ['disable-search-engine-choice-screen'],
+        args: [
+          'disable-search-engine-choice-screen',
+          // TODO remove the next line when 151 is available in WDIO
+          '--enable-features=SoftNavigationHeuristics',
+        ],
         // Uncomment to test on Chrome Canary.
-        // binary: '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
+        // binary:
+        // '/Applications/Google Chrome Canary.app/Contents/MacOS/Google Chrome Canary',
       };
     }
     if (browserName === 'firefox') {

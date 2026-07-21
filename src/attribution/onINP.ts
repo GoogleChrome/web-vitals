@@ -66,7 +66,7 @@ const MAX_PENDING_FRAMES = 10;
  *
  * A custom `includeProcessedEventEntries` configuration option can optionally
  * be passed to control whether the `processedEventEntries` array in the
- * attribution object is populated. The default value is `true`.
+ * attribution object is populated. The default value is `false`.
  *
  * If the `reportAllChanges` configuration option is set to `true`, the
  * `callback` function will be called as soon as the value is initially
@@ -186,7 +186,7 @@ export const onINP = (
         );
         // processedEventEntries can be quite large, so only include them if
         // the user explicitly requests them (default is to include).
-        if (opts.includeProcessedEventEntries !== false) {
+        if (opts.includeProcessedEventEntries) {
           group.entries.push(entry);
         }
 
@@ -203,7 +203,7 @@ export const onINP = (
         renderTime,
         // processedEventEntries can be quite large, so only include them if
         // the user explicitly requests them (default is to include).
-        entries: opts.includeProcessedEventEntries !== false ? [entry] : [],
+        entries: opts.includeProcessedEventEntries ? [entry] : [],
       };
 
       pendingEntriesGroups.push(group);
@@ -296,12 +296,18 @@ export const onINP = (
   };
 
   const attributeLoAFDetails = (attribution: INPAttribution) => {
-    // If there is no LoAF data then nothing further to attribute
-    if (!attribution.longAnimationFrameEntries?.length) {
+    const interactionTime = attribution.interactionTime;
+    const nextPaintTime = attribution.nextPaintTime;
+
+    // If there is no LoAF data, interactionTime or paintTime
+    // then nothing further to attribute here.
+    if (
+      !attribution.longAnimationFrameEntries?.length ||
+      !interactionTime ||
+      !nextPaintTime
+    ) {
       return;
     }
-
-    const interactionTime = attribution.interactionTime;
     const inputDelay = attribution.inputDelay;
     const processingDuration = attribution.processingDuration;
 
@@ -364,7 +370,7 @@ export const onINP = (
       ? lastLoAF.startTime + lastLoAF.duration
       : 0;
     if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
-      totalPaintDuration = attribution.nextPaintTime - lastLoAFEndTime;
+      totalPaintDuration = nextPaintTime - lastLoAFEndTime;
     }
 
     if (longestScriptEntry && longestScriptSubpart) {
@@ -378,7 +384,7 @@ export const onINP = (
     attribution.totalStyleAndLayoutDuration = totalStyleAndLayoutDuration;
     attribution.totalPaintDuration = totalPaintDuration;
     attribution.totalUnattributedDuration =
-      attribution.nextPaintTime -
+      nextPaintTime -
       interactionTime -
       totalScriptDuration -
       totalStyleAndLayoutDuration -
@@ -386,6 +392,25 @@ export const onINP = (
   };
 
   const attributeINP = (metric: INPMetric): INPMetricWithAttribution => {
+    // Soft navs and bfcache can have a dummy INP as no first-input entry to
+    // fall back on so we report dummy values when the interactionCount has
+    // gone up, even if no entry was emitted.
+    // See https://github.com/GoogleChrome/web-vitals/issues/724
+    // All other INPs should have at least one entry, but we'll do same dummy
+    // processing if they don't for some reason.
+    if (metric.entries.length === 0) {
+      const navStartTime = metric.navigationStartTime || 0;
+      const attribution: INPAttribution = {
+        processedEventEntries: [],
+        longAnimationFrameEntries: [],
+        inputDelay: 0,
+        processingDuration: 0,
+        presentationDelay: metric.value,
+        loadState: getLoadState(navStartTime),
+      };
+      return Object.assign(metric, {attribution});
+    }
+
     const firstEntry = metric.entries[0];
     const group = entryToEntriesGroupMap.get(firstEntry)!;
 
@@ -447,7 +472,7 @@ export const onINP = (
   };
 
   // Start observing LoAF entries for attribution.
-  observe('long-animation-frame', handleLoAFEntries);
+  observe(['long-animation-frame'], handleLoAFEntries, opts);
 
   unattributedOnINP((metric: INPMetric) => {
     onReport(attributeINP(metric));

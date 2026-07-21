@@ -68,35 +68,43 @@ export interface INPAttribution {
    * `generateTarget` configuration option was passed, then this will instead
    * be the return value of that function, falling back to the default if that
    * returns null or undefined.
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
-  interactionTarget: string;
+  interactionTarget?: string;
   /**
    * The time when the user first interacted during the frame where the INP
    * candidate interaction occurred (if more than one interaction occurred
    * within the frame, only the first time is reported).
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
-  interactionTime: DOMHighResTimeStamp;
+  interactionTime?: DOMHighResTimeStamp;
   /**
    * The type of interaction, based on the event type of the `event` entry
    * that corresponds to the interaction (i.e. the first `event` entry
    * containing an `interactionId` dispatched in a given animation frame).
    * For "pointerdown", "pointerup", or "click" events this will be "pointer",
    * and for "keydown" or "keyup" events this will be "keyboard".
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
-  interactionType: 'pointer' | 'keyboard';
+  interactionType?: 'pointer' | 'keyboard';
   /**
    * The best-guess timestamp of the next paint after the interaction.
    * In general, this timestamp is the same as the `startTime + duration` of
    * the event timing entry. However, since duration values are rounded to the
    * nearest 8ms (and can be rounded down), this value is clamped to always be
    * reported after the processing times.
+   * This value may not be set in cases where the event duration was less than
+   * the browser minimum reporting threshold, and thus no entry was dispatched.
    */
-  nextPaintTime: DOMHighResTimeStamp;
+  nextPaintTime?: DOMHighResTimeStamp;
   /**
    * An array of Event Timing entries that were processed within the same
    * animation frame as the INP candidate interaction.
-   * This array can be quite large so it will be empty if the
-   * `includeProcessedEventEntries` configuration option is set to `false` to
+   * This array can be quite large so it will be empty unless the
+   * `includeProcessedEventEntries` configuration option is set to `true` to
    * conserve memory if these entries are not required.
    */
   processedEventEntries: PerformanceEventTiming[];

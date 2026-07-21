@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 Google LLC
+ * Copyright 2026 Google LLC
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-export {onCLS, CLSThresholds} from './onCLS.js';
-export {onFCP, FCPThresholds} from './onFCP.js';
-export {onINP, INPThresholds} from './onINP.js';
-export {onLCP, LCPThresholds} from './onLCP.js';
-export {onTTFB, TTFBThresholds} from './onTTFB.js';
-
-export * from './types.js';
+export class FCPEntryManager {
+  _softNavigationEntryMap?: Map<number, PerformanceSoftNavigation>;
+}

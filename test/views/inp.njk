@@ -110,7 +110,10 @@
   <p><a id="navigate-away" href="https://example.com">Navigate away</a></p>
   {% if prerender %}<p><a id="prerender-link" href="/test/inp{% if queryString %}?{{ queryString | safe }}{% endif %}">Prerender link</a></p>{% endif %}
 
-  <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin nec porta orci, ac sagittis augue. Nullam orci tellus, suscipit sed magna id, mattis iaculis ex. Etiam felis lectus, accumsan eu magna lacinia, lobortis tempus lacus. Donec nulla metus, blandit eget ullamcorper in, placerat eu massa. Curabitur vitae elementum orci, ac tincidunt neque. Maecenas accumsan odio sit amet arcu elementum, non vestibulum enim finibus. Phasellus malesuada lacinia suscipit. Cras ac gravida urna. In et mauris non tellus pretium ultrices. Fusce mattis a risus at tincidunt. Donec ac fringilla magna, nec suscipit lectus. Sed risus massa, rutrum ut leo quis, tempor dapibus dui. Proin in mauris non risus maximus tincidunt quis a mauris.</p>
+  <p><button id="soft-nav">Soft navigate</button></p>
+
+  <p id="softnav-title"></p>
+  <p id="softnav-paragraph"></p>
 
   <script type="module">
     const {onINP} = await __testImport('{{ modulePath }}');
@@ -135,6 +138,7 @@
       }
     }, {
       reportAllChanges: self.__reportAllChanges,
+      reportSoftNavs: self.__reportSoftNavs,
       durationThreshold: self.__durationThreshold,
       generateTarget: self.__generateTarget && ((el) => el?.dataset?.target),
       includeProcessedEventEntries: self.__includeProcessedEventEntries,
@@ -144,7 +148,6 @@
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') {
           for (const inp of queue) {
-            console.log('document.addEventListener');
             navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
           }
           queue.clear();
@@ -163,6 +166,7 @@
         navigator.sendBeacon(`/collect`, JSON.stringify(__toSafeObject(inp)));
       }, {
         reportAllChanges: self.__reportAllChanges2,
+        reportSoftNavs: self.__reportSoftNavs2,
         durationThreshold: self.__durationThreshold2,
         generateTarget: self.__generateTarget2 && ((el) => el?.dataset?.target),
       });

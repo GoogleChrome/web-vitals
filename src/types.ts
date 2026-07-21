@@ -14,22 +14,26 @@
  * limitations under the License.
  */
 
-export type * from './types/base.js';
+export * from './types/base.js';
 
-export type * from './types/cls.js';
-export type * from './types/fcp.js';
-export type * from './types/inp.js';
-export type * from './types/lcp.js';
-export type * from './types/ttfb.js';
+export * from './types/cls.js';
+export * from './types/fcp.js';
+export * from './types/inp.js';
+export * from './types/lcp.js';
+export * from './types/ttfb.js';
 
 // --------------------------------------------------------------------------
 // Everything below is modifications to built-in modules.
 // --------------------------------------------------------------------------
 
 interface PerformanceEntryMap {
-  navigation: PerformanceNavigationTiming;
-  resource: PerformanceResourceTiming;
-  paint: PerformancePaintTiming;
+  'event': PerformanceEventTiming;
+  'interaction-contentful-paint': InteractionContentfulPaint;
+  'layout-shift': LayoutShift;
+  'navigation': PerformanceNavigationTiming;
+  'paint': PerformancePaintTiming;
+  'resource': PerformanceResourceTiming;
+  'soft-navigation': PerformanceSoftNavigation;
 }
 
 // Update built-in types to be more accurate.
@@ -48,12 +52,17 @@ declare global {
   }
 
   // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
+  interface PerformanceEntry {
+    navigationId?: number;
+  }
+
+  // https://w3c.github.io/event-timing/#sec-modifications-perf-timeline
   interface PerformanceObserverInit {
     durationThreshold?: number;
   }
 
   // https://wicg.github.io/nav-speculation/prerendering.html#performance-navigation-timing-extension
-  interface PerformanceNavigationTiming {
+  interface PerformanceNavigationTiming extends PerformanceEntry {
     activationStart?: number;
   }
 
@@ -87,6 +96,23 @@ declare global {
     readonly url: string;
     readonly element: Element | null;
   }
+
+  // https://github.com/WICG/soft-navigations
+  interface InteractionContentfulPaint extends PerformanceEntry {
+    readonly interactionId: number;
+    readonly largestContentfulPaint?: LargestContentfulPaint;
+  }
+  interface PerformanceSoftNavigation extends PerformanceEntry {
+    readonly interactionId: number;
+    readonly navigationType?: NavigationType;
+    readonly paintTime?: number;
+    readonly presentationTime?: number;
+    readonly getLargestInteractionContentfulPaint?: () => InteractionContentfulPaint | null;
+  }
+
+  var PerformanceSoftNavigation: {
+    prototype: PerformanceSoftNavigation;
+  };
 
   // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
   export type ScriptInvokerType =

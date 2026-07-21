@@ -16,6 +16,7 @@
 
 export class LCPEntryManager {
   _onBeforeProcessingEntry?: (entry: LargestContentfulPaint) => void;
+  _softNavigationEntryMap?: Map<number, PerformanceSoftNavigation>;
 
   _processEntry(entry: LargestContentfulPaint) {
     this._onBeforeProcessingEntry?.(entry);
