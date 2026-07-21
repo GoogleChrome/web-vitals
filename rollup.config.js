@@ -35,10 +35,6 @@ const configurePlugins = ({module}) => {
       compress: true,
       mangle: {
         properties: {
-          // Any object properties beginning with the '_' character will be
-          // mangled. Use this prefix for any object properties that are not
-          // part of the public API and do that not match an existing build-in
-          // API names (e.g. `.id` or `.entries`).
           regex: /^_/,
         },
       },
@@ -52,6 +48,7 @@ const configs = [
     output: {
       format: 'esm',
       file: './dist/web-vitals.js',
+      sourcemap: true,
     },
     plugins: configurePlugins({module: true}),
   },
@@ -61,6 +58,7 @@ const configs = [
       format: 'umd',
       file: `./dist/web-vitals.umd.cjs`,
       name: 'webVitals',
+      sourcemap: true,
     },
     plugins: configurePlugins({module: false}),
   },
@@ -70,6 +68,7 @@ const configs = [
       format: 'iife',
       file: './dist/web-vitals.iife.js',
       name: 'webVitals',
+      sourcemap: true,
     },
     plugins: configurePlugins({module: false}),
   },
@@ -78,6 +77,7 @@ const configs = [
     output: {
       format: 'esm',
       file: './dist/web-vitals.attribution.js',
+      sourcemap: true,
     },
     plugins: configurePlugins({module: true}),
   },
@@ -87,6 +87,7 @@ const configs = [
       format: 'umd',
       file: `./dist/web-vitals.attribution.umd.cjs`,
       name: 'webVitals',
+      sourcemap: true,
     },
     plugins: configurePlugins({module: false}),
   },
@@ -96,6 +97,7 @@ const configs = [
       format: 'iife',
       file: './dist/web-vitals.attribution.iife.js',
       name: 'webVitals',
+      sourcemap: true,
     },
     plugins: configurePlugins({module: false}),
   },

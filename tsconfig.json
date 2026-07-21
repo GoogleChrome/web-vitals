@@ -2,6 +2,7 @@
   "compilerOptions": {
     "composite": true,
     "declaration": true,
+    "sourceMap": true,
     "lib": ["esnext", "DOM"],
     "module": "nodenext",
     "moduleResolution": "nodenext",
