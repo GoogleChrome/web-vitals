@@ -1,5 +1,26 @@
 # Changelog
 
+### v6.0.0 (2026-07-21)
+
+v6 introduces [Soft Navigation support for the Web Vitals metrics](https://developer.chrome.com/docs/web-platform/soft-navigations) when supported by the browser.
+
+> [!NOTE]
+> See the [upgrading to v6](/docs/upgrading-to-v6.md) guide for a complete list of all API changes in version 6.
+
+- **[BREAKING]** Remove unneeded modules with tsconfig `verbatimModuleSyntax`
+- Add source maps
+  ([#771](https://github.com/GoogleChrome/web-vitals/pull/771))
+- Cap RequestIdleCallback to 1 second to ensure metrics report even when busy
+  ([#755](https://github.com/GoogleChrome/web-vitals/pull/755))
+- Remove unneeded modules with tsconfig `verbatimModuleSyntax`
+  ([#741](https://github.com/GoogleChrome/web-vitals/pull/741))
+- Flip default for `includeProcessedEventEntries` to false for v6
+  ([#763](https://github.com/GoogleChrome/web-vitals/pull/763))
+- Add Soft Navigation support
+  ([#308](https://github.com/GoogleChrome/web-vitals/pull/308))
+- Add bfcache support for reporting small INP interactions
+  (part of [#308](https://github.com/GoogleChrome/web-vitals/pull/308))
+
 ### v5.3.0 (2026-05-28)
 
 - Remove `getFirstHiddenTimePolyfill`
@@ -43,8 +64,8 @@
 
 ### v5.0.0 (2025-05-07)
 
-[!NOTE]
-See the [upgrading to v5](/docs/upgrading-to-v5.md) guide for a complete list of all API changes in version 5.
+> [!NOTE]
+> See the [upgrading to v5](/docs/upgrading-to-v5.md) guide for a complete list of all API changes in version 5.
 
 - **[BREAKING]** Remove the deprecated `onFID()` function ([#519](https://github.com/GoogleChrome/web-vitals/pull/519))
 - **[BREAKING]** Change browser support policy to Baseline Widely available ([#525](https://github.com/GoogleChrome/web-vitals/pull/525))
@@ -93,8 +114,8 @@ See the [upgrading to v5](/docs/upgrading-to-v5.md) guide for a complete list of
 
 ### v4.0.0 (2024-05-13)
 
-[!NOTE]
-See the [upgrading to v4](/docs/upgrading-to-v4.md) guide for a complete list of all API changes in version 4.
+> [!NOTE]
+> See the [upgrading to v4](/docs/upgrading-to-v4.md) guide for a complete list of all API changes in version 4.
 
 - **[BREAKING]** Update types to support more generic usage ([#471](https://github.com/GoogleChrome/web-vitals/pull/471))
 - **[BREAKING]** Split `waitingDuration` to make it easier to understand redirect delays ([#458](https://github.com/GoogleChrome/web-vitals/pull/458))
