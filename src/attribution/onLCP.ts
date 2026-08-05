@@ -96,10 +96,10 @@ export const onLCP = (
       const lcpEntry = metric.entries.at(-1)!;
       const lcpResourceEntry =
         lcpEntry.url &&
-        (performance
-          .getEntriesByType('resource')
-          .find((e) => e.name === lcpEntry.url) ||
-          resourceBuffer.find((e) => e.name === lcpEntry.url));
+        (resourceBuffer.find((e) => e.name === lcpEntry.url) ||
+          performance
+            .getEntriesByType('resource')
+            .find((e) => e.name === lcpEntry.url));
 
       attribution.target = lcpTargetMap.get(lcpEntry);
       attribution.lcpEntry = lcpEntry;
