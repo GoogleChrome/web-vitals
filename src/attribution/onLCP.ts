@@ -108,12 +108,15 @@ export const onLCP = (
     if (metric.entries.length) {
       // The `metric.entries.length` check ensures there will be an entry.
       const lcpEntry = metric.entries.at(-1)!;
+      // Get the Resource Timing entry checking the local buffer first
+      // Use findLast to get the latest entry in case a resource is requested
+      // multiple times (can particularly affect soft nav page views).
       const lcpResourceEntry =
         lcpEntry.url &&
-        (resourceBuffer.find((e) => e.name === lcpEntry.url) ||
+        (resourceBuffer.findLast((e) => e.name === lcpEntry.url) ||
           performance
             .getEntriesByType('resource')
-            .find((e) => e.name === lcpEntry.url));
+            .findLast((e) => e.name === lcpEntry.url));
 
       attribution.target = lcpTargetMap.get(lcpEntry);
       attribution.lcpEntry = lcpEntry;
