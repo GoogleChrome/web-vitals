@@ -1357,6 +1357,40 @@ describe('onLCP()', async function () {
       assert.equal(lcp.attribution.target, '#lcp-image');
     });
 
+    it('handles cases where the resource timing buffer is full', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1&limitResourceTiming=1');
+
+      // Wait until all images are loaded and fully rendered.
+      await imagesPainted();
+
+      // Load a new page to trigger the hidden state.
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp]);
+
+      assert(lcp.attribution.url.endsWith('/test/img/square.png?delay=500'));
+      assert.equal(lcp.attribution.target, 'html>body>main>p>img.bar.foo');
+      assert.equal(
+        lcp.attribution.timeToFirstByte +
+          lcp.attribution.resourceLoadDelay +
+          lcp.attribution.resourceLoadDuration +
+          lcp.attribution.elementRenderDelay,
+        lcp.value,
+      );
+
+      assert.ok(lcp.attribution.lcpResourceEntry);
+      assert(
+        lcp.attribution.lcpResourceEntry.name.endsWith(
+          '/test/img/square.png?delay=500',
+        ),
+      );
+    });
+
     it('reports soft navigation LCP attribution', async function () {
       if (!browserSupportsLCP || !browserSupportsSoftNavs) this.skip();
 

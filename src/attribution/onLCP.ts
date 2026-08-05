@@ -19,6 +19,7 @@ import {getSelector} from '../lib/getSelector.js';
 import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
 import {checkSoftNavsEnabled} from '../lib/softNavs.js';
+import {observe} from '../lib/observe.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import type {
   LCPAttribution,
@@ -26,6 +27,18 @@ import type {
   LCPMetricWithAttribution,
   AttributionReportOpts,
 } from '../types.js';
+
+const resourceBuffer: PerformanceResourceTiming[] = [];
+
+observe(['resource'], (entries) => {
+  for (const entry of entries) {
+    resourceBuffer.push(entry);
+    // Keep only the last 10 entries.
+    if (resourceBuffer.length > 10) {
+      resourceBuffer.shift();
+    }
+  }
+});
 
 /**
  * Calculates the [LCP](https://web.dev/articles/lcp) value for the current page and
@@ -83,9 +96,10 @@ export const onLCP = (
       const lcpEntry = metric.entries.at(-1)!;
       const lcpResourceEntry =
         lcpEntry.url &&
-        performance
+        (performance
           .getEntriesByType('resource')
-          .find((e) => e.name === lcpEntry.url);
+          .find((e) => e.name === lcpEntry.url) ||
+          resourceBuffer.find((e) => e.name === lcpEntry.url));
 
       attribution.target = lcpTargetMap.get(lcpEntry);
       attribution.lcpEntry = lcpEntry;
