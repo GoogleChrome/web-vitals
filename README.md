@@ -724,6 +724,7 @@ _See also [Rating Thresholds](#rating-thresholds)._
 ```ts
 interface ReportOpts {
   reportAllChanges?: boolean;
+  reportSoftNavs?: boolean;
 }
 ```
 
@@ -755,7 +756,14 @@ Metric-specific subclasses:
 interface INPAttributionReportOpts extends AttributionReportOpts {
   durationThreshold?: number;
   includeProcessedEventEntries?: boolean;
-  reportSoftNavs?: boolean;
+}
+```
+
+##### `LCPAttributionReportOpts`
+
+```ts
+interface LCPAttributionReportOpts extends AttributionReportOpts {
+  resourceBufferSize?: number;
 }
 ```
 
@@ -906,6 +914,15 @@ In the [attribution build](#attribution-build) each of the metric functions has 
    ```
 
 3. The `onINP` `AttributionReportOpts` supports an additional, optional, `includeProcessedEventEntries` configuration option. When set to `true`, _all_ the `event` performance entries processed during the INP duration will be included in the `attribution.processedEventEntries` object. This can include a lot of events and increased memory on very interactive or event-heavy pages. The default value is `false`. Regardless of this setting, the `entries` object will include the entries with an `interactionId` (which are the entries relevant for INP), but use this setting to include all entries (whether they have an `interactionId` or not) in `attribution.processedEventEntries` if you need more attribution information to identify delays to INP events.
+
+```ts
+interface INPAttributionReportOpts extends AttributionReportOpts {
+  durationThreshold?: number;
+  includeProcessedEventEntries?: boolean;
+}
+```
+
+3. The `onLCP` `AttributionReportOpts` supports an additional, optional, `resourceBufferSize` configuration option defaulting to `50`. This is the maximum number of additional Resource Timing entries to buffer, in addition to the first 250 entries available in the default buffer. This is useful to help attribute media LCPs to a URL and LCP subparts. This can be increased for pages that use a lot of resources, before LCP gets a chance to emit, particularly for soft navigations, at the cost of using more memory to buffer these.
 
 ```ts
 interface INPAttributionReportOpts extends AttributionReportOpts {

@@ -25,16 +25,26 @@ import type {
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,
-  AttributionReportOpts,
+  LCPAttributionReportOpts,
 } from '../types.js';
+
+/**
+ * Default resource buffer size to 50 to help attribute media LCPs to a URL and
+ * for subpart attribution. This can be increased for pages that request a
+ * large number of resources between the LCP resource and LCP candidates being
+ * processed, particularly for soft navigations where the browser default first
+ * 250 entries may not contain the LCP resource.
+ */
+const DEFAULT_RESOURCE_BUFFER_SIZE = 50;
+let resourceBufferSizeLimit = DEFAULT_RESOURCE_BUFFER_SIZE;
 
 const resourceBuffer: PerformanceResourceTiming[] = [];
 
 observe(['resource'], (entries) => {
   for (const entry of entries) {
     resourceBuffer.push(entry);
-    // Keep only the last 10 entries.
-    if (resourceBuffer.length > 10) {
+    // Keep only the last resourceBufferSizeLimit entries.
+    if (resourceBuffer.length > resourceBufferSizeLimit) {
       resourceBuffer.shift();
     }
   }
@@ -53,13 +63,17 @@ observe(['resource'], (entries) => {
  */
 export const onLCP = (
   onReport: (metric: LCPMetricWithAttribution) => void,
-  opts: AttributionReportOpts = {},
+  opts: LCPAttributionReportOpts = {},
 ) => {
   // Clone the opts object to ensure it's unique, so we can initialize a
   // single instance of the `LCPEntryManager` class that's shared only with
   // this function invocation and the `unattributedOnLCP()` invocation below
   // (which is passed the same `opts` object).
   opts = Object.assign({}, opts);
+
+  if (opts.resourceBufferSize != undefined) {
+    resourceBufferSizeLimit = opts.resourceBufferSize;
+  }
 
   const lcpEntryManager = initUnique(opts, LCPEntryManager);
   const lcpTargetMap: WeakMap<LargestContentfulPaint, string> = new WeakMap();

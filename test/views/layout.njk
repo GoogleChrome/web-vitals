@@ -160,6 +160,7 @@
       self.__durationThreshold = infer('durationThreshold');
       self.__generateTarget = infer('generateTarget');
       self.__includeProcessedEventEntries = infer('includeProcessedEventEntries');
+      self.__resourceBufferSize = infer('resourceBufferSize');
 
       self.__doubleCall = Boolean(infer('doubleCall'));
       self.__reportAllChanges2 = Boolean(infer('reportAllChanges2'));
@@ -173,13 +174,6 @@
       self.__registerOnVisibilityChange = Boolean(infer('registerOnVisibilityChange'));
       self.__batchReporting = Boolean(infer('batchReporting'));
       self.__removeElement = Boolean(infer('removeElement'));
-
-      if (params.has('limitResourceTiming') && typeof performance.setResourceTimingBufferSize === 'function') {
-        performance.setResourceTimingBufferSize(2);
-        fetch('/test/img/square.png?delay=0&dummy=1');
-        fetch('/test/img/square.png?delay=0&dummy=2');
-        fetch('/test/img/square.png?delay=0&dummy=3');
-      }
 
       if (params.has('hidden')) {
         // Stub the page being loaded in the hidden state, but defer to the

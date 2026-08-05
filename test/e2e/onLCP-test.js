@@ -1360,7 +1360,14 @@ describe('onLCP()', async function () {
     it('handles cases where the resource timing buffer is full', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      await navigateTo('/test/lcp?attribution=1&limitResourceTiming=1');
+      await navigateTo('/test/lcp?attribution=1');
+
+      await webVitalsLoaded();
+
+      // Stub performance.getEntriesByType to return []
+      await browser.execute(() => {
+        performance.getEntriesByType = () => [];
+      });
 
       // Wait until all images are loaded and fully rendered.
       await imagesPainted();
@@ -1383,6 +1390,85 @@ describe('onLCP()', async function () {
         lcp.value,
       );
 
+      assert.ok(lcp.attribution.lcpResourceEntry);
+      assert(
+        lcp.attribution.lcpResourceEntry.name.endsWith(
+          '/test/img/square.png?delay=500',
+        ),
+      );
+    });
+
+    it('pushes out older resources if the default buffer size limit of 50 is exceeded', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1');
+
+      // Wait until the LCP image is loaded and fully rendered.
+      await imagesPainted();
+
+      // Stub performance.getEntriesByType to return []
+      await browser.execute(() => {
+        performance.getEntriesByType = () => [];
+      });
+
+      // Stub performance.getEntriesByType to return []
+      await browser.execute(() => {
+        performance.getEntriesByType = () => [];
+      });
+
+      // Load 51 dummy resources. This should push the LCP
+      // image resource out of the 50-entry buffer.
+      await browser.execute(async () => {
+        await Promise.all(
+          Array.from({length: 51}, (_, i) =>
+            fetch(`/test/img/square.png?delay=0&dummy=${i + 1}`),
+          ),
+        );
+      });
+
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp]);
+
+      // lcpResourceEntry should NOT be found because it was pushed out!
+      assert.equal(lcp.attribution.lcpResourceEntry, undefined);
+    });
+
+    it('supports configuring a larger resource buffer size', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1&resourceBufferSize=60');
+
+      // Wait until the LCP image is loaded and fully rendered.
+      await imagesPainted();
+
+      // Stub performance.getEntriesByType to return []
+      await browser.execute(() => {
+        // performance.getEntriesByType = () => [];
+        performance.setResourceTimingBufferSize;
+      });
+
+      // Load 51 dummy resources.
+      await browser.execute(async () => {
+        await Promise.all(
+          Array.from({length: 51}, (_, i) =>
+            fetch(`/test/img/square.png?delay=0&dummy=${i + 1}`),
+          ),
+        );
+      });
+
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp]);
+
+      // lcpResourceEntry should still be found because
+      // the resource buffer was configured to 60!
       assert.ok(lcp.attribution.lcpResourceEntry);
       assert(
         lcp.attribution.lcpResourceEntry.name.endsWith(

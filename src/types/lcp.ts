@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type {Metric} from './base.js';
+import type {AttributionReportOpts, Metric} from './base.js';
 
 /**
  * An LCP-specific version of the Metric object.
@@ -82,6 +82,21 @@ export interface LCPAttribution {
    * The `LargestContentfulPaint` entry corresponding to LCP.
    */
   lcpEntry?: LargestContentfulPaint;
+}
+
+/**
+ * Configuration options for `onLCP`.
+ */
+export interface LCPAttributionReportOpts extends AttributionReportOpts {
+  /**
+   * The maximum number of additional Resource Timing entries to keep in the
+   * buffer, in addition to the first 250 entries available in the default
+   * buffer. This is useful to help attribute media LCPs to a URL and LCP
+   * subparts. Defaults to 50 but can be increased for pages that use a lot of
+   * resources, before LCP gets a chance to emit, particularly for soft
+   * navigations.
+   */
+  resourceBufferSize?: number;
 }
 
 /**
