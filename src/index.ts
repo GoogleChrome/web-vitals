@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-export {onCLS, CLSThresholds} from './onCLS.js';
+export {onCLS, resetCLS, CLSThresholds} from './onCLS.js';
 export {onFCP, FCPThresholds} from './onFCP.js';
 export {onFID, FIDThresholds} from './onFID.js';
 export {onINP, resetINP, INPThresholds} from './onINP.js';

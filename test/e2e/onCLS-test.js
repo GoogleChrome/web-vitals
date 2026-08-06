@@ -383,6 +383,43 @@ describe('onCLS()', async function () {
     assert.match(cls2.navigationType, /navigate|reload/);
   });
 
+  it('resets CLS metric', async function () {
+    if (!browserSupportsCLS) this.skip();
+
+    await navigateTo('/test/cls');
+
+    // Wait until all images are loaded and rendered, then change to hidden.
+    await imagesPainted();
+    await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
+
+    const [cls1] = await getBeacons();
+    assert(cls1.value >= 0);
+    assert(cls1.id.match(/^v3-\d+-\d+$/));
+    assert.strictEqual(cls1.name, 'CLS');
+    assert.strictEqual(cls1.entries.length, 2);
+
+    await clearBeacons();
+    await stubVisibilityChange('visible');
+
+    // Wait for a frame to be painted.
+    await browser.executeAsync((done) => requestAnimationFrame(done));
+
+    await browser.execute(() => self.__resetCLS());
+    await triggerLayoutShift();
+
+    await stubVisibilityChange('hidden');
+    await beaconCountIs(1);
+
+    const [cls2] = await getBeacons();
+    assert(cls2.id.match(/^v3-\d+-\d+$/));
+    assert(cls2.id !== cls1.id);
+    assert.strictEqual(cls2.name, 'CLS');
+    assert.strictEqual(cls2.value, cls2.delta);
+    assert.strictEqual(cls2.entries.length, 1);
+  });
+
   it('continues reporting after visibilitychange (reportAllChanges === true)', async function () {
     if (!browserSupportsCLS) this.skip();
 

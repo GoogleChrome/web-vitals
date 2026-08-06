@@ -46,7 +46,10 @@
       return {entryType, hadRecentInput, sources, startTime, value};
     }
 
-    const {onCLS} = await __testImport('{{ modulePath }}');
+    const {onCLS, resetCLS} = await __testImport('{{ modulePath }}');
+
+    // Expose so tests can trigger a metric reset.
+    self.__resetCLS = resetCLS;
 
     onCLS((cls) => {
       // Log for easier manual testing.

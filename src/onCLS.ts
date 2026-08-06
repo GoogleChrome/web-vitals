@@ -115,9 +115,7 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
           report(true);
         });
 
-        // Only report after a bfcache restore if the `PerformanceObserver`
-        // successfully registered.
-        onBFCacheRestore(() => {
+        function resetMetric() {
           sessionValue = 0;
           metric = initMetric('CLS', 0);
           report = bindReporter(
@@ -126,9 +124,16 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
             CLSThresholds,
             opts!.reportAllChanges,
           );
+        }
 
+        // Only report after a bfcache restore if the `PerformanceObserver`
+        // successfully registered.
+        onBFCacheRestore(() => {
+          resetMetric();
           doubleRAF(() => report());
         });
+
+        document.addEventListener('reset-web-vitals-cls', resetMetric);
 
         // Queue a task to report (if nothing else triggers a report first).
         // This allows CLS to be reported as soon as FCP fires when
@@ -137,4 +142,12 @@ export const onCLS = (onReport: CLSReportCallback, opts?: ReportOpts) => {
       }
     }),
   );
+};
+
+/**
+ * Resets the CLS metric to its initial state. Existing callbacks
+ * will be retained and called for the new metric.
+ */
+export const resetCLS = () => {
+  document.dispatchEvent(new Event('reset-web-vitals-cls'));
 };
