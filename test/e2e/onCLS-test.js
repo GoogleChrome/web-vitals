@@ -621,6 +621,53 @@ describe('onCLS()', async function () {
     assert.strictEqual(cls5.navigationType, 'back-forward-cache');
   });
 
+  it('does not report a spurious zero value after bfcache restore (reportAllChanges === false)', async function () {
+    if (!browserSupportsCLS) this.skip();
+
+    await navigateTo(`/test/cls`);
+
+    // Wait until all images are loaded and rendered, then go forward & back.
+    await imagesPainted();
+
+    await stubForwardBack();
+    await beaconCountIs(1, {instance: 'All'});
+
+    const [cls1] = await getBeacons({instance: 'All'});
+
+    assert(cls1.value > 0);
+    assert.match(cls1.navigationType, /navigate|reload/);
+
+    // The metric for the restored page view starts at zero. With
+    // `reportAllChanges` false it must not be reported until it actually
+    // changes, so wait past the double rAF that follows the restore and
+    // assert no extra beacon was sent.
+    await nextFrame();
+    await browser.pause(500);
+
+    const beacons = await getBeacons({instance: 'All'});
+    assert.strictEqual(beacons.length, 1);
+  });
+
+  it('reports the initial zero value after bfcache restore (reportAllChanges === true)', async function () {
+    if (!browserSupportsCLS) this.skip();
+
+    await navigateTo(`/test/cls?reportAllChanges=1`);
+
+    await imagesPainted();
+
+    await clearBeacons();
+    await stubForwardBack();
+
+    await beaconCountIs(1);
+
+    const [cls] = await getBeacons();
+
+    assert.strictEqual(cls.value, 0);
+    assert.strictEqual(cls.delta, 0);
+    assert.strictEqual(cls.entries.length, 0);
+    assert.strictEqual(cls.navigationType, 'back-forward-cache');
+  });
+
   it('reports zero if no layout shifts occurred on first visibility hidden (reportAllChanges === false)', async function () {
     if (!browserSupportsCLS) this.skip();
 
@@ -629,6 +676,8 @@ describe('onCLS()', async function () {
     // Wait until the page is loaded and content is visible before hiding.
     await firstContentfulPaint();
     await stubVisibilityChange('hidden');
+
+    await beaconCountIs(1);
 
     const [cls] = await getBeacons();
     assert(cls.id.match(/^v6-\d+-\d+$/));
