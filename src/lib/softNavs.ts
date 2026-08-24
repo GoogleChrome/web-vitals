@@ -19,7 +19,7 @@ import type {ReportOpts} from '../types.js';
 export const checkSoftNavsEnabled = (opts?: ReportOpts) => {
   return (
     // Firefox has a preference to disable this, which some people use so add a guard
-    globalThis.PerformanceObserver?.supportedEntryTypes.includes(
+    globalThis.PerformanceObserver?.supportedEntryTypes?.includes(
       'soft-navigation',
     ) &&
     // Older implementations expose the value as an attribute rather than the
