@@ -59,6 +59,33 @@ describe('InteractionManager', () => {
     );
   });
 
+  it('treats a first-input entry as an INP candidate', () => {
+    const m = new InteractionManager();
+
+    setInteractionCount(1);
+    m._processEntry({
+      interactionId: 9001,
+      duration: 8,
+      startTime: 0,
+      entryType: 'first-input',
+      name: 'pointerdown',
+    });
+
+    assert.strictEqual(
+      m._estimateP98LongestInteraction('navigate')._latency,
+      8,
+    );
+  });
+
+  it('ignores entries without an interactionId', () => {
+    const m = new InteractionManager();
+
+    setInteractionCount(1);
+    m._processEntry(entry(0, 200));
+
+    assert.strictEqual(m._estimateP98LongestInteraction('navigate'), undefined);
+  });
+
   it('keeps its own interaction candidates', () => {
     const a = new InteractionManager();
     const b = new InteractionManager();

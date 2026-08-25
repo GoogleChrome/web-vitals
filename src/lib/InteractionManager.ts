@@ -115,7 +115,7 @@ export class InteractionManager {
     this._onBeforeProcessingEntry?.(entry);
 
     // Skip further processing for entries that cannot be INP candidates.
-    if (!(entry.interactionId || entry.entryType === 'first-input')) return;
+    if (!entry.interactionId) return;
 
     // The least-long of the 10 longest interactions.
     const minLongestInteraction = this._longestInteractionList.at(-1);
