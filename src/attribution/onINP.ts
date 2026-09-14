@@ -261,11 +261,15 @@ export const onINP = (
     // Clean up the `pendingLoAFs` list so it doesn't grow endlessly.
     // Keep all LoAFs that either:
     // 1) Intersect with one of the above pending entries groups, OR
-    // 2) Occurred more recently than the most recently process event entry.
-    pendingLoAFs = pendingLoAFs.filter((loaf) => {
+    // 2) Occurred more recently than the most recently processed event entry
+    //    and are part of the most recent set of frames (which is
+    //    determined by checking if the index in the list is within
+    //    `MAX_PENDING_FRAMES` of the list's length).
+    const minLoAFIndexToKeep = pendingLoAFs.length - MAX_PENDING_FRAMES;
+    pendingLoAFs = pendingLoAFs.filter((loaf, i) => {
       return (
-        // Compare times first because it's faster.
-        loaf.startTime > latestProcessingEnd || intersectingLoAFs.has(loaf)
+        (i >= minLoAFIndexToKeep && loaf.startTime > latestProcessingEnd) ||
+        intersectingLoAFs.has(loaf)
       );
     });
 
