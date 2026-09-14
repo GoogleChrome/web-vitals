@@ -268,8 +268,8 @@ export const onINP = (
     const minLoAFIndexToKeep = pendingLoAFs.length - MAX_PENDING_FRAMES;
     pendingLoAFs = pendingLoAFs.filter((loaf, i) => {
       return (
-        (i >= minLoAFIndexToKeep && loaf.startTime > latestProcessingEnd) ||
-        intersectingLoAFs.has(loaf)
+        intersectingLoAFs.has(loaf) ||
+        (i >= minLoAFIndexToKeep && loaf.startTime > latestProcessingEnd)
       );
     });
 
