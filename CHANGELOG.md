@@ -1,5 +1,10 @@
 # Changelog
 
+### v6.2.2 (2026-09-14)
+
+- Cap pending LoAFs to avoid memory leak
+  ([#796](https://github.com/GoogleChrome/web-vitals/pull/796))
+
 ### v6.2.1 (2026-08-26)
 
 - Fix negative inputDelay in INP attribution
