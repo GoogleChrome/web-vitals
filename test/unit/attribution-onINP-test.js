@@ -174,9 +174,13 @@ describe('INP attribution subparts', () => {
     loafObserver.cb({getEntries: () => loafs});
 
     // Wait for idle cleanup task to run.
+    // It should clear it down to 10 LoAFs
     await flush();
 
     // Dispatch an interaction event whose time range spans all 15 LoAFs.
+    // This is only done to observe the current pending LoAFs, since this
+    // is an internal buffer that is not otherwise exposed. In reality an
+    // interaction would not span this many LoAFs.
     const eventObserver = observers.find((o) => o.types.includes('event'));
     eventObserver.cb({
       getEntries: () => [
