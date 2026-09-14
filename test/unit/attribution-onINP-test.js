@@ -13,7 +13,11 @@ const stubGlobals = () => {
   observers.length = 0;
   globalThis.PerformanceEventTiming = PerformanceEventTiming;
   globalThis.PerformanceObserver = class {
-    static supportedEntryTypes = ['event', 'first-input'];
+    static supportedEntryTypes = [
+      'event',
+      'first-input',
+      'long-animation-frame',
+    ];
     constructor(cb) {
       this.cb = cb;
       this.types = [];
@@ -55,6 +59,12 @@ const eventEntry = (props) =>
     target: null,
     ...props,
   });
+
+const loafEntry = (props) => ({
+  entryType: 'long-animation-frame',
+  scripts: [],
+  ...props,
+});
 
 const flush = () => new Promise((resolve) => setTimeout(resolve, 50));
 
@@ -142,5 +152,57 @@ describe('INP attribution subparts', () => {
     assert.strictEqual(a.inputDelay, 30);
     assert.strictEqual(a.processingDuration, 55);
     assert.strictEqual(a.presentationDelay, 25);
+  });
+
+  it('caps pendingLoAFs to MAX_PENDING_FRAMES during periods without interactions', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    const loafObserver = observers.find((o) =>
+      o.types.includes('long-animation-frame'),
+    );
+    assert(loafObserver, 'LoAF observer should be registered');
+
+    // Emit 15 LoAF entries (MAX_PENDING_FRAMES is 10).
+    const loafs = Array.from({length: 15}, (_, i) =>
+      loafEntry({
+        startTime: 1000 + i * 100,
+        duration: 80,
+      }),
+    );
+
+    loafObserver.cb({getEntries: () => loafs});
+
+    // Wait for idle cleanup task to run.
+    // It should clear it down to 10 LoAFs
+    await flush();
+
+    // Dispatch an interaction event whose time range spans all 15 LoAFs.
+    // This is only done to observe the current pending LoAFs, since this
+    // is an internal buffer that is not otherwise exposed. In reality an
+    // interaction would not span this many LoAFs.
+    const eventObserver = observers.find((o) => o.types.includes('event'));
+    eventObserver.cb({
+      getEntries: () => [
+        eventEntry({
+          name: 'pointerdown',
+          startTime: 900,
+          duration: 1600,
+          processingStart: 950,
+          processingEnd: 2500,
+          interactionId: 5001,
+        }),
+      ],
+    });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a} = reports[0];
+    // Without the cap, all 15 LoAFs would be retained in pendingLoAFs.
+    // With the cap, only the 10 most recent LoAFs are kept.
+    assert.strictEqual(a.longAnimationFrameEntries.length, 10);
+    // The oldest retained LoAF should be the 6th entry (startTime 1500), not the 1st (startTime 1000).
+    assert.strictEqual(a.longAnimationFrameEntries[0].startTime, 1500);
   });
 });
