@@ -111,12 +111,21 @@ export const onLCP = (
       // Get the Resource Timing entry checking the local buffer first
       // Use findLast to get the latest entry in case a resource is requested
       // multiple times (can particularly affect soft nav page views).
+      // The request must have started at or before the LCP render: a later
+      // request for the same URL (prefetch, lazy-loader re-inserting the same
+      // src, service worker revalidation) can't be what painted the element,
+      // and picking it up makes the subparts go negative.
+      // `responseEnd` is deliberately not checked, so media that is still
+      // downloading past LCP still matches. Compared raw rather than
+      // activation-adjusted, so prerender and soft navs work too.
+      const isLCPResource = (e: PerformanceResourceTiming) =>
+        e.name === lcpEntry.url &&
+        (e.requestStart || e.startTime) <= lcpEntry.startTime;
+
       const lcpResourceEntry =
         lcpEntry.url &&
-        (resourceBuffer.findLast((e) => e.name === lcpEntry.url) ||
-          performance
-            .getEntriesByType('resource')
-            .findLast((e) => e.name === lcpEntry.url));
+        (resourceBuffer.findLast(isLCPResource) ||
+          performance.getEntriesByType('resource').findLast(isLCPResource));
 
       attribution.target = lcpTargetMap.get(lcpEntry);
       attribution.lcpEntry = lcpEntry;
