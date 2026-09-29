@@ -1364,9 +1364,12 @@ describe('onLCP()', async function () {
 
       await webVitalsLoaded();
 
-      // Stub performance.getEntriesByType to return []
+      // Clear out the default ResourceTimings which will store the first
+      // 250 resource timing entries (including the LCP image), so we're
+      // only using the web-vitals buffer
       await browser.execute(() => {
-        performance.getEntriesByType = () => [];
+        performance.setResourceTimingBufferSize(0);
+        performance.clearResourceTimings();
       });
 
       // Wait until all images are loaded and fully rendered.
@@ -1406,14 +1409,12 @@ describe('onLCP()', async function () {
       // Wait until the LCP image is loaded and fully rendered.
       await imagesPainted();
 
-      // Stub performance.getEntriesByType to return []
+      // Clear out the default ResourceTimings which will store the first
+      // 250 resource timing entries (including the LCP image), so we're
+      // only using the web-vitals buffer
       await browser.execute(() => {
-        performance.getEntriesByType = () => [];
-      });
-
-      // Stub performance.getEntriesByType to return []
-      await browser.execute(() => {
-        performance.getEntriesByType = () => [];
+        performance.setResourceTimingBufferSize(0);
+        performance.clearResourceTimings();
       });
 
       // Load 51 dummy resources. This should push the LCP
@@ -1440,38 +1441,7 @@ describe('onLCP()', async function () {
     it('supports configuring a larger resource buffer size', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      // Test with default buffer size of 50
-      await navigateTo('/test/lcp?attribution=1');
-
-      // Wait until the LCP image is loaded and fully rendered.
-      await imagesPainted();
-
-      // Clear out the default ResourceTimings which will store the first
-      // 250 resource timing entries (including the LCP image), so we're
-      // only using the web-vitals buffer
-      await browser.execute(() => {
-        performance.setResourceTimingBufferSize(0);
-        performance.clearResourceTimings();
-      });
-
-      // Load 51 dummy resources.
-      await browser.execute(async () => {
-        await Promise.all(
-          Array.from({length: 51}, (_, i) =>
-            fetch(`/test/img/square.png?delay=0&dummy=${i + 1}`),
-          ),
-        );
-      });
-
       await navigateTo('/test/lcp?attribution=1&resourceBufferSize=60');
-
-      await beaconCountIs(1);
-      const [lcp1] = await getBeacons();
-      await clearBeacons();
-      assertStandardReportsAreCorrect([lcp1]);
-
-      // lcpResourceEntry should not be found as buffer is max of 50
-      assert.strictEqual(lcp1.attribution.lcpResourceEntry, undefined);
 
       // Wait until the LCP image is loaded and fully rendered.
       await imagesPainted();
@@ -1498,14 +1468,14 @@ describe('onLCP()', async function () {
 
       await beaconCountIs(1);
 
-      const [lcp2] = await getBeacons();
-      assertStandardReportsAreCorrect([lcp2]);
+      const [lcp] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp]);
 
       // This time lcpResourceEntry should still be found because
       // the resource buffer was configured to 60
-      assert.ok(lcp2.attribution.lcpResourceEntry);
+      assert.ok(lcp.attribution.lcpResourceEntry);
       assert(
-        lcp2.attribution.lcpResourceEntry.name.endsWith(
+        lcp.attribution.lcpResourceEntry.name.endsWith(
           '/test/img/square.png?delay=500',
         ),
       );
