@@ -1440,15 +1440,18 @@ describe('onLCP()', async function () {
     it('supports configuring a larger resource buffer size', async function () {
       if (!browserSupportsLCP) this.skip();
 
-      await navigateTo('/test/lcp?attribution=1&resourceBufferSize=60');
+      // Test with default buffer size of 50
+      await navigateTo('/test/lcp?attribution=1');
 
       // Wait until the LCP image is loaded and fully rendered.
       await imagesPainted();
 
-      // Stub performance.getEntriesByType to return []
+      // Clear out the default ResourceTimings which will store the first
+      // 250 resource timing entries (including the LCP image), so we're
+      // only using the web-vitals buffer
       await browser.execute(() => {
-        // performance.getEntriesByType = () => [];
-        performance.setResourceTimingBufferSize;
+        performance.setResourceTimingBufferSize(0);
+        performance.clearResourceTimings();
       });
 
       // Load 51 dummy resources.
@@ -1460,18 +1463,39 @@ describe('onLCP()', async function () {
         );
       });
 
+      await navigateTo('/test/lcp?attribution=1&resourceBufferSize=60');
+
+      await beaconCountIs(1);
+      const [lcp1] = await getBeacons();
+      await clearBeacons();
+      assertStandardReportsAreCorrect([lcp1]);
+
+      // lcpResourceEntry should not be found as buffer is max of 50
+      assert.strictEqual(lcp1.attribution.lcpResourceEntry, undefined);
+
+      // Wait until the LCP image is loaded and fully rendered.
+      await imagesPainted();
+
+      // Clear out the default ResourceTimings which will store the first
+      // 250 resource timing entries (including the LCP image), so we're
+      // only using the web-vitals buffer
+      await browser.execute(() => {
+        performance.setResourceTimingBufferSize(0);
+        performance.clearResourceTimings();
+      });
+
       await navigateTo('about:blank');
 
       await beaconCountIs(1);
 
-      const [lcp] = await getBeacons();
-      assertStandardReportsAreCorrect([lcp]);
+      const [lcp2] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp2]);
 
-      // lcpResourceEntry should still be found because
-      // the resource buffer was configured to 60!
-      assert.ok(lcp.attribution.lcpResourceEntry);
+      // This time lcpResourceEntry should still be found because
+      // the resource buffer was configured to 60
+      assert.ok(lcp2.attribution.lcpResourceEntry);
       assert(
-        lcp.attribution.lcpResourceEntry.name.endsWith(
+        lcp2.attribution.lcpResourceEntry.name.endsWith(
           '/test/img/square.png?delay=500',
         ),
       );
