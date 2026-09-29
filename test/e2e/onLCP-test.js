@@ -1364,9 +1364,12 @@ describe('onLCP()', async function () {
 
       await webVitalsLoaded();
 
-      // Stub performance.getEntriesByType to return []
+      // Clear out the default ResourceTimings which will store the first
+      // 250 resource timing entries (including the LCP image), so we're
+      // only using the web-vitals buffer
       await browser.execute(() => {
-        performance.getEntriesByType = () => [];
+        performance.setResourceTimingBufferSize(0);
+        performance.clearResourceTimings();
       });
 
       // Wait until all images are loaded and fully rendered.
@@ -1406,14 +1409,12 @@ describe('onLCP()', async function () {
       // Wait until the LCP image is loaded and fully rendered.
       await imagesPainted();
 
-      // Stub performance.getEntriesByType to return []
+      // Clear out the default ResourceTimings which will store the first
+      // 250 resource timing entries (including the LCP image), so we're
+      // only using the web-vitals buffer
       await browser.execute(() => {
-        performance.getEntriesByType = () => [];
-      });
-
-      // Stub performance.getEntriesByType to return []
-      await browser.execute(() => {
-        performance.getEntriesByType = () => [];
+        performance.setResourceTimingBufferSize(0);
+        performance.clearResourceTimings();
       });
 
       // Load 51 dummy resources. This should push the LCP
@@ -1445,10 +1446,12 @@ describe('onLCP()', async function () {
       // Wait until the LCP image is loaded and fully rendered.
       await imagesPainted();
 
-      // Stub performance.getEntriesByType to return []
+      // Clear out the default ResourceTimings which will store the first
+      // 250 resource timing entries (including the LCP image), so we're
+      // only using the web-vitals buffer
       await browser.execute(() => {
-        // performance.getEntriesByType = () => [];
-        performance.setResourceTimingBufferSize;
+        performance.setResourceTimingBufferSize(0);
+        performance.clearResourceTimings();
       });
 
       // Load 51 dummy resources.
