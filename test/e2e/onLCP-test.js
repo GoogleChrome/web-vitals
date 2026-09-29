@@ -1454,8 +1454,7 @@ describe('onLCP()', async function () {
         performance.clearResourceTimings();
       });
 
-      // Load 51 dummy resources. This should push the LCP
-      // image resource out of the 50-entry buffer.
+      // Load 51 dummy resources.
       await browser.execute(async () => {
         await Promise.all(
           Array.from({length: 51}, (_, i) =>
