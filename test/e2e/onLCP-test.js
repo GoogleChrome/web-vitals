@@ -1471,8 +1471,8 @@ describe('onLCP()', async function () {
       const [lcp] = await getBeacons();
       assertStandardReportsAreCorrect([lcp]);
 
-      // This time lcpResourceEntry should still be found because
-      // the resource buffer was configured to 60
+      // lcpResourceEntry should still be found because
+      // the resource buffer was configured to 60!
       assert.ok(lcp.attribution.lcpResourceEntry);
       assert(
         lcp.attribution.lcpResourceEntry.name.endsWith(
