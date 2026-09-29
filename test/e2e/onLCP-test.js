@@ -1484,6 +1484,16 @@ describe('onLCP()', async function () {
         performance.clearResourceTimings();
       });
 
+      // Load 51 dummy resources. This should push the LCP
+      // image resource out of the 50-entry buffer.
+      await browser.execute(async () => {
+        await Promise.all(
+          Array.from({length: 51}, (_, i) =>
+            fetch(`/test/img/square.png?delay=0&dummy=${i + 1}`),
+          ),
+        );
+      });
+
       await navigateTo('about:blank');
 
       await beaconCountIs(1);
