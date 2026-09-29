@@ -220,8 +220,8 @@ export const onINP = (
   const queueCleanup = () => {
     // Queue cleanup of entries that are not part of any INP candidates.
     if (!cleanupPending) {
-      whenIdleOrHidden(cleanupEntries);
       cleanupPending = true;
+      whenIdleOrHidden(cleanupEntries);
     }
   };
 

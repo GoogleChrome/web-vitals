@@ -205,4 +205,63 @@ describe('INP attribution subparts', () => {
     // The oldest retained LoAF should be the 6th entry (startTime 1500), not the 1st (startTime 1000).
     assert.strictEqual(a.longAnimationFrameEntries[0].startTime, 1500);
   });
+
+  it('caps pendingLoAFs when cleanup runs immediately while document is hidden', async () => {
+    document.visibilityState = 'hidden';
+
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    const loafObserver = observers.find((o) =>
+      o.types.includes('long-animation-frame'),
+    );
+    assert(loafObserver, 'LoAF observer should be registered');
+
+    // Emit 1 LoAF entry while hidden so queueCleanup runs immediately.
+    loafObserver.cb({
+      getEntries: () => [
+        loafEntry({
+          startTime: 500,
+          duration: 50,
+        }),
+      ],
+    });
+
+    // Emit 15 more LoAF entries.
+    const loafs = Array.from({length: 15}, (_, i) =>
+      loafEntry({
+        startTime: 1000 + i * 100,
+        duration: 80,
+      }),
+    );
+
+    loafObserver.cb({getEntries: () => loafs});
+
+    await flush();
+
+    // Dispatch an interaction event whose time range spans all 16 LoAFs.
+    const eventObserver = observers.find((o) => o.types.includes('event'));
+    eventObserver.cb({
+      getEntries: () => [
+        eventEntry({
+          name: 'pointerdown',
+          startTime: 400,
+          duration: 2100,
+          processingStart: 450,
+          processingEnd: 2500,
+          interactionId: 5001,
+        }),
+      ],
+    });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a} = reports[0];
+    // If cleanupPending was reset to true after synchronous cleanup,
+    // subsequent entries would not be cleaned up and all 16 LoAFs would be retained.
+    assert.strictEqual(a.longAnimationFrameEntries.length, 10);
+    // The oldest retained LoAF should be the 7th entry (startTime 1500), not the 1st (startTime 500).
+    assert.strictEqual(a.longAnimationFrameEntries[0].startTime, 1500);
+  });
 });
