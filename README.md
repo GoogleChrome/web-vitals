@@ -265,12 +265,12 @@ A "soft navigation" is tracked automatically when the following three things hap
 - The URL changes
 - Something is painted to screen.
 
-For some sites, this definition may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not missing the above criteria). However, by having the browser define the soft navigation, rather than depending on SPA frameworks to call an API when happens, allows for soft navigations to be measured for existing SPA applications and also provides a more consistent experience across frameworks.
+For some sites, this definition may lead to false positives (that users would not really consider a "navigation"), or false negatives (where the user does consider a navigation to have happened despite not meeting the above criteria). However, by having the browser define the soft navigation, rather than depending on SPA frameworks to call an API when happens, this allows for soft navigations to be measured for existing SPA applications and also provides a more consistent experience across frameworks.
 
 Some important points to note:
 
 - TTFB is reported as 0, and not the time of the first network call (if any) after the soft navigation.
-- FCP and LCP are the first and largest contentful paints after the soft navigation. Elements that remain between soft navigations will not count since they are not repainted. This can lead to differences between measuring performance for a page from a soft navigation and a hard navigation.
+- FCP and LCP are the first and largest contentful paints after the soft navigation respectively. Elements that remain between soft navigations will not count since they are not repainted. This can lead to differences between measuring performance for a page loaded using a soft navigation and a hard navigation of the same page.
 - INP is reset to measure only interactions after the the soft navigation.
 - CLS is reset to measure again separate to the first page.
 
@@ -288,7 +288,7 @@ onINP(console.log, {reportSoftNavs: true});
 onLCP(console.log, {reportSoftNavs: true});
 ```
 
-Note that this will change the way the first page loads are measured as the metrics for the initial URL will be finalized once the first soft nav occurs.
+Note that this will change the way the first page loads are measured as the metrics for the initial URL will be finalized once the first soft nav occurs, locking in CLS and INP (LCP should already be locked in by the interaction triggering the soft navigation).
 
 This will also lead to differences with browsers that support soft navigations (Chromium-based browsers on version 151+) and other browsers (that will not change reporting even with the `reportSoftNavs` flag).
 
@@ -311,6 +311,8 @@ onLCP(doSoftNavProcessing, {reportSoftNavs: true});
 ```
 
 In both cases the `navigationURL` property will provide the URL the metrics are for. This should be used rather than assuming the current URL is the page URL, since metrics may be reported after the fact.
+
+Additionally, the `navigationType` property will show `soft-navigation` for soft navigations allowing them to be differentiated from other page loads of the same URL.
 
 ### Send the results to an analytics endpoint
 
