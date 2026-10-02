@@ -1438,6 +1438,42 @@ describe('onLCP()', async function () {
       assert.equal(lcp.attribution.lcpResourceEntry, undefined);
     });
 
+    it('ignores resources requested after the LCP render', async function () {
+      if (!browserSupportsLCP) this.skip();
+
+      await navigateTo('/test/lcp?attribution=1');
+
+      // Wait until the LCP image is loaded and fully rendered.
+      await imagesPainted();
+
+      // Clear out the default ResourceTimings which will store the first
+      // 250 resource timing entries (including the LCP image), so we're
+      // only using the web-vitals buffer
+      await browser.execute(() => {
+        performance.setResourceTimingBufferSize(0);
+        performance.clearResourceTimings();
+      });
+
+      // Request the LCP image again after it has painted. This later entry
+      // must not be mistaken for the resource that painted the element.
+      await browser.pause(100);
+      await browser.execute(async () => {
+        await fetch('/test/img/square.png?delay=500');
+      });
+
+      await navigateTo('about:blank');
+
+      await beaconCountIs(1);
+
+      const [lcp] = await getBeacons();
+      assertStandardReportsAreCorrect([lcp]);
+
+      assert(lcp.attribution.resourceLoadDelay >= 0);
+      assert(lcp.attribution.resourceLoadDelay <= lcp.value);
+      assert(lcp.attribution.resourceLoadDuration >= 0);
+      assert(lcp.attribution.elementRenderDelay >= 0);
+    });
+
     it('supports configuring a larger resource buffer size', async function () {
       if (!browserSupportsLCP) this.skip();
 
