@@ -1,5 +1,12 @@
 # Changelog
 
+### v6.2.3 (2026-10-05)
+
+- Fix negative `resourceLoadDuration` in LCP attribution
+  ([#803](https://github.com/GoogleChrome/web-vitals/pull/803))
+- Fix INP clean-up bug causing memory leak
+  ([#799](https://github.com/GoogleChrome/web-vitals/pull/799))
+
 ### v6.2.2 (2026-09-14)
 
 - Cap pending LoAFs to avoid memory leak
