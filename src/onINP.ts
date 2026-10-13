@@ -147,29 +147,41 @@ export const onINP = (
       );
     };
 
+    let pendingEntries: (PerformanceEventTiming | PerformanceSoftNavigation)[] =
+      [];
+    let idleQueued = false;
+
+    const processPendingEntries = (forceReport = false) => {
+      const entries = pendingEntries;
+      pendingEntries = [];
+      for (const entry of entries) {
+        if (entry.entryType === 'soft-navigation') {
+          handleSoftNavEntry(entry as PerformanceSoftNavigation);
+          continue;
+        }
+        interactionManager._processEntry(entry as PerformanceEventTiming);
+      }
+      updateINPMetric();
+      if (forceReport) {
+        report(true);
+      }
+    };
+
     const handleEntries = (
       entries: (PerformanceEventTiming | PerformanceSoftNavigation)[],
       forceReport: boolean = false,
     ) => {
-      // Queue the `handleEntries()` callback in the next idle task.
-      // This is needed to increase the chances that all event entries that
-      // occurred between the user interaction and the next paint
-      // have been dispatched. Note: there is currently an experiment
-      // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
-      // 123+ that if rolled out fully may make this no longer necessary.
-      whenIdleOrHidden(() => {
-        for (const entry of entries) {
-          if (entry.entryType === 'soft-navigation') {
-            handleSoftNavEntry(entry as PerformanceSoftNavigation);
-            continue;
-          }
-          interactionManager._processEntry(entry as PerformanceEventTiming);
-        }
-        updateINPMetric();
-        if (forceReport) {
-          report(true);
-        }
-      });
+      pendingEntries.push(...entries);
+      if (forceReport) {
+        processPendingEntries(true);
+      } else if (!idleQueued) {
+        // Wait for the remaining entries from the interaction's next paint.
+        idleQueued = true;
+        whenIdleOrHidden(() => {
+          idleQueued = false;
+          processPendingEntries();
+        });
+      }
     };
 
     const types = ['event', 'first-input'] as (
@@ -191,14 +203,16 @@ export const onINP = (
     );
 
     if (po) {
-      visibilityWatcher.onHidden(() => {
+      const reportFinalINP = () => {
         handleEntries(
           po.takeRecords() as [
             PerformanceEventTiming | PerformanceSoftNavigation,
           ],
           true, // forceReport after processing all entries
         );
-      });
+      };
+      visibilityWatcher.onHidden(reportFinalINP);
+      addEventListener('pagehide', reportFinalINP, true);
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
