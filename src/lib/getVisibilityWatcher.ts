@@ -32,29 +32,24 @@ const initHiddenTime = () => {
 };
 
 const onVisibilityUpdate = (event: Event) => {
-  // Handle changes to hidden state
-  if (document.visibilityState === 'hidden') {
-    if (event.type === 'visibilitychange') {
+  // A page can unload before its visibility state changes.
+  if (document.visibilityState === 'hidden' || event.type === 'pagehide') {
+    if (event.type !== 'prerenderingchange') {
       for (const onHiddenFunction of onHiddenFunctions) {
         onHiddenFunction();
       }
     }
 
-    // If the document is 'hidden' and no previous hidden timestamp has been
-    // set (so is infinity), update it based on the current event data.
+    // Record the first time the page became hidden or unloaded.
     if (!isFinite(firstHiddenTime)) {
-      // If the event is a 'visibilitychange' event, it means the page was
-      // visible prior to this change, so the event timestamp is the first
-      // hidden time.
-      // However, if the event is not a 'visibilitychange' event, then it must
-      // be a 'prerenderingchange' event, and the fact that the document is
-      // still 'hidden' from the above check means the tab was activated
-      // in a background state and so has always been hidden.
-      firstHiddenTime = event.type === 'visibilitychange' ? event.timeStamp : 0;
+      // A prerender activated in the background has always been hidden.
+      // Otherwise, use the time the page became hidden or unloaded.
+      firstHiddenTime =
+        event.type === 'prerenderingchange' ? 0 : event.timeStamp;
 
       // We no longer need the `prerenderingchange` event listener now we've
       // set an initial init time so remove that
-      // (we'll keep the visibilitychange one for onHiddenFunction above)
+      // (keep visibilitychange and pagehide for onHiddenFunction above)
       removeEventListener('prerenderingchange', onVisibilityUpdate, true);
     }
   }
@@ -86,6 +81,7 @@ export const getVisibilityWatcher = (reset = false) => {
     // restores and/or prerender without having to examine individual
     // timestamps in detail and also for onHidden function calls.
     addEventListener('visibilitychange', onVisibilityUpdate, true);
+    addEventListener('pagehide', onVisibilityUpdate, true);
     // IMPORTANT: when a page is prerendering, its `visibilityState` is
     // 'hidden', so in order to account for cases where this module checks for
     // visibility during prerendering, an additional check after prerendering

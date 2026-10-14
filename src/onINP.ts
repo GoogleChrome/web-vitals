@@ -203,7 +203,7 @@ export const onINP = (
     );
 
     if (po) {
-      const reportFinalINP = () => {
+      const forceReportINP = () => {
         handleEntries(
           po.takeRecords() as [
             PerformanceEventTiming | PerformanceSoftNavigation,
@@ -211,8 +211,7 @@ export const onINP = (
           true, // forceReport after processing all entries
         );
       };
-      visibilityWatcher.onHidden(reportFinalINP);
-      addEventListener('pagehide', reportFinalINP, true);
+      visibilityWatcher.onHidden(forceReportINP);
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.
