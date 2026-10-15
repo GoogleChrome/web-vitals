@@ -147,29 +147,46 @@ export const onINP = (
       );
     };
 
+    let pendingEntries: (PerformanceEventTiming | PerformanceSoftNavigation)[] =
+      [];
+    let idleQueued = false;
+
+    const processPendingEntries = (forceReport = false) => {
+      const entries = pendingEntries;
+      pendingEntries = [];
+      for (const entry of entries) {
+        if (entry.entryType === 'soft-navigation') {
+          handleSoftNavEntry(entry as PerformanceSoftNavigation);
+          continue;
+        }
+        interactionManager._processEntry(entry as PerformanceEventTiming);
+      }
+      updateINPMetric();
+      if (forceReport) {
+        report(true);
+      }
+    };
+
     const handleEntries = (
       entries: (PerformanceEventTiming | PerformanceSoftNavigation)[],
       forceReport: boolean = false,
     ) => {
-      // Queue the `handleEntries()` callback in the next idle task.
-      // This is needed to increase the chances that all event entries that
-      // occurred between the user interaction and the next paint
-      // have been dispatched. Note: there is currently an experiment
-      // running in Chrome (EventTimingKeypressAndCompositionInteractionId)
-      // 123+ that if rolled out fully may make this no longer necessary.
-      whenIdleOrHidden(() => {
-        for (const entry of entries) {
-          if (entry.entryType === 'soft-navigation') {
-            handleSoftNavEntry(entry as PerformanceSoftNavigation);
-            continue;
-          }
-          interactionManager._processEntry(entry as PerformanceEventTiming);
-        }
-        updateINPMetric();
-        if (forceReport) {
-          report(true);
-        }
-      });
+      pendingEntries.push(...entries);
+      if (forceReport) {
+        processPendingEntries(true);
+      } else if (!idleQueued) {
+        // Queue the `handleEntries()` callback in the next idle task.
+        // This is needed to increase the chances that all event entries that
+        // occurred between the user interaction and the next paint
+        // have been dispatched.
+        // TODO since the EventTimingKeypressAndCompositionInteractionId
+        // rolled out in Chrome 127, this may no longer necessary. To be confirmed.
+        idleQueued = true;
+        whenIdleOrHidden(() => {
+          idleQueued = false;
+          processPendingEntries();
+        });
+      }
     };
 
     const types = ['event', 'first-input'] as (
