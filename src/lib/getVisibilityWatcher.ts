@@ -32,7 +32,8 @@ const initHiddenTime = () => {
 };
 
 const onVisibilityUpdate = (event: Event) => {
-  // A page can unload before its visibility state changes.
+  // Handle changes to hidden state
+  // Also include page unloads which can happen while page is backgrounded.
   if (document.visibilityState === 'hidden' || event.type === 'pagehide') {
     if (event.type !== 'prerenderingchange') {
       for (const onHiddenFunction of onHiddenFunctions) {
@@ -43,9 +44,13 @@ const onVisibilityUpdate = (event: Event) => {
     // Record the first time the page became hidden or unloaded.
     if (!isFinite(firstHiddenTime)) {
       // A prerender activated in the background has always been hidden.
+      // Similar for pagehide if the firstHiddenTime has not been set yet
+      // (e.g. tab opened in background and closed)
       // Otherwise, use the time the page became hidden or unloaded.
       firstHiddenTime =
-        event.type === 'prerenderingchange' ? 0 : event.timeStamp;
+        event.type === 'prerenderingchange' || event.type === 'pagehide'
+          ? 0
+          : event.timeStamp;
 
       // We no longer need the `prerenderingchange` event listener now we've
       // set an initial init time so remove that
@@ -81,6 +86,8 @@ export const getVisibilityWatcher = (reset = false) => {
     // restores and/or prerender without having to examine individual
     // timestamps in detail and also for onHidden function calls.
     addEventListener('visibilitychange', onVisibilityUpdate, true);
+    // Include pagehide to account for pages closed in the background with queued metrics.
+    // See https://github.com/GoogleChrome/web-vitals/issues/805
     addEventListener('pagehide', onVisibilityUpdate, true);
     // IMPORTANT: when a page is prerendering, its `visibilityState` is
     // 'hidden', so in order to account for cases where this module checks for

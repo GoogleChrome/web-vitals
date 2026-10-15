@@ -175,7 +175,12 @@ export const onINP = (
       if (forceReport) {
         processPendingEntries(true);
       } else if (!idleQueued) {
-        // Wait for the remaining entries from the interaction's next paint.
+        // Queue the `handleEntries()` callback in the next idle task.
+        // This is needed to increase the chances that all event entries that
+        // occurred between the user interaction and the next paint
+        // have been dispatched.
+        // TODO since the EventTimingKeypressAndCompositionInteractionId
+        // rolled out in Chrome 127, this may no longer necessary. To be confirmed.
         idleQueued = true;
         whenIdleOrHidden(() => {
           idleQueued = false;
@@ -203,15 +208,14 @@ export const onINP = (
     );
 
     if (po) {
-      const forceReportINP = () => {
+      visibilityWatcher.onHidden(() => {
         handleEntries(
           po.takeRecords() as [
             PerformanceEventTiming | PerformanceSoftNavigation,
           ],
           true, // forceReport after processing all entries
         );
-      };
-      visibilityWatcher.onHidden(forceReportINP);
+      });
 
       // Only report after a bfcache restore if the `PerformanceObserver`
       // successfully registered.

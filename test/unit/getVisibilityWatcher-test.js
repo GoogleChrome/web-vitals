@@ -120,7 +120,7 @@ const setup = async (
 };
 
 describe('getVisibilityWatcher', () => {
-  it('notifies on visible pagehide and records its first hidden time', async (t) => {
+  it('notifies on visible pagehide and defaults an unset hidden time to zero', async (t) => {
     const h = await setup(t);
     const watcher = h.getVisibilityWatcher();
     let calls = 0;
@@ -133,13 +133,13 @@ describe('getVisibilityWatcher', () => {
     h.dispatch('pagehide', {timeStamp: 800});
     assert.strictEqual(document.visibilityState, 'visible');
     assert.strictEqual(calls, 1);
-    assert.strictEqual(watcher.firstHiddenTime, 800);
+    assert.strictEqual(watcher.firstHiddenTime, 0);
 
     document.visibilityState = 'hidden';
     h.dispatch('visibilitychange', {timeStamp: 900});
     h.dispatch('pagehide', {timeStamp: 1000});
     assert.strictEqual(calls, 3);
-    assert.strictEqual(watcher.firstHiddenTime, 800);
+    assert.strictEqual(watcher.firstHiddenTime, 0);
   });
 
   it('notifies on pagehide without replacing a background hidden time', async (t) => {
@@ -195,7 +195,7 @@ describe('getVisibilityWatcher', () => {
     h.dispatch('prerenderingchange', {timeStamp: 500});
     assert.strictEqual(watcher.firstHiddenTime, Infinity);
     h.dispatch('pagehide', {timeStamp: 600});
-    assert.strictEqual(watcher.firstHiddenTime, 600);
+    assert.strictEqual(watcher.firstHiddenTime, 0);
   });
 
   for (const restoredVisibility of ['visible', 'hidden']) {
@@ -208,7 +208,7 @@ describe('getVisibilityWatcher', () => {
       h.dispatch('pagehide', {persisted: true, timeStamp: 1500});
       document.visibilityState = 'hidden';
       h.dispatch('pageshow', {persisted: true, timeStamp: 2000});
-      assert.strictEqual(watcher.firstHiddenTime, 1500);
+      assert.strictEqual(watcher.firstHiddenTime, 0);
 
       document.visibilityState = restoredVisibility;
       h.runTasks();
@@ -220,17 +220,14 @@ describe('getVisibilityWatcher', () => {
 
       h.dispatch('pagehide', {persisted: true, timeStamp: 2500});
       assert.strictEqual(calls, 2);
-      assert.strictEqual(
-        watcher.firstHiddenTime,
-        restoredVisibility === 'visible' ? 2500 : 0,
-      );
+      assert.strictEqual(watcher.firstHiddenTime, 0);
     });
   }
 });
 
 for (const name of ['FCP', 'LCP']) {
   for (const startTime of [1400, 1500, 1600]) {
-    it(`on${name} only accepts entries before pagehide (${startTime})`, async (t) => {
+    it(`on${name} ignores entries when pagehide defaults the hidden time to zero (${startTime})`, async (t) => {
       const h = await setup(t);
       const metricModule = await h.load(`on${name}.js`);
       const reports = [];
@@ -247,7 +244,7 @@ for (const name of ['FCP', 'LCP']) {
       ]);
       assert.deepStrictEqual(
         reports.map((m) => m.value),
-        startTime < 1500 ? [startTime] : [],
+        [],
       );
     });
   }
