@@ -218,6 +218,7 @@ export const onLCP = (
           whenIdleOrHidden(() => {
             if (!isFinalized) {
               if (!softNavsEnabled) {
+                handleEntries(po!.takeRecords() as LargestContentfulPaint[]);
                 // Do some clean up since these won't be needed anymore.
                 po!.disconnect();
                 for (const type of finalizeEventTypes) {
