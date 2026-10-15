@@ -324,11 +324,12 @@ export const onINP = (
     let longestScriptSubpart: INPLongestScriptSummary['subpart'] | undefined;
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
-      totalStyleAndLayoutDuration =
-        totalStyleAndLayoutDuration +
-        loafEntry.startTime +
-        loafEntry.duration -
-        loafEntry.styleAndLayoutStart;
+      if (loafEntry.styleAndLayoutStart) {
+        totalStyleAndLayoutDuration +=
+          loafEntry.startTime +
+          loafEntry.duration -
+          loafEntry.styleAndLayoutStart;
+      }
 
       for (const script of loafEntry.scripts) {
         const scriptEndTime = script.startTime + script.duration;

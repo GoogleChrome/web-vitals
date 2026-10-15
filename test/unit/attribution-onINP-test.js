@@ -154,6 +154,68 @@ describe('INP attribution subparts', () => {
     assert.strictEqual(a.presentationDelay, 25);
   });
 
+  it('excludes non-rendering frames from style and layout totals', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    observers
+      .find((o) => o.types.includes('long-animation-frame'))
+      .cb({
+        getEntries: () => [
+          loafEntry({
+            startTime: 1000,
+            duration: 100,
+            renderStart: 0,
+            styleAndLayoutStart: 0,
+            scripts: [
+              {
+                startTime: 1010,
+                duration: 80,
+                forcedStyleAndLayoutDuration: 10,
+              },
+            ],
+          }),
+          loafEntry({
+            startTime: 1100,
+            duration: 100,
+            renderStart: 1170,
+            styleAndLayoutStart: 1180,
+          }),
+        ],
+      });
+    observers
+      .find((o) => o.types.includes('event'))
+      .cb({
+        getEntries: () => [
+          eventEntry({
+            name: 'pointerdown',
+            startTime: 1000,
+            duration: 216,
+            processingStart: 1100,
+            processingEnd: 1150,
+            interactionId: 4001,
+          }),
+        ],
+      });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a, value} = reports[0];
+    assert.strictEqual(a.longAnimationFrameEntries.length, 2);
+    assert.strictEqual(a.totalScriptDuration, 70);
+    assert.strictEqual(a.totalStyleAndLayoutDuration, 30);
+    assert.strictEqual(a.totalPaintDuration, 16);
+    assert.strictEqual(a.totalUnattributedDuration, 100);
+    assert.strictEqual(
+      a.totalScriptDuration +
+        a.totalStyleAndLayoutDuration +
+        a.totalPaintDuration +
+        a.totalUnattributedDuration,
+      value,
+    );
+  });
+
   it('caps pendingLoAFs to MAX_PENDING_FRAMES during periods without interactions', async () => {
     const reports = [];
     onINP((metric) => reports.push(metric), {reportAllChanges: true});
