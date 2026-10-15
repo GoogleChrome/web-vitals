@@ -43,14 +43,9 @@ const onVisibilityUpdate = (event: Event) => {
 
     // Record the first time the page became hidden or unloaded.
     if (!isFinite(firstHiddenTime)) {
-      // A prerender activated in the background has always been hidden.
-      // Similar for pagehide if the firstHiddenTime has not been set yet
-      // (e.g. tab opened in background and closed)
       // Otherwise, use the time the page became hidden or unloaded.
       firstHiddenTime =
-        event.type === 'prerenderingchange' || event.type === 'pagehide'
-          ? 0
-          : event.timeStamp;
+        event.type === 'prerenderingchange' ? 0 : event.timeStamp;
 
       // We no longer need the `prerenderingchange` event listener now we've
       // set an initial init time so remove that
