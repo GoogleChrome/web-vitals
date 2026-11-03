@@ -378,7 +378,9 @@ export const onINP = (
       ? lastLoAF.startTime + lastLoAF.duration
       : 0;
     if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
-      totalPaintDuration = nextPaintTime - lastLoAFEndTime;
+      // Event durations are rounded to the nearest 8ms, so `nextPaintTime` can
+      // land a few ms before the LoAF end. Clamp so this is never negative.
+      totalPaintDuration = Math.max(0, nextPaintTime - lastLoAFEndTime);
     }
 
     if (longestScriptEntry && longestScriptSubpart) {

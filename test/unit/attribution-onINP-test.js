@@ -279,6 +279,60 @@ describe('INP attribution subparts', () => {
     );
   });
 
+  it('never reports a negative totalPaintDuration when the event duration rounds down', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    observers
+      .find((o) => o.types.includes('long-animation-frame'))
+      .cb({
+        getEntries: () => [
+          // Ends at 1098, after the rounded down `nextPaintTime` of 1096.
+          loafEntry({
+            startTime: 1005,
+            duration: 93,
+            renderStart: 1065,
+            styleAndLayoutStart: 1070,
+            scripts: [
+              {
+                startTime: 1010,
+                duration: 50,
+                forcedStyleAndLayoutDuration: 0,
+              },
+            ],
+          }),
+        ],
+      });
+    observers
+      .find((o) => o.types.includes('event'))
+      .cb({
+        getEntries: () => [
+          eventEntry({
+            name: 'pointerdown',
+            startTime: 1000,
+            duration: 96,
+            processingStart: 1010,
+            processingEnd: 1060,
+            interactionId: 4001,
+          }),
+        ],
+      });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a, value} = reports[0];
+    assert.strictEqual(a.totalScriptDuration, 50);
+    assert.strictEqual(a.totalPaintDuration, 0);
+    assert.strictEqual(
+      a.totalScriptDuration +
+        a.totalStyleAndLayoutDuration +
+        a.totalPaintDuration +
+        a.totalUnattributedDuration,
+      value,
+    );
+  });
+
   it('caps pendingLoAFs to MAX_PENDING_FRAMES during periods without interactions', async () => {
     const reports = [];
     onINP((metric) => reports.push(metric), {reportAllChanges: true});
