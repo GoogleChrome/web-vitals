@@ -325,10 +325,13 @@ export const onINP = (
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
       if (loafEntry.styleAndLayoutStart) {
+        // A frame can still be rendering when the interaction starts, so only
+        // count the style and layout time after `interactionTime` (as is done
+        // for scripts below).
         totalStyleAndLayoutDuration +=
           loafEntry.startTime +
           loafEntry.duration -
-          loafEntry.styleAndLayoutStart;
+          Math.max(loafEntry.styleAndLayoutStart, interactionTime);
       }
 
       for (const script of loafEntry.scripts) {
