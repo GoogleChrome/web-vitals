@@ -342,7 +342,7 @@ export const onINP = (
         const intersectingScriptDuration =
           Math.min(script.startTime + script.duration, nextPaintTime) -
           Math.max(interactionTime, script.startTime);
-        if (intersectingScriptDuration < 0) {
+        if (intersectingScriptDuration <= 0) {
           continue;
         }
         // Since forcedStyleAndLayoutDuration doesn't provide timestamps, we
