@@ -325,10 +325,13 @@ export const onINP = (
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
       if (loafEntry.styleAndLayoutStart) {
+        // A frame can still be rendering when the interaction starts, so only
+        // count the style and layout time after `interactionTime` (as is done
+        // for scripts below).
         totalStyleAndLayoutDuration +=
           loafEntry.startTime +
           loafEntry.duration -
-          loafEntry.styleAndLayoutStart;
+          Math.max(loafEntry.styleAndLayoutStart, interactionTime);
       }
 
       for (const script of loafEntry.scripts) {
@@ -379,7 +382,9 @@ export const onINP = (
       ? lastLoAF.startTime + lastLoAF.duration
       : 0;
     if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
-      totalPaintDuration = nextPaintTime - lastLoAFEndTime;
+      // Event durations are rounded to the nearest 8ms, so `nextPaintTime` can
+      // land a few ms before the LoAF end. Clamp so this is never negative.
+      totalPaintDuration = Math.max(0, nextPaintTime - lastLoAFEndTime);
     }
 
     if (longestScriptEntry && longestScriptSubpart) {
