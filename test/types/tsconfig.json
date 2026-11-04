@@ -1,0 +1,11 @@
+{
+  "compilerOptions": {
+    "lib": ["esnext", "DOM"],
+    "module": "nodenext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "strict": true,
+    "types": []
+  },
+  "files": ["consumer.ts"]
+}
