@@ -325,19 +325,26 @@ export const onINP = (
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
       if (loafEntry.styleAndLayoutStart) {
+        // A frame can still be rendering when the interaction starts, so only
+        // count the style and layout time after `interactionTime` (as is done
+        // for scripts below).
         totalStyleAndLayoutDuration +=
           loafEntry.startTime +
           loafEntry.duration -
-          loafEntry.styleAndLayoutStart;
+          Math.max(loafEntry.styleAndLayoutStart, interactionTime);
       }
 
       for (const script of loafEntry.scripts) {
-        const scriptEndTime = script.startTime + script.duration;
-        if (scriptEndTime < interactionTime) {
+        // Scripts can keep running after the next paint when a modal dialog
+        // (e.g. `alert()`) ends the event early, so only count the part
+        // between the interaction and the next paint.
+        // See: https://github.com/GoogleChrome/web-vitals/issues/492
+        const intersectingScriptDuration =
+          Math.min(script.startTime + script.duration, nextPaintTime) -
+          Math.max(interactionTime, script.startTime);
+        if (intersectingScriptDuration <= 0) {
           continue;
         }
-        const intersectingScriptDuration =
-          scriptEndTime - Math.max(interactionTime, script.startTime);
         // Since forcedStyleAndLayoutDuration doesn't provide timestamps, we
         // apportion the total based on the intersectingScriptDuration. Not
         // correct depending on when it occurred, but the best we can do.
@@ -375,7 +382,9 @@ export const onINP = (
       ? lastLoAF.startTime + lastLoAF.duration
       : 0;
     if (lastLoAFEndTime >= interactionTime + inputDelay + processingDuration) {
-      totalPaintDuration = nextPaintTime - lastLoAFEndTime;
+      // Event durations are rounded to the nearest 8ms, so `nextPaintTime` can
+      // land a few ms before the LoAF end. Clamp so this is never negative.
+      totalPaintDuration = Math.max(0, nextPaintTime - lastLoAFEndTime);
     }
 
     if (longestScriptEntry && longestScriptSubpart) {

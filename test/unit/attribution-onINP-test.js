@@ -216,6 +216,123 @@ describe('INP attribution subparts', () => {
     );
   });
 
+  it('only counts style and layout time after the interaction started', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    observers
+      .find((o) => o.types.includes('long-animation-frame'))
+      .cb({
+        getEntries: () => [
+          // Still in style and layout when the interaction starts at 1000.
+          loafEntry({
+            startTime: 900,
+            duration: 120,
+            renderStart: 910,
+            styleAndLayoutStart: 920,
+          }),
+          loafEntry({
+            startTime: 1020,
+            duration: 80,
+            renderStart: 1070,
+            styleAndLayoutStart: 1080,
+            scripts: [
+              {
+                startTime: 1025,
+                duration: 40,
+                forcedStyleAndLayoutDuration: 0,
+              },
+            ],
+          }),
+        ],
+      });
+    observers
+      .find((o) => o.types.includes('event'))
+      .cb({
+        getEntries: () => [
+          eventEntry({
+            name: 'pointerdown',
+            startTime: 1000,
+            duration: 104,
+            processingStart: 1025,
+            processingEnd: 1065,
+            interactionId: 4001,
+          }),
+        ],
+      });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a, value} = reports[0];
+    assert.strictEqual(a.longAnimationFrameEntries.length, 2);
+    assert.strictEqual(a.totalScriptDuration, 40);
+    assert.strictEqual(a.totalStyleAndLayoutDuration, 40);
+    assert.strictEqual(a.totalPaintDuration, 4);
+    assert.strictEqual(a.totalUnattributedDuration, 20);
+    assert.strictEqual(
+      a.totalScriptDuration +
+        a.totalStyleAndLayoutDuration +
+        a.totalPaintDuration +
+        a.totalUnattributedDuration,
+      value,
+    );
+  });
+
+  it('never reports a negative totalPaintDuration when the event duration rounds down', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    observers
+      .find((o) => o.types.includes('long-animation-frame'))
+      .cb({
+        getEntries: () => [
+          // Ends at 1098, after the rounded down `nextPaintTime` of 1096.
+          loafEntry({
+            startTime: 1005,
+            duration: 93,
+            renderStart: 1065,
+            styleAndLayoutStart: 1070,
+            scripts: [
+              {
+                startTime: 1010,
+                duration: 50,
+                forcedStyleAndLayoutDuration: 0,
+              },
+            ],
+          }),
+        ],
+      });
+    observers
+      .find((o) => o.types.includes('event'))
+      .cb({
+        getEntries: () => [
+          eventEntry({
+            name: 'pointerdown',
+            startTime: 1000,
+            duration: 96,
+            processingStart: 1010,
+            processingEnd: 1060,
+            interactionId: 4001,
+          }),
+        ],
+      });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a, value} = reports[0];
+    assert.strictEqual(a.totalScriptDuration, 50);
+    assert.strictEqual(a.totalPaintDuration, 0);
+    assert.strictEqual(
+      a.totalScriptDuration +
+        a.totalStyleAndLayoutDuration +
+        a.totalPaintDuration +
+        a.totalUnattributedDuration,
+      value,
+    );
+  });
+
   it('caps pendingLoAFs to MAX_PENDING_FRAMES during periods without interactions', async () => {
     const reports = [];
     onINP((metric) => reports.push(metric), {reportAllChanges: true});
@@ -325,5 +442,60 @@ describe('INP attribution subparts', () => {
     assert.strictEqual(a.longAnimationFrameEntries.length, 10);
     // The oldest retained LoAF should be the 7th entry (startTime 1500), not the 1st (startTime 500).
     assert.strictEqual(a.longAnimationFrameEntries[0].startTime, 1500);
+  });
+  it('only counts script time up to the next paint when a modal dialog is shown', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    // A click handler calls `alert()`, so the event ends when the dialog is
+    // shown at 1104 but the handler keeps running until it closes at 3000.
+    observers
+      .find((o) => o.types.includes('long-animation-frame'))
+      .cb({
+        getEntries: () => [
+          loafEntry({
+            startTime: 1005,
+            duration: 2010,
+            renderStart: 3002,
+            styleAndLayoutStart: 3005,
+            scripts: [
+              {
+                startTime: 1010,
+                duration: 1990,
+                forcedStyleAndLayoutDuration: 0,
+              },
+              {
+                startTime: 3000,
+                duration: 2,
+                forcedStyleAndLayoutDuration: 0,
+              },
+            ],
+          }),
+        ],
+      });
+    observers
+      .find((o) => o.types.includes('event'))
+      .cb({
+        getEntries: () => [
+          eventEntry({
+            name: 'click',
+            startTime: 1000,
+            duration: 104,
+            processingStart: 1010,
+            processingEnd: 3000,
+            interactionId: 6001,
+          }),
+        ],
+      });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a, value} = reports[0];
+    assert.strictEqual(value, 104);
+    assert.strictEqual(a.processingDuration, 94);
+    assert.strictEqual(a.totalScriptDuration, 94);
+    assert.strictEqual(a.longestScript.intersectingDuration, 94);
+    assert.strictEqual(a.longestScript.subpart, 'processing-duration');
   });
 });
