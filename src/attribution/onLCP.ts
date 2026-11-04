@@ -16,6 +16,7 @@
 
 import {getNavigationEntry} from '../lib/getNavigationEntry.js';
 import {getSelector} from '../lib/getSelector.js';
+import {getTTFBSubparts} from '../lib/getTTFBSubparts.js';
 import {initUnique} from '../lib/initUnique.js';
 import {LCPEntryManager} from '../lib/LCPEntryManager.js';
 import {checkSoftNavsEnabled} from '../lib/softNavs.js';
@@ -178,6 +179,7 @@ export const onLCP = (
         attribution = {
           ...attribution,
           timeToFirstByte: ttfb,
+          timeToFirstByteAttribution: getTTFBSubparts(navigationEntry, ttfb),
           resourceLoadDelay: lcpRequestStart - ttfb,
           resourceLoadDuration: lcpResponseEnd - lcpRequestStart,
           elementRenderDelay: metric.value - lcpResponseEnd,

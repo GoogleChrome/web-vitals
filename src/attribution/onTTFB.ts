@@ -15,6 +15,7 @@
  */
 
 import {onTTFB as unattributedOnTTFB} from '../onTTFB.js';
+import {getTTFBSubparts} from '../lib/getTTFBSubparts.js';
 import type {
   TTFBMetric,
   TTFBMetricWithAttribution,
@@ -24,60 +25,11 @@ import type {
 
 const attributeTTFB = (metric: TTFBMetric): TTFBMetricWithAttribution => {
   const navigationEntry = metric.entries[0];
-  // Use a default object if no other attribution has been set.
-  let attribution: TTFBAttribution = {
-    waitingDuration: 0,
-    cacheDuration: 0,
-    dnsDuration: 0,
-    connectionDuration: 0,
-    requestDuration: 0,
+  const attribution: TTFBAttribution = {
+    ...getTTFBSubparts(navigationEntry, metric.value),
     // There should only be one instance per TTFB metric
     navigationEntry: navigationEntry,
   };
-
-  if (metric.entries.length) {
-    // If it's the hard nav, then can give attribution.
-    // Otherwise it's 0 so the defaults are fine.
-    if (navigationEntry instanceof PerformanceNavigationTiming) {
-      const activationStart = navigationEntry.activationStart || 0;
-
-      // Measure from workerStart or fetchStart so any service worker startup
-      // time is included in cacheDuration (which also includes other sw time
-      // anyway, that cannot be accurately split out cross-browser).
-      const waitEnd = Math.max(
-        (navigationEntry.workerStart || navigationEntry.fetchStart || 0) -
-          activationStart,
-        0,
-      );
-      const dnsStart = Math.max(
-        navigationEntry.domainLookupStart - activationStart,
-        0,
-      );
-      const connectStart = Math.max(
-        navigationEntry.connectStart - activationStart,
-        0,
-      );
-      const connectEnd = Math.max(
-        navigationEntry.connectEnd - activationStart,
-        0,
-      );
-
-      attribution = {
-        waitingDuration: waitEnd,
-        cacheDuration: dnsStart - waitEnd,
-        // dnsEnd usually equals connectStart but use connectStart over dnsEnd
-        // for dnsDuration in case there ever is a gap.
-        dnsDuration: connectStart - dnsStart,
-        connectionDuration: connectEnd - connectStart,
-        // There is often a gap between connectEnd and requestStart. Attribute
-        // that to requestDuration so connectionDuration remains 0 for
-        // service worker controlled requests were connectStart and connectEnd
-        // are the same.
-        requestDuration: metric.value - connectEnd,
-        navigationEntry: navigationEntry,
-      };
-    }
-  }
 
   // Use `Object.assign()` to ensure the original metric object is returned.
   const metricWithAttribution: TTFBMetricWithAttribution = Object.assign(

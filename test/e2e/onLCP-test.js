@@ -1017,6 +1017,12 @@ describe('onLCP()', async function () {
           .toJSON();
       });
 
+      const ttfbAttribution = await browser.executeAsync(async (done) => {
+        const {onTTFB} = await import('/dist/web-vitals.attribution.js');
+        onTTFB((metric) => done(__toSafeObject(metric.attribution)));
+      });
+      delete ttfbAttribution.navigationEntry;
+
       // Load a new page to trigger the hidden state.
       await navigateTo('about:blank');
 
@@ -1036,6 +1042,10 @@ describe('onLCP()', async function () {
       );
 
       assert.deepEqual(lcp.attribution.navigationEntry, navEntry);
+      assert.deepEqual(
+        lcp.attribution.timeToFirstByteAttribution,
+        ttfbAttribution,
+      );
       assert.deepEqual(lcp.attribution.lcpResourceEntry, lcpResEntry);
       assert.deepEqual(lcp.attribution.lcpEntry, lcp.entries.slice(-1)[0]);
     });
@@ -1324,6 +1334,7 @@ describe('onLCP()', async function () {
       assert.equal(lcp2.attribution.resourceLoadDuration, 0);
       assert.equal(lcp2.attribution.elementRenderDelay, lcp2.value);
       assert.equal(lcp2.attribution.navigationEntry, undefined);
+      assert.equal(lcp2.attribution.timeToFirstByteAttribution, undefined);
       assert.equal(lcp2.attribution.lcpResourceEntry, undefined);
       assert.equal(lcp2.attribution.lcpEntry, undefined);
     });

@@ -15,6 +15,7 @@
  */
 
 import type {AttributionReportOpts, Metric} from './base.js';
+import type {TTFBAttribution} from './ttfb.js';
 
 /**
  * An LCP-specific version of the Metric object.
@@ -49,6 +50,11 @@ export interface LCPAttribution {
    * [Optimize LCP](https://web.dev/articles/optimize-lcp) for details.
    */
   timeToFirstByte: number;
+  /**
+   * The five TTFB duration subparts, when a navigation entry is available.
+   * The navigation entry is provided separately in `navigationEntry`.
+   */
+  timeToFirstByteAttribution?: Omit<TTFBAttribution, 'navigationEntry'>;
   /**
    * The delta between TTFB and when the browser starts loading the LCP
    * resource (if there is one, otherwise 0). See [Optimize

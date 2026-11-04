@@ -1179,6 +1179,11 @@ interface LCPAttribution {
    */
   timeToFirstByte: number;
   /**
+   * The five TTFB duration subparts, when a navigation entry is available.
+   * The navigation entry is provided separately in `navigationEntry`.
+   */
+  timeToFirstByteAttribution?: Omit<TTFBAttribution, 'navigationEntry'>;
+  /**
    * The delta between TTFB and when the browser starts loading the LCP
    * resource (if there is one, otherwise 0). See [Optimize
    * LCP](https://web.dev/articles/optimize-lcp) for details.
