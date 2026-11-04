@@ -335,12 +335,16 @@ export const onINP = (
       }
 
       for (const script of loafEntry.scripts) {
-        const scriptEndTime = script.startTime + script.duration;
-        if (scriptEndTime < interactionTime) {
+        // Scripts can keep running after the next paint when a modal dialog
+        // (e.g. `alert()`) ends the event early, so only count the part
+        // between the interaction and the next paint.
+        // See: https://github.com/GoogleChrome/web-vitals/issues/492
+        const intersectingScriptDuration =
+          Math.min(script.startTime + script.duration, nextPaintTime) -
+          Math.max(interactionTime, script.startTime);
+        if (intersectingScriptDuration <= 0) {
           continue;
         }
-        const intersectingScriptDuration =
-          scriptEndTime - Math.max(interactionTime, script.startTime);
         // Since forcedStyleAndLayoutDuration doesn't provide timestamps, we
         // apportion the total based on the intersectingScriptDuration. Not
         // correct depending on when it occurred, but the best we can do.

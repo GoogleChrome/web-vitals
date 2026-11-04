@@ -443,4 +443,59 @@ describe('INP attribution subparts', () => {
     // The oldest retained LoAF should be the 7th entry (startTime 1500), not the 1st (startTime 500).
     assert.strictEqual(a.longAnimationFrameEntries[0].startTime, 1500);
   });
+  it('only counts script time up to the next paint when a modal dialog is shown', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    // A click handler calls `alert()`, so the event ends when the dialog is
+    // shown at 1104 but the handler keeps running until it closes at 3000.
+    observers
+      .find((o) => o.types.includes('long-animation-frame'))
+      .cb({
+        getEntries: () => [
+          loafEntry({
+            startTime: 1005,
+            duration: 2010,
+            renderStart: 3002,
+            styleAndLayoutStart: 3005,
+            scripts: [
+              {
+                startTime: 1010,
+                duration: 1990,
+                forcedStyleAndLayoutDuration: 0,
+              },
+              {
+                startTime: 3000,
+                duration: 2,
+                forcedStyleAndLayoutDuration: 0,
+              },
+            ],
+          }),
+        ],
+      });
+    observers
+      .find((o) => o.types.includes('event'))
+      .cb({
+        getEntries: () => [
+          eventEntry({
+            name: 'click',
+            startTime: 1000,
+            duration: 104,
+            processingStart: 1010,
+            processingEnd: 3000,
+            interactionId: 6001,
+          }),
+        ],
+      });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a, value} = reports[0];
+    assert.strictEqual(value, 104);
+    assert.strictEqual(a.processingDuration, 94);
+    assert.strictEqual(a.totalScriptDuration, 94);
+    assert.strictEqual(a.longestScript.intersectingDuration, 94);
+    assert.strictEqual(a.longestScript.subpart, 'processing-duration');
+  });
 });
