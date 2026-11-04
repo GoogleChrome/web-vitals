@@ -443,7 +443,7 @@ describe('INP attribution subparts', () => {
     // The oldest retained LoAF should be the 7th entry (startTime 1500), not the 1st (startTime 500).
     assert.strictEqual(a.longAnimationFrameEntries[0].startTime, 1500);
   });
-  it('only counts script time up to the next paint when a modal dialog is shown', async () => {
+  it('only counts script, style and layout time up to the next paint when a modal dialog is shown', async () => {
     const reports = [];
     onINP((metric) => reports.push(metric), {reportAllChanges: true});
 
@@ -497,5 +497,6 @@ describe('INP attribution subparts', () => {
     assert.strictEqual(a.totalScriptDuration, 94);
     assert.strictEqual(a.longestScript.intersectingDuration, 94);
     assert.strictEqual(a.longestScript.subpart, 'processing-duration');
+    assert.strictEqual(a.totalStyleAndLayoutDuration, 0);
   });
 });
