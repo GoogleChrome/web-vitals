@@ -325,15 +325,22 @@ export const onINP = (
 
     for (const loafEntry of attribution.longAnimationFrameEntries) {
       if (loafEntry.styleAndLayoutStart) {
-        // A frame can still be rendering when the interaction starts, or only
-        // render after the next paint when a modal dialog ends the event
-        // early, so only count the style and layout time between the two (as
-        // is done for scripts below).
-        totalStyleAndLayoutDuration += Math.max(
-          0,
-          Math.min(loafEntry.startTime + loafEntry.duration, nextPaintTime) -
-            Math.max(loafEntry.styleAndLayoutStart, interactionTime),
+        // Model (e.g. alert()) can end INP paint time early, so cap end time
+        // to nextPaintTime.
+        const loafEnd = Math.min(
+          loafEntry.startTime + loafEntry.duration,
+          nextPaintTime,
         );
+        // A frame can still be rendering in previous LoAF when an interaction starts
+        // so only include any style and layout time after interactionTime
+        const styleAndLayoutStart = Math.max(
+          loafEntry.styleAndLayoutStart,
+          interactionTime,
+        );
+        const styleAndLayoutDuration = loafEnd - styleAndLayoutStart;
+        if (styleAndLayoutDuration > 0) {
+          totalStyleAndLayoutDuration += styleAndLayoutDuration;
+        }
       }
 
       for (const script of loafEntry.scripts) {
