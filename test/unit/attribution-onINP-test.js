@@ -443,7 +443,7 @@ describe('INP attribution subparts', () => {
     // The oldest retained LoAF should be the 7th entry (startTime 1500), not the 1st (startTime 500).
     assert.strictEqual(a.longAnimationFrameEntries[0].startTime, 1500);
   });
-  it('only counts script time up to the next paint when a modal dialog is shown', async () => {
+  it('only counts script, style and layout time up to the next paint when a modal dialog is shown', async () => {
     const reports = [];
     onINP((metric) => reports.push(metric), {reportAllChanges: true});
 
@@ -497,5 +497,69 @@ describe('INP attribution subparts', () => {
     assert.strictEqual(a.totalScriptDuration, 94);
     assert.strictEqual(a.longestScript.intersectingDuration, 94);
     assert.strictEqual(a.longestScript.subpart, 'processing-duration');
+    assert.strictEqual(a.totalStyleAndLayoutDuration, 0);
+  });
+
+  it('includes style and layout from the first LoAF when a modal dialog ends an interaction spanning two LoAFs', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    observers
+      .find((o) => o.types.includes('long-animation-frame'))
+      .cb({
+        getEntries: () => [
+          loafEntry({
+            startTime: 900,
+            duration: 120,
+            renderStart: 910,
+            styleAndLayoutStart: 920,
+          }),
+          loafEntry({
+            startTime: 1020,
+            duration: 1995,
+            renderStart: 3002,
+            styleAndLayoutStart: 3005,
+            scripts: [
+              {
+                startTime: 1025,
+                duration: 1975,
+                forcedStyleAndLayoutDuration: 0,
+              },
+            ],
+          }),
+        ],
+      });
+    observers
+      .find((o) => o.types.includes('event'))
+      .cb({
+        getEntries: () => [
+          eventEntry({
+            name: 'click',
+            startTime: 1000,
+            duration: 104,
+            processingStart: 1025,
+            processingEnd: 3000,
+            interactionId: 6001,
+          }),
+        ],
+      });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a, value} = reports[0];
+    assert.strictEqual(value, 104);
+    assert.strictEqual(a.longAnimationFrameEntries.length, 2);
+    assert.strictEqual(a.totalScriptDuration, 79);
+    assert.strictEqual(a.totalStyleAndLayoutDuration, 20);
+    assert.strictEqual(a.totalPaintDuration, 0);
+    assert.strictEqual(a.totalUnattributedDuration, 5);
+    assert.strictEqual(
+      a.totalScriptDuration +
+        a.totalStyleAndLayoutDuration +
+        a.totalPaintDuration +
+        a.totalUnattributedDuration,
+      value,
+    );
   });
 });
