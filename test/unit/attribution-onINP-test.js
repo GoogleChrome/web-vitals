@@ -279,6 +279,67 @@ describe('INP attribution subparts', () => {
     );
   });
 
+  it('does not count scripts run during style and layout twice', async () => {
+    const reports = [];
+    onINP((metric) => reports.push(metric), {reportAllChanges: true});
+
+    observers
+      .find((o) => o.types.includes('long-animation-frame'))
+      .cb({
+        getEntries: () => [
+          loafEntry({
+            startTime: 1000,
+            duration: 110,
+            renderStart: 1034,
+            styleAndLayoutStart: 1035,
+            scripts: [
+              {
+                startTime: 1002,
+                duration: 30,
+                forcedStyleAndLayoutDuration: 0,
+              },
+              // A ResizeObserver callback, run after style and layout starts.
+              {
+                startTime: 1040,
+                duration: 60,
+                forcedStyleAndLayoutDuration: 10,
+              },
+            ],
+          }),
+        ],
+      });
+    observers
+      .find((o) => o.types.includes('event'))
+      .cb({
+        getEntries: () => [
+          eventEntry({
+            name: 'pointerdown',
+            startTime: 1000,
+            duration: 112,
+            processingStart: 1002,
+            processingEnd: 1032,
+            interactionId: 4001,
+          }),
+        ],
+      });
+
+    await flush();
+
+    assert.strictEqual(reports.length, 1);
+    const {attribution: a, value} = reports[0];
+    assert.strictEqual(a.totalScriptDuration, 80);
+    assert.strictEqual(a.totalStyleAndLayoutDuration, 25);
+    assert.strictEqual(a.totalPaintDuration, 2);
+    assert.strictEqual(a.totalUnattributedDuration, 5);
+    assert.strictEqual(
+      a.totalScriptDuration +
+        a.totalStyleAndLayoutDuration +
+        a.totalPaintDuration +
+        a.totalUnattributedDuration,
+      value,
+    );
+  });
+
   it('never reports a negative totalPaintDuration when the event duration rounds down', async () => {
     const reports = [];
     onINP((metric) => reports.push(metric), {reportAllChanges: true});

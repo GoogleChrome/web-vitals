@@ -367,6 +367,14 @@ export const onINP = (
         totalScriptDuration +=
           intersectingScriptDuration - intersectingForceStyleAndLayoutDuration;
         totalStyleAndLayoutDuration += intersectingForceStyleAndLayoutDuration;
+        // Scripts that start after `styleAndLayoutStart` (e.g. ResizeObserver
+        // callbacks) are already in the style and layout time counted above.
+        if (
+          loafEntry.styleAndLayoutStart &&
+          script.startTime >= loafEntry.styleAndLayoutStart
+        ) {
+          totalStyleAndLayoutDuration -= intersectingScriptDuration;
+        }
 
         if (intersectingScriptDuration > longestScriptDuration) {
           // Set the subpart this occurred in.
