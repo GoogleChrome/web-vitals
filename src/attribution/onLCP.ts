@@ -22,6 +22,7 @@ import {checkSoftNavsEnabled} from '../lib/softNavs.js';
 import {observe} from '../lib/observe.js';
 import {onLCP as unattributedOnLCP} from '../onLCP.js';
 import type {
+  LargestContentfulPaint,
   LCPAttribution,
   LCPMetric,
   LCPMetricWithAttribution,

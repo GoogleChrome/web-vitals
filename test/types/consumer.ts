@@ -48,3 +48,29 @@ expectType<typeof attribution.onFCP>(onFCPWithAttribution);
 expectType<typeof attribution.onINP>(onINPWithAttribution);
 expectType<typeof attribution.onLCP>(onLCPWithAttribution);
 expectType<typeof attribution.onTTFB>(onTTFBWithAttribution);
+
+// Entry types on the metrics stay assignable to the global entry types that
+// `web-vitals` declares or augments.
+declare const clsMetric: attribution.CLSMetricWithAttribution;
+declare const inpMetric: attribution.INPMetricWithAttribution;
+declare const lcpMetric: attribution.LCPMetricWithAttribution;
+declare const ttfbMetric: attribution.TTFBMetricWithAttribution;
+
+expectType<LayoutShift[]>(clsMetric.entries);
+expectType<LayoutShiftAttribution | undefined>(
+  clsMetric.attribution.largestShiftSource,
+);
+expectType<PerformanceEventTiming[]>(inpMetric.entries);
+expectType<PerformanceLongAnimationFrameTiming[]>(
+  inpMetric.attribution.longAnimationFrameEntries,
+);
+expectType<PerformanceScriptTiming | undefined>(
+  inpMetric.attribution.longestScript?.entry,
+);
+expectType<LargestContentfulPaint[]>(lcpMetric.entries);
+expectType<PerformanceNavigationTiming | PerformanceSoftNavigation | undefined>(
+  lcpMetric.attribution.navigationEntry,
+);
+expectType<PerformanceNavigationTiming[] | PerformanceSoftNavigation[]>(
+  ttfbMetric.entries,
+);

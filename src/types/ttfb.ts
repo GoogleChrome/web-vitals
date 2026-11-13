@@ -15,6 +15,7 @@
  */
 
 import type {Metric} from './base.js';
+import type {PerformanceSoftNavigation} from './entries.js';
 
 /**
  * A TTFB-specific version of the Metric object.

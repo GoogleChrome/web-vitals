@@ -14,6 +14,8 @@
  * limitations under the License.
  */
 
+import type {LargestContentfulPaint} from '../types.js';
+
 export class LCPEntryManager {
   _onBeforeProcessingEntry?: (entry: LargestContentfulPaint) => void;
   _softNavigationEntryMap?: Map<number, PerformanceSoftNavigation>;
