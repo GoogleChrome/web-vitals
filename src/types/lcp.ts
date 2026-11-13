@@ -15,6 +15,10 @@
  */
 
 import type {AttributionReportOpts, Metric} from './base.js';
+import type {
+  LargestContentfulPaint,
+  PerformanceSoftNavigation,
+} from './entries.js';
 
 /**
  * An LCP-specific version of the Metric object.

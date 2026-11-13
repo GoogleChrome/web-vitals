@@ -27,6 +27,7 @@ import {observe} from './lib/observe.js';
 import {whenActivated} from './lib/whenActivated.js';
 import {whenIdleOrHidden} from './lib/whenIdleOrHidden.js';
 import type {
+  LargestContentfulPaint,
   LCPMetric,
   Metric,
   MetricRatingThresholds,

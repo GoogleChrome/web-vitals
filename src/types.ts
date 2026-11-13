@@ -14,13 +14,19 @@
  * limitations under the License.
  */
 
-export * from './types/base.js';
+import type {
+  InteractionContentfulPaint as _InteractionContentfulPaint,
+  LargestContentfulPaint as _LargestContentfulPaint,
+  LayoutShift as _LayoutShift,
+  LayoutShiftAttribution as _LayoutShiftAttribution,
+  PerformanceLongAnimationFrameTiming as _PerformanceLongAnimationFrameTiming,
+  PerformanceScriptTiming as _PerformanceScriptTiming,
+  PerformanceSoftNavigation as _PerformanceSoftNavigation,
+  ScriptInvokerType as _ScriptInvokerType,
+  ScriptWindowAttribution as _ScriptWindowAttribution,
+} from './types/entries.js';
 
-export * from './types/cls.js';
-export * from './types/fcp.js';
-export * from './types/inp.js';
-export * from './types/lcp.js';
-export * from './types/ttfb.js';
+export * from './types/index.js';
 
 // --------------------------------------------------------------------------
 // Everything below is modifications to built-in modules.
@@ -73,90 +79,23 @@ declare global {
     readonly targetSelector: string;
   }
 
-  // https://wicg.github.io/layout-instability/#sec-layout-shift-attribution
-  interface LayoutShiftAttribution {
-    node: Node | null;
-    previousRect: DOMRectReadOnly;
-    currentRect: DOMRectReadOnly;
-  }
-
-  // https://wicg.github.io/layout-instability/#sec-layout-shift
-  interface LayoutShift extends PerformanceEntry {
-    value: number;
-    sources: LayoutShiftAttribution[];
-    hadRecentInput: boolean;
-  }
-
-  // https://w3c.github.io/largest-contentful-paint/#sec-largest-contentful-paint-interface
-  interface LargestContentfulPaint extends PerformanceEntry {
-    readonly renderTime: DOMHighResTimeStamp;
-    readonly loadTime: DOMHighResTimeStamp;
-    readonly size: number;
-    readonly id: string;
-    readonly url: string;
-    readonly element: Element | null;
-  }
-
-  // https://github.com/WICG/soft-navigations
-  interface InteractionContentfulPaint extends PerformanceEntry {
-    readonly interactionId: number;
-    readonly largestContentfulPaint?: LargestContentfulPaint;
-  }
-  interface PerformanceSoftNavigation extends PerformanceEntry {
-    readonly interactionId: number;
-    readonly navigationType?: NavigationType;
-    readonly paintTime?: number;
-    readonly presentationTime?: number;
-    readonly getLargestInteractionContentfulPaint?: () => InteractionContentfulPaint | null;
-  }
+  // The interfaces below are defined in `./types/entries.ts` and exposed here
+  // as globals for backwards compatibility. They have to be interfaces rather
+  // than type aliases so they merge with TypeScript's DOM lib declarations.
+  /* eslint-disable @typescript-eslint/no-empty-object-type */
+  interface LayoutShiftAttribution extends _LayoutShiftAttribution {}
+  interface LayoutShift extends _LayoutShift {}
+  interface LargestContentfulPaint extends _LargestContentfulPaint {}
+  interface InteractionContentfulPaint extends _InteractionContentfulPaint {}
+  interface PerformanceSoftNavigation extends _PerformanceSoftNavigation {}
 
   var PerformanceSoftNavigation: {
     prototype: PerformanceSoftNavigation;
   };
 
-  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
-  export type ScriptInvokerType =
-    | 'classic-script'
-    | 'module-script'
-    | 'event-listener'
-    | 'user-callback'
-    | 'resolve-promise'
-    | 'reject-promise';
-
-  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
-  export type ScriptWindowAttribution =
-    'self' | 'descendant' | 'ancestor' | 'same-page' | 'other';
-
-  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
-  interface PerformanceScriptTiming extends PerformanceEntry {
-    /* Overloading PerformanceEntry */
-    readonly startTime: DOMHighResTimeStamp;
-    readonly duration: DOMHighResTimeStamp;
-    readonly name: string;
-    readonly entryType: string;
-
-    readonly invokerType: ScriptInvokerType;
-    readonly invoker: string;
-    readonly executionStart: DOMHighResTimeStamp;
-    readonly sourceURL: string;
-    readonly sourceFunctionName: string;
-    readonly sourceCharPosition: number;
-    readonly pauseDuration: DOMHighResTimeStamp;
-    readonly forcedStyleAndLayoutDuration: DOMHighResTimeStamp;
-    readonly window?: Window;
-    readonly windowAttribution: ScriptWindowAttribution;
-  }
-
-  // https://w3c.github.io/long-animation-frame/#sec-PerformanceLongAnimationFrameTiming
-  interface PerformanceLongAnimationFrameTiming extends PerformanceEntry {
-    readonly startTime: DOMHighResTimeStamp;
-    readonly duration: DOMHighResTimeStamp;
-    readonly name: string;
-    readonly entryType: string;
-    readonly renderStart: DOMHighResTimeStamp;
-    readonly styleAndLayoutStart: DOMHighResTimeStamp;
-    readonly blockingDuration: DOMHighResTimeStamp;
-    readonly firstUIEventTimestamp: DOMHighResTimeStamp;
-    readonly scripts: PerformanceScriptTiming[];
-  }
+  export type ScriptInvokerType = _ScriptInvokerType;
+  export type ScriptWindowAttribution = _ScriptWindowAttribution;
+  interface PerformanceScriptTiming extends _PerformanceScriptTiming {}
+  interface PerformanceLongAnimationFrameTiming extends _PerformanceLongAnimationFrameTiming {}
+  /* eslint-enable @typescript-eslint/no-empty-object-type */
 }

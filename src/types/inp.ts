@@ -20,6 +20,11 @@ import type {
   ReportOpts,
   AttributionReportOpts,
 } from './base.js';
+import type {
+  PerformanceEventTiming,
+  PerformanceLongAnimationFrameTiming,
+  PerformanceScriptTiming,
+} from './entries.js';
 
 export interface INPReportOpts extends ReportOpts {
   durationThreshold?: number;

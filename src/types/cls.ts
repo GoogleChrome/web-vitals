@@ -15,6 +15,7 @@
  */
 
 import type {LoadState, Metric} from './base.js';
+import type {LayoutShift, LayoutShiftAttribution} from './entries.js';
 
 /**
  * A CLS-specific version of the Metric object.

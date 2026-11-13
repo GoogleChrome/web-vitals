@@ -26,6 +26,10 @@
       "require": "./dist/web-vitals.attribution.umd.cjs",
       "default": "./dist/web-vitals.attribution.js"
     },
+    "./types": {
+      "types": "./dist/modules/types/index.d.ts",
+      "default": "./dist/modules/types/index.js"
+    },
     "./onCLS.js": {
       "types": "./dist/modules/onCLS.d.ts",
       "default": "./dist/modules/onCLS.js"
@@ -93,7 +97,7 @@
     "test": "npm-run-all build test:types test:unit -p -r test:e2e test:server",
     "test:e2e": "wdio",
     "test:server": "node test/server.js",
-    "test:types": "tsc --noEmit --project test/types/tsconfig.json",
+    "test:types": "tsc --noEmit --project test/types/tsconfig.json && tsc --noEmit --project test/types/tsconfig.types-entry.json",
     "test:unit": "node --test test/unit/*test.js",
     "start": "run-s build:ts test:server watch",
     "watch": "run-p watch:*",

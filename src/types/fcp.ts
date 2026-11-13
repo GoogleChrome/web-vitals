@@ -15,6 +15,7 @@
  */
 
 import type {LoadState, Metric} from './base.js';
+import type {PerformanceSoftNavigation} from './entries.js';
 
 /**
  * An FCP-specific version of the Metric object.

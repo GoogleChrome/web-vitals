@@ -560,6 +560,12 @@ For guidance on how to collect and use real-user data to debug performance issue
 
 ### Types:
 
+All types are exported from `web-vitals`, which also adds a few global type augmentations (e.g. `LayoutShift`, `Document.prerendering`) for APIs that TypeScript's DOM library does not include yet. If you only need the types, for example to re-export them from your own library's type declarations, import them from `web-vitals/types` instead, which exports the same types without changing any globals:
+
+```ts
+import type {LCPMetric, LargestContentfulPaint} from 'web-vitals/types';
+```
+
 #### `Metric`
 
 All metrics types inherit from the following base interface:
