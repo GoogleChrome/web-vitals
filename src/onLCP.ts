@@ -126,8 +126,12 @@ export const onLCP = (
     ) => {
       // If reportAllChanges is set or soft navs is enabled then call this
       // function for each entry, otherwise only consider the last one.
+      // Entries after the page was hidden are ignored below, so drop them
+      // first or they could hide an earlier entry when loaded late.
       if (!opts.reportAllChanges && !softNavsEnabled) {
-        entries = entries.slice(-1);
+        entries = entries
+          .filter((e) => e.startTime < visibilityWatcher.firstHiddenTime)
+          .slice(-1);
       }
 
       for (const entry of entries) {
